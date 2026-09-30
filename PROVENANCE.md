@@ -7,7 +7,7 @@ The v1 corpus was exported by executing the Swift curriculum models in
 `migration/baseline-inventory.json` is the immutable semantic fixture. It includes
 the complete seven-course hierarchy, lesson writing and depth, all multiple-choice
 options and feedback, Atlas verification cases and generated Rust harnesses,
-starter source trees, 46 gallery projects, and 259 term pairs. No learner data,
+starter source trees, 46 gallery projects, and 358 term pairs. No learner data,
 support correspondence, credentials, or user projects were copied.
 
 The exporter source lives in Crabrix's `migration/` directory. `tools/coursepack.py`

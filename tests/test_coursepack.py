@@ -38,7 +38,7 @@ class CoursePackTests(unittest.TestCase):
 
     def test_signed_archive_and_tamper(self):
         descriptor = ROOT / "dist/basics.descriptor.json"
-        archive = ROOT / "dist/basics-1.0.0.zip"
+        archive = ROOT / "dist/basics-1.0.1.zip"
         keys = ROOT / "keys/production-keyring.json"
         self.command("verify", "--descriptor", descriptor, "--archive", archive, "--keys", keys)
         with tempfile.TemporaryDirectory() as temporary:
@@ -53,9 +53,9 @@ class CoursePackTests(unittest.TestCase):
         catalog = ROOT / "catalog.v1.json"
         keys = ROOT / "keys/production-keyring.json"
         self.command("verify-catalog", "--catalog", catalog, "--keys", keys,
-                     "--last-sequence", "0")
+                     "--last-sequence", "1")
         self.command("verify-catalog", "--catalog", catalog, "--keys", keys,
-                     "--last-sequence", "1", ok=False)
+                     "--last-sequence", "2", ok=False)
 
     def test_signature_domain_separation(self):
         from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey

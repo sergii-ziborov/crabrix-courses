@@ -2,7 +2,7 @@
 
 The complete, versioned educational corpus for [Crabrix](https://github.com/sergii-ziborov/Crabrix): seven Rust and Algorithms courses, their native lesson data, checks, and editable starter source.
 
-The baseline contains 48 units and 742 lessons, including the 200-pattern Algorithm Atlas with 600 ordered steps. It also preserves 46 authored project-gallery source trees and 259 term pairs. [The inventory](migration/inventory-summary.json) and [parity report](migration/parity-report.json) are generated from the executed Swift models and the CoursePack reader.
+The baseline contains 48 units and 742 lessons, including the 200-pattern Algorithm Atlas with 600 ordered steps. It also preserves 46 authored project-gallery source trees and 358 term pairs. [The inventory](migration/inventory-summary.json) and [parity report](migration/parity-report.json) are generated from the executed Swift models and the CoursePack reader.
 
 ## Format and delivery
 
@@ -19,8 +19,8 @@ python3 tools/coursepack.py inventory --baseline migration/baseline-inventory.js
 python3 tools/coursepack.py validate --courses courses/ --schema schemas/
 python3 tools/coursepack.py build --courses courses/ --out dist/ --deterministic
 python3 tools/coursepack.py parity --legacy migration/baseline-inventory.json --packages dist/ --out migration/parity-report.json
-python3 tools/coursepack.py verify --descriptor dist/basics.descriptor.json --archive dist/basics-1.0.0.zip --keys keys/production-keyring.json
-python3 tools/coursepack.py verify-catalog --catalog catalog.v1.json --keys keys/production-keyring.json --last-sequence 0
+python3 tools/coursepack.py verify --descriptor dist/basics.descriptor.json --archive dist/basics-1.0.1.zip --keys keys/production-keyring.json
+python3 tools/coursepack.py verify-catalog --catalog catalog.v1.json --keys keys/production-keyring.json --last-sequence 1
 python3 -m unittest discover -s tests
 ```
 
