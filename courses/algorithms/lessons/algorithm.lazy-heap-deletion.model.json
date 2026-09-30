@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "heaps-streaming",
+    "categoryTitle": "Heaps & Streaming",
+    "complexity": "O(log n) amortised operation · O(n) space",
+    "difficulty": "hard",
+    "expectedAnswer": "4",
+    "idea": "Record invalidated values separately and discard stale roots only when they surface.",
+    "patternID": "lazy-heap-deletion",
+    "rustSketch": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "stage": "model",
+    "task": "Apply the push/delete operations, then return the valid minimum requested by min.",
+    "useCases": "sliding heaps and priority updates without handles",
+    "visibleInput": "push4 push7 push2 delete2 min"
+  },
+  "concept": "Record invalidated values separately and discard stale roots only when they surface.",
+  "contentDigest": "f1053c8bbe7804d7bf0cec99921af06efe0d2e3e35b3ee4424b2e07b3c99faf4",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Return medians after inserting 5, 2, 10, 4.",
+        "direction": "previous",
+        "title": "Challenge: Median from Two Heaps"
+      },
+      {
+        "concept": "sliding heaps and priority updates without handles",
+        "direction": "next",
+        "title": "Lazy Heap Deletion: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(log n) amortised operation · O(n) space bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on record invalidated values separately and discard stale roots only when they surface.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.lazy-heap-deletion.model",
+  "minutes": 15,
+  "order": 18,
+  "parentID": "algorithms-heaps-streaming",
+  "title": "Lazy Heap Deletion: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(log n) amortised operation · O(n) space",
+    "exampleCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "explanation": "Lazy Heap Deletion belongs to Heaps & Streaming. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include sliding heaps and priority updates without handles.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(log n) amortised operation · O(n) space bound without looking at the code.",
+    "summary": "Record invalidated values separately and discard stale roots only when they surface.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

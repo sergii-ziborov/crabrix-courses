@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "greedy-intervals",
+    "categoryTitle": "Greedy & Interval Methods",
+    "complexity": "O(n) time · O(1) space",
+    "difficulty": "medium",
+    "expectedAnswer": "true",
+    "idea": "Maintain the farthest reachable index and fail only when the scan moves beyond it.",
+    "patternID": "jump-game",
+    "rustSketch": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "stage": "model",
+    "task": "Return whether the final index is reachable.",
+    "useCases": "reachability with forward jump capacity",
+    "visibleInput": "[2,3,1,1,4]"
+  },
+  "concept": "Maintain the farthest reachable index and fail only when the scan moves beyond it.",
+  "contentDigest": "a07d321e04a9fd24ba6cd7520babc99dac372ffcd09d879757c6c93a0146b960",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Return maximum simultaneous sessions; process ends before starts at equal time.",
+        "direction": "previous",
+        "title": "Challenge: Sweep-Line Events"
+      },
+      {
+        "concept": "reachability with forward jump capacity",
+        "direction": "next",
+        "title": "Greedy Reach Frontier: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(n) time · O(1) space bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on maintain the farthest reachable index and fail only when the scan moves beyond it.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.jump-game.model",
+  "minutes": 11,
+  "order": 12,
+  "parentID": "algorithms-greedy-intervals",
+  "title": "Greedy Reach Frontier: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(n) time · O(1) space",
+    "exampleCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "explanation": "Greedy Reach Frontier belongs to Greedy & Interval Methods. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include reachability with forward jump capacity.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(n) time · O(1) space bound without looking at the code.",
+    "summary": "Maintain the farthest reachable index and fail only when the scan moves beyond it.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

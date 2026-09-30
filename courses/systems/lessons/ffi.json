@@ -1,0 +1,59 @@
+{
+  "concept": "extern \"C\", repr(C), and raw pointers",
+  "contentDigest": "ce3872d3f5443be412cb5c94321c4a3bb027e824bfe16b50abada750030aa34b",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Five powers and their invariants",
+        "direction": "previous",
+        "title": "unsafe Rust"
+      },
+      {
+        "concept": "Allocation, iterators, and measuring",
+        "direction": "next",
+        "title": "Performance"
+      }
+    ],
+    "correction": "repr(C) fixes layout; without it Rust may reorder fields.",
+    "misconception": "“Nothing — Rust already matches the C layout”",
+    "traceSteps": [
+      {
+        "detail": "Write down what callers may assume, what the compiler cannot prove, and which boundary is responsible for preserving soundness or cost.",
+        "title": "State the invariant"
+      },
+      {
+        "detail": "Declare a foreign function and describe who owns any memory it returns.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "The ownership contract is written down, not assumed.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Create the smallest counterexample that violates the sample's invariant, then repair the abstraction boundary instead of hiding the symptom. Keep the focus on extern \"c\", repr(c), and raw pointers."
+  },
+  "exerciseKind": "planned",
+  "id": "ffi",
+  "minutes": 13,
+  "order": 1,
+  "parentID": "systems",
+  "title": "FFI",
+  "writing": {
+    "answers": [
+      "Nothing — Rust already matches the C layout",
+      "#[repr(C)] — Rust does not guarantee field order otherwise",
+      "The struct has to be declared pub for the C side"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "A declaration, a layout guarantee, and one unsafe call.",
+    "exampleCode": "#[repr(C)]\nstruct Point { x: f64, y: f64 }\n\nextern \"C\" {\n    fn abs(value: i32) -> i32;\n}\n\nfn main() {\n    // SAFETY: abs needs only a valid i32.\n    let value = unsafe { abs(-42) };\n    println!(\"{value}\");\n}",
+    "explanation": "extern \"C\" selects the C calling convention and #[repr(C)] fixes field order so a struct matches its C counterpart. Every call is unsafe because the compiler cannot see the other side, and ownership must be agreed explicitly — who allocates, who frees, and how long a borrowed pointer stays valid.",
+    "feedback": "Without repr(C) the layout is unspecified and the C side may read the wrong bytes.",
+    "practiceCode": "struct Point { x: f64, y: f64 }\n\nextern \"C\" { fn distance(p: Point) -> f64; }",
+    "question": "What is missing from that struct?",
+    "rule": "repr(C) fixes layout; without it Rust may reorder fields.",
+    "success": "The ownership contract is written down, not assumed.",
+    "summary": "Rust calls C directly, once both sides agree on the layout.",
+    "task": "Declare a foreign function and describe who owns any memory it returns."
+  }
+}

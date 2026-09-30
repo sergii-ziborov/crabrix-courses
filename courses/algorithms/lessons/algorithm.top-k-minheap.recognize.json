@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "heaps-streaming",
+    "categoryTitle": "Heaps & Streaming",
+    "complexity": "O(n log k) time · O(k) space",
+    "difficulty": "easy",
+    "expectedAnswer": "9,8,7",
+    "idea": "Keep a heap of only k winners and evict its smallest whenever it grows.",
+    "patternID": "top-k-minheap",
+    "rustSketch": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "stage": "recognize",
+    "task": "Return the three largest values in descending order.",
+    "useCases": "largest k values and bounded leaderboards",
+    "visibleInput": "[4,1,9,7,3,8]"
+  },
+  "concept": "largest k values and bounded leaderboards",
+  "contentDigest": "b0a5462b3f030665801f9269b4af4f241175e73bea77ef855cfbb8cf37c5ca38",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Keep a heap of only k winners and evict its smallest whenever it grows.",
+        "direction": "previous",
+        "title": "Top-K with a Min-Heap: Mental Model"
+      },
+      {
+        "concept": "Return the three largest values in descending order.",
+        "direction": "next",
+        "title": "Challenge: Top-K with a Min-Heap"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on largest k values and bounded leaderboards."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.top-k-minheap.recognize",
+  "minutes": 8,
+  "order": 4,
+  "parentID": "algorithms-heaps-streaming",
+  "title": "Top-K with a Min-Heap: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "largest k values and bounded leaderboards",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Top-K with a Min-Heap",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Top-K with a Min-Heap",
+    "explanation": "Reach for this pattern when the prompt contains largest k values and bounded leaderboards. Confirm that its assumptions actually hold, then compare O(n log k) time · O(k) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: largest k values and bounded leaderboards.",
+    "practiceCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Top-K with a Min-Heap.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

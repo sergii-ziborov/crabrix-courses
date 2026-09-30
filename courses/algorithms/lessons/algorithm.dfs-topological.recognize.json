@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "graph-traversal",
+    "categoryTitle": "DFS, BFS & Graph Traversal",
+    "complexity": "O(V+E) time · O(V) space",
+    "difficulty": "hard",
+    "expectedAnswer": "1,0,2,3",
+    "idea": "Append a node after all descendants; a gray-to-gray edge proves a directed cycle.",
+    "patternID": "dfs-topological",
+    "rustSketch": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "stage": "recognize",
+    "task": "Return reverse-postorder for ascending neighbors.",
+    "useCases": "dependency ordering and cycle diagnosis",
+    "visibleInput": "n=4 edges=0->2,1->2,2->3"
+  },
+  "concept": "dependency ordering and cycle diagnosis",
+  "contentDigest": "6f9015906d1a826daffb09344c2460f784d8be21e11632b16c8bb8e9efc89243",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Append a node after all descendants; a gray-to-gray edge proves a directed cycle.",
+        "direction": "previous",
+        "title": "DFS Topological Sort: Mental Model"
+      },
+      {
+        "concept": "Return reverse-postorder for ascending neighbors.",
+        "direction": "next",
+        "title": "Challenge: DFS Topological Sort"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on dependency ordering and cycle diagnosis."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.dfs-topological.recognize",
+  "minutes": 15,
+  "order": 25,
+  "parentID": "algorithms-graph-traversal",
+  "title": "DFS Topological Sort: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "dependency ordering and cycle diagnosis",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for DFS Topological Sort",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: DFS Topological Sort",
+    "explanation": "Reach for this pattern when the prompt contains dependency ordering and cycle diagnosis. Confirm that its assumptions actually hold, then compare O(V+E) time · O(V) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: dependency ordering and cycle diagnosis.",
+    "practiceCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing DFS Topological Sort.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

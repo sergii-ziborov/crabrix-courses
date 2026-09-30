@@ -1,0 +1,59 @@
+{
+  "concept": "Where values live and what a move copies",
+  "contentDigest": "3ac0dd98ddae1d00a1c18554fdf9fe02809bcef50ab7d95ca6fd1f568b0dd359",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Dropping a future mid-await",
+        "direction": "previous",
+        "title": "Cancellation Safety"
+      },
+      {
+        "concept": "Pages, faults, and resident size",
+        "direction": "next",
+        "title": "Virtual Memory"
+      }
+    ],
+    "correction": "The stack holds the handle; the heap holds the data the handle points at.",
+    "misconception": "“One million bytes, the whole buffer”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Say where each part of a Vec<String> lives and what a move copies.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain why moving a String is cheap but cloning it is not.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on where values live and what a move copies."
+  },
+  "exerciseKind": "planned",
+  "id": "q-stack-heap",
+  "minutes": 9,
+  "order": 0,
+  "parentID": "interview-platform",
+  "title": "Stack and Heap",
+  "writing": {
+    "answers": [
+      "One million bytes, the whole buffer",
+      "Three words: pointer, length, capacity",
+      "None at all — a move is just a reference"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Three words on the stack; the bytes are on the heap.",
+    "exampleCode": "let n = 42u64;             // 8 bytes, stack\nlet s = String::from(\"x\"); // ptr+len+cap\n                           // stack,\n                           // bytes heap",
+    "explanation": "The stack is a bump pointer with a size known at compile time, freed automatically as frames pop. The heap holds anything sized at runtime or outliving its frame, and needs an owner to free it. Box, Vec, and String are heap values with a small stack handle, which is exactly why moving one is cheap and cloning one is not.",
+    "feedback": "A move copies the handle; the heap allocation never moves.",
+    "practiceCode": "let a = vec![1u8; 1_000_000];\nlet b = a;",
+    "question": "How many bytes does that move copy?",
+    "rule": "The stack holds the handle; the heap holds the data the handle points at.",
+    "success": "You can explain why moving a String is cheap but cloning it is not.",
+    "summary": "Where a value lives explains most of what Rust makes you write.",
+    "task": "Say where each part of a Vec<String> lives and what a move copies."
+  }
+}

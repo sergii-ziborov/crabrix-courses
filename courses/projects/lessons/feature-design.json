@@ -1,0 +1,59 @@
+{
+  "concept": "Make optional capability additive and explicit",
+  "contentDigest": "5d5018f347954cf727bc93258f0fe5f0791a841f306ca2eded27e28b0ec02003",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Separate runtime, build, and test-only tools",
+        "direction": "previous",
+        "title": "Dependency Kinds"
+      },
+      {
+        "concept": "Build the same resolved graph again",
+        "direction": "next",
+        "title": "Lockfile Reproducibility"
+      }
+    ],
+    "correction": "Cargo features are unified across a dependency graph, so disabling one consumer's feature may not disable it globally.",
+    "misconception": "“Mutual exclusion”",
+    "traceSteps": [
+      {
+        "detail": "Separate source modules, public API, manifest data, dependency graph, and build evidence before changing any one of them.",
+        "title": "Map the project boundary"
+      },
+      {
+        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Move one responsibility across a module or package boundary without changing behaviour. Predict which imports, tests, or lock data must change. Keep the focus on make optional capability additive and explicit."
+  },
+  "exerciseKind": "planned",
+  "id": "feature-design",
+  "minutes": 11,
+  "order": 3,
+  "parentID": "cargo-workflow",
+  "title": "Feature Design",
+  "writing": {
+    "answers": [
+      "Additive capability",
+      "Mutual exclusion",
+      "Hidden defaults"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCode": "#[cfg(feature = \"color\")]\nfn paint() { println!(\"color\"); }\n\n#[cfg(not(feature = \"color\"))]\nfn paint() { println!(\"plain\"); }",
+    "explanation": "Cargo features are unified across a dependency graph, so disabling one consumer's feature may not disable it globally. Prefer additive capabilities and avoid features that make the same API mean incompatible things.",
+    "feedback": "Correct: Additive capability.",
+    "practiceCode": "#[cfg(feature = \"color\")]\nfn paint() { println!(\"color\"); }\n\n#[cfg(not(feature = \"color\"))]\nfn paint() { println!(\"plain\"); }",
+    "question": "What style makes features compose well?",
+    "rule": "Cargo features are unified across a dependency graph, so disabling one consumer's feature may not disable it globally.",
+    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "summary": "Make optional capability additive and explicit.",
+    "task": "Trace the example, name the guarantee, and identify where it ends."
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "greedy-intervals",
+    "categoryTitle": "Greedy & Interval Methods",
+    "complexity": "O(n) time · O(1) space",
+    "difficulty": "medium",
+    "expectedAnswer": "3",
+    "idea": "When running fuel becomes negative, no station in that failed segment can be a valid start.",
+    "patternID": "gas-station",
+    "rustSketch": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "stage": "recognize",
+    "task": "Return a valid starting station, or -1.",
+    "useCases": "circular feasibility with cumulative gain",
+    "visibleInput": "gas=[1,2,3,4,5] cost=[3,4,5,1,2]"
+  },
+  "concept": "circular feasibility with cumulative gain",
+  "contentDigest": "c8f618a99f9029e6f324f61cc0214fa44aa7abeae62482cf7b08dfd3ea40d599",
+  "depth": {
+    "connections": [
+      {
+        "concept": "When running fuel becomes negative, no station in that failed segment can be a valid start.",
+        "direction": "previous",
+        "title": "Gas Station Reset: Mental Model"
+      },
+      {
+        "concept": "Return a valid starting station, or -1.",
+        "direction": "next",
+        "title": "Challenge: Gas Station Reset"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on circular feasibility with cumulative gain."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.gas-station.recognize",
+  "minutes": 11,
+  "order": 19,
+  "parentID": "algorithms-greedy-intervals",
+  "title": "Gas Station Reset: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "circular feasibility with cumulative gain",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Gas Station Reset",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Gas Station Reset",
+    "explanation": "Reach for this pattern when the prompt contains circular feasibility with cumulative gain. Confirm that its assumptions actually hold, then compare O(n) time · O(1) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: circular feasibility with cumulative gain.",
+    "practiceCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Gas Station Reset.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

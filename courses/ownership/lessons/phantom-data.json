@@ -1,0 +1,54 @@
+{
+  "concept": "Track a compile-time state with no stored value",
+  "contentDigest": "81bcb1b615adf4c7ee04142a9153fb054a1fe4ec82cc2ba5c31ed1d276174da5",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Infer shared, mutable, or moved captures",
+        "direction": "previous",
+        "title": "Closure Capture Modes"
+      }
+    ],
+    "correction": "PhantomData tells the type system that a zero-sized marker matters to ownership or state.",
+    "misconception": "“One pointer”",
+    "traceSteps": [
+      {
+        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
+        "title": "Map ownership first"
+      },
+      {
+        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on track a compile-time state with no stored value."
+  },
+  "exerciseKind": "planned",
+  "id": "phantom-data",
+  "minutes": 12,
+  "order": 6,
+  "parentID": "abstraction-practice",
+  "title": "Phantom Types",
+  "writing": {
+    "answers": [
+      "Usually zero",
+      "One pointer",
+      "The size of State"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCode": "use std::marker::PhantomData;\nstruct Ready;\nstruct Job<State> {\n    id: u32,\n    state: PhantomData<State>,\n}",
+    "explanation": "PhantomData tells the type system that a zero-sized marker matters to ownership or state. It enables APIs where illegal transitions have no callable method, without adding runtime storage.",
+    "feedback": "Correct: Usually zero.",
+    "practiceCode": "use std::marker::PhantomData;\nstruct Ready;\nstruct Job<State> {\n    id: u32,\n    state: PhantomData<State>,\n}",
+    "question": "How many bytes does PhantomData add?",
+    "rule": "PhantomData tells the type system that a zero-sized marker matters to ownership or state.",
+    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "summary": "Track a compile-time state with no stored value.",
+    "task": "Trace the example, name the guarantee, and identify where it ends."
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "graph-traversal",
+    "categoryTitle": "DFS, BFS & Graph Traversal",
+    "complexity": "O(V+E) space",
+    "difficulty": "easy",
+    "expectedAnswer": "0,1,4",
+    "idea": "Store only existing neighbors so traversal cost follows vertices plus edges.",
+    "patternID": "adjacency-list",
+    "rustSketch": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "stage": "model",
+    "task": "Build an undirected adjacency list and return sorted neighbors of node 2.",
+    "useCases": "sparse graphs, networks, dependency relationships",
+    "visibleInput": "n=5 edges=(0,2),(1,2),(2,4)"
+  },
+  "concept": "Store only existing neighbors so traversal cost follows vertices plus edges.",
+  "contentDigest": "978956b3ac581369d700cfad7e2fdeb31eaf636dd4625946312b1e05f025913d",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Return the minimum total merge cost.",
+        "direction": "previous",
+        "title": "Challenge: Huffman Merge Heap"
+      },
+      {
+        "concept": "sparse graphs, networks, dependency relationships",
+        "direction": "next",
+        "title": "Adjacency List: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(V+E) space bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on store only existing neighbors so traversal cost follows vertices plus edges.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.adjacency-list.model",
+  "minutes": 8,
+  "order": 0,
+  "parentID": "algorithms-graph-traversal",
+  "title": "Adjacency List: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(V+E) space",
+    "exampleCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "explanation": "Adjacency List belongs to DFS, BFS & Graph Traversal. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include sparse graphs, networks, dependency relationships.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(V+E) space bound without looking at the code.",
+    "summary": "Store only existing neighbors so traversal cost follows vertices plus edges.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

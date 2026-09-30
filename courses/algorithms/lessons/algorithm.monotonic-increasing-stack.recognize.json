@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "stacks-queues",
+    "categoryTitle": "Stack, Queue & Monotonic Patterns",
+    "complexity": "O(n) time · O(n) space",
+    "difficulty": "medium",
+    "expectedAnswer": "-1,4,-1,2,2",
+    "idea": "Pop larger candidates so the stack represents the nearest smaller boundary.",
+    "patternID": "monotonic-increasing-stack",
+    "rustSketch": "fn balanced(text: &str) -> bool {\n    let mut stack = Vec::new();\n    for ch in text.chars() {\n        match ch {\n            '(' | '[' | '{' => stack.push(ch),\n            ')' => if stack.pop() != Some('(') { return false; },\n            ']' => if stack.pop() != Some('[') { return false; },\n            '}' => if stack.pop() != Some('{') { return false; },\n            _ => {}\n        }\n    }\n    stack.is_empty()\n}",
+    "stage": "recognize",
+    "task": "Return the previous strictly smaller value for each item, or -1.",
+    "useCases": "nearest smaller values, histogram bounds, contribution counting",
+    "visibleInput": "[4,5,2,10,8]"
+  },
+  "concept": "nearest smaller values, histogram bounds, contribution counting",
+  "contentDigest": "caa63f695f2937da45a5a1746e2351cb808dde81b095c1cc58484d0249783b9d",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Pop larger candidates so the stack represents the nearest smaller boundary.",
+        "direction": "previous",
+        "title": "Monotonic Increasing Stack: Mental Model"
+      },
+      {
+        "concept": "Return the previous strictly smaller value for each item, or -1.",
+        "direction": "next",
+        "title": "Challenge: Monotonic Increasing Stack"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on nearest smaller values, histogram bounds, contribution counting."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.monotonic-increasing-stack.recognize",
+  "minutes": 11,
+  "order": 16,
+  "parentID": "algorithms-stacks-queues",
+  "title": "Monotonic Increasing Stack: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "nearest smaller values, histogram bounds, contribution counting",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Monotonic Increasing Stack",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Monotonic Increasing Stack",
+    "explanation": "Reach for this pattern when the prompt contains nearest smaller values, histogram bounds, contribution counting. Confirm that its assumptions actually hold, then compare O(n) time · O(n) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: nearest smaller values, histogram bounds, contribution counting.",
+    "practiceCode": "fn balanced(text: &str) -> bool {\n    let mut stack = Vec::new();\n    for ch in text.chars() {\n        match ch {\n            '(' | '[' | '{' => stack.push(ch),\n            ')' => if stack.pop() != Some('(') { return false; },\n            ']' => if stack.pop() != Some('[') { return false; },\n            '}' => if stack.pop() != Some('{') { return false; },\n            _ => {}\n        }\n    }\n    stack.is_empty()\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Monotonic Increasing Stack.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

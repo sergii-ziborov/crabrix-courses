@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "hashing",
+    "categoryTitle": "Hash Maps & Sets",
+    "complexity": "O(n) expected time · O(1) rolling state",
+    "difficulty": "hard",
+    "expectedAnswer": "11",
+    "idea": "Update a window hash by removing the outgoing contribution and adding the incoming one.",
+    "patternID": "rolling-fingerprint",
+    "rustSketch": "use std::collections::HashMap;\nfn counts(values: &[i32]) -> HashMap<i32, usize> {\n    let mut map = HashMap::new();\n    for &value in values { *map.entry(value).or_insert(0) += 1; }\n    map\n}",
+    "stage": "recognize",
+    "task": "Using base 10 and modulus 101, return the hash of digits 3,1,4.",
+    "useCases": "substring search, duplicate blocks, content fingerprints",
+    "visibleInput": "digits=[3,1,4]"
+  },
+  "concept": "substring search, duplicate blocks, content fingerprints",
+  "contentDigest": "a264655e48475e0c463379a6cdc4ecce2855420956a72af256aa09ea7dc1080b",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Update a window hash by removing the outgoing contribution and adding the incoming one.",
+        "direction": "previous",
+        "title": "Rolling Fingerprint: Mental Model"
+      },
+      {
+        "concept": "Using base 10 and modulus 101, return the hash of digits 3,1,4.",
+        "direction": "next",
+        "title": "Challenge: Rolling Fingerprint"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on substring search, duplicate blocks, content fingerprints."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.rolling-fingerprint.recognize",
+  "minutes": 15,
+  "order": 28,
+  "parentID": "algorithms-hashing",
+  "title": "Rolling Fingerprint: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "substring search, duplicate blocks, content fingerprints",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Rolling Fingerprint",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Rolling Fingerprint",
+    "explanation": "Reach for this pattern when the prompt contains substring search, duplicate blocks, content fingerprints. Confirm that its assumptions actually hold, then compare O(n) expected time · O(1) rolling state with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: substring search, duplicate blocks, content fingerprints.",
+    "practiceCode": "use std::collections::HashMap;\nfn counts(values: &[i32]) -> HashMap<i32, usize> {\n    let mut map = HashMap::new();\n    for &value in values { *map.entry(value).or_insert(0) += 1; }\n    map\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Rolling Fingerprint.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

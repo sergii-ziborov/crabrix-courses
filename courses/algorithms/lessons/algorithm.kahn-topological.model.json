@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "graph-traversal",
+    "categoryTitle": "DFS, BFS & Graph Traversal",
+    "complexity": "O(V+E) time · O(V) space",
+    "difficulty": "medium",
+    "expectedAnswer": "0,1,2,3",
+    "idea": "Repeatedly remove zero-indegree nodes and decrement dependents; leftovers prove a cycle.",
+    "patternID": "kahn-topological",
+    "rustSketch": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "stage": "model",
+    "task": "Return lexicographically smallest valid order.",
+    "useCases": "course schedules and build dependency order",
+    "visibleInput": "n=4 edges=0->1,0->2,1->3,2->3"
+  },
+  "concept": "Repeatedly remove zero-indegree nodes and decrement dependents; leftovers prove a cycle.",
+  "contentDigest": "aa92dfc1472d9a112c75c1e12832facde4d1f8ae2983dd865d6217fbf2a4eb3e",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Return true when the undirected graph contains a cycle.",
+        "direction": "previous",
+        "title": "Challenge: Undirected Cycle Detection"
+      },
+      {
+        "concept": "course schedules and build dependency order",
+        "direction": "next",
+        "title": "Kahn Topological Sort: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(V+E) time · O(V) space bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on repeatedly remove zero-indegree nodes and decrement dependents; leftovers prove a cycle.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.kahn-topological.model",
+  "minutes": 11,
+  "order": 21,
+  "parentID": "algorithms-graph-traversal",
+  "title": "Kahn Topological Sort: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(V+E) time · O(V) space",
+    "exampleCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "explanation": "Kahn Topological Sort belongs to DFS, BFS & Graph Traversal. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include course schedules and build dependency order.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(V+E) time · O(V) space bound without looking at the code.",
+    "summary": "Repeatedly remove zero-indegree nodes and decrement dependents; leftovers prove a cycle.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

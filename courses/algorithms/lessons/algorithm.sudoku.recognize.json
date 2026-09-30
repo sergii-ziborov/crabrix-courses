@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "backtracking",
+    "categoryTitle": "Backtracking & Exhaustive Search",
+    "complexity": "Exponential worst case · O(empty cells) depth",
+    "difficulty": "hard",
+    "expectedAnswer": "4",
+    "idea": "Choose an empty cell, try allowed symbols, and undo; picking the fewest candidates prunes harder.",
+    "patternID": "sudoku",
+    "rustSketch": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
+    "stage": "recognize",
+    "task": "Return the missing digit in row 0 of the nearly solved grid.",
+    "useCases": "exact constraint completion",
+    "visibleInput": "row0=53.678912"
+  },
+  "concept": "exact constraint completion",
+  "contentDigest": "7a85e7ce5b545f22a45471d6a2941c8b66092d17d05c92001902da62fea02545",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Choose an empty cell, try allowed symbols, and undo; picking the fewest candidates prunes harder.",
+        "direction": "previous",
+        "title": "Sudoku Constraint Search: Mental Model"
+      },
+      {
+        "concept": "Return the missing digit in row 0 of the nearly solved grid.",
+        "direction": "next",
+        "title": "Challenge: Sudoku Constraint Search"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on exact constraint completion."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.sudoku.recognize",
+  "minutes": 15,
+  "order": 25,
+  "parentID": "algorithms-backtracking",
+  "title": "Sudoku Constraint Search: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "exact constraint completion",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Sudoku Constraint Search",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Sudoku Constraint Search",
+    "explanation": "Reach for this pattern when the prompt contains exact constraint completion. Confirm that its assumptions actually hold, then compare Exponential worst case · O(empty cells) depth with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: exact constraint completion.",
+    "practiceCode": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Sudoku Constraint Search.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

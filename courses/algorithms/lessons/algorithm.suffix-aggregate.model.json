@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "ranges",
+    "categoryTitle": "Prefix Sums & Range Queries",
+    "complexity": "O(n) build · O(1) query · O(n) space",
+    "difficulty": "easy",
+    "expectedAnswer": "5,5,5,2",
+    "idea": "Precompute information from right to left for queries about everything after a position.",
+    "patternID": "suffix-aggregate",
+    "rustSketch": "fn prefix(values: &[i64]) -> Vec<i64> {\n    let mut sums = vec![0; values.len() + 1];\n    for i in 0..values.len() { sums[i + 1] = sums[i] + values[i]; }\n    sums\n}",
+    "stage": "model",
+    "task": "Return the suffix maximum at every index.",
+    "useCases": "right-side maxima, suffix totals, partition checks",
+    "visibleInput": "[3, 1, 5, 2]"
+  },
+  "concept": "Precompute information from right to left for queries about everything after a position.",
+  "contentDigest": "0f5b64b4a0feb02f0de56f2ff33f84dcf37a7707d1ab1bcea2d89c164ef723b7",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Return the sum from inclusive index 1 through 3.",
+        "direction": "previous",
+        "title": "Challenge: Prefix Sum"
+      },
+      {
+        "concept": "right-side maxima, suffix totals, partition checks",
+        "direction": "next",
+        "title": "Suffix Aggregate: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(n) build · O(1) query · O(n) space bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on precompute information from right to left for queries about everything after a position.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.suffix-aggregate.model",
+  "minutes": 8,
+  "order": 3,
+  "parentID": "algorithms-ranges",
+  "title": "Suffix Aggregate: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(n) build · O(1) query · O(n) space",
+    "exampleCode": "fn prefix(values: &[i64]) -> Vec<i64> {\n    let mut sums = vec![0; values.len() + 1];\n    for i in 0..values.len() { sums[i + 1] = sums[i] + values[i]; }\n    sums\n}",
+    "explanation": "Suffix Aggregate belongs to Prefix Sums & Range Queries. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include right-side maxima, suffix totals, partition checks.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "fn prefix(values: &[i64]) -> Vec<i64> {\n    let mut sums = vec![0; values.len() + 1];\n    for i in 0..values.len() { sums[i + 1] = sums[i] + values[i]; }\n    sums\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(n) build · O(1) query · O(n) space bound without looking at the code.",
+    "summary": "Precompute information from right to left for queries about everything after a position.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

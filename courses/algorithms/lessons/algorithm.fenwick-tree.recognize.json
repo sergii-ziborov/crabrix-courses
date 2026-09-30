@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "ranges",
+    "categoryTitle": "Prefix Sums & Range Queries",
+    "complexity": "O(log n) update/query · O(n) space",
+    "difficulty": "hard",
+    "expectedAnswer": "7",
+    "idea": "Store partial sums in power-of-two ranges and move indexes by their lowest set bit.",
+    "patternID": "fenwick-tree",
+    "rustSketch": "fn prefix(values: &[i64]) -> Vec<i64> {\n    let mut sums = vec![0; values.len() + 1];\n    for i in 0..values.len() { sums[i + 1] = sums[i] + values[i]; }\n    sums\n}",
+    "stage": "recognize",
+    "task": "Apply the 1-indexed add operations and return the prefix sum through query.",
+    "useCases": "dynamic prefix sums, frequency tables, inversion counts",
+    "visibleInput": "n=5 adds=(1,5),(3,2),(4,4) query=3"
+  },
+  "concept": "dynamic prefix sums, frequency tables, inversion counts",
+  "contentDigest": "f8c2cb32c055e4f9ce0ac81725acea7431147b11dbb61b7786d3e56b7e26f4b0",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Store partial sums in power-of-two ranges and move indexes by their lowest set bit.",
+        "direction": "previous",
+        "title": "Fenwick Tree: Mental Model"
+      },
+      {
+        "concept": "Apply the 1-indexed add operations and return the prefix sum through query.",
+        "direction": "next",
+        "title": "Challenge: Fenwick Tree"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on dynamic prefix sums, frequency tables, inversion counts."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.fenwick-tree.recognize",
+  "minutes": 15,
+  "order": 25,
+  "parentID": "algorithms-ranges",
+  "title": "Fenwick Tree: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "dynamic prefix sums, frequency tables, inversion counts",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Fenwick Tree",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Fenwick Tree",
+    "explanation": "Reach for this pattern when the prompt contains dynamic prefix sums, frequency tables, inversion counts. Confirm that its assumptions actually hold, then compare O(log n) update/query · O(n) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: dynamic prefix sums, frequency tables, inversion counts.",
+    "practiceCode": "fn prefix(values: &[i64]) -> Vec<i64> {\n    let mut sums = vec![0; values.len() + 1];\n    for i in 0..values.len() { sums[i + 1] = sums[i] + values[i]; }\n    sums\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Fenwick Tree.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

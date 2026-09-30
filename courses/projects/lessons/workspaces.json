@@ -1,0 +1,59 @@
+{
+  "concept": "Many crates, one lockfile",
+  "contentDigest": "2cd166ef28f42bbe5c9e0379ac1d8abc430e5ebe2855cec390472b4594dc5a50",
+  "depth": {
+    "connections": [
+      {
+        "concept": "crates.io, SemVer, and features",
+        "direction": "previous",
+        "title": "Dependencies"
+      },
+      {
+        "concept": "Heap allocation and recursive types",
+        "direction": "next",
+        "title": "Box<T>"
+      }
+    ],
+    "correction": "Workspace members share one lockfile, so versions cannot diverge.",
+    "misconception": "“Nothing, they are independent”",
+    "traceSteps": [
+      {
+        "detail": "Separate source modules, public API, manifest data, dependency graph, and build evidence before changing any one of them.",
+        "title": "Map the project boundary"
+      },
+      {
+        "detail": "Describe how you would split a project into a library and a binary.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "The library holds the logic and the binary only wires it up.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Move one responsibility across a module or package boundary without changing behaviour. Predict which imports, tests, or lock data must change. Keep the focus on many crates, one lockfile."
+  },
+  "exerciseKind": "planned",
+  "id": "workspaces",
+  "minutes": 9,
+  "order": 4,
+  "parentID": "projects",
+  "title": "Workspaces",
+  "writing": {
+    "answers": [
+      "Nothing, they are independent",
+      "One lockfile and one target directory",
+      "Their source files"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "One root manifest, many members, one shared lockfile.",
+    "exampleCode": "# Cargo.toml at the workspace root\n[workspace]\nresolver = \"2\"\nmembers = [\"core\", \"cli\"]\n\n# cli/Cargo.toml\n[dependencies]\ncore = { path = \"../core\" }",
+    "explanation": "Members share a target directory and a single resolved dependency graph, so two crates in the same workspace can never disagree about a version. Splitting a project into a library plus a thin binary is the usual first move, because it makes the library testable on its own.",
+    "feedback": "Shared resolution is the point: one version of each dependency across the workspace.",
+    "practiceCode": "[workspace]\nmembers = [\"core\", \"cli\"]",
+    "question": "What do the members share?",
+    "rule": "Workspace members share one lockfile, so versions cannot diverge.",
+    "success": "The library holds the logic and the binary only wires it up.",
+    "summary": "A workspace builds several crates against one lockfile.",
+    "task": "Describe how you would split a project into a library and a binary."
+  }
+}

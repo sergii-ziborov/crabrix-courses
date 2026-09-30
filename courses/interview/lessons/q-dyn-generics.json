@@ -1,0 +1,59 @@
+{
+  "concept": "Dispatch and code size tradeoffs",
+  "contentDigest": "e7b9ee07b825698f31d98a9a6095243426b0f60e49ae9f5beb5ba4e890840546",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Ownership and allocation choices",
+        "direction": "previous",
+        "title": "Box, Rc, and Arc"
+      },
+      {
+        "concept": "Sound abstractions and invariants",
+        "direction": "next",
+        "title": "Reasoning About unsafe"
+      }
+    ],
+    "correction": "Heterogeneous collections need dyn; hot paths usually want generics.",
+    "misconception": "“impl Trait”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Compare a generic call with a trait object and name the trade-off.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You mention monomorphisation, binary size, and the vtable.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on dispatch and code size tradeoffs."
+  },
+  "exerciseKind": "planned",
+  "id": "q-dyn-generics",
+  "minutes": 11,
+  "order": 2,
+  "parentID": "interview-systems",
+  "title": "dyn Trait vs Generics",
+  "writing": {
+    "answers": [
+      "impl Trait",
+      "Box<dyn Trait>",
+      "A generic parameter"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "One is chosen while compiling, the other while running.",
+    "exampleCode": "fn draw_static<S: Shape>(s: &S) { s.draw(); }\nfn draw_dynamic(s: &dyn Shape) { s.draw(); }\n\nlet mixed: Vec<Box<dyn Shape>> =\n    vec![Box::new(circle), Box::new(square)];",
+    "explanation": "A generic bound is monomorphised: one specialised copy per concrete type, direct calls, inlinable, larger binary. dyn Trait keeps one copy and dispatches through a vtable, which is smaller and lets heterogeneous types share a collection at the cost of an indirection.",
+    "feedback": "Slice elements share one size, so the concrete type must be erased.",
+    "practiceCode": "fn handle(items: &[???]) { }",
+    "question": "Which is required for a slice of different concrete types?",
+    "rule": "Heterogeneous collections need dyn; hot paths usually want generics.",
+    "success": "You mention monomorphisation, binary size, and the vtable.",
+    "summary": "Static dispatch trades code size for speed; dynamic trades the reverse.",
+    "task": "Compare a generic call with a trait object and name the trade-off."
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "concept": "One temporary writer with exclusive access",
+  "contentDigest": "540230b38f8643e5eb9cf833ef571999d5a01c6df29300deb7fae15623d1b3a6",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Parameters can take, borrow, or copy a value",
+        "direction": "previous",
+        "title": "Moves Across Functions"
+      },
+      {
+        "concept": "Lend access without consuming the original reference",
+        "direction": "next",
+        "title": "Reborrowing"
+      }
+    ],
+    "correction": "An &mut reference permits mutation without transferring ownership.",
+    "misconception": "“Shared read access”",
+    "traceSteps": [
+      {
+        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
+        "title": "Map ownership first"
+      },
+      {
+        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on one temporary writer with exclusive access."
+  },
+  "exerciseKind": "planned",
+  "id": "mutable-borrows",
+  "minutes": 9,
+  "order": 1,
+  "parentID": "ownership-practice",
+  "title": "Mutable Borrows",
+  "writing": {
+    "answers": [
+      "Shared read access",
+      "Exclusive write access",
+      "A copied value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCode": "fn add_one(value: &mut i32) {\n    *value += 1;\n}\nlet mut score = 6;\nadd_one(&mut score);\nprintln!(\"{score}\");",
+    "explanation": "An &mut reference permits mutation without transferring ownership. Exclusivity lasts through its final use, preventing another reader or writer from observing a half-finished update.",
+    "feedback": "Correct: Exclusive write access.",
+    "practiceCode": "fn add_one(value: &mut i32) {\n    *value += 1;\n}\nlet mut score = 6;\nadd_one(&mut score);\nprintln!(\"{score}\");",
+    "question": "What does &mut grant temporarily?",
+    "rule": "An &mut reference permits mutation without transferring ownership.",
+    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "summary": "One temporary writer with exclusive access.",
+    "task": "Trace the example, name the guarantee, and identify where it ends."
+  }
+}

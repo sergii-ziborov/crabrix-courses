@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "greedy-intervals",
+    "categoryTitle": "Greedy & Interval Methods",
+    "complexity": "O(n) time · O(alphabet) space",
+    "difficulty": "medium",
+    "expectedAnswer": "9,7,8",
+    "idea": "Extend the current segment to the farthest last occurrence of every symbol encountered.",
+    "patternID": "partition-labels",
+    "rustSketch": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "stage": "model",
+    "task": "Return partition lengths.",
+    "useCases": "split sequences so each key belongs to one segment",
+    "visibleInput": "ababcbacadefegdehijhklij"
+  },
+  "concept": "Extend the current segment to the farthest last occurrence of every symbol encountered.",
+  "contentDigest": "032e448fe31e8dab4a3a822fd6bbfa9ca3d7d96659e35510d9b89068a942cfc6",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Return a valid starting station, or -1.",
+        "direction": "previous",
+        "title": "Challenge: Gas Station Reset"
+      },
+      {
+        "concept": "split sequences so each key belongs to one segment",
+        "direction": "next",
+        "title": "Last-Occurrence Partition: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(n) time · O(alphabet) space bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on extend the current segment to the farthest last occurrence of every symbol encountered.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.partition-labels.model",
+  "minutes": 11,
+  "order": 21,
+  "parentID": "algorithms-greedy-intervals",
+  "title": "Last-Occurrence Partition: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(n) time · O(alphabet) space",
+    "exampleCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "explanation": "Last-Occurrence Partition belongs to Greedy & Interval Methods. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include split sequences so each key belongs to one segment.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(n) time · O(alphabet) space bound without looking at the code.",
+    "summary": "Extend the current segment to the farthest last occurrence of every symbol encountered.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

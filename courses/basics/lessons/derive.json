@@ -1,0 +1,54 @@
+{
+  "concept": "Debug, Clone, PartialEq, and Default",
+  "contentDigest": "06cab9b3e040abc263c567d551f5f0982199ec3772cb98b9d133fc466522468d",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Destructuring, guards, and bindings",
+        "direction": "previous",
+        "title": "Pattern Matching"
+      }
+    ],
+    "correction": "derive only compiles when every field also implements the trait.",
+    "misconception": "“A struct cannot derive Debug when it has fields”",
+    "traceSteps": [
+      {
+        "detail": "Name each value's type and starting value, then mark the expression that produces the lesson's result.",
+        "title": "Inventory the values"
+      },
+      {
+        "detail": "Derive the traits a small struct needs to be printed and compared.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "The struct prints with {:?} and compares with == without manual code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change one value, type, or boundary in the sample. Write the exact stdout or diagnostic you expect before asking rustc. Keep the focus on debug, clone, partialeq, and default."
+  },
+  "exerciseKind": "planned",
+  "id": "derive",
+  "minutes": 8,
+  "order": 6,
+  "parentID": "modeling",
+  "title": "Derive Macros",
+  "writing": {
+    "answers": [
+      "A struct cannot derive Debug when it has fields",
+      "NoDebug does not implement Debug, so the field cannot be printed",
+      "Debug always has to be written by hand for structs"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Four traits, no hand-written code, all checked by the compiler.",
+    "exampleCode": "#[derive(Debug, Clone, PartialEq, Default)]\nstruct Config {\n    host: String,\n    port: u16,\n}\n\nlet a = Config::default();\nlet b = a.clone();\nprintln!(\"{a:?} equal={}\", a == b);",
+    "explanation": "#[derive(Debug, Clone, PartialEq)] generates the mechanical implementation for each field. It only works when every field also implements the trait, which turns a missing capability deep in a struct into a clear compile error naming the field.",
+    "feedback": "A derived impl is only as available as the traits of its fields.",
+    "practiceCode": "#[derive(Debug)]\nstruct Wrapper {\n    inner: NoDebug,\n}",
+    "question": "Why can that struct not be printed?",
+    "rule": "derive only compiles when every field also implements the trait.",
+    "success": "The struct prints with {:?} and compares with == without manual code.",
+    "summary": "derive writes the obvious implementation so you do not have to.",
+    "task": "Derive the traits a small struct needs to be printed and compared."
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "strings-tries",
+    "categoryTitle": "Tries & String Matching",
+    "complexity": "O(n log^2 n) simple · O(n log n) tuned",
+    "difficulty": "hard",
+    "expectedAnswer": "5,3,1,0,4,2",
+    "idea": "Sort suffix ranks by doubling compared prefix length until every suffix has a unique rank.",
+    "patternID": "suffix-array",
+    "rustSketch": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "stage": "recognize",
+    "task": "Return suffix starting indexes in lexicographic order.",
+    "useCases": "substring order, repeated substrings, offline text indexes",
+    "visibleInput": "banana"
+  },
+  "concept": "substring order, repeated substrings, offline text indexes",
+  "contentDigest": "b9459db5cd471553f5d4ee2bb3e688cd6b0cb529459a52f4ae10989a08ca43a1",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Sort suffix ranks by doubling compared prefix length until every suffix has a unique rank.",
+        "direction": "previous",
+        "title": "Suffix Array: Mental Model"
+      },
+      {
+        "concept": "Return suffix starting indexes in lexicographic order.",
+        "direction": "next",
+        "title": "Challenge: Suffix Array"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on substring order, repeated substrings, offline text indexes."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.suffix-array.recognize",
+  "minutes": 15,
+  "order": 25,
+  "parentID": "algorithms-strings-tries",
+  "title": "Suffix Array: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "substring order, repeated substrings, offline text indexes",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Suffix Array",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Suffix Array",
+    "explanation": "Reach for this pattern when the prompt contains substring order, repeated substrings, offline text indexes. Confirm that its assumptions actually hold, then compare O(n log^2 n) simple · O(n log n) tuned with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: substring order, repeated substrings, offline text indexes.",
+    "practiceCode": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Suffix Array.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

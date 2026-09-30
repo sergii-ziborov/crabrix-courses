@@ -1,0 +1,59 @@
+{
+  "concept": "Allocation, iterators, and measuring",
+  "contentDigest": "b1cbfb41a0ba37d93ca348bf8d18025cba9c5118be708035f54e2bf5c1da9309",
+  "depth": {
+    "connections": [
+      {
+        "concept": "extern \"C\", repr(C), and raw pointers",
+        "direction": "previous",
+        "title": "FFI"
+      },
+      {
+        "concept": "Newtype, builder, and typestate",
+        "direction": "next",
+        "title": "Rust Idioms"
+      }
+    ],
+    "correction": "Measure a release build; debug numbers say nothing about optimized code.",
+    "misconception": "“Return a reference to the first name”",
+    "traceSteps": [
+      {
+        "detail": "Write down what callers may assume, what the compiler cannot prove, and which boundary is responsible for preserving soundness or cost.",
+        "title": "State the invariant"
+      },
+      {
+        "detail": "Find one clone or one allocation in a loop and remove it.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "Behaviour is unchanged and the allocation count drops.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Create the smallest counterexample that violates the sample's invariant, then repair the abstraction boundary instead of hiding the symptom. Keep the focus on allocation, iterators, and measuring."
+  },
+  "exerciseKind": "planned",
+  "id": "performance",
+  "minutes": 12,
+  "order": 2,
+  "parentID": "systems",
+  "title": "Performance",
+  "writing": {
+    "answers": [
+      "Take &[String] and drop the clone",
+      "Return a reference to the first name",
+      "Use a HashMap"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "One allocation instead of a resize on nearly every push.",
+    "exampleCode": "let mut values = Vec::with_capacity(1_000);\nfor index in 0..1_000 {\n    values.push(index * 2);\n}\n\n// Borrow instead of cloning to read.\nfn total(values: &[usize]) -> usize {\n    values.iter().sum()\n}",
+    "explanation": "Iterator chains compile to roughly the same code as a hand-written loop, so readability is rarely the cost. What does cost is allocating in a hot loop, cloning to satisfy the borrow checker, and choosing the wrong container. Reserve capacity when the size is known, borrow instead of cloning, and measure in release — a debug build is not evidence.",
+    "feedback": "The clone is never needed: map already produces new Strings.",
+    "practiceCode": "fn shout(items: &Vec<String>) -> Vec<String> {\n    items.clone().iter()\n        .map(|s| s.to_uppercase())\n        .collect()\n}",
+    "question": "Which change removes the wasted work?",
+    "rule": "Measure a release build; debug numbers say nothing about optimized code.",
+    "success": "Behaviour is unchanged and the allocation count drops.",
+    "summary": "Rust is fast by default; the wins left are allocation and algorithm.",
+    "task": "Find one clone or one allocation in a loop and remove it."
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "strings-tries",
+    "categoryTitle": "Tries & String Matching",
+    "complexity": "O(n) time · O(1) or decoded storage",
+    "difficulty": "easy",
+    "expectedAnswer": "true",
+    "idea": "Move across symbol boundaries deliberately rather than indexing arbitrary UTF-8 bytes.",
+    "patternID": "string-two-pointers",
+    "rustSketch": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "stage": "model",
+    "task": "Return true after ignoring non-alphanumeric ASCII and case.",
+    "useCases": "palindromes, trimming, mirrored comparison",
+    "visibleInput": "A man, a plan, a canal: Panama"
+  },
+  "concept": "Move across symbol boundaries deliberately rather than indexing arbitrary UTF-8 bytes.",
+  "contentDigest": "53a6b31951277490a10b41bd153fc3252a81994040abdfa94768f32cfc5c7c24",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Return the first non-repeated ASCII character.",
+        "direction": "previous",
+        "title": "Challenge: Character Frequency"
+      },
+      {
+        "concept": "palindromes, trimming, mirrored comparison",
+        "direction": "next",
+        "title": "String Two Pointers: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(n) time · O(1) or decoded storage bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on move across symbol boundaries deliberately rather than indexing arbitrary utf-8 bytes.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.string-two-pointers.model",
+  "minutes": 8,
+  "order": 3,
+  "parentID": "algorithms-strings-tries",
+  "title": "String Two Pointers: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(n) time · O(1) or decoded storage",
+    "exampleCode": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "explanation": "String Two Pointers belongs to Tries & String Matching. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include palindromes, trimming, mirrored comparison.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(n) time · O(1) or decoded storage bound without looking at the code.",
+    "summary": "Move across symbol boundaries deliberately rather than indexing arbitrary UTF-8 bytes.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

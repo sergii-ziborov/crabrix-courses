@@ -1,0 +1,59 @@
+{
+  "concept": "Which anomaly each level allows",
+  "contentDigest": "01187beb3e2d85f49c0a8ad6f594914c52e49e6ec496d9868e8fa2f32e5a7144",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Bounded queues and load shedding",
+        "direction": "previous",
+        "title": "Backpressure"
+      },
+      {
+        "concept": "Leftmost prefix and write cost",
+        "direction": "next",
+        "title": "Indexes and B-trees"
+      }
+    ],
+    "correction": "Isolation is a spectrum; only serializable removes every anomaly.",
+    "misconception": "“No, a transaction sees one snapshot”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Name the anomaly each isolation level still permits.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can state your database default and one anomaly it allows.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on which anomaly each level allows."
+  },
+  "exerciseKind": "planned",
+  "id": "q-acid",
+  "minutes": 12,
+  "order": 0,
+  "parentID": "interview-data",
+  "title": "Transactions and Isolation",
+  "writing": {
+    "answers": [
+      "No, a transaction sees one snapshot",
+      "Yes — read committed permits non-repeatable reads",
+      "Only when an explicit lock is taken"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "The anomaly this allows depends entirely on the level.",
+    "exampleCode": "BEGIN;\nSELECT balance FROM account WHERE id = 1;\n-- another transaction commits here\nUPDATE account SET balance = balance - 10;\nCOMMIT;",
+    "explanation": "Atomicity, consistency, and durability are easy to state. Isolation is a dial: read committed still allows non-repeatable reads, repeatable read still allows phantoms in some engines, and serializable costs the most because it must behave as if transactions ran one at a time. Naming your database default is what separates a real answer from a memorised one.",
+    "feedback": "Each statement sees the latest commit, so the value can move.",
+    "practiceCode": "-- Read committed. Same row, read twice,\n-- one transaction.",
+    "question": "Can the second read return a different value?",
+    "rule": "Isolation is a spectrum; only serializable removes every anomaly.",
+    "success": "You can state your database default and one anomaly it allows.",
+    "summary": "Isolation is the letter in ACID people actually get wrong.",
+    "task": "Name the anomaly each isolation level still permits."
+  }
+}

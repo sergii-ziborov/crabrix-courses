@@ -1,0 +1,59 @@
+{
+  "concept": "Newtype, builder, and typestate",
+  "contentDigest": "76b2373a5d7edddeb9c4264aa71a26a84b6f5490865aedabd49577fca24e01c9",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Allocation, iterators, and measuring",
+        "direction": "previous",
+        "title": "Performance"
+      },
+      {
+        "concept": "Resolve generated names without accidental capture",
+        "direction": "next",
+        "title": "Macro Hygiene"
+      }
+    ],
+    "correction": "A newtype costs nothing at runtime and buys a real compile-time guarantee.",
+    "misconception": "“Nothing, the arguments are the same type”",
+    "traceSteps": [
+      {
+        "detail": "Write down what callers may assume, what the compiler cannot prove, and which boundary is responsible for preserving soundness or cost.",
+        "title": "State the invariant"
+      },
+      {
+        "detail": "Wrap a primitive in a newtype and pass it through one function.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "Mixing it with another id of the same underlying type fails to compile.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Create the smallest counterexample that violates the sample's invariant, then repair the abstraction boundary instead of hiding the symptom. Keep the focus on newtype, builder, and typestate."
+  },
+  "exerciseKind": "planned",
+  "id": "idioms",
+  "minutes": 11,
+  "order": 3,
+  "parentID": "systems",
+  "title": "Rust Idioms",
+  "writing": {
+    "answers": [
+      "Nothing, the arguments are the same type",
+      "Distinct types make a wrong argument order a compile error",
+      "It removes a runtime check, so it is faster"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Two integers that can no longer be confused for each other.",
+    "exampleCode": "#[derive(Debug, Clone, Copy, PartialEq)]\nstruct UserId(u64);\n\n#[derive(Debug, Clone, Copy, PartialEq)]\nstruct OrderId(u64);\n\nfn load_user(id: UserId) -> String {\n    format!(\"user {}\", id.0)\n}\n\n// load_user(OrderId(7)) would not compile.\nprintln!(\"{}\", load_user(UserId(7)));",
+    "explanation": "A newtype gives a bare value a meaning the type system can enforce, so a UserId cannot be passed where an OrderId belongs. A builder makes many optional parameters readable, and typestate encodes a protocol in types so calling a method in the wrong order simply does not compile.",
+    "feedback": "Three bare u64s are interchangeable; AccountId and Amount are not.",
+    "practiceCode": "fn transfer(from: u64, to: u64, amount: u64) { }\ntransfer(amount, from, to);",
+    "question": "What does a newtype fix here?",
+    "rule": "A newtype costs nothing at runtime and buys a real compile-time guarantee.",
+    "success": "Mixing it with another id of the same underlying type fails to compile.",
+    "summary": "Rust's patterns push mistakes from runtime to compile time.",
+    "task": "Wrap a primitive in a newtype and pass it through one function."
+  }
+}

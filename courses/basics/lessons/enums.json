@@ -1,0 +1,59 @@
+{
+  "concept": "Variants and exhaustive handling",
+  "contentDigest": "9ffc48eb3222ef3cce9d45f04d5b1581092ae92792607696941b07c0a85a6e0a",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Named data and methods",
+        "direction": "previous",
+        "title": "Structs"
+      },
+      {
+        "concept": "Explicit absence and failure",
+        "direction": "next",
+        "title": "Option & Result"
+      }
+    ],
+    "correction": "match is exhaustive: every variant must be handled.",
+    "misconception": "“Nothing — a wildcard arm keeps the match exhaustive”",
+    "traceSteps": [
+      {
+        "detail": "Name each value's type and starting value, then mark the expression that produces the lesson's result.",
+        "title": "Inventory the values"
+      },
+      {
+        "detail": "Define a message enum and render every variant with match.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "The match is exhaustive without a wildcard hiding a case.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change one value, type, or boundary in the sample. Write the exact stdout or diagnostic you expect before asking rustc. Keep the focus on variants and exhaustive handling."
+  },
+  "exerciseKind": "planned",
+  "id": "enums",
+  "minutes": 10,
+  "order": 1,
+  "parentID": "modeling",
+  "title": "Enums & Match",
+  "writing": {
+    "answers": [
+      "Nothing — a wildcard arm keeps the match exhaustive",
+      "A new variant silently falls into it instead of erroring",
+      "It makes the match slower by adding a runtime check"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Adding a variant breaks every match that does not handle it.",
+    "exampleCode": "enum Message {\n    Quit,\n    Move { x: i32, y: i32 },\n    Write(String),\n}\n\nmatch message {\n    Message::Quit => println!(\"quit\"),\n    Message::Move { x, y } => {\n        println!(\"move {x},{y}\")\n    }\n    Message::Write(t) => println!(\"{t}\"),\n}",
+    "explanation": "match forces every variant to be handled, so adding a new state turns every incomplete match into a compile error instead of a silent bug. Variants can carry data, which lets one type model a whole state machine rather than a bag of loosely related fields.",
+    "feedback": "A catch-all removes the compiler's help exactly when you add a state.",
+    "practiceCode": "match state {\n    State::Idle => run(),\n    _ => {}\n}",
+    "question": "What does the wildcard cost you?",
+    "rule": "match is exhaustive: every variant must be handled.",
+    "success": "The match is exhaustive without a wildcard hiding a case.",
+    "summary": "Enums model a value that is exactly one of several variants.",
+    "task": "Define a message enum and render every variant with match."
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "concept": "Destructuring, guards, and bindings",
+  "contentDigest": "ebf3af79e88fa4eef2457268a13da41c6fdb04619fd87ced9ed29530b91563d9",
+  "depth": {
+    "connections": [
+      {
+        "concept": "String, &str, chars, and bytes",
+        "direction": "previous",
+        "title": "Strings & UTF-8"
+      },
+      {
+        "concept": "Debug, Clone, PartialEq, and Default",
+        "direction": "next",
+        "title": "Derive Macros"
+      }
+    ],
+    "correction": "A guard narrows an arm; the compiler still demands the set be exhaustive.",
+    "misconception": "“It replaces the pattern that precedes it”",
+    "traceSteps": [
+      {
+        "detail": "Name each value's type and starting value, then mark the expression that produces the lesson's result.",
+        "title": "Inventory the values"
+      },
+      {
+        "detail": "Match a tuple with a guard and a multi-pattern arm.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "Every input is covered without a catch-all hiding a real case.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change one value, type, or boundary in the sample. Write the exact stdout or diagnostic you expect before asking rustc. Keep the focus on destructuring, guards, and bindings."
+  },
+  "exerciseKind": "planned",
+  "id": "pattern-matching",
+  "minutes": 11,
+  "order": 5,
+  "parentID": "modeling",
+  "title": "Pattern Matching",
+  "writing": {
+    "answers": [
+      "It replaces the pattern that precedes it",
+      "Adds a condition the arm must also satisfy",
+      "It makes the match non-exhaustive on its own"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "One arm can test, bind, and destructure at the same time.",
+    "exampleCode": "let point = (3, -7);\n\nmatch point {\n    (0, 0) => println!(\"origin\"),\n    (x, 0) | (0, x) => println!(\"axis at {x}\"),\n    (x, y) if y < 0 => println!(\"below: {x},{y}\"),\n    (x, y) => println!(\"somewhere: {x},{y}\"),\n}",
+    "explanation": "Patterns work in match, if let, while let, function parameters, and plain let. Guards add a condition, @ binds a value while testing it, and | matches several shapes at once. The compiler checks exhaustiveness, so a pattern set that misses a case is an error rather than a surprise at runtime.",
+    "feedback": "A guard is an extra condition; exhaustiveness is still checked across the arms.",
+    "practiceCode": "let value = Some(4);\nmatch value {\n    Some(n) if n % 2 == 0 => println!(\"even {n}\"),\n    Some(n) => println!(\"odd {n}\"),\n    None => println!(\"none\"),\n}",
+    "question": "What does the `if n % 2 == 0` part do?",
+    "rule": "A guard narrows an arm; the compiler still demands the set be exhaustive.",
+    "success": "Every input is covered without a catch-all hiding a real case.",
+    "summary": "Patterns destructure data and bind its parts in one step.",
+    "task": "Match a tuple with a guard and a multi-pattern arm."
+  }
+}

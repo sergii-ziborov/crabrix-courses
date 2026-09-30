@@ -1,0 +1,59 @@
+{
+  "concept": "Mutex, RwLock, and Arc",
+  "contentDigest": "dca04ac0df5af2336ffa779ebe99881aa84f9167315dfbbaac1408e247a20c49",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Message passing with mpsc",
+        "direction": "previous",
+        "title": "Channels"
+      },
+      {
+        "concept": "The traits behind thread safety",
+        "direction": "next",
+        "title": "Send & Sync"
+      }
+    ],
+    "correction": "The lock guard unlocks on drop, so there is no unlock to forget.",
+    "misconception": "“A Mutex cannot hold a plain integer counter”",
+    "traceSteps": [
+      {
+        "detail": "Name each task or thread, the state it can reach, and every point where work can wait, race, block, or be cancelled.",
+        "title": "Draw the event timeline"
+      },
+      {
+        "detail": "Increment one counter from several threads.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "The final total equals the number of increments, every run.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Add a second worker or cancellation point. Draw two possible event orders and state the invariant that both orders must preserve. Keep the focus on mutex, rwlock, and arc."
+  },
+  "exerciseKind": "planned",
+  "id": "shared-state",
+  "minutes": 12,
+  "order": 2,
+  "parentID": "threads",
+  "title": "Shared State",
+  "writing": {
+    "answers": [
+      "A Mutex cannot hold a plain integer counter",
+      "Rc is not Send, so it cannot move to another thread",
+      "lock() is unsafe and needs an unsafe block"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "The data lives inside the lock, so unlocked access is unrepresentable.",
+    "exampleCode": "use std::sync::{Arc, Mutex};\nuse std::thread;\n\nlet counter = Arc::new(Mutex::new(0));\nlet mut handles = vec![];\n\nfor _ in 0..8 {\n    let counter = Arc::clone(&counter);\n    handles.push(thread::spawn(move || {\n        *counter.lock().unwrap() += 1;\n    }));\n}\nfor handle in handles { handle.join().unwrap(); }\nprintln!(\"{}\", *counter.lock().unwrap());",
+    "explanation": "Arc<T> is Rc with an atomic count so it can cross threads. Mutex<T> holds the data itself rather than guarding it by convention, so the only way to reach the value is to lock — and the guard unlocks when it drops, which means a forgotten unlock is not a bug you can write.",
+    "feedback": "Rc uses a non-atomic count; Arc is the thread-safe version.",
+    "practiceCode": "let counter = Rc::new(Mutex::new(0));\nthread::spawn(move || {\n    *counter.lock().unwrap() += 1;\n});",
+    "question": "Why can that Rc not cross the thread boundary?",
+    "rule": "The lock guard unlocks on drop, so there is no unlock to forget.",
+    "success": "The final total equals the number of increments, every run.",
+    "summary": "Arc shares the value; Mutex makes mutation through it safe.",
+    "task": "Increment one counter from several threads."
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "heaps-streaming",
+    "categoryTitle": "Heaps & Streaming",
+    "complexity": "O(n log k) time · O(k) space",
+    "difficulty": "medium",
+    "expectedAnswer": "-2:2,2:-2",
+    "idea": "Keep the worst current winner at the root so a better candidate replaces it.",
+    "patternID": "closest-k-heap",
+    "rustSketch": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "stage": "model",
+    "task": "Return the two points closest to the origin, ordered by distance then coordinates.",
+    "useCases": "nearest points, closest values, approximate neighbors",
+    "visibleInput": "[(1,3),(-2,2),(2,-2),(5,1)]"
+  },
+  "concept": "Keep the worst current winner at the root so a better candidate replaces it.",
+  "contentDigest": "e19cbf82357aec25e6bdcfcbf2fc6b8d4c20272a1c4c33bd9c2c1e3742f1e269",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Merge the three sorted sequences.",
+        "direction": "previous",
+        "title": "Challenge: K-Way Heap Merge"
+      },
+      {
+        "concept": "nearest points, closest values, approximate neighbors",
+        "direction": "next",
+        "title": "Bounded Heap for K Closest: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(n log k) time · O(k) space bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on keep the worst current winner at the root so a better candidate replaces it.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.closest-k-heap.model",
+  "minutes": 11,
+  "order": 12,
+  "parentID": "algorithms-heaps-streaming",
+  "title": "Bounded Heap for K Closest: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(n log k) time · O(k) space",
+    "exampleCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "explanation": "Bounded Heap for K Closest belongs to Heaps & Streaming. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include nearest points, closest values, approximate neighbors.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(n log k) time · O(k) space bound without looking at the code.",
+    "summary": "Keep the worst current winner at the root so a better candidate replaces it.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "dynamic-2d",
+    "categoryTitle": "2D & Advanced Dynamic Programming",
+    "complexity": "O(n*target) time · O(target) space",
+    "difficulty": "medium",
+    "expectedAnswer": "true",
+    "idea": "Track reachable totals and update backward so every item is used at most once.",
+    "patternID": "subset-sum",
+    "rustSketch": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
+    "stage": "recognize",
+    "task": "Return whether some subset sums to 11.",
+    "useCases": "partition checks and bounded target reachability",
+    "visibleInput": "[2,3,7,8,10]"
+  },
+  "concept": "partition checks and bounded target reachability",
+  "contentDigest": "c98233060d6bdd4400145e9bdbcf0518646c67e4611039ae40f0170a13b5709a",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Track reachable totals and update backward so every item is used at most once.",
+        "direction": "previous",
+        "title": "Subset Sum DP: Mental Model"
+      },
+      {
+        "concept": "Return whether some subset sums to 11.",
+        "direction": "next",
+        "title": "Challenge: Subset Sum DP"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on partition checks and bounded target reachability."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.subset-sum.recognize",
+  "minutes": 11,
+  "order": 4,
+  "parentID": "algorithms-dynamic-2d",
+  "title": "Subset Sum DP: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "partition checks and bounded target reachability",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Subset Sum DP",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Subset Sum DP",
+    "explanation": "Reach for this pattern when the prompt contains partition checks and bounded target reachability. Confirm that its assumptions actually hold, then compare O(n*target) time · O(target) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: partition checks and bounded target reachability.",
+    "practiceCode": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Subset Sum DP.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

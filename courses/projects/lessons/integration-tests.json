@@ -1,0 +1,59 @@
+{
+  "concept": "Test the public API as an outside user",
+  "contentDigest": "5dff847885f806aab69bd319b70bb9c64085e53447173203d642466e9d4a4374",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Build the same resolved graph again",
+        "direction": "previous",
+        "title": "Lockfile Reproducibility"
+      },
+      {
+        "concept": "Preserve a cause while explaining the failed operation",
+        "direction": "next",
+        "title": "Error Context"
+      }
+    ],
+    "correction": "Files under tests/ compile as separate crates and can only use the library's public API.",
+    "misconception": "“Tests ban privacy”",
+    "traceSteps": [
+      {
+        "detail": "Separate source modules, public API, manifest data, dependency graph, and build evidence before changing any one of them.",
+        "title": "Map the project boundary"
+      },
+      {
+        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Move one responsibility across a module or package boundary without changing behaviour. Predict which imports, tests, or lock data must change. Keep the focus on test the public api as an outside user."
+  },
+  "exerciseKind": "planned",
+  "id": "integration-tests",
+  "minutes": 10,
+  "order": 0,
+  "parentID": "project-quality",
+  "title": "Integration Tests",
+  "writing": {
+    "answers": [
+      "It is a separate crate",
+      "Tests ban privacy",
+      "assert_eq! hides them"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCode": "// tests/public_api.rs\nuse demo::answer;\n\n#[test]\nfn answer_is_stable() {\n    assert_eq!(answer(), 42);\n}",
+    "explanation": "Files under tests/ compile as separate crates and can only use the library's public API. That boundary catches accidental reliance on private implementation details.",
+    "feedback": "Correct: It is a separate crate.",
+    "practiceCode": "// tests/public_api.rs\nuse demo::answer;\n\n#[test]\nfn answer_is_stable() {\n    assert_eq!(answer(), 42);\n}",
+    "question": "Why can this test not use private items?",
+    "rule": "Files under tests/ compile as separate crates and can only use the library's public API.",
+    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "summary": "Test the public API as an outside user.",
+    "task": "Trace the example, name the guarantee, and identify where it ends."
+  }
+}

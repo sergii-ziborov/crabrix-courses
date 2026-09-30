@@ -1,0 +1,59 @@
+{
+  "concept": "Vec, String, and HashMap",
+  "contentDigest": "c4a13c13c87adf6e1c644d69599529ab0a169e1cc6cd9f7f889e89dda9049d5d",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Explicit absence and failure",
+        "direction": "previous",
+        "title": "Option & Result"
+      },
+      {
+        "concept": "String, &str, chars, and bytes",
+        "direction": "next",
+        "title": "Strings & UTF-8"
+      }
+    ],
+    "correction": "entry().or_insert() gives you a mutable reference either way.",
+    "misconception": "“It is shorter to type than a match on get()”",
+    "traceSteps": [
+      {
+        "detail": "Name each value's type and starting value, then mark the expression that produces the lesson's result.",
+        "title": "Inventory the values"
+      },
+      {
+        "detail": "Count repeated words with a HashMap entry.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "The map holds the correct count for every word.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change one value, type, or boundary in the sample. Write the exact stdout or diagnostic you expect before asking rustc. Keep the focus on vec, string, and hashmap."
+  },
+  "exerciseKind": "planned",
+  "id": "collections",
+  "minutes": 9,
+  "order": 3,
+  "parentID": "modeling",
+  "title": "Collections",
+  "writing": {
+    "answers": [
+      "It is shorter to type than a match on get()",
+      "It looks the key up once instead of twice",
+      "It keeps the map sorted by insertion order"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "entry inserts a default only when the key is missing.",
+    "exampleCode": "use std::collections::HashMap;\n\nlet mut counts: HashMap<&str, u32> =\n    HashMap::new();\nfor word in text.split_whitespace() {\n    *counts.entry(word).or_insert(0) += 1;\n}",
+    "explanation": "Choosing a collection is part of the model, not an afterthought: order, uniqueness, and key access all change what your code can promise. Each of these owns its data, so passing one around follows exactly the same ownership rules as any other value.",
+    "feedback": "entry avoids a second lookup and the borrow conflict that comes with it.",
+    "practiceCode": "let mut map = HashMap::new();\nmap.insert(\"a\", map.get(\"a\").unwrap_or(&0) + 1);",
+    "question": "Why is entry() better here?",
+    "rule": "entry().or_insert() gives you a mutable reference either way.",
+    "success": "The map holds the correct count for every word.",
+    "summary": "Vec, String, and HashMap own growable data with different trade-offs.",
+    "task": "Count repeated words with a HashMap entry."
+  }
+}

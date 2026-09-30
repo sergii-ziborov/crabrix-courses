@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "backtracking",
+    "categoryTitle": "Backtracking & Exhaustive Search",
+    "complexity": "O(rows*cols*4^L) worst · O(L) depth",
+    "difficulty": "medium",
+    "expectedAnswer": "true",
+    "idea": "Walk matching neighbors while temporarily marking the current cell unavailable in this path.",
+    "patternID": "word-grid-search",
+    "rustSketch": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
+    "stage": "model",
+    "task": "Return true when the word can be traced without reusing a cell.",
+    "useCases": "path spelling and local grid constraints",
+    "visibleInput": "grid=ABCE,SFCS,ADEE word=ABCCED"
+  },
+  "concept": "Walk matching neighbors while temporarily marking the current cell unavailable in this path.",
+  "contentDigest": "2305c9b2c36abdc8ca7240905beb0648041907235a77061f430ede981b4e379f",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Return valid sequences for three pairs in lexicographic order.",
+        "direction": "previous",
+        "title": "Challenge: Valid Parentheses Generation"
+      },
+      {
+        "concept": "path spelling and local grid constraints",
+        "direction": "next",
+        "title": "Grid Word Search: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(rows*cols*4^L) worst · O(L) depth bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on walk matching neighbors while temporarily marking the current cell unavailable in this path.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.word-grid-search.model",
+  "minutes": 11,
+  "order": 15,
+  "parentID": "algorithms-backtracking",
+  "title": "Grid Word Search: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(rows*cols*4^L) worst · O(L) depth",
+    "exampleCode": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
+    "explanation": "Grid Word Search belongs to Backtracking & Exhaustive Search. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include path spelling and local grid constraints.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(rows*cols*4^L) worst · O(L) depth bound without looking at the code.",
+    "summary": "Walk matching neighbors while temporarily marking the current cell unavailable in this path.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "concept": "Making at-least-once safe",
+  "contentDigest": "27b5dca0fc8b0d8942137c29235a258aac0a7e283f84799b4d74dfe90fe7981b",
+  "depth": {
+    "connections": [
+      {
+        "concept": "What happens during a partition",
+        "direction": "previous",
+        "title": "CAP in Practice"
+      },
+      {
+        "concept": "Staleness budgets and stampedes",
+        "direction": "next",
+        "title": "Caching and Invalidation"
+      }
+    ],
+    "correction": "At-least-once delivery plus an idempotency key gives effectively-once behaviour.",
+    "misconception": "“Nothing, the server deduplicates”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Make a non-idempotent endpoint safe to retry.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "A duplicate request returns the original result and charges once.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on making at-least-once safe."
+  },
+  "exerciseKind": "planned",
+  "id": "q-idempotency",
+  "minutes": 10,
+  "order": 3,
+  "parentID": "interview-data",
+  "title": "Idempotency and Retries",
+  "writing": {
+    "answers": [
+      "Nothing, the server deduplicates",
+      "The balance is increased twice",
+      "The request is rejected"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "The key is what makes the second attempt safe.",
+    "exampleCode": "let response = client\n    .post(url)\n    .header(\"Idempotency-Key\", request_id)\n    .json(&payment)\n    .send()\n    .await?;",
+    "explanation": "Networks make at-least-once the default, so the same request will arrive twice. Reads and overwrites are naturally idempotent; increments, appends, and charges are not. The fix is an idempotency key the server records with the result, so a repeat returns the first outcome instead of doing the work again. Retries also need jitter, or they synchronise into a thundering herd.",
+    "feedback": "A relative update is not idempotent without a key to recognise it by.",
+    "practiceCode": "POST /accounts/7/balance  {\"add\": 10}",
+    "question": "What goes wrong when the client retries a timeout?",
+    "rule": "At-least-once delivery plus an idempotency key gives effectively-once behaviour.",
+    "success": "A duplicate request returns the original result and charges once.",
+    "summary": "A retry is only safe if the operation is idempotent.",
+    "task": "Make a non-idempotent endpoint safe to retry."
+  }
+}

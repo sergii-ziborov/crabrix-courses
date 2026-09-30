@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "dynamic-2d",
+    "categoryTitle": "2D & Advanced Dynamic Programming",
+    "complexity": "O(n*m) time · O(min(n,m)) space possible",
+    "difficulty": "medium",
+    "expectedAnswer": "3",
+    "idea": "Each state chooses insert, delete, or replace from adjacent smaller prefixes.",
+    "patternID": "edit-distance",
+    "rustSketch": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
+    "stage": "recognize",
+    "task": "Return Levenshtein distance.",
+    "useCases": "spell correction, fuzzy matching, sequence alignment",
+    "visibleInput": "horse -> ros"
+  },
+  "concept": "spell correction, fuzzy matching, sequence alignment",
+  "contentDigest": "d543cb5e29cd892d5dde3eeae63cd7dd79773557d0d37d13860f0e17e462ec76",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Each state chooses insert, delete, or replace from adjacent smaller prefixes.",
+        "direction": "previous",
+        "title": "Edit Distance: Mental Model"
+      },
+      {
+        "concept": "Return Levenshtein distance.",
+        "direction": "next",
+        "title": "Challenge: Edit Distance"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on spell correction, fuzzy matching, sequence alignment."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.edit-distance.recognize",
+  "minutes": 11,
+  "order": 10,
+  "parentID": "algorithms-dynamic-2d",
+  "title": "Edit Distance: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "spell correction, fuzzy matching, sequence alignment",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Edit Distance",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Edit Distance",
+    "explanation": "Reach for this pattern when the prompt contains spell correction, fuzzy matching, sequence alignment. Confirm that its assumptions actually hold, then compare O(n*m) time · O(min(n,m)) space possible with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: spell correction, fuzzy matching, sequence alignment.",
+    "practiceCode": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Edit Distance.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

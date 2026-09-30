@@ -1,0 +1,59 @@
+{
+  "concept": "Borrowed views into data",
+  "contentDigest": "f42ff56731868a01b00129e886eaf83b93d6693818f639343d1f6f85db5568fa",
+  "depth": {
+    "connections": [
+      {
+        "concept": "References and E0502",
+        "direction": "previous",
+        "title": "Borrowing"
+      },
+      {
+        "concept": "When a value duplicates instead of moving",
+        "direction": "next",
+        "title": "Copy & Clone"
+      }
+    ],
+    "correction": "A slice borrows a range; it allocates nothing.",
+    "misconception": "“A newly allocated String the caller owns”",
+    "traceSteps": [
+      {
+        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
+        "title": "Map ownership first"
+      },
+      {
+        "detail": "Return the first word as &str without allocating.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "The slice ends before the first space and stays tied to its input.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on borrowed views into data."
+  },
+  "exerciseKind": "planned",
+  "id": "slices",
+  "minutes": 8,
+  "order": 2,
+  "parentID": "ownership",
+  "title": "Slices",
+  "writing": {
+    "answers": [
+      "A newly allocated String the caller owns",
+      "A borrowed view tied to the input's lifetime",
+      "A copy of the first three bytes of the input"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "No allocation, and the result cannot outlive its input.",
+    "exampleCode": "fn first_word(text: &str) -> &str {\n    match text.find(' ') {\n        Some(i) => &text[..i],\n        None => text,\n    }\n}",
+    "explanation": "A slice stores a pointer and a length but owns nothing, so creating one allocates no memory. Because it borrows, the compiler will not let it outlive the String or array it points into, which rules out a dangling view.",
+    "feedback": "The returned &str borrows from text, so it cannot outlive it.",
+    "practiceCode": "fn first(text: &str) -> &str {\n    &text[..3]\n}",
+    "question": "What does that return type mean?",
+    "rule": "A slice borrows a range; it allocates nothing.",
+    "success": "The slice ends before the first space and stays tied to its input.",
+    "summary": "Slices are borrowed views into contiguous data.",
+    "task": "Return the first word as &str without allocating."
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "greedy-intervals",
+    "categoryTitle": "Greedy & Interval Methods",
+    "complexity": "O(n log n) time · O(n) space",
+    "difficulty": "hard",
+    "expectedAnswer": "142",
+    "idea": "Process jobs by deadline while a heap keeps only the best feasible set.",
+    "patternID": "deadline-scheduling",
+    "rustSketch": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "stage": "model",
+    "task": "Return maximum profit using one slot per time and deadlines 1-based.",
+    "useCases": "max reward under unit-time deadlines",
+    "visibleInput": "jobs=(d2,p100),(d1,p19),(d2,p27),(d1,p25),(d3,p15)"
+  },
+  "concept": "Process jobs by deadline while a heap keeps only the best feasible set.",
+  "contentDigest": "9e42c5f55ad9649fe2bbf8169e81e75e611c9a1f32d4685c58a7f655d0b2ba69",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Return partition lengths.",
+        "direction": "previous",
+        "title": "Challenge: Last-Occurrence Partition"
+      },
+      {
+        "concept": "max reward under unit-time deadlines",
+        "direction": "next",
+        "title": "Deadline Profit Scheduling: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(n log n) time · O(n) space bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on process jobs by deadline while a heap keeps only the best feasible set.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.deadline-scheduling.model",
+  "minutes": 15,
+  "order": 24,
+  "parentID": "algorithms-greedy-intervals",
+  "title": "Deadline Profit Scheduling: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(n log n) time · O(n) space",
+    "exampleCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "explanation": "Deadline Profit Scheduling belongs to Greedy & Interval Methods. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include max reward under unit-time deadlines.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(n log n) time · O(n) space bound without looking at the code.",
+    "summary": "Process jobs by deadline while a heap keeps only the best feasible set.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

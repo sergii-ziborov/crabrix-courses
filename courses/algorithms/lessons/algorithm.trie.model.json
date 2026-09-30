@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "strings-tries",
+    "categoryTitle": "Tries & String Matching",
+    "complexity": "O(total symbols) build · O(length) query",
+    "difficulty": "medium",
+    "expectedAnswer": "2",
+    "idea": "Store one edge per next symbol so shared prefixes occupy shared nodes.",
+    "patternID": "trie",
+    "rustSketch": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "stage": "model",
+    "task": "Insert the listed words and return how many begin with prefix.",
+    "useCases": "prefix lookup, autocomplete, dictionary traversal",
+    "visibleInput": "words=[crab,crate,rust] prefix=cr"
+  },
+  "concept": "Store one edge per next symbol so shared prefixes occupy shared nodes.",
+  "contentDigest": "090f537a2c2faafce3fa0dd6f1050f75a92adc2ec4b3df8725826a3086cdf998",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Return every start index of the pattern.",
+        "direction": "previous",
+        "title": "Challenge: Rabin–Karp"
+      },
+      {
+        "concept": "prefix lookup, autocomplete, dictionary traversal",
+        "direction": "next",
+        "title": "Prefix Trie: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(total symbols) build · O(length) query bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on store one edge per next symbol so shared prefixes occupy shared nodes.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.trie.model",
+  "minutes": 11,
+  "order": 18,
+  "parentID": "algorithms-strings-tries",
+  "title": "Prefix Trie: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(total symbols) build · O(length) query",
+    "exampleCode": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "explanation": "Prefix Trie belongs to Tries & String Matching. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include prefix lookup, autocomplete, dictionary traversal.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(total symbols) build · O(length) query bound without looking at the code.",
+    "summary": "Store one edge per next symbol so shared prefixes occupy shared nodes.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

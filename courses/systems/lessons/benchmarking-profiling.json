@@ -1,0 +1,54 @@
+{
+  "concept": "Find the real bottleneck before optimizing",
+  "contentDigest": "be970dec288d0d543e7e557956b53db874af57442bd8dc0b639bf62ef34d3e10",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Make an implementation promise other unsafe code relies on",
+        "direction": "previous",
+        "title": "Unsafe Traits"
+      }
+    ],
+    "correction": "A benchmark measures a stable workload; a profiler explains where its time or allocations go.",
+    "misconception": "“Rewrite the hot loop from intuition”",
+    "traceSteps": [
+      {
+        "detail": "Write down what callers may assume, what the compiler cannot prove, and which boundary is responsible for preserving soundness or cost.",
+        "title": "State the invariant"
+      },
+      {
+        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Create the smallest counterexample that violates the sample's invariant, then repair the abstraction boundary instead of hiding the symptom. Keep the focus on find the real bottleneck before optimizing."
+  },
+  "exerciseKind": "planned",
+  "id": "benchmarking-profiling",
+  "minutes": 11,
+  "order": 3,
+  "parentID": "unsafe-engineering",
+  "title": "Benchmark & Profile",
+  "writing": {
+    "answers": [
+      "Measure a workload",
+      "Rewrite the hot loop from intuition",
+      "Raise opt-level blindly"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCode": "let start = std::time::Instant::now();\nlet answer = workload();\nstd::hint::black_box(answer);\nprintln!(\"{:?}\", start.elapsed());",
+    "explanation": "A benchmark measures a stable workload; a profiler explains where its time or allocations go. Change one variable, protect against optimized-away work, and compare distributions rather than one lucky run.",
+    "feedback": "Correct: Measure a workload.",
+    "practiceCode": "let start = std::time::Instant::now();\nlet answer = workload();\nstd::hint::black_box(answer);\nprintln!(\"{:?}\", start.elapsed());",
+    "question": "What should happen before optimization?",
+    "rule": "A benchmark measures a stable workload; a profiler explains where its time or allocations go.",
+    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "summary": "Find the real bottleneck before optimizing.",
+    "task": "Trace the example, name the guarantee, and identify where it ends."
+  }
+}

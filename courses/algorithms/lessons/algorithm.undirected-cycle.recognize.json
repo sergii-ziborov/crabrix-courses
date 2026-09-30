@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "graph-traversal",
+    "categoryTitle": "DFS, BFS & Graph Traversal",
+    "complexity": "O(V+E) time · O(V) space",
+    "difficulty": "medium",
+    "expectedAnswer": "true",
+    "idea": "During traversal ignore the edge back to the parent; any other seen neighbor closes a cycle.",
+    "patternID": "undirected-cycle",
+    "rustSketch": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "stage": "recognize",
+    "task": "Return true when the undirected graph contains a cycle.",
+    "useCases": "valid-tree checks and redundant connections",
+    "visibleInput": "edges=(0,1),(1,2),(2,0),(2,3)"
+  },
+  "concept": "valid-tree checks and redundant connections",
+  "contentDigest": "f9accaae363e0c7a1b7459a5e917cf6aa06b21c5e67837c05918e7d4bc6da103",
+  "depth": {
+    "connections": [
+      {
+        "concept": "During traversal ignore the edge back to the parent; any other seen neighbor closes a cycle.",
+        "direction": "previous",
+        "title": "Undirected Cycle Detection: Mental Model"
+      },
+      {
+        "concept": "Return true when the undirected graph contains a cycle.",
+        "direction": "next",
+        "title": "Challenge: Undirected Cycle Detection"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on valid-tree checks and redundant connections."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.undirected-cycle.recognize",
+  "minutes": 11,
+  "order": 19,
+  "parentID": "algorithms-graph-traversal",
+  "title": "Undirected Cycle Detection: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "valid-tree checks and redundant connections",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Undirected Cycle Detection",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Undirected Cycle Detection",
+    "explanation": "Reach for this pattern when the prompt contains valid-tree checks and redundant connections. Confirm that its assumptions actually hold, then compare O(V+E) time · O(V) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: valid-tree checks and redundant connections.",
+    "practiceCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Undirected Cycle Detection.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "concept": "Why references stay valid",
+  "contentDigest": "c395597cbbebc91f680d8430a58d90c246d776b7b08b15859ab07aaf0bb27819",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Deterministic cleanup without a GC",
+        "direction": "previous",
+        "title": "Drop & Scope"
+      },
+      {
+        "concept": "Reusable types and functions",
+        "direction": "next",
+        "title": "Generics"
+      }
+    ],
+    "correction": "A lifetime annotation relates borrows; it never extends one.",
+    "misconception": "“A &str return always needs an annotation”",
+    "traceSteps": [
+      {
+        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
+        "title": "Map ownership first"
+      },
+      {
+        "detail": "Describe which input borrow a returned reference may depend on.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "No returned reference can outlive the data it points into.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on why references stay valid."
+  },
+  "exerciseKind": "planned",
+  "id": "lifetimes-intro",
+  "minutes": 10,
+  "order": 5,
+  "parentID": "ownership",
+  "title": "Lifetime Intuition",
+  "writing": {
+    "answers": [
+      "Two inputs mean the compiler cannot tell which one the result borrows from",
+      "A &str return always needs an annotation",
+      "Every function that borrows must annotate its lifetimes"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "One name ties the result to both inputs.",
+    "exampleCode": "fn longest<'a>(\n    left: &'a str,\n    right: &'a str,\n) -> &'a str {\n    if left.len() > right.len() {\n        left\n    } else {\n        right\n    }\n}",
+    "explanation": "An annotation does not change how long anything lives. It tells the compiler how input and output borrows are connected, so it can prove a returned reference never outlives the data behind it. Most of the time inference handles this and you write nothing at all.",
+    "feedback": "With one input reference it is inferred; with two the relationship must be stated.",
+    "practiceCode": "fn pick(a: &str, b: &str) -> &str {\n    if a.len() > b.len() { a } else { b }\n}",
+    "question": "Why does that need an annotation?",
+    "rule": "A lifetime annotation relates borrows; it never extends one.",
+    "success": "No returned reference can outlive the data it points into.",
+    "summary": "Lifetimes describe relationships between references, not timers.",
+    "task": "Describe which input borrow a returned reference may depend on."
+  }
+}

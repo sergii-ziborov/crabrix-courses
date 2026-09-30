@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "strings-tries",
+    "categoryTitle": "Tries & String Matching",
+    "complexity": "O(n) time · O(alphabet) space",
+    "difficulty": "easy",
+    "expectedAnswer": "w",
+    "idea": "Count the text unit the problem defines: bytes, Unicode scalar values, or grapheme clusters.",
+    "patternID": "string-frequency",
+    "rustSketch": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "stage": "recognize",
+    "task": "Return the first non-repeated ASCII character.",
+    "useCases": "anagrams, inventory, first unique symbol",
+    "visibleInput": "swiss"
+  },
+  "concept": "anagrams, inventory, first unique symbol",
+  "contentDigest": "64f2cf9059568c581f2be9869b384e23d7079262cdd1aa338ecfd6ffae646fc6",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Count the text unit the problem defines: bytes, Unicode scalar values, or grapheme clusters.",
+        "direction": "previous",
+        "title": "Character Frequency: Mental Model"
+      },
+      {
+        "concept": "Return the first non-repeated ASCII character.",
+        "direction": "next",
+        "title": "Challenge: Character Frequency"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on anagrams, inventory, first unique symbol."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.string-frequency.recognize",
+  "minutes": 8,
+  "order": 1,
+  "parentID": "algorithms-strings-tries",
+  "title": "Character Frequency: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "anagrams, inventory, first unique symbol",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Character Frequency",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Character Frequency",
+    "explanation": "Reach for this pattern when the prompt contains anagrams, inventory, first unique symbol. Confirm that its assumptions actually hold, then compare O(n) time · O(alphabet) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: anagrams, inventory, first unique symbol.",
+    "practiceCode": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Character Frequency.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

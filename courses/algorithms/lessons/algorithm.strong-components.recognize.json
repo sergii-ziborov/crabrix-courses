@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "graph-traversal",
+    "categoryTitle": "DFS, BFS & Graph Traversal",
+    "complexity": "O(V+E) time · O(V) space",
+    "difficulty": "hard",
+    "expectedAnswer": "0,1,2;3,4",
+    "idea": "Use finish order plus reversed edges, or low links, to collapse mutual reachability.",
+    "patternID": "strong-components",
+    "rustSketch": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "stage": "recognize",
+    "task": "Return strongly connected components with sorted members.",
+    "useCases": "dependency cycles, graph condensation, state machines",
+    "visibleInput": "edges=0->1,1->2,2->0,2->3,3->4,4->3"
+  },
+  "concept": "dependency cycles, graph condensation, state machines",
+  "contentDigest": "1de196cc69a4e17959cfdfe941638ca8628b0f21d88451fc126959e1a7105698",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Use finish order plus reversed edges, or low links, to collapse mutual reachability.",
+        "direction": "previous",
+        "title": "Strongly Connected Components: Mental Model"
+      },
+      {
+        "concept": "Return strongly connected components with sorted members.",
+        "direction": "next",
+        "title": "Challenge: Strongly Connected Components"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on dependency cycles, graph condensation, state machines."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.strong-components.recognize",
+  "minutes": 15,
+  "order": 28,
+  "parentID": "algorithms-graph-traversal",
+  "title": "Strongly Connected Components: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "dependency cycles, graph condensation, state machines",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Strongly Connected Components",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Strongly Connected Components",
+    "explanation": "Reach for this pattern when the prompt contains dependency cycles, graph condensation, state machines. Confirm that its assumptions actually hold, then compare O(V+E) time · O(V) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: dependency cycles, graph condensation, state machines.",
+    "practiceCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Strongly Connected Components.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

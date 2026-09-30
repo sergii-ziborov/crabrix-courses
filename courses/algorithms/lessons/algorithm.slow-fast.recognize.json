@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "two-pointers",
+    "categoryTitle": "Two Pointers",
+    "complexity": "O(n) time · O(1) space",
+    "difficulty": "easy",
+    "expectedAnswer": "16",
+    "idea": "Advance pointers at different rates so relative motion reveals a midpoint or cycle.",
+    "patternID": "slow-fast",
+    "rustSketch": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
+    "stage": "recognize",
+    "task": "Return the middle value; for even length choose the second middle.",
+    "useCases": "linked-list middle, cycle detection, repeated transitions",
+    "visibleInput": "[4,8,15,16,23,42]"
+  },
+  "concept": "linked-list middle, cycle detection, repeated transitions",
+  "contentDigest": "2832c1dea43942deb1ab160b66dcaf08cb1e30a1ee935e5c119e582d4bd6aa4d",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Advance pointers at different rates so relative motion reveals a midpoint or cycle.",
+        "direction": "previous",
+        "title": "Slow/Fast Pointers: Mental Model"
+      },
+      {
+        "concept": "Return the middle value; for even length choose the second middle.",
+        "direction": "next",
+        "title": "Challenge: Slow/Fast Pointers"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on linked-list middle, cycle detection, repeated transitions."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.slow-fast.recognize",
+  "minutes": 8,
+  "order": 7,
+  "parentID": "algorithms-two-pointers",
+  "title": "Slow/Fast Pointers: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "linked-list middle, cycle detection, repeated transitions",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Slow/Fast Pointers",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Slow/Fast Pointers",
+    "explanation": "Reach for this pattern when the prompt contains linked-list middle, cycle detection, repeated transitions. Confirm that its assumptions actually hold, then compare O(n) time · O(1) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: linked-list middle, cycle detection, repeated transitions.",
+    "practiceCode": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Slow/Fast Pointers.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

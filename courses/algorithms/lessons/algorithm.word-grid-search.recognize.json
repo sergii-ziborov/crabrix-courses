@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "backtracking",
+    "categoryTitle": "Backtracking & Exhaustive Search",
+    "complexity": "O(rows*cols*4^L) worst · O(L) depth",
+    "difficulty": "medium",
+    "expectedAnswer": "true",
+    "idea": "Walk matching neighbors while temporarily marking the current cell unavailable in this path.",
+    "patternID": "word-grid-search",
+    "rustSketch": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
+    "stage": "recognize",
+    "task": "Return true when the word can be traced without reusing a cell.",
+    "useCases": "path spelling and local grid constraints",
+    "visibleInput": "grid=ABCE,SFCS,ADEE word=ABCCED"
+  },
+  "concept": "path spelling and local grid constraints",
+  "contentDigest": "f8be0041464a871f71e2246dccac4e94b734506b8c307602eac52038f5d37d9d",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Walk matching neighbors while temporarily marking the current cell unavailable in this path.",
+        "direction": "previous",
+        "title": "Grid Word Search: Mental Model"
+      },
+      {
+        "concept": "Return true when the word can be traced without reusing a cell.",
+        "direction": "next",
+        "title": "Challenge: Grid Word Search"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on path spelling and local grid constraints."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.word-grid-search.recognize",
+  "minutes": 11,
+  "order": 16,
+  "parentID": "algorithms-backtracking",
+  "title": "Grid Word Search: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "path spelling and local grid constraints",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Grid Word Search",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Grid Word Search",
+    "explanation": "Reach for this pattern when the prompt contains path spelling and local grid constraints. Confirm that its assumptions actually hold, then compare O(rows*cols*4^L) worst · O(L) depth with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: path spelling and local grid constraints.",
+    "practiceCode": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Grid Word Search.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

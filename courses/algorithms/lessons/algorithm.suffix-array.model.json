@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "strings-tries",
+    "categoryTitle": "Tries & String Matching",
+    "complexity": "O(n log^2 n) simple · O(n log n) tuned",
+    "difficulty": "hard",
+    "expectedAnswer": "5,3,1,0,4,2",
+    "idea": "Sort suffix ranks by doubling compared prefix length until every suffix has a unique rank.",
+    "patternID": "suffix-array",
+    "rustSketch": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "stage": "model",
+    "task": "Return suffix starting indexes in lexicographic order.",
+    "useCases": "substring order, repeated substrings, offline text indexes",
+    "visibleInput": "banana"
+  },
+  "concept": "Sort suffix ranks by doubling compared prefix length until every suffix has a unique rank.",
+  "contentDigest": "1e3650bd2f48bbc61751d98921058f4c45b6ec90292cb8137969b933d01c4385",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Return matched pattern count including overlaps.",
+        "direction": "previous",
+        "title": "Challenge: Aho–Corasick"
+      },
+      {
+        "concept": "substring order, repeated substrings, offline text indexes",
+        "direction": "next",
+        "title": "Suffix Array: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(n log^2 n) simple · O(n log n) tuned bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on sort suffix ranks by doubling compared prefix length until every suffix has a unique rank.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.suffix-array.model",
+  "minutes": 15,
+  "order": 24,
+  "parentID": "algorithms-strings-tries",
+  "title": "Suffix Array: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(n log^2 n) simple · O(n log n) tuned",
+    "exampleCode": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "explanation": "Suffix Array belongs to Tries & String Matching. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include substring order, repeated substrings, offline text indexes.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(n log^2 n) simple · O(n log n) tuned bound without looking at the code.",
+    "summary": "Sort suffix ranks by doubling compared prefix length until every suffix has a unique rank.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

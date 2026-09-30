@@ -1,0 +1,59 @@
+{
+  "concept": "Leftmost prefix and write cost",
+  "contentDigest": "8c74669a9ba371a8e81f759f07874fb4a3ea650153572801ee8a71c1f6a1e52e",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Which anomaly each level allows",
+        "direction": "previous",
+        "title": "Transactions and Isolation"
+      },
+      {
+        "concept": "What happens during a partition",
+        "direction": "next",
+        "title": "CAP in Practice"
+      }
+    ],
+    "correction": "A composite index serves the leftmost prefix of its columns, nothing else.",
+    "misconception": "“Yes — both columns appear in the index”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Explain why a composite index helps one query and not another.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can state the leftmost-prefix rule and the write-side cost.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on leftmost prefix and write cost."
+  },
+  "exerciseKind": "planned",
+  "id": "q-indexes",
+  "minutes": 11,
+  "order": 1,
+  "parentID": "interview-data",
+  "title": "Indexes and B-trees",
+  "writing": {
+    "answers": [
+      "Yes — both columns appear in the index",
+      "No — tenant_id is the leftmost column and is not filtered",
+      "Only if created_at is indexed on its own"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "The column order in the index decides which queries it serves.",
+    "exampleCode": "CREATE INDEX ON orders (customer_id, created_at);\n\n-- uses it\nWHERE customer_id = 7\n-- does not\nWHERE created_at > now() - interval '1 day'",
+    "explanation": "A B-tree index turns a full scan into a logarithmic descent, which is why the leftmost-prefix rule matters: an index on (a, b) helps a query filtering on a, and on a and b, but not one filtering only on b. Every index also has to be maintained on write, so a table with ten indexes is a slow table to insert into.",
+    "feedback": "Skipping the leading column means the sorted order no longer helps.",
+    "practiceCode": "CREATE INDEX ON events (tenant_id, kind, at);\nWHERE kind = 'click' AND at > $1",
+    "question": "Does that query use the index?",
+    "rule": "A composite index serves the leftmost prefix of its columns, nothing else.",
+    "success": "You can state the leftmost-prefix rule and the write-side cost.",
+    "summary": "An index is a sorted structure that trades write cost for read speed.",
+    "task": "Explain why a composite index helps one query and not another."
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "concept": "Propagation and custom errors",
+  "contentDigest": "71e2589ab79e07829ddc1625e4352c03ff5b30f1493cb95031096f139e63ea27",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Unit and integration tests",
+        "direction": "previous",
+        "title": "Testing"
+      },
+      {
+        "concept": "crates.io, SemVer, and features",
+        "direction": "next",
+        "title": "Dependencies"
+      }
+    ],
+    "correction": "Panic for a bug; Result for a situation the caller can act on.",
+    "misconception": "“Returns an empty string on failure”",
+    "traceSteps": [
+      {
+        "detail": "Separate source modules, public API, manifest data, dependency graph, and build evidence before changing any one of them.",
+        "title": "Map the project boundary"
+      },
+      {
+        "detail": "Replace a panic with a Result and propagate it through one caller.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "The caller handles the failure without losing its cause.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Move one responsibility across a module or package boundary without changing behaviour. Predict which imports, tests, or lock data must change. Keep the focus on propagation and custom errors."
+  },
+  "exerciseKind": "planned",
+  "id": "errors",
+  "minutes": 11,
+  "order": 2,
+  "parentID": "projects",
+  "title": "Error Design",
+  "writing": {
+    "answers": [
+      "Returns an empty string on failure",
+      "Ends the process, removing any chance to recover",
+      "Logs a warning and carries on with a default"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "? propagates the failure instead of ending the process.",
+    "exampleCode": "fn load(\n    path: &str,\n) -> Result<String, std::io::Error> {\n    let text = std::fs::read_to_string(path)?;\n    Ok(text)\n}",
+    "explanation": "Result, custom error types, and ? separate expected failure from programmer mistakes. A panic says this should never happen; a Result says the caller has a decision to make — and conflating the two is what makes error handling painful later.",
+    "feedback": "Returning Result hands the decision to whoever knows what to do.",
+    "practiceCode": "fn read(path: &str) -> String {\n    std::fs::read_to_string(path).unwrap()\n}",
+    "question": "What does unwrap do to a caller here?",
+    "rule": "Panic for a bug; Result for a situation the caller can act on.",
+    "success": "The caller handles the failure without losing its cause.",
+    "summary": "Good errors preserve context and keep recovery near the caller.",
+    "task": "Replace a panic with a Result and propagate it through one caller."
+  }
+}

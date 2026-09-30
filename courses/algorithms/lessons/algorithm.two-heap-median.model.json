@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "heaps-streaming",
+    "categoryTitle": "Heaps & Streaming",
+    "complexity": "O(log n) insert · O(1) median · O(n) space",
+    "difficulty": "hard",
+    "expectedAnswer": "5,3.5,5,4.5",
+    "idea": "Keep the lower half in a max-heap and upper half in a min-heap with sizes differing by at most one.",
+    "patternID": "two-heap-median",
+    "rustSketch": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "stage": "model",
+    "task": "Return medians after inserting 5, 2, 10, 4.",
+    "useCases": "online medians and percentile pivots",
+    "visibleInput": "[5,2,10,4]"
+  },
+  "concept": "Keep the lower half in a max-heap and upper half in a min-heap with sizes differing by at most one.",
+  "contentDigest": "905ac8571a8b054ed1e5714be89d8683d8ec869a7d2ea73ac6bd4a157f3c6f5a",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Return the two points closest to the origin, ordered by distance then coordinates.",
+        "direction": "previous",
+        "title": "Challenge: Bounded Heap for K Closest"
+      },
+      {
+        "concept": "online medians and percentile pivots",
+        "direction": "next",
+        "title": "Median from Two Heaps: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(log n) insert · O(1) median · O(n) space bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on keep the lower half in a max-heap and upper half in a min-heap with sizes differing by at most one.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.two-heap-median.model",
+  "minutes": 15,
+  "order": 15,
+  "parentID": "algorithms-heaps-streaming",
+  "title": "Median from Two Heaps: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(log n) insert · O(1) median · O(n) space",
+    "exampleCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "explanation": "Median from Two Heaps belongs to Heaps & Streaming. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include online medians and percentile pivots.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(log n) insert · O(1) median · O(n) space bound without looking at the code.",
+    "summary": "Keep the lower half in a max-heap and upper half in a min-heap with sizes differing by at most one.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

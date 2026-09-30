@@ -1,0 +1,59 @@
+{
+  "concept": "String, &str, chars, and bytes",
+  "contentDigest": "b52bb3ab272e6d79b11e10c04098a0757651aa8e041f459dedbb0774c7e29e31",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Vec, String, and HashMap",
+        "direction": "previous",
+        "title": "Collections"
+      },
+      {
+        "concept": "Destructuring, guards, and bindings",
+        "direction": "next",
+        "title": "Pattern Matching"
+      }
+    ],
+    "correction": "len() is bytes; use .chars() when you mean characters.",
+    "misconception": "“word.len()”",
+    "traceSteps": [
+      {
+        "detail": "Name each value's type and starting value, then mark the expression that produces the lesson's result.",
+        "title": "Inventory the values"
+      },
+      {
+        "detail": "Count characters rather than bytes in a string with an accent.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "The count matches what a reader would say out loud.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change one value, type, or boundary in the sample. Write the exact stdout or diagnostic you expect before asking rustc. Keep the focus on string, &str, chars, and bytes."
+  },
+  "exerciseKind": "planned",
+  "id": "strings",
+  "minutes": 10,
+  "order": 4,
+  "parentID": "modeling",
+  "title": "Strings & UTF-8",
+  "writing": {
+    "answers": [
+      "word.len()",
+      "word.chars().count()",
+      "word.bytes().len()"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Bytes and characters are different counts, and Rust makes you pick.",
+    "exampleCode": "let text = String::from(\"café\");\nprintln!(\"bytes {}\", text.len());          // 5\nprintln!(\"chars {}\", text.chars().count()); // 4\n\nfor (index, ch) in text.char_indices() {\n    println!(\"{index} {ch}\");\n}",
+    "explanation": "String owns a growable UTF-8 buffer and &str borrows one. Because a character can be several bytes, s[0] is not allowed at all: you choose .bytes(), .chars(), or a byte range you know lands on a boundary. That refusal is the point — it makes an entire class of encoding bug impossible.",
+    "feedback": "len() reports UTF-8 bytes, which is larger than the character count here.",
+    "practiceCode": "let word = \"naïve\";\nlet length = word.???;",
+    "question": "Which gives the number of characters?",
+    "rule": "len() is bytes; use .chars() when you mean characters.",
+    "success": "The count matches what a reader would say out loud.",
+    "summary": "Rust strings are UTF-8, so there is no cheap index by character.",
+    "task": "Count characters rather than bytes in a string with an accent."
+  }
+}

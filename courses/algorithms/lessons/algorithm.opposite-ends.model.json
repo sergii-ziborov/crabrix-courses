@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "two-pointers",
+    "categoryTitle": "Two Pointers",
+    "complexity": "O(n) time · O(1) space",
+    "difficulty": "easy",
+    "expectedAnswer": "true",
+    "idea": "Move inward from both ends when ordering tells which side cannot improve.",
+    "patternID": "opposite-ends",
+    "rustSketch": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
+    "stage": "model",
+    "task": "Return true if the sorted values contain a pair summing to 10.",
+    "useCases": "sorted pairs, symmetry, boundary comparisons",
+    "visibleInput": "[1,2,4,6,9]"
+  },
+  "concept": "Move inward from both ends when ordering tells which side cannot improve.",
+  "contentDigest": "9581eb2407ff2c419b37e389970401fe958cd469ee2d534a7c1aabfd97726646",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Build range minimum, apply the point update, then query the inclusive range.",
+        "direction": "previous",
+        "title": "Challenge: Segment Tree"
+      },
+      {
+        "concept": "sorted pairs, symmetry, boundary comparisons",
+        "direction": "next",
+        "title": "Opposite-End Pointers: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(n) time · O(1) space bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on move inward from both ends when ordering tells which side cannot improve.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.opposite-ends.model",
+  "minutes": 8,
+  "order": 0,
+  "parentID": "algorithms-two-pointers",
+  "title": "Opposite-End Pointers: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(n) time · O(1) space",
+    "exampleCode": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
+    "explanation": "Opposite-End Pointers belongs to Two Pointers. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include sorted pairs, symmetry, boundary comparisons.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(n) time · O(1) space bound without looking at the code.",
+    "summary": "Move inward from both ends when ordering tells which side cannot improve.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

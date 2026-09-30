@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "hashing",
+    "categoryTitle": "Hash Maps & Sets",
+    "complexity": "O(n) expected time · O(1) rolling state",
+    "difficulty": "hard",
+    "expectedAnswer": "11",
+    "idea": "Update a window hash by removing the outgoing contribution and adding the incoming one.",
+    "patternID": "rolling-fingerprint",
+    "rustSketch": "use std::collections::HashMap;\nfn counts(values: &[i32]) -> HashMap<i32, usize> {\n    let mut map = HashMap::new();\n    for &value in values { *map.entry(value).or_insert(0) += 1; }\n    map\n}",
+    "stage": "model",
+    "task": "Using base 10 and modulus 101, return the hash of digits 3,1,4.",
+    "useCases": "substring search, duplicate blocks, content fingerprints",
+    "visibleInput": "digits=[3,1,4]"
+  },
+  "concept": "Update a window hash by removing the outgoing contribution and adding the incoming one.",
+  "contentDigest": "9b468c5fff174f17822ed73c174908f01b2a49f0c1b704ce64d74181970b4275",
+  "depth": {
+    "connections": [
+      {
+        "concept": "After add 4, add 9, remove 4, add 7, return the dense storage in any valid order shown sorted.",
+        "direction": "previous",
+        "title": "Challenge: Indexed Randomized Set"
+      },
+      {
+        "concept": "substring search, duplicate blocks, content fingerprints",
+        "direction": "next",
+        "title": "Rolling Fingerprint: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(n) expected time · O(1) rolling state bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on update a window hash by removing the outgoing contribution and adding the incoming one.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.rolling-fingerprint.model",
+  "minutes": 15,
+  "order": 27,
+  "parentID": "algorithms-hashing",
+  "title": "Rolling Fingerprint: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(n) expected time · O(1) rolling state",
+    "exampleCode": "use std::collections::HashMap;\nfn counts(values: &[i32]) -> HashMap<i32, usize> {\n    let mut map = HashMap::new();\n    for &value in values { *map.entry(value).or_insert(0) += 1; }\n    map\n}",
+    "explanation": "Rolling Fingerprint belongs to Hash Maps & Sets. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include substring search, duplicate blocks, content fingerprints.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "use std::collections::HashMap;\nfn counts(values: &[i32]) -> HashMap<i32, usize> {\n    let mut map = HashMap::new();\n    for &value in values { *map.entry(value).or_insert(0) += 1; }\n    map\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(n) expected time · O(1) rolling state bound without looking at the code.",
+    "summary": "Update a window hash by removing the outgoing contribution and adding the incoming one.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

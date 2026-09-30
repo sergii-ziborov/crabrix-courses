@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "two-pointers",
+    "categoryTitle": "Two Pointers",
+    "complexity": "O(n) time · O(1) space",
+    "difficulty": "easy",
+    "expectedAnswer": "7,5,9",
+    "idea": "Let a read pointer inspect every item while a write pointer marks the kept prefix.",
+    "patternID": "same-direction",
+    "rustSketch": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
+    "stage": "recognize",
+    "task": "Remove values below 5 stably and return the kept prefix.",
+    "useCases": "stable filtering, deduplication, in-place transforms",
+    "visibleInput": "[7,2,5,4,9]"
+  },
+  "concept": "stable filtering, deduplication, in-place transforms",
+  "contentDigest": "edf56241bf2a9e11e3cc088e9275bff6e3c19b530343c8fa9f2cf0a0de90b4b8",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Let a read pointer inspect every item while a write pointer marks the kept prefix.",
+        "direction": "previous",
+        "title": "Same-Direction Pointers: Mental Model"
+      },
+      {
+        "concept": "Remove values below 5 stably and return the kept prefix.",
+        "direction": "next",
+        "title": "Challenge: Same-Direction Pointers"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on stable filtering, deduplication, in-place transforms."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.same-direction.recognize",
+  "minutes": 8,
+  "order": 4,
+  "parentID": "algorithms-two-pointers",
+  "title": "Same-Direction Pointers: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "stable filtering, deduplication, in-place transforms",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Same-Direction Pointers",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Same-Direction Pointers",
+    "explanation": "Reach for this pattern when the prompt contains stable filtering, deduplication, in-place transforms. Confirm that its assumptions actually hold, then compare O(n) time · O(1) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: stable filtering, deduplication, in-place transforms.",
+    "practiceCode": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Same-Direction Pointers.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "concept": "join, select, and cancellation",
+  "contentDigest": "405d0aae4c73f285fe6f8be8d6f8a83f6b49cd988aef803017902129c92180fe",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Why async needs an executor",
+        "direction": "previous",
+        "title": "Runtimes"
+      },
+      {
+        "concept": "Borrow local data while threads are guaranteed to join",
+        "direction": "next",
+        "title": "Scoped Threads"
+      }
+    ],
+    "correction": "Dropping a future cancels it at its last await point.",
+    "misconception": "“Nothing — two awaits already overlap by default”",
+    "traceSteps": [
+      {
+        "detail": "Name each task or thread, the state it can reach, and every point where work can wait, race, block, or be cancelled.",
+        "title": "Draw the event timeline"
+      },
+      {
+        "detail": "Run two independent awaits concurrently rather than in sequence.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "Total time is the slower of the two, not their sum.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Add a second worker or cancellation point. Draw two possible event orders and state the invariant that both orders must preserve. Keep the focus on join, select, and cancellation."
+  },
+  "exerciseKind": "planned",
+  "id": "async-patterns",
+  "minutes": 12,
+  "order": 2,
+  "parentID": "async",
+  "title": "Async Patterns",
+  "writing": {
+    "answers": [
+      "Nothing — two awaits already overlap by default",
+      "They run one after the other, so the waits add up",
+      "await cannot appear twice in one function"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "join overlaps the waits instead of adding them up.",
+    "exampleCode": "use tokio::join;\n\nasync fn load_user() -> &'static str { \"ada\" }\nasync fn load_orders() -> usize { 3 }\n\nasync fn run() {\n    let (user, orders) =\n        join!(load_user(), load_orders());\n    println!(\"{user} has {orders} orders\");\n}",
+    "explanation": "join runs futures at the same time and waits for all of them; select takes whichever finishes first. Dropping a future cancels it at its last await point, which is a real advantage over threads — but it means anything that must not be interrupted needs to be written with that in mind.",
+    "feedback": "Sequential awaits serialise work that could have overlapped.",
+    "practiceCode": "let a = load_user().await;\nlet b = load_orders().await;",
+    "question": "What is wrong with that if the two are independent?",
+    "rule": "Dropping a future cancels it at its last await point.",
+    "success": "Total time is the slower of the two, not their sum.",
+    "summary": "Concurrency inside one task comes from combinators, not threads.",
+    "task": "Run two independent awaits concurrently rather than in sequence."
+  }
+}

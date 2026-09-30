@@ -1,0 +1,59 @@
+{
+  "concept": "Move one field while borrowing another",
+  "contentDigest": "bc70af968dde5bfe99699fe24b3ca4c8a1b166e4429bd10a17222434afa28b06",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Lend access without consuming the original reference",
+        "direction": "previous",
+        "title": "Reborrowing"
+      },
+      {
+        "concept": "Move a checked borrow rule to runtime",
+        "direction": "next",
+        "title": "Interior Mutability"
+      }
+    ],
+    "correction": "Destructuring can move an owned field and copy or borrow the rest.",
+    "misconception": "“level borrowed it”",
+    "traceSteps": [
+      {
+        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
+        "title": "Map ownership first"
+      },
+      {
+        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on move one field while borrowing another."
+  },
+  "exerciseKind": "planned",
+  "id": "partial-moves",
+  "minutes": 10,
+  "order": 3,
+  "parentID": "ownership-practice",
+  "title": "Partial Moves",
+  "writing": {
+    "answers": [
+      "It was moved",
+      "level borrowed it",
+      "Structs expire"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCode": "struct User {\n    name: String,\n    level: u8,\n}\nlet user = User {\n    name: \"Ada\".into(), level: 7,\n};\nlet name = user.name;\nprintln!(\"{}\", user.level);",
+    "explanation": "Destructuring can move an owned field and copy or borrow the rest. After a partial move the whole struct is unavailable, but fields that were not moved may still be used directly.",
+    "feedback": "Correct: It was moved.",
+    "practiceCode": "struct User {\n    name: String,\n    level: u8,\n}\nlet user = User {\n    name: \"Ada\".into(), level: 7,\n};\nlet name = user.name;\nprintln!(\"{}\", user.level);",
+    "question": "Why is user.name no longer available?",
+    "rule": "Destructuring can move an owned field and copy or borrow the rest.",
+    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "summary": "Move one field while borrowing another.",
+    "task": "Trace the example, name the guarantee, and identify where it ends."
+  }
+}

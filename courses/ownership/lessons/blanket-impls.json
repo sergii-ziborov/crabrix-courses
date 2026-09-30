@@ -1,0 +1,59 @@
+{
+  "concept": "Implement behavior for every matching type",
+  "contentDigest": "c0ad1aaba9ec467c7c5cb3220e1552bbf048659dba3e7bfe59309fd53dcd7cb2",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Choose behavior at runtime with dyn Trait",
+        "direction": "previous",
+        "title": "Trait Objects"
+      },
+      {
+        "concept": "Share behavior while allowing an override",
+        "direction": "next",
+        "title": "Default Trait Methods"
+      }
+    ],
+    "correction": "A generic impl can grant a trait to all types satisfying a bound.",
+    "misconception": "“Only String”",
+    "traceSteps": [
+      {
+        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
+        "title": "Map ownership first"
+      },
+      {
+        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on implement behavior for every matching type."
+  },
+  "exerciseKind": "planned",
+  "id": "blanket-impls",
+  "minutes": 10,
+  "order": 1,
+  "parentID": "abstraction-practice",
+  "title": "Blanket Implementations",
+  "writing": {
+    "answers": [
+      "Only String",
+      "Every Display type",
+      "Only local types"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCode": "trait Named { fn name(&self) -> String; }\nimpl<T: std::fmt::Display> Named for T {\n    fn name(&self) -> String {\n        self.to_string()\n    }\n}",
+    "explanation": "A generic impl can grant a trait to all types satisfying a bound. Blanket implementations are powerful because they shape which future implementations remain legal under coherence rules.",
+    "feedback": "Correct: Every Display type.",
+    "practiceCode": "trait Named { fn name(&self) -> String; }\nimpl<T: std::fmt::Display> Named for T {\n    fn name(&self) -> String {\n        self.to_string()\n    }\n}",
+    "question": "Who receives Named in this impl?",
+    "rule": "A generic impl can grant a trait to all types satisfying a bound.",
+    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "summary": "Implement behavior for every matching type.",
+    "task": "Trace the example, name the guarantee, and identify where it ends."
+  }
+}

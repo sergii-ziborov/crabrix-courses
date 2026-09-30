@@ -1,0 +1,59 @@
+{
+  "concept": "What happens during a partition",
+  "contentDigest": "5350caf4e34b87a73d97454e43871d0cdec7004e98929beb57353f2e27f94bef",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Leftmost prefix and write cost",
+        "direction": "previous",
+        "title": "Indexes and B-trees"
+      },
+      {
+        "concept": "Making at-least-once safe",
+        "direction": "next",
+        "title": "Idempotency and Retries"
+      }
+    ],
+    "correction": "Partitions are not optional; C versus A is what you choose when one happens.",
+    "misconception": "“Reject the write to stay strongly consistent”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Describe what your service should do to writes during a partition.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You give one concrete behaviour rather than restating the theorem.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on what happens during a partition."
+  },
+  "exerciseKind": "planned",
+  "id": "q-cap",
+  "minutes": 11,
+  "order": 2,
+  "parentID": "interview-data",
+  "title": "CAP in Practice",
+  "writing": {
+    "answers": [
+      "Reject the write to stay strongly consistent",
+      "Accept it and merge the divergent carts later",
+      "Fail the whole session"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "The quorum is where the choice is actually made.",
+    "exampleCode": "// 5 replicas, write quorum 3, read quorum 3.\n// 3 + 3 > 5, so a read sees the last write\n// and a minority partition cannot accept\n// writes at all.",
+    "explanation": "When the network splits you either refuse writes to stay consistent, or accept them and diverge. Everything else — quorums, leader election, eventual consistency, CRDTs — is a way of choosing where on that line to sit. Saying pick two is the answer that gets followed up; saying what your system does during a partition is the one that lands.",
+    "feedback": "Carts are merge-friendly, so availability is worth more than strictness.",
+    "practiceCode": "// Shopping cart, network split, user adds an item.",
+    "question": "Which behaviour usually fits a cart?",
+    "rule": "Partitions are not optional; C versus A is what you choose when one happens.",
+    "success": "You give one concrete behaviour rather than restating the theorem.",
+    "summary": "CAP is about what happens during a partition, not a menu of three.",
+    "task": "Describe what your service should do to writes during a partition."
+  }
+}

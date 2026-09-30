@@ -1,0 +1,59 @@
+{
+  "concept": "Make an implementation promise other unsafe code relies on",
+  "contentDigest": "24f128ab916b739bfb427f7c7d97d81a41cced08c03de8e80b66e5e8540f4893",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Make a data layout contract explicit at a boundary",
+        "direction": "previous",
+        "title": "Representation & Layout"
+      },
+      {
+        "concept": "Find the real bottleneck before optimizing",
+        "direction": "next",
+        "title": "Benchmark & Profile"
+      }
+    ],
+    "correction": "An unsafe trait means incorrect implementation can cause undefined behavior in code that trusts it.",
+    "misconception": "“Traits are unchecked”",
+    "traceSteps": [
+      {
+        "detail": "Write down what callers may assume, what the compiler cannot prove, and which boundary is responsible for preserving soundness or cost.",
+        "title": "State the invariant"
+      },
+      {
+        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Create the smallest counterexample that violates the sample's invariant, then repair the abstraction boundary instead of hiding the symptom. Keep the focus on make an implementation promise other unsafe code relies on."
+  },
+  "exerciseKind": "planned",
+  "id": "unsafe-traits",
+  "minutes": 13,
+  "order": 2,
+  "parentID": "unsafe-engineering",
+  "title": "Unsafe Traits",
+  "writing": {
+    "answers": [
+      "Callers rely on its promise",
+      "Traits are unchecked",
+      "It uses an array"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCode": "unsafe trait StableAddress {}\n\nstruct FixedBuffer([u8; 16]);\n// SAFETY: instances never expose moves.\nunsafe impl StableAddress for FixedBuffer {}",
+    "explanation": "An unsafe trait means incorrect implementation can cause undefined behavior in code that trusts it. Document every invariant precisely and keep the unsafe impl beside evidence that it holds.",
+    "feedback": "Correct: Callers rely on its promise.",
+    "practiceCode": "unsafe trait StableAddress {}\n\nstruct FixedBuffer([u8; 16]);\n// SAFETY: instances never expose moves.\nunsafe impl StableAddress for FixedBuffer {}",
+    "question": "Why must that Send impl be unsafe?",
+    "rule": "An unsafe trait means incorrect implementation can cause undefined behavior in code that trusts it.",
+    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "summary": "Make an implementation promise other unsafe code relies on.",
+    "task": "Trace the example, name the guarantee, and identify where it ends."
+  }
+}

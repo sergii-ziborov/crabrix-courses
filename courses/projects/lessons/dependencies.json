@@ -1,0 +1,59 @@
+{
+  "concept": "crates.io, SemVer, and features",
+  "contentDigest": "05da444599274979e5df80b720e1219cd16b40729a0d9587c86a15373a3f1e65",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Propagation and custom errors",
+        "direction": "previous",
+        "title": "Error Design"
+      },
+      {
+        "concept": "Many crates, one lockfile",
+        "direction": "next",
+        "title": "Workspaces"
+      }
+    ],
+    "correction": "\"1.2\" means >=1.2.0 and <2.0.0; the lockfile records what was actually chosen.",
+    "misconception": "“0.5.0”",
+    "traceSteps": [
+      {
+        "detail": "Separate source modules, public API, manifest data, dependency graph, and build evidence before changing any one of them.",
+        "title": "Map the project boundary"
+      },
+      {
+        "detail": "Add a dependency with an explicit feature and resolve it.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "Cargo.lock pins an exact version that satisfies the requirement.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Move one responsibility across a module or package boundary without changing behaviour. Predict which imports, tests, or lock data must change. Keep the focus on crates.io, semver, and features."
+  },
+  "exerciseKind": "planned",
+  "id": "dependencies",
+  "minutes": 10,
+  "order": 3,
+  "parentID": "projects",
+  "title": "Dependencies",
+  "writing": {
+    "answers": [
+      "0.5.0",
+      "0.4.9",
+      "1.0.0"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "A requirement, a feature set, and an opt-out of defaults.",
+    "exampleCode": "[dependencies]\nserde = { version = \"1\", features = [\"derive\"] }\nsmallvec = \"1\"\nmemchr = { version = \"2\", default-features = false }",
+    "explanation": "\"1.2\" means any 1.x at or above 1.2, because Cargo follows SemVer: patch and minor releases must stay compatible. The resolver picks the highest match and records the exact choice in Cargo.lock, and features let one crate ship optional pieces you opt into rather than paying for by default.",
+    "feedback": "Below 1.0 the minor number is the breaking one, so 0.4.x only.",
+    "practiceCode": "[dependencies]\nexample = \"0.4\"",
+    "question": "Which version can that requirement resolve to?",
+    "rule": "\"1.2\" means >=1.2.0 and <2.0.0; the lockfile records what was actually chosen.",
+    "success": "Cargo.lock pins an exact version that satisfies the requirement.",
+    "summary": "A dependency is a version requirement, not a fixed version.",
+    "task": "Add a dependency with an explicit feature and resolve it."
+  }
+}

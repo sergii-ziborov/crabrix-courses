@@ -1,0 +1,59 @@
+{
+  "concept": "Message passing with mpsc",
+  "contentDigest": "54cebf67a0663d45c5ef0338a2e9bd8fdbc1513fd2c1f793efee2133ab8f2a78",
+  "depth": {
+    "connections": [
+      {
+        "concept": "spawn, join, and move closures",
+        "direction": "previous",
+        "title": "Threads"
+      },
+      {
+        "concept": "Mutex, RwLock, and Arc",
+        "direction": "next",
+        "title": "Shared State"
+      }
+    ],
+    "correction": "The loop ends when the last sender is dropped.",
+    "misconception": "“A channel receiver loops forever by design”",
+    "traceSteps": [
+      {
+        "detail": "Name each task or thread, the state it can reach, and every point where work can wait, race, block, or be cancelled.",
+        "title": "Draw the event timeline"
+      },
+      {
+        "detail": "Send results from several threads to one collector.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "The receiving loop finishes without a sentinel value.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Add a second worker or cancellation point. Draw two possible event orders and state the invariant that both orders must preserve. Keep the focus on message passing with mpsc."
+  },
+  "exerciseKind": "planned",
+  "id": "channels",
+  "minutes": 11,
+  "order": 1,
+  "parentID": "threads",
+  "title": "Channels",
+  "writing": {
+    "answers": [
+      "A channel receiver loops forever by design",
+      "The original tx is still alive, so the channel never closes",
+      "The receiver has to be declared mut to iterate"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Ownership transfers with the message, so no lock is needed.",
+    "exampleCode": "use std::sync::mpsc;\nuse std::thread;\n\nlet (tx, rx) = mpsc::channel();\n\nfor id in 0..3 {\n    let tx = tx.clone();\n    thread::spawn(move || {\n        tx.send(format!(\"worker {id}\")).unwrap();\n    });\n}\ndrop(tx); // so the loop can end\n\nfor message in rx {\n    println!(\"{message}\");\n}",
+    "explanation": "An mpsc channel moves values from many producers to one consumer, and the move is what makes it safe — once sent, the sender no longer owns the value. The receiver iterates until every sender is dropped, so the loop ends on its own rather than needing a sentinel message.",
+    "feedback": "Every live sender keeps the channel open; drop the ones you do not use.",
+    "practiceCode": "let (tx, rx) = mpsc::channel();\nlet worker = tx.clone();\nfor message in rx { println!(\"{message}\"); }",
+    "question": "Why might that loop never end?",
+    "rule": "The loop ends when the last sender is dropped.",
+    "success": "The receiving loop finishes without a sentinel value.",
+    "summary": "Do not communicate by sharing memory; share memory by communicating.",
+    "task": "Send results from several threads to one collector."
+  }
+}

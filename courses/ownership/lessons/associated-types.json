@@ -1,0 +1,59 @@
+{
+  "concept": "One output type per implementation",
+  "contentDigest": "7e72919f768462a55b67c4b7618d02a34e1482caded621467a6528cb24a4f7c7",
+  "depth": {
+    "connections": [
+      {
+        "concept": "impl Iterator and the next method",
+        "direction": "previous",
+        "title": "Writing an Iterator"
+      },
+      {
+        "concept": "Add, Display, From, and Into",
+        "direction": "next",
+        "title": "Operator Traits"
+      }
+    ],
+    "correction": "Associated type: one impl per type. Generic parameter: many impls per type.",
+    "misconception": "“Never, associated types are always better”",
+    "traceSteps": [
+      {
+        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
+        "title": "Map ownership first"
+      },
+      {
+        "detail": "Give a trait an associated type and implement it once.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "Callers use the trait without naming the output type.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on one output type per implementation."
+  },
+  "exerciseKind": "planned",
+  "id": "associated-types",
+  "minutes": 11,
+  "order": 6,
+  "parentID": "abstraction",
+  "title": "Associated Types",
+  "writing": {
+    "answers": [
+      "Never, associated types are always better",
+      "When one type should implement the trait several times",
+      "Only for iterators"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "One implementation per type, so the output never has to be annotated.",
+    "exampleCode": "trait Container {\n    type Item;\n    fn get(&self, i: usize) -> Option<&Self::Item>;\n}\n\nstruct Bag { values: Vec<String> }\n\nimpl Container for Bag {\n    type Item = String;\n    fn get(&self, index: usize) -> Option<&String> {\n        self.values.get(index)\n    }\n}",
+    "explanation": "A generic parameter lets a type implement a trait many times; an associated type lets it implement it once with a chosen output. Iterator uses Item this way, which is why you write Iterator<Item = u32> rather than passing the element type at every call site.",
+    "feedback": "From<T> is generic precisely because a type converts from many others.",
+    "practiceCode": "trait Parser {\n    type Output;\n    fn parse(&self, input: &str) -> Self::Output;\n}",
+    "question": "When should you prefer a generic parameter instead?",
+    "rule": "Associated type: one impl per type. Generic parameter: many impls per type.",
+    "success": "Callers use the trait without naming the output type.",
+    "summary": "An associated type fixes one output type per implementation.",
+    "task": "Give a trait an associated type and implement it once."
+  }
+}

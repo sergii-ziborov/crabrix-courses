@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "graph-traversal",
+    "categoryTitle": "DFS, BFS & Graph Traversal",
+    "complexity": "O(V+E) time · O(V) space",
+    "difficulty": "medium",
+    "expectedAnswer": "true",
+    "idea": "During traversal ignore the edge back to the parent; any other seen neighbor closes a cycle.",
+    "patternID": "undirected-cycle",
+    "rustSketch": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "stage": "model",
+    "task": "Return true when the undirected graph contains a cycle.",
+    "useCases": "valid-tree checks and redundant connections",
+    "visibleInput": "edges=(0,1),(1,2),(2,0),(2,3)"
+  },
+  "concept": "During traversal ignore the edge back to the parent; any other seen neighbor closes a cycle.",
+  "contentDigest": "eb3472e4f9d464824d02cdf1c7d42f8094e516633172d96e8813460feb96dcfa",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Return whether the graph can be two-colored.",
+        "direction": "previous",
+        "title": "Challenge: Bipartite Coloring"
+      },
+      {
+        "concept": "valid-tree checks and redundant connections",
+        "direction": "next",
+        "title": "Undirected Cycle Detection: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(V+E) time · O(V) space bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on during traversal ignore the edge back to the parent; any other seen neighbor closes a cycle.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.undirected-cycle.model",
+  "minutes": 11,
+  "order": 18,
+  "parentID": "algorithms-graph-traversal",
+  "title": "Undirected Cycle Detection: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(V+E) time · O(V) space",
+    "exampleCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "explanation": "Undirected Cycle Detection belongs to DFS, BFS & Graph Traversal. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include valid-tree checks and redundant connections.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(V+E) time · O(V) space bound without looking at the code.",
+    "summary": "During traversal ignore the edge back to the parent; any other seen neighbor closes a cycle.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

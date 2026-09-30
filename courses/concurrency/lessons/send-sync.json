@@ -1,0 +1,59 @@
+{
+  "concept": "The traits behind thread safety",
+  "contentDigest": "2163f986474b5081738e15cbf3792a77194780d77816469714458162ff68694a",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Mutex, RwLock, and Arc",
+        "direction": "previous",
+        "title": "Shared State"
+      },
+      {
+        "concept": "async fn, await, and laziness",
+        "direction": "next",
+        "title": "Futures"
+      }
+    ],
+    "correction": "T is Sync exactly when &T is Send.",
+    "misconception": "“A closure is not allowed to capture a cell type”",
+    "traceSteps": [
+      {
+        "detail": "Name each task or thread, the state it can reach, and every point where work can wait, race, block, or be cancelled.",
+        "title": "Draw the event timeline"
+      },
+      {
+        "detail": "Name why one shared pointer crosses threads and the other does not.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the difference in terms of the count, not the API.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Add a second worker or cancellation point. Draw two possible event orders and state the invariant that both orders must preserve. Keep the focus on the traits behind thread safety."
+  },
+  "exerciseKind": "planned",
+  "id": "send-sync",
+  "minutes": 11,
+  "order": 3,
+  "parentID": "threads",
+  "title": "Send & Sync",
+  "writing": {
+    "answers": [
+      "RefCell is not Sync, and its runtime check is not atomic",
+      "A closure is not allowed to capture a cell type",
+      "borrow_mut needs an unsafe block to compile"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "The bound is what the thread API asks for, spelled out.",
+    "exampleCode": "fn spawn_it<F>(job: F)\nwhere\n    F: FnOnce() + Send + 'static,\n{\n    std::thread::spawn(job);\n}\n\n// Arc<i32> is Send + Sync, so this is accepted.\nlet value = std::sync::Arc::new(7);\nspawn_it(move || println!(\"{value}\"));",
+    "explanation": "Send means a value can be moved to another thread; Sync means &T can be shared with one. Both are inferred from a type's fields, so you rarely write them — but they are why Rc is rejected at compile time while Arc is accepted, and why a whole class of race is a type error.",
+    "feedback": "RefCell's borrow flag is not synchronised, so sharing it across threads is rejected.",
+    "practiceCode": "let cell = std::cell::RefCell::new(0);\nstd::thread::spawn(move || {\n    *cell.borrow_mut() += 1;\n});",
+    "question": "What stops that closure moving to a thread?",
+    "rule": "T is Sync exactly when &T is Send.",
+    "success": "You can explain the difference in terms of the count, not the API.",
+    "summary": "Two auto traits decide what may cross a thread boundary.",
+    "task": "Name why one shared pointer crosses threads and the other does not."
+  }
+}

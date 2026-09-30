@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "greedy-intervals",
+    "categoryTitle": "Greedy & Interval Methods",
+    "complexity": "O(n log n) time · O(1) extra after sort",
+    "difficulty": "easy",
+    "expectedAnswer": "4",
+    "idea": "Choose the compatible interval that finishes earliest, leaving maximum room for the future.",
+    "patternID": "activity-selection",
+    "rustSketch": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "stage": "model",
+    "task": "Return the maximum number of compatible meetings.",
+    "useCases": "maximum count of non-overlapping jobs",
+    "visibleInput": "[(1,2),(3,4),(0,6),(5,7),(8,9),(5,9)]"
+  },
+  "concept": "Choose the compatible interval that finishes earliest, leaving maximum room for the future.",
+  "contentDigest": "9015cdfabd6480dec510cbe9253b406275c637e90ef280e019db0d63672cd5fe",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Return true if a subset sums to 15.",
+        "direction": "previous",
+        "title": "Challenge: Meet in the Middle"
+      },
+      {
+        "concept": "maximum count of non-overlapping jobs",
+        "direction": "next",
+        "title": "Activity Selection: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(n log n) time · O(1) extra after sort bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on choose the compatible interval that finishes earliest, leaving maximum room for the future.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.activity-selection.model",
+  "minutes": 8,
+  "order": 0,
+  "parentID": "algorithms-greedy-intervals",
+  "title": "Activity Selection: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(n log n) time · O(1) extra after sort",
+    "exampleCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "explanation": "Activity Selection belongs to Greedy & Interval Methods. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include maximum count of non-overlapping jobs.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(n log n) time · O(1) extra after sort bound without looking at the code.",
+    "summary": "Choose the compatible interval that finishes earliest, leaving maximum room for the future.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "concept": "Reusable types and functions",
+  "contentDigest": "0df1e861b8cb1770378cde6a0d1ab4e44f9c2917578d3c7394b6342751592478",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Why references stay valid",
+        "direction": "previous",
+        "title": "Lifetime Intuition"
+      },
+      {
+        "concept": "Shared behavior and bounds",
+        "direction": "next",
+        "title": "Traits"
+      }
+    ],
+    "correction": "Monomorphisation makes generics free at runtime.",
+    "misconception": "“Nothing — extra bounds cost the caller nothing”",
+    "traceSteps": [
+      {
+        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
+        "title": "Map ownership first"
+      },
+      {
+        "detail": "Write a largest function with the smallest useful trait bound.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "It works for two different ordered types.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on reusable types and functions."
+  },
+  "exerciseKind": "planned",
+  "id": "generics",
+  "minutes": 10,
+  "order": 0,
+  "parentID": "abstraction",
+  "title": "Generics",
+  "writing": {
+    "answers": [
+      "Nothing — extra bounds cost the caller nothing",
+      "Only Debug is used, so the rest exclude callers for no reason",
+      "Debug should be dropped and the rest kept"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "The bound names only what the body actually needs.",
+    "exampleCode": "fn largest<T: PartialOrd>(\n    items: &[T],\n) -> &T {\n    let mut best = &items[0];\n    for item in items {\n        if item > best { best = item; }\n    }\n    best\n}",
+    "explanation": "Trait bounds state exactly the capabilities the generic body needs, and the compiler generates a specialised copy per concrete type. That means generics cost nothing at runtime — but a bound wider than necessary narrows who can call you.",
+    "feedback": "Every unnecessary bound is a caller you turned away.",
+    "practiceCode": "fn show<T: Clone + PartialOrd + Debug>(v: &T) {\n    println!(\"{v:?}\");\n}",
+    "question": "What is wrong with those bounds?",
+    "rule": "Monomorphisation makes generics free at runtime.",
+    "success": "It works for two different ordered types.",
+    "summary": "Generics reuse an algorithm while keeping concrete types.",
+    "task": "Write a largest function with the smallest useful trait bound."
+  }
+}

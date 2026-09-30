@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "two-pointers",
+    "categoryTitle": "Two Pointers",
+    "complexity": "O(n) time · O(1) space",
+    "difficulty": "easy",
+    "expectedAnswer": "true",
+    "idea": "Move inward from both ends when ordering tells which side cannot improve.",
+    "patternID": "opposite-ends",
+    "rustSketch": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
+    "stage": "recognize",
+    "task": "Return true if the sorted values contain a pair summing to 10.",
+    "useCases": "sorted pairs, symmetry, boundary comparisons",
+    "visibleInput": "[1,2,4,6,9]"
+  },
+  "concept": "sorted pairs, symmetry, boundary comparisons",
+  "contentDigest": "6b409eed0b152fc11009ce6be40db32661d9c54a5f6d6fa14e4a7f997020f487",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Move inward from both ends when ordering tells which side cannot improve.",
+        "direction": "previous",
+        "title": "Opposite-End Pointers: Mental Model"
+      },
+      {
+        "concept": "Return true if the sorted values contain a pair summing to 10.",
+        "direction": "next",
+        "title": "Challenge: Opposite-End Pointers"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on sorted pairs, symmetry, boundary comparisons."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.opposite-ends.recognize",
+  "minutes": 8,
+  "order": 1,
+  "parentID": "algorithms-two-pointers",
+  "title": "Opposite-End Pointers: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "sorted pairs, symmetry, boundary comparisons",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Opposite-End Pointers",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Opposite-End Pointers",
+    "explanation": "Reach for this pattern when the prompt contains sorted pairs, symmetry, boundary comparisons. Confirm that its assumptions actually hold, then compare O(n) time · O(1) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: sorted pairs, symmetry, boundary comparisons.",
+    "practiceCode": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Opposite-End Pointers.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

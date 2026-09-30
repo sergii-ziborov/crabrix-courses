@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "greedy-intervals",
+    "categoryTitle": "Greedy & Interval Methods",
+    "complexity": "O(n) time · O(1) space",
+    "difficulty": "medium",
+    "expectedAnswer": "2",
+    "idea": "Treat the current reach as a BFS layer and commit a jump when the scan reaches its boundary.",
+    "patternID": "jump-game-two",
+    "rustSketch": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "stage": "recognize",
+    "task": "Return the minimum jumps to the final index.",
+    "useCases": "minimum jumps in forward-reach arrays",
+    "visibleInput": "[2,3,1,1,4]"
+  },
+  "concept": "minimum jumps in forward-reach arrays",
+  "contentDigest": "20174f0e73c6388b3accc9491e05e2620b1dbae036c9dd0cc98a5b483d9dce12",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Treat the current reach as a BFS layer and commit a jump when the scan reaches its boundary.",
+        "direction": "previous",
+        "title": "Greedy Layered Jumps: Mental Model"
+      },
+      {
+        "concept": "Return the minimum jumps to the final index.",
+        "direction": "next",
+        "title": "Challenge: Greedy Layered Jumps"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on minimum jumps in forward-reach arrays."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.jump-game-two.recognize",
+  "minutes": 11,
+  "order": 16,
+  "parentID": "algorithms-greedy-intervals",
+  "title": "Greedy Layered Jumps: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "minimum jumps in forward-reach arrays",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Greedy Layered Jumps",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Greedy Layered Jumps",
+    "explanation": "Reach for this pattern when the prompt contains minimum jumps in forward-reach arrays. Confirm that its assumptions actually hold, then compare O(n) time · O(1) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: minimum jumps in forward-reach arrays.",
+    "practiceCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Greedy Layered Jumps.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

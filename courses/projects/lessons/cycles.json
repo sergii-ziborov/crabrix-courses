@@ -1,0 +1,59 @@
+{
+  "concept": "Weak<T> and leaks Rust cannot prevent",
+  "contentDigest": "0934e34c2b44b05f83b73f4217af8ec617b7d7c87d4006b8e51ce42cd932008a",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Making a type behave like a reference",
+        "direction": "previous",
+        "title": "Deref & Drop"
+      },
+      {
+        "concept": "Map Cargo targets to predictable source paths",
+        "direction": "next",
+        "title": "Package Layout"
+      }
+    ],
+    "correction": "Weak does not keep a value alive, so upgrade() may return None.",
+    "misconception": "“A Weak link is cheaper to clone than an Rc”",
+    "traceSteps": [
+      {
+        "detail": "Separate source modules, public API, manifest data, dependency graph, and build evidence before changing any one of them.",
+        "title": "Map the project boundary"
+      },
+      {
+        "detail": "Explain where a parent pointer should be Weak rather than Rc.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can name which direction owns and which merely observes.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Move one responsibility across a module or package boundary without changing behaviour. Predict which imports, tests, or lock data must change. Keep the focus on weak<t> and leaks rust cannot prevent."
+  },
+  "exerciseKind": "planned",
+  "id": "cycles",
+  "minutes": 11,
+  "order": 3,
+  "parentID": "pointers",
+  "title": "Reference Cycles",
+  "writing": {
+    "answers": [
+      "A Weak link is cheaper to clone than an Rc",
+      "Two Rc links in a cycle never reach zero, so nothing is freed",
+      "The compiler refuses to build a cyclic Rc graph"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "The child points back with Weak, so the cycle never forms.",
+    "exampleCode": "use std::cell::RefCell;\nuse std::rc::{Rc, Weak};\n\nstruct Node {\n    value: i32,\n    parent: RefCell<Weak<Node>>,\n    children: RefCell<Vec<Rc<Node>>>,\n}\n\nlet leaf = Rc::new(Node {\n    value: 3,\n    parent: RefCell::new(Weak::new()),\n    children: RefCell::new(vec![]),\n});\nlet parent = leaf.parent.borrow().upgrade();\nprintln!(\"has parent {:?}\", parent.is_some());",
+    "explanation": "Two Rc handles pointing at each other never reach a count of zero, so neither is freed. Weak<T> is the answer: it does not count towards ownership and must be upgraded before use, which turns a parent pointer into something that can legitimately be gone.",
+    "feedback": "Ownership should flow one way; the back-reference observes without owning.",
+    "practiceCode": "let parent = Rc::new(Node::new());\nlet child = Rc::new(Node::new());\n// child.parent = Rc::clone(&parent);",
+    "question": "Why should the parent link be Weak?",
+    "rule": "Weak does not keep a value alive, so upgrade() may return None.",
+    "success": "You can name which direction owns and which merely observes.",
+    "summary": "Rust prevents data races, not leaks — a cycle can still strand memory.",
+    "task": "Explain where a parent pointer should be Weak rather than Rc."
+  }
+}

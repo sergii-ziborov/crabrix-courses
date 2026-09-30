@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "trees",
+    "categoryTitle": "Tree Traversal & BST",
+    "complexity": "O(n) time · O(n) output",
+    "difficulty": "medium",
+    "expectedAnswer": "1,2,#,#,3,4,#,#,5,#,#",
+    "idea": "Emit null markers as well as values so structure is reconstructible, not only traversal order.",
+    "patternID": "tree-serialize",
+    "rustSketch": "fn height(node: Option<&Node>) -> usize {\n    match node {\n        None => 0,\n        Some(node) => 1 + height(node.left.as_deref()).max(height(node.right.as_deref())),\n    }\n}",
+    "stage": "recognize",
+    "task": "Serialize preorder using # for nulls.",
+    "useCases": "persistence, transport, tree cloning",
+    "visibleInput": "tree=[1,2,3,null,null,4,5]"
+  },
+  "concept": "persistence, transport, tree cloning",
+  "contentDigest": "c13f0d867c0aa9a82c79a47cde969d67fc78b496d33ce817586f103074badd79",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Emit null markers as well as values so structure is reconstructible, not only traversal order.",
+        "direction": "previous",
+        "title": "Tree Serialize/Deserialize: Mental Model"
+      },
+      {
+        "concept": "Serialize preorder using # for nulls.",
+        "direction": "next",
+        "title": "Challenge: Tree Serialize/Deserialize"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on persistence, transport, tree cloning."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.tree-serialize.recognize",
+  "minutes": 11,
+  "order": 22,
+  "parentID": "algorithms-trees",
+  "title": "Tree Serialize/Deserialize: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "persistence, transport, tree cloning",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Tree Serialize/Deserialize",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Tree Serialize/Deserialize",
+    "explanation": "Reach for this pattern when the prompt contains persistence, transport, tree cloning. Confirm that its assumptions actually hold, then compare O(n) time · O(n) output with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: persistence, transport, tree cloning.",
+    "practiceCode": "fn height(node: Option<&Node>) -> usize {\n    match node {\n        None => 0,\n        Some(node) => 1 + height(node.left.as_deref()).max(height(node.right.as_deref())),\n    }\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Tree Serialize/Deserialize.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

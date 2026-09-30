@@ -1,0 +1,59 @@
+{
+  "concept": "Add, Display, From, and Into",
+  "contentDigest": "d61736a9156763a4f639c126815d62affc4d5c5d86f7caadb1c59c5c6c5e4070",
+  "depth": {
+    "connections": [
+      {
+        "concept": "One output type per implementation",
+        "direction": "previous",
+        "title": "Associated Types"
+      },
+      {
+        "concept": "Parameters can take, borrow, or copy a value",
+        "direction": "next",
+        "title": "Moves Across Functions"
+      }
+    ],
+    "correction": "Implement From, and Into is generated for you — never implement both.",
+    "misconception": "“Into is derived alongside From automatically”",
+    "traceSteps": [
+      {
+        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
+        "title": "Map ownership first"
+      },
+      {
+        "detail": "Give a newtype an Add implementation and a Display implementation.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "The type adds with + and prints with {} like a built-in.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on add, display, from, and into."
+  },
+  "exerciseKind": "planned",
+  "id": "operator-traits",
+  "minutes": 11,
+  "order": 7,
+  "parentID": "abstraction",
+  "title": "Operator Traits",
+  "writing": {
+    "answers": [
+      "Into is derived alongside From automatically",
+      "A blanket impl gives Into to everything that implements From",
+      "The compiler special-cases .into() for every type"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Implement From and Into arrives automatically.",
+    "exampleCode": "use std::fmt;\nuse std::ops::Add;\n\n#[derive(Debug, Clone, Copy)]\nstruct Money(i64);\n\nimpl Add for Money {\n    type Output = Money;\n    fn add(self, other: Money) -> Money {\n        Money(self.0 + other.0)\n    }\n}\n\nimpl fmt::Display for Money {\n    fn fmt(\n        &self,\n        f: &mut fmt::Formatter<'_>,\n    ) -> fmt::Result {\n        write!(f, \"{}\", self.0 as f64 / 100.0)\n    }\n}",
+    "explanation": "a + b calls Add::add, {} calls Display::fmt, and .into() calls Into, which you get for free by implementing From. Because they are normal traits, your own types participate in the same syntax as the built-in ones, and the compiler checks the result type at every use.",
+    "feedback": "The standard library has impl<T, U: From<T>> Into<U> for T.",
+    "practiceCode": "impl From<u32> for Money {\n    fn from(v: u32) -> Money {\n        Money(i64::from(v))\n    }\n}\nlet m: Money = 500_u32.into();",
+    "question": "Why does .into() work without writing an Into impl?",
+    "rule": "Implement From, and Into is generated for you — never implement both.",
+    "success": "The type adds with + and prints with {} like a built-in.",
+    "summary": "Operators and conversions are ordinary traits you can implement.",
+    "task": "Give a newtype an Add implementation and a Display implementation."
+  }
+}

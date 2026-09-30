@@ -1,0 +1,59 @@
+{
+  "concept": "Thread-safety marker traits",
+  "contentDigest": "fd86e973d3a015d5250e86952210b8a521664047713a46bbf95a92a87c69baa0",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Absence, failure, and propagation",
+        "direction": "previous",
+        "title": "Option vs Result"
+      },
+      {
+        "concept": "Ownership and allocation choices",
+        "direction": "next",
+        "title": "Box, Rc, and Arc"
+      }
+    ],
+    "correction": "T is Sync exactly when &T is Send.",
+    "misconception": "“The closure is missing an explicit return type”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Explain why Rc cannot cross threads and Arc can.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You name the atomic reference count as the deciding detail.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on thread-safety marker traits."
+  },
+  "exerciseKind": "planned",
+  "id": "q-send-sync",
+  "minutes": 11,
+  "order": 0,
+  "parentID": "interview-systems",
+  "title": "Send and Sync",
+  "writing": {
+    "answers": [
+      "Rc is not Send, because its count is not atomic",
+      "The closure is missing an explicit return type",
+      "An Rc value cannot be printed from a thread"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "The bound is exactly what thread::spawn asks for.",
+    "exampleCode": "fn run<F>(job: F)\nwhere\n    F: FnOnce() + Send + 'static,\n{\n    std::thread::spawn(job);\n}",
+    "explanation": "Send means a value may be moved to another thread; Sync means &T may be shared with one. They are inferred from a type's fields, which is why Rc is rejected at compile time while Arc is accepted — the difference is an atomic count, and the type system knows it.",
+    "feedback": "Arc pays for an atomic count and is therefore Send and Sync.",
+    "practiceCode": "let shared = std::rc::Rc::new(1);\nstd::thread::spawn(move || println!(\"{shared}\"));",
+    "question": "What does the compiler object to?",
+    "rule": "T is Sync exactly when &T is Send.",
+    "success": "You name the atomic reference count as the deciding detail.",
+    "summary": "Two marker traits decide what may cross a thread boundary.",
+    "task": "Explain why Rc cannot cross threads and Arc can."
+  }
+}

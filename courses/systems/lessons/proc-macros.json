@@ -1,0 +1,59 @@
+{
+  "concept": "Derive, attribute, and function macros",
+  "contentDigest": "729b564462e634efe90101ccbd202bf5f7037d0841b7a34d12928b1030a87a67",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Pattern-based code generation",
+        "direction": "previous",
+        "title": "macro_rules!"
+      },
+      {
+        "concept": "Compiling different code per target",
+        "direction": "next",
+        "title": "cfg & Features"
+      }
+    ],
+    "correction": "Proc macros execute at compile time, so they need a host-native build.",
+    "misconception": "“Only the serde crate as a normal dependency”",
+    "traceSteps": [
+      {
+        "detail": "Write down what callers may assume, what the compiler cannot prove, and which boundary is responsible for preserving soundness or cost.",
+        "title": "State the invariant"
+      },
+      {
+        "detail": "Explain why a proc macro cannot run inside Crabrix.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can name the host-compilation requirement as the reason.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Create the smallest counterexample that violates the sample's invariant, then repair the abstraction boundary instead of hiding the symptom. Keep the focus on derive, attribute, and function macros."
+  },
+  "exerciseKind": "planned",
+  "id": "proc-macros",
+  "minutes": 12,
+  "order": 1,
+  "parentID": "meta",
+  "title": "Procedural Macros",
+  "writing": {
+    "answers": [
+      "Only the serde crate as a normal dependency",
+      "A proc-macro crate compiled for and run on the host",
+      "Nothing special — derives are built into rustc"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "A separate crate, marked as a proc-macro, built for the host.",
+    "exampleCode": "# my-derive/Cargo.toml\n[lib]\nproc-macro = true\n\n// my-derive/src/lib.rs\nuse proc_macro::TokenStream;\n\n#[proc_macro_derive(Hello)]\npub fn derive_hello(\n    input: TokenStream,\n) -> TokenStream {\n    // parse input, generate an impl, return it\n    TokenStream::new()\n}",
+    "explanation": "It receives a TokenStream and returns one, running as a real program during compilation — which is why it lives in its own crate compiled for the host machine. That host requirement is exactly why a device-local compiler cannot execute one, and why #[derive(Serialize)] needs a desktop toolchain.",
+    "feedback": "serde_derive is a program the compiler runs, not just a library it links.",
+    "practiceCode": "#[derive(Serialize)]\nstruct Config { port: u16 }",
+    "question": "What does that derive need at build time?",
+    "rule": "Proc macros execute at compile time, so they need a host-native build.",
+    "success": "You can name the host-compilation requirement as the reason.",
+    "summary": "A procedural macro is a compiler plugin written in Rust.",
+    "task": "Explain why a proc macro cannot run inside Crabrix."
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "concept": "Dropping a future mid-await",
+  "contentDigest": "8fa4cda7513ed4b2eac5dde8f8ec4237fa5a28fa70cd915c61fb0415e592abf8",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Why one sync call stalls a runtime",
+        "direction": "previous",
+        "title": "Blocking an Executor"
+      },
+      {
+        "concept": "Where values live and what a move copies",
+        "direction": "next",
+        "title": "Stack and Heap"
+      }
+    ],
+    "correction": "Cancellation is a drop; state between awaits must survive it or not exist.",
+    "misconception": "“Nothing — Rust rolls the whole await back”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Explain what cancel-safety means for a function that buffers between awaits.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can name one operation that is unsafe to cancel and why.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on dropping a future mid-await."
+  },
+  "exerciseKind": "planned",
+  "id": "q-cancellation",
+  "minutes": 12,
+  "order": 5,
+  "parentID": "interview-concurrency",
+  "title": "Cancellation Safety",
+  "writing": {
+    "answers": [
+      "Nothing — Rust rolls the whole await back",
+      "The bytes already read are dropped and silently lost",
+      "The socket closes and the peer is notified"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "The losing branch is dropped, mid-await, with no warning.",
+    "exampleCode": "tokio::select! {\n    result = read_request() => handle(result),\n    _ = timeout => log(\"gave up\"),\n}",
+    "explanation": "There is no cancel signal to handle: the future is simply dropped at the next await point, so any state it held runs its destructors and any work in flight stops. That makes cleanup automatic but means a future must be cancel-safe — losing a half-consumed buffer or a partially applied write between awaits is the classic bug.",
+    "feedback": "The buffer lives in the future, so cancelling drops the read data.",
+    "practiceCode": "let mut buf = Vec::new();\nsocket.read_buf(&mut buf).await?;\nstore(buf).await?;",
+    "question": "What breaks if that is cancelled between the two awaits?",
+    "rule": "Cancellation is a drop; state between awaits must survive it or not exist.",
+    "success": "You can name one operation that is unsafe to cancel and why.",
+    "summary": "In Rust, an async task is cancelled by dropping its future.",
+    "task": "Explain what cancel-safety means for a function that buffers between awaits."
+  }
+}

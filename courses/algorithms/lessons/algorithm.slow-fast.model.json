@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "two-pointers",
+    "categoryTitle": "Two Pointers",
+    "complexity": "O(n) time · O(1) space",
+    "difficulty": "easy",
+    "expectedAnswer": "16",
+    "idea": "Advance pointers at different rates so relative motion reveals a midpoint or cycle.",
+    "patternID": "slow-fast",
+    "rustSketch": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
+    "stage": "model",
+    "task": "Return the middle value; for even length choose the second middle.",
+    "useCases": "linked-list middle, cycle detection, repeated transitions",
+    "visibleInput": "[4,8,15,16,23,42]"
+  },
+  "concept": "Advance pointers at different rates so relative motion reveals a midpoint or cycle.",
+  "contentDigest": "b8b71441460b87474d038bd961d70305887f5bf5a935a92a722443d9746f65ae",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Remove values below 5 stably and return the kept prefix.",
+        "direction": "previous",
+        "title": "Challenge: Same-Direction Pointers"
+      },
+      {
+        "concept": "linked-list middle, cycle detection, repeated transitions",
+        "direction": "next",
+        "title": "Slow/Fast Pointers: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(n) time · O(1) space bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on advance pointers at different rates so relative motion reveals a midpoint or cycle.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.slow-fast.model",
+  "minutes": 8,
+  "order": 6,
+  "parentID": "algorithms-two-pointers",
+  "title": "Slow/Fast Pointers: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(n) time · O(1) space",
+    "exampleCode": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
+    "explanation": "Slow/Fast Pointers belongs to Two Pointers. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include linked-list middle, cycle detection, repeated transitions.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(n) time · O(1) space bound without looking at the code.",
+    "summary": "Advance pointers at different rates so relative motion reveals a midpoint or cycle.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "backtracking",
+    "categoryTitle": "Backtracking & Exhaustive Search",
+    "complexity": "O(n*2^n) time · O(n) recursion excluding output",
+    "difficulty": "easy",
+    "expectedAnswer": ";1;2;1,2",
+    "idea": "At each item branch on exclude or include, or extend every current subset.",
+    "patternID": "subsets",
+    "rustSketch": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
+    "stage": "recognize",
+    "task": "Return subsets in bitmask order.",
+    "useCases": "power sets and optional choices",
+    "visibleInput": "[1,2]"
+  },
+  "concept": "power sets and optional choices",
+  "contentDigest": "88ab8c99628fe6b5440976d97b480e2c037b349f9ae7f784afc127c83c1d8afa",
+  "depth": {
+    "connections": [
+      {
+        "concept": "At each item branch on exclude or include, or extend every current subset.",
+        "direction": "previous",
+        "title": "Subset Generation: Mental Model"
+      },
+      {
+        "concept": "Return subsets in bitmask order.",
+        "direction": "next",
+        "title": "Challenge: Subset Generation"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on power sets and optional choices."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.subsets.recognize",
+  "minutes": 8,
+  "order": 1,
+  "parentID": "algorithms-backtracking",
+  "title": "Subset Generation: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "power sets and optional choices",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Subset Generation",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Subset Generation",
+    "explanation": "Reach for this pattern when the prompt contains power sets and optional choices. Confirm that its assumptions actually hold, then compare O(n*2^n) time · O(n) recursion excluding output with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: power sets and optional choices.",
+    "practiceCode": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Subset Generation.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

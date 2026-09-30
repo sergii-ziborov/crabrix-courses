@@ -1,0 +1,59 @@
+{
+  "concept": "Update one shared value without a lock",
+  "contentDigest": "c61c5d717986dbb1aa007386052210c54a38d89ce84060c89b4c13cf556c670b",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Notice a panic that may leave state inconsistent",
+        "direction": "previous",
+        "title": "Mutex Poisoning"
+      },
+      {
+        "concept": "Keep a global lock order and short critical sections",
+        "direction": "next",
+        "title": "Deadlock Avoidance"
+      }
+    ],
+    "correction": "Atomic operations are indivisible but still need an ordering that describes cross-thread visibility.",
+    "misconception": "“Integer size”",
+    "traceSteps": [
+      {
+        "detail": "Name each task or thread, the state it can reach, and every point where work can wait, race, block, or be cancelled.",
+        "title": "Draw the event timeline"
+      },
+      {
+        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Add a second worker or cancellation point. Draw two possible event orders and state the invariant that both orders must preserve. Keep the focus on update one shared value without a lock."
+  },
+  "exerciseKind": "planned",
+  "id": "atomics-basics",
+  "minutes": 12,
+  "order": 2,
+  "parentID": "concurrency-safety",
+  "title": "Atomic State",
+  "writing": {
+    "answers": [
+      "Visibility constraints",
+      "Integer size",
+      "Thread count"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCode": "use std::sync::atomic::{\n    AtomicUsize, Ordering,\n};\nlet count = AtomicUsize::new(0);\ncount.fetch_add(1, Ordering::Relaxed);",
+    "explanation": "Atomic operations are indivisible but still need an ordering that describes cross-thread visibility. Use the weakest ordering justified by a written synchronization argument, not by habit.",
+    "feedback": "Correct: Visibility constraints.",
+    "practiceCode": "use std::sync::atomic::{\n    AtomicUsize, Ordering,\n};\nlet count = AtomicUsize::new(0);\ncount.fetch_add(1, Ordering::Relaxed);",
+    "question": "What does an atomic ordering describe?",
+    "rule": "Atomic operations are indivisible but still need an ordering that describes cross-thread visibility.",
+    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "summary": "Update one shared value without a lock.",
+    "task": "Trace the example, name the guarantee, and identify where it ends."
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "concept": "Promise that a value will not move in memory",
+  "contentDigest": "50b872602126c4e243499c07b9aaccc946aa74995377eb5c8e9747153f6d297d",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Keep a global lock order and short critical sections",
+        "direction": "previous",
+        "title": "Deadlock Avoidance"
+      },
+      {
+        "concept": "Expect a future to be dropped at any await point",
+        "direction": "next",
+        "title": "Cancellation Safety"
+      }
+    ],
+    "correction": "Pin protects location-sensitive values after they are pinned; it does not make every value immovable from creation.",
+    "misconception": "“Thread safety”",
+    "traceSteps": [
+      {
+        "detail": "Name each task or thread, the state it can reach, and every point where work can wait, race, block, or be cancelled.",
+        "title": "Draw the event timeline"
+      },
+      {
+        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Add a second worker or cancellation point. Draw two possible event orders and state the invariant that both orders must preserve. Keep the focus on promise that a value will not move in memory."
+  },
+  "exerciseKind": "planned",
+  "id": "pinning-intuition",
+  "minutes": 12,
+  "order": 0,
+  "parentID": "async-reliability",
+  "title": "Pinning Intuition",
+  "writing": {
+    "answers": [
+      "Stable location",
+      "Thread safety",
+      "Static lifetime"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCode": "use std::pin::Pin;\nfn poll_name(value: Pin<&mut String>) {\n    println!(\"{}\", value.len());\n}",
+    "explanation": "Pin protects location-sensitive values after they are pinned; it does not make every value immovable from creation. Most users interact through pinned futures while libraries handle the unsafe construction details.",
+    "feedback": "Correct: Stable location.",
+    "practiceCode": "use std::pin::Pin;\nfn poll_name(value: Pin<&mut String>) {\n    println!(\"{}\", value.len());\n}",
+    "question": "What does Pin guarantee about the value?",
+    "rule": "Pin protects location-sensitive values after they are pinned; it does not make every value immovable from creation.",
+    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "summary": "Promise that a value will not move in memory.",
+    "task": "Trace the example, name the guarantee, and identify where it ends."
+  }
+}

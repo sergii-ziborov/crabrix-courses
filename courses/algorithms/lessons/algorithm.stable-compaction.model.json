@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "scans",
+    "categoryTitle": "Linear Scans & State",
+    "complexity": "O(n) time · O(1) extra space",
+    "difficulty": "medium",
+    "expectedAnswer": "4,2,7",
+    "idea": "Write kept elements forward so their relative order survives removal.",
+    "patternID": "stable-compaction",
+    "rustSketch": "fn scan(values: &[i32]) -> Option<usize> {\n    for (index, value) in values.iter().enumerate() {\n        if *value < 0 { return Some(index); }\n    }\n    None\n}",
+    "stage": "model",
+    "task": "Remove zeros stably and return the kept prefix as comma-separated values.",
+    "useCases": "remove-in-place, filtering buffers, zero compaction",
+    "visibleInput": "[0, 4, 0, 2, 7, 0]"
+  },
+  "concept": "Write kept elements forward so their relative order survives removal.",
+  "contentDigest": "d760fa999c876770eb0fbda245a4bcb5dc22da58d54d06e93e9535ba314b67a1",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Count positions where a reading is lower than the reading immediately before it.",
+        "direction": "previous",
+        "title": "Challenge: Adjacent Pair Scan"
+      },
+      {
+        "concept": "remove-in-place, filtering buffers, zero compaction",
+        "direction": "next",
+        "title": "Stable Compaction: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(n) time · O(1) extra space bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on write kept elements forward so their relative order survives removal.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.stable-compaction.model",
+  "minutes": 11,
+  "order": 15,
+  "parentID": "algorithms-scans",
+  "title": "Stable Compaction: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(n) time · O(1) extra space",
+    "exampleCode": "fn scan(values: &[i32]) -> Option<usize> {\n    for (index, value) in values.iter().enumerate() {\n        if *value < 0 { return Some(index); }\n    }\n    None\n}",
+    "explanation": "Stable Compaction belongs to Linear Scans & State. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include remove-in-place, filtering buffers, zero compaction.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "fn scan(values: &[i32]) -> Option<usize> {\n    for (index, value) in values.iter().enumerate() {\n        if *value < 0 { return Some(index); }\n    }\n    None\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(n) time · O(1) extra space bound without looking at the code.",
+    "summary": "Write kept elements forward so their relative order survives removal.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

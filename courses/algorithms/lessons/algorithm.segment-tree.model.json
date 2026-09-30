@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "ranges",
+    "categoryTitle": "Prefix Sums & Range Queries",
+    "complexity": "O(log n) update/query · O(n) space",
+    "difficulty": "hard",
+    "expectedAnswer": "0",
+    "idea": "Represent intervals as a binary tree so a query visits only canonical covering nodes.",
+    "patternID": "segment-tree",
+    "rustSketch": "fn prefix(values: &[i64]) -> Vec<i64> {\n    let mut sums = vec![0; values.len() + 1];\n    for i in 0..values.len() { sums[i + 1] = sums[i] + values[i]; }\n    sums\n}",
+    "stage": "model",
+    "task": "Build range minimum, apply the point update, then query the inclusive range.",
+    "useCases": "dynamic range min/max/sum and interval aggregation",
+    "visibleInput": "values=[5,4,7,2] update=(2,0) query=1..3"
+  },
+  "concept": "Represent intervals as a binary tree so a query visits only canonical covering nodes.",
+  "contentDigest": "d4794565f8d3651fdb2a21a2f5709359461175c819c6f71b56f909f28cd67b88",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Apply the 1-indexed add operations and return the prefix sum through query.",
+        "direction": "previous",
+        "title": "Challenge: Fenwick Tree"
+      },
+      {
+        "concept": "dynamic range min/max/sum and interval aggregation",
+        "direction": "next",
+        "title": "Segment Tree: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(log n) update/query · O(n) space bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on represent intervals as a binary tree so a query visits only canonical covering nodes.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.segment-tree.model",
+  "minutes": 15,
+  "order": 27,
+  "parentID": "algorithms-ranges",
+  "title": "Segment Tree: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(log n) update/query · O(n) space",
+    "exampleCode": "fn prefix(values: &[i64]) -> Vec<i64> {\n    let mut sums = vec![0; values.len() + 1];\n    for i in 0..values.len() { sums[i + 1] = sums[i] + values[i]; }\n    sums\n}",
+    "explanation": "Segment Tree belongs to Prefix Sums & Range Queries. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include dynamic range min/max/sum and interval aggregation.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "fn prefix(values: &[i64]) -> Vec<i64> {\n    let mut sums = vec![0; values.len() + 1];\n    for i in 0..values.len() { sums[i + 1] = sums[i] + values[i]; }\n    sums\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(log n) update/query · O(n) space bound without looking at the code.",
+    "summary": "Represent intervals as a binary tree so a query visits only canonical covering nodes.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "concept": "Moves, Copy, Drop, and scope",
+  "contentDigest": "40cdc73b1195ae314229c2e654efae159a5a02de8a95cdbaa61fd0581d3244a1",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Aliasing and mutation rules",
+        "direction": "next",
+        "title": "Why Borrowing Works"
+      }
+    ],
+    "correction": "Ownership is a guarantee about cleanup, not a rule about symbols.",
+    "misconception": "“take only borrowed s, so it stays usable”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Explain ownership in under a minute, out loud.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You name moves, Copy, and Drop without mentioning syntax first.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on moves, copy, drop, and scope."
+  },
+  "exerciseKind": "planned",
+  "id": "q-ownership",
+  "minutes": 8,
+  "order": 0,
+  "parentID": "interview-language",
+  "title": "Explain Ownership",
+  "writing": {
+    "answers": [
+      "take only borrowed s, so it stays usable",
+      "Passing by value moved s into the function",
+      "A String cannot be printed more than once"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Three behaviours an interviewer is listening for.",
+    "exampleCode": "let a = String::from(\"x\");\nlet b = a;        // move: a is unusable\nlet n = 5;\nlet m = n;        // copy: n still usable\n{\n    let _t = String::from(\"t\");\n}                 // dropped here, deterministically",
+    "explanation": "A strong answer says: each value has one owner, ownership moves on assignment or when passed by value, Copy types duplicate instead, and Drop runs deterministically at end of scope. That combination is what removes both double frees and the need for a garbage collector.",
+    "feedback": "A by-value parameter takes ownership; the caller's binding is done.",
+    "practiceCode": "fn take(value: String) {}\nlet s = String::from(\"x\");\ntake(s);\nprintln!(\"{s}\");",
+    "question": "Why does the println fail?",
+    "rule": "Ownership is a guarantee about cleanup, not a rule about symbols.",
+    "success": "You name moves, Copy, and Drop without mentioning syntax first.",
+    "summary": "Explaining ownership well means naming the guarantee, not the syntax.",
+    "task": "Explain ownership in under a minute, out loud."
+  }
+}

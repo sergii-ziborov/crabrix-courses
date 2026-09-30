@@ -1,0 +1,59 @@
+{
+  "concept": "Why async needs an executor",
+  "contentDigest": "e639e2603432c8d55b1c84afec35087b781dca9fd2a6ca34fa181ab13623711d",
+  "depth": {
+    "connections": [
+      {
+        "concept": "async fn, await, and laziness",
+        "direction": "previous",
+        "title": "Futures"
+      },
+      {
+        "concept": "join, select, and cancellation",
+        "direction": "next",
+        "title": "Async Patterns"
+      }
+    ],
+    "correction": "std defines Future; the executor is a library decision.",
+    "misconception": "“main is not allowed to print before awaiting”",
+    "traceSteps": [
+      {
+        "detail": "Name each task or thread, the state it can reach, and every point where work can wait, race, block, or be cancelled.",
+        "title": "Draw the event timeline"
+      },
+      {
+        "detail": "Describe what the runtime provides that the language does not.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can name polling, waking, and I/O readiness as runtime concerns.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Add a second worker or cancellation point. Draw two possible event orders and state the invariant that both orders must preserve. Keep the focus on why async needs an executor."
+  },
+  "exerciseKind": "planned",
+  "id": "async-runtime",
+  "minutes": 11,
+  "order": 1,
+  "parentID": "async",
+  "title": "Runtimes",
+  "writing": {
+    "answers": [
+      "main is not allowed to print before awaiting",
+      "main cannot be async without a runtime to poll it",
+      "async fn is still unstable in this edition"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "The runtime attribute is what actually polls the future to completion.",
+    "exampleCode": "// Cargo.toml\n// tokio = { version = \"1\", features = [\"full\"] }\n\n#[tokio::main]\nasync fn main() {\n    let value = compute().await;\n    println!(\"{value}\");\n}\n\nasync fn compute() -> u32 { 42 }",
+    "explanation": "The language defines Future and .await; polling, timers, and I/O readiness come from a runtime you choose, such as tokio or async-std. That keeps async usable on an embedded target with no allocator, at the cost of one decision you have to make per project.",
+    "feedback": "Something has to drive the future, and that something is the runtime.",
+    "practiceCode": "async fn main() {\n    println!(\"hi\");\n}",
+    "question": "Why is that not a valid program entry point?",
+    "rule": "std defines Future; the executor is a library decision.",
+    "success": "You can name polling, waking, and I/O readiness as runtime concerns.",
+    "summary": "Rust ships the async syntax but not the engine that drives it.",
+    "task": "Describe what the runtime provides that the language does not."
+  }
+}

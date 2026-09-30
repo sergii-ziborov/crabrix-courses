@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "heaps-streaming",
+    "categoryTitle": "Heaps & Streaming",
+    "complexity": "O(n log n) time · O(n) space",
+    "difficulty": "hard",
+    "expectedAnswer": "0,1,2",
+    "idea": "Order available work by the decision criterion while time controls when work becomes eligible.",
+    "patternID": "priority-scheduling",
+    "rustSketch": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "stage": "recognize",
+    "task": "Run shortest available job first and return completion order by job ID.",
+    "useCases": "task scheduling, CPU queues, simulation",
+    "visibleInput": "(id0,t0,d3),(id1,t1,d1),(id2,t1,d2)"
+  },
+  "concept": "task scheduling, CPU queues, simulation",
+  "contentDigest": "630c1a3e2b0ad0bf8a6140ed500d332fc9dbdcd73b4cfe6b05f51607b358c8cd",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Order available work by the decision criterion while time controls when work becomes eligible.",
+        "direction": "previous",
+        "title": "Priority Scheduling: Mental Model"
+      },
+      {
+        "concept": "Run shortest available job first and return completion order by job ID.",
+        "direction": "next",
+        "title": "Challenge: Priority Scheduling"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on task scheduling, cpu queues, simulation."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.priority-scheduling.recognize",
+  "minutes": 15,
+  "order": 22,
+  "parentID": "algorithms-heaps-streaming",
+  "title": "Priority Scheduling: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "task scheduling, CPU queues, simulation",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Priority Scheduling",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Priority Scheduling",
+    "explanation": "Reach for this pattern when the prompt contains task scheduling, CPU queues, simulation. Confirm that its assumptions actually hold, then compare O(n log n) time · O(n) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: task scheduling, CPU queues, simulation.",
+    "practiceCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Priority Scheduling.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "concept": "Making a type behave like a reference",
+  "contentDigest": "1da45459fae8ce5f10e098a104d1385b06968c2d0e18f2d060b36c344d12819f",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Shared ownership and interior mutability",
+        "direction": "previous",
+        "title": "Rc & RefCell"
+      },
+      {
+        "concept": "Weak<T> and leaks Rust cannot prevent",
+        "direction": "next",
+        "title": "Reference Cycles"
+      }
+    ],
+    "correction": "Deref coercion applies repeatedly until the types line up.",
+    "misconception": "“Only when you call drop() on it explicitly”",
+    "traceSteps": [
+      {
+        "detail": "Separate source modules, public API, manifest data, dependency graph, and build evidence before changing any one of them.",
+        "title": "Map the project boundary"
+      },
+      {
+        "detail": "Implement Deref for a wrapper and pass it where the inner type is expected.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "The call compiles without an explicit conversion.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Move one responsibility across a module or package boundary without changing behaviour. Predict which imports, tests, or lock data must change. Keep the focus on making a type behave like a reference."
+  },
+  "exerciseKind": "planned",
+  "id": "deref-drop",
+  "minutes": 10,
+  "order": 2,
+  "parentID": "pointers",
+  "title": "Deref & Drop",
+  "writing": {
+    "answers": [
+      "Only when you call drop() on it explicitly",
+      "Automatically when the value leaves scope",
+      "At program exit, once main has returned"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Deref coercion is why `&MyBox<String>` reaches a `&str` parameter.",
+    "exampleCode": "use std::ops::Deref;\n\nstruct MyBox<T>(T);\n\nimpl<T> Deref for MyBox<T> {\n    type Target = T;\n    fn deref(&self) -> &T { &self.0 }\n}\n\nfn greet(name: &str) { println!(\"hello {name}\"); }\n\nlet boxed = MyBox(String::from(\"ada\"));\ngreet(&boxed); // &MyBox<String> -> &String -> &str",
+    "explanation": "Implementing Deref lets the compiler insert conversions automatically, which is why &String works where &str is expected. Drop lets a type run code when it goes out of scope, and the two together are how smart pointers feel built in — a Box behaves like the value it holds and cleans up on its own.",
+    "feedback": "Drop runs at the end of the value's scope; std::mem::drop just ends it sooner.",
+    "practiceCode": "impl Drop for Guard {\n    fn drop(&mut self) { println!(\"released\"); }\n}",
+    "question": "When does that Drop message print?",
+    "rule": "Deref coercion applies repeatedly until the types line up.",
+    "success": "The call compiles without an explicit conversion.",
+    "summary": "Deref makes your type usable like a reference to another one.",
+    "task": "Implement Deref for a wrapper and pass it where the inner type is expected."
+  }
+}

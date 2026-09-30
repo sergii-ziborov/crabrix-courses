@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "heaps-streaming",
+    "categoryTitle": "Heaps & Streaming",
+    "complexity": "O(N log k) time · O(k) space",
+    "difficulty": "medium",
+    "expectedAnswer": "0,1,2,4,5,6,7,8,9",
+    "idea": "Push one frontier item per sorted source and advance only the source that wins.",
+    "patternID": "k-way-merge",
+    "rustSketch": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "stage": "model",
+    "task": "Merge the three sorted sequences.",
+    "useCases": "merge sorted lists, files, and event streams",
+    "visibleInput": "[1,4,7];[2,5,8];[0,6,9]"
+  },
+  "concept": "Push one frontier item per sorted source and advance only the source that wins.",
+  "contentDigest": "c17a50cb0d38912f0cf557fc27ee895ebf39bf37fedc49528ef31db3253c31b4",
+  "depth": {
+    "connections": [
+      {
+        "concept": "With k=3, return the kth largest after adding 4, 5, 8, 2, 10.",
+        "direction": "previous",
+        "title": "Challenge: Kth Statistic in a Stream"
+      },
+      {
+        "concept": "merge sorted lists, files, and event streams",
+        "direction": "next",
+        "title": "K-Way Heap Merge: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(N log k) time · O(k) space bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on push one frontier item per sorted source and advance only the source that wins.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.k-way-merge.model",
+  "minutes": 11,
+  "order": 9,
+  "parentID": "algorithms-heaps-streaming",
+  "title": "K-Way Heap Merge: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(N log k) time · O(k) space",
+    "exampleCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "explanation": "K-Way Heap Merge belongs to Heaps & Streaming. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include merge sorted lists, files, and event streams.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(N log k) time · O(k) space bound without looking at the code.",
+    "summary": "Push one frontier item per sorted source and advance only the source that wins.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

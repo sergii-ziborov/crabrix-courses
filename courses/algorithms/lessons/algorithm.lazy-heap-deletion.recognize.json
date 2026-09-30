@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "heaps-streaming",
+    "categoryTitle": "Heaps & Streaming",
+    "complexity": "O(log n) amortised operation · O(n) space",
+    "difficulty": "hard",
+    "expectedAnswer": "4",
+    "idea": "Record invalidated values separately and discard stale roots only when they surface.",
+    "patternID": "lazy-heap-deletion",
+    "rustSketch": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "stage": "recognize",
+    "task": "Apply the push/delete operations, then return the valid minimum requested by min.",
+    "useCases": "sliding heaps and priority updates without handles",
+    "visibleInput": "push4 push7 push2 delete2 min"
+  },
+  "concept": "sliding heaps and priority updates without handles",
+  "contentDigest": "80a32b899784488b881f693075a1763d475c66cd97fd14a9a929dde165392d8f",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Record invalidated values separately and discard stale roots only when they surface.",
+        "direction": "previous",
+        "title": "Lazy Heap Deletion: Mental Model"
+      },
+      {
+        "concept": "Apply the push/delete operations, then return the valid minimum requested by min.",
+        "direction": "next",
+        "title": "Challenge: Lazy Heap Deletion"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on sliding heaps and priority updates without handles."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.lazy-heap-deletion.recognize",
+  "minutes": 15,
+  "order": 19,
+  "parentID": "algorithms-heaps-streaming",
+  "title": "Lazy Heap Deletion: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "sliding heaps and priority updates without handles",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Lazy Heap Deletion",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Lazy Heap Deletion",
+    "explanation": "Reach for this pattern when the prompt contains sliding heaps and priority updates without handles. Confirm that its assumptions actually hold, then compare O(log n) amortised operation · O(n) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: sliding heaps and priority updates without handles.",
+    "practiceCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Lazy Heap Deletion.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

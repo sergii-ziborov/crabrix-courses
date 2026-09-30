@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "graph-traversal",
+    "categoryTitle": "DFS, BFS & Graph Traversal",
+    "complexity": "O(rows*cols) time · O(rows*cols) space worst",
+    "difficulty": "medium",
+    "expectedAnswer": "5",
+    "idea": "Treat cells as graph nodes and traverse only neighbors satisfying the region predicate.",
+    "patternID": "grid-flood-fill",
+    "rustSketch": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "stage": "model",
+    "task": "Return the size of the component containing row 1 column 1.",
+    "useCases": "islands, image fill, maze regions",
+    "visibleInput": "[[1,0,0],[1,1,0],[0,1,1]]"
+  },
+  "concept": "Treat cells as graph nodes and traverse only neighbors satisfying the region predicate.",
+  "contentDigest": "687599ed4cecb6f15650acca55baf3e79fb8846ea7922b08d29d8520b64a9415",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Return the number of undirected connected components.",
+        "direction": "previous",
+        "title": "Challenge: Connected Components"
+      },
+      {
+        "concept": "islands, image fill, maze regions",
+        "direction": "next",
+        "title": "Grid Flood Fill: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(rows*cols) time · O(rows*cols) space worst bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on treat cells as graph nodes and traverse only neighbors satisfying the region predicate.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.grid-flood-fill.model",
+  "minutes": 11,
+  "order": 12,
+  "parentID": "algorithms-graph-traversal",
+  "title": "Grid Flood Fill: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(rows*cols) time · O(rows*cols) space worst",
+    "exampleCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "explanation": "Grid Flood Fill belongs to DFS, BFS & Graph Traversal. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include islands, image fill, maze regions.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(rows*cols) time · O(rows*cols) space worst bound without looking at the code.",
+    "summary": "Treat cells as graph nodes and traverse only neighbors satisfying the region predicate.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

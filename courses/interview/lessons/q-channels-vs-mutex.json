@@ -1,0 +1,59 @@
+{
+  "concept": "Moving ownership or sharing it",
+  "contentDigest": "c5f8a5124f1448a1227f3cfbe13d0d88e602f53f061454d6a76da8471dbacd7d",
+  "depth": {
+    "connections": [
+      {
+        "concept": "What the borrow checker does not prevent",
+        "direction": "previous",
+        "title": "Deadlocks"
+      },
+      {
+        "concept": "Waiting versus computing",
+        "direction": "next",
+        "title": "Async vs Threads"
+      }
+    ],
+    "correction": "Channels move ownership; a mutex shares it. Pick by data flow.",
+    "misconception": "“Arc<Mutex<Vec<Job>>>”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Pick channel or mutex for a metrics counter and for a work queue.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "Each choice names who owns the data and how often it is written.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on moving ownership or sharing it."
+  },
+  "exerciseKind": "planned",
+  "id": "q-channels-vs-mutex",
+  "minutes": 10,
+  "order": 2,
+  "parentID": "interview-concurrency",
+  "title": "Channels vs Mutex",
+  "writing": {
+    "answers": [
+      "Arc<Mutex<Vec<Job>>>",
+      "An mpsc channel",
+      "A global static"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "The value moves; no lock is needed on either side.",
+    "exampleCode": "let (tx, rx) = std::sync::mpsc::channel();\nstd::thread::spawn(move || {\n    tx.send(compute()).unwrap();\n});\nlet value = rx.recv().unwrap();",
+    "explanation": "A channel moves ownership between threads, so there is nothing left to lock and the flow of data is visible in the code. A mutex keeps one copy that several threads mutate in place, which is better when the state is genuinely shared and read far more often than written. Choosing by shape rather than by habit is the answer being looked for.",
+    "feedback": "Many-producer, single-consumer is exactly what a channel is.",
+    "practiceCode": "// Many producers, one consumer, ordered work.\nlet queue = ???;",
+    "question": "Which coordination primitive fits better?",
+    "rule": "Channels move ownership; a mutex shares it. Pick by data flow.",
+    "success": "Each choice names who owns the data and how often it is written.",
+    "summary": "Share memory by communicating, or communicate by sharing memory.",
+    "task": "Pick channel or mutex for a metrics counter and for a work queue."
+  }
+}

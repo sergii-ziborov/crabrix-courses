@@ -1,0 +1,59 @@
+{
+  "concept": "What the borrow checker does not prevent",
+  "contentDigest": "dc24d874f6a1cb05c6b75f795669c5c1e4115c386011f72abd8d2665b3dde03d",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Relaxed, Acquire/Release, SeqCst",
+        "direction": "previous",
+        "title": "Atomics and Ordering"
+      },
+      {
+        "concept": "Moving ownership or sharing it",
+        "direction": "next",
+        "title": "Channels vs Mutex"
+      }
+    ],
+    "correction": "Data-race freedom is a compile-time guarantee; deadlock freedom is a design one.",
+    "misconception": "“Use RwLock instead”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Name three ways to remove a deadlock without changing behaviour.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "Your answer includes a lock order and one lock-free alternative.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on what the borrow checker does not prevent."
+  },
+  "exerciseKind": "planned",
+  "id": "q-deadlock",
+  "minutes": 10,
+  "order": 1,
+  "parentID": "interview-concurrency",
+  "title": "Deadlocks",
+  "writing": {
+    "answers": [
+      "Wrap both in one Mutex, or always take them in one fixed order",
+      "Use RwLock instead",
+      "Add a sleep between the locks"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Two orders, one hang. The types all check out.",
+    "exampleCode": "// thread 1\nlet _a = a.lock().unwrap();\nlet _b = b.lock().unwrap();\n\n// thread 2\nlet _b = b.lock().unwrap();\nlet _a = a.lock().unwrap();",
+    "explanation": "The borrow checker knows nothing about the order in which you take locks, so two threads taking Mutex A then Mutex B, and B then A, will still hang. The standard answers are a global lock order, holding one lock at a time, using try_lock with a timeout, or removing shared state entirely by moving to channels. Knowing Rust does not solve this is the point of the question.",
+    "feedback": "One lock, or one documented order, removes the cycle entirely.",
+    "practiceCode": "let a = first.lock().unwrap();\nlet b = second.lock().unwrap();",
+    "question": "What is the cheapest fix across the whole codebase?",
+    "rule": "Data-race freedom is a compile-time guarantee; deadlock freedom is a design one.",
+    "success": "Your answer includes a lock order and one lock-free alternative.",
+    "summary": "Rust prevents data races, not deadlocks.",
+    "task": "Name three ways to remove a deadlock without changing behaviour."
+  }
+}

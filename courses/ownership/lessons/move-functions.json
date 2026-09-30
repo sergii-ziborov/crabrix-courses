@@ -1,0 +1,59 @@
+{
+  "concept": "Parameters can take, borrow, or copy a value",
+  "contentDigest": "914b5e19bbf4ddaea406718aff2f3bc06a9f478d847f493c2560e21bd9704b47",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Add, Display, From, and Into",
+        "direction": "previous",
+        "title": "Operator Traits"
+      },
+      {
+        "concept": "One temporary writer with exclusive access",
+        "direction": "next",
+        "title": "Mutable Borrows"
+      }
+    ],
+    "correction": "A parameter of type String takes ownership, while &str only borrows text.",
+    "misconception": "“String is Copy”",
+    "traceSteps": [
+      {
+        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
+        "title": "Map ownership first"
+      },
+      {
+        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on parameters can take, borrow, or copy a value."
+  },
+  "exerciseKind": "planned",
+  "id": "move-functions",
+  "minutes": 9,
+  "order": 0,
+  "parentID": "ownership-practice",
+  "title": "Moves Across Functions",
+  "writing": {
+    "answers": [
+      "String is Copy",
+      "inspect only borrowed it",
+      "println! restores it"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCode": "fn inspect(text: &str) {\n    println!(\"{text}\");\n}\nlet name = String::from(\"Ferris\");\ninspect(&name);\nprintln!(\"{name}\");",
+    "explanation": "A parameter of type String takes ownership, while &str only borrows text. Read the signature before deciding whether the caller should keep using its value.",
+    "feedback": "Correct: inspect only borrowed it.",
+    "practiceCode": "fn inspect(text: &str) {\n    println!(\"{text}\");\n}\nlet name = String::from(\"Ferris\");\ninspect(&name);\nprintln!(\"{name}\");",
+    "question": "Why can name be printed after inspect?",
+    "rule": "A parameter of type String takes ownership, while &str only borrows text.",
+    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "summary": "Parameters can take, borrow, or copy a value.",
+    "task": "Trace the example, name the guarantee, and identify where it ends."
+  }
+}

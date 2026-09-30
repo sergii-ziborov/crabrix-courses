@@ -1,0 +1,59 @@
+{
+  "concept": "Relationships, not object duration",
+  "contentDigest": "f07f58868cc0c20df7b55c934c14ff1585f3e89c5582f761d478f478c8b4100d",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Aliasing and mutation rules",
+        "direction": "previous",
+        "title": "Why Borrowing Works"
+      },
+      {
+        "concept": "Absence, failure, and propagation",
+        "direction": "next",
+        "title": "Option vs Result"
+      }
+    ],
+    "correction": "A lifetime constrains borrows; it never keeps anything alive.",
+    "misconception": "“The lifetime is simply too short to name here”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Correct the claim that a lifetime extends how long data lives.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You describe a constraint the compiler checks, not runtime behaviour.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on relationships, not object duration."
+  },
+  "exerciseKind": "planned",
+  "id": "q-lifetimes",
+  "minutes": 10,
+  "order": 2,
+  "parentID": "interview-language",
+  "title": "Lifetime Reasoning",
+  "writing": {
+    "answers": [
+      "The lifetime is simply too short to name here",
+      "s is dropped at the end of the function, so no borrow can be valid",
+      "A String can never be returned from a function"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "The annotation relates the inputs to the output.",
+    "exampleCode": "fn pick<'a>(\n    a: &'a str,\n    b: &'a str,\n) -> &'a str {\n    if a.len() > b.len() { a } else { b }\n}",
+    "explanation": "The common misconception is that a lifetime controls how long a value lives. It does not: it is a compile-time claim about which borrows outlive which. Annotations appear only where inference cannot decide, which is why most code has none.",
+    "feedback": "Return the String itself; a borrow of a dead local can never be sound.",
+    "practiceCode": "fn dangle() -> &String {\n    let s = String::from(\"x\");\n    &s\n}",
+    "question": "Why can no annotation fix that?",
+    "rule": "A lifetime constrains borrows; it never keeps anything alive.",
+    "success": "You describe a constraint the compiler checks, not runtime behaviour.",
+    "summary": "Lifetimes are about relationships, and saying so is the answer.",
+    "task": "Correct the claim that a lifetime extends how long data lives."
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "concept": "Identity, confidentiality, integrity",
+  "contentDigest": "c930eebb0c7eb46df09f52606c1f042551e3c4997b303769285e93f760f668a5",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Head-of-line blocking per layer",
+        "direction": "previous",
+        "title": "HTTP/1.1, 2, and 3"
+      },
+      {
+        "concept": "Bounded queues and load shedding",
+        "direction": "next",
+        "title": "Backpressure"
+      }
+    ],
+    "correction": "Encryption without verified identity protects you from nobody in particular.",
+    "misconception": "“Nothing changes, it is only a warning”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Say what a certificate proves, and what it does not.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You separate identity from encryption rather than treating them as one thing.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on identity, confidentiality, integrity."
+  },
+  "exerciseKind": "planned",
+  "id": "q-tls",
+  "minutes": 11,
+  "order": 5,
+  "parentID": "interview-platform",
+  "title": "What TLS Guarantees",
+  "writing": {
+    "answers": [
+      "Nothing changes, it is only a warning",
+      "Encryption to whoever answered — a MITM is now undetectable",
+      "Slower connections"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Verification is the part people disable and regret.",
+    "exampleCode": "let config = ClientConfig::builder()\n    .with_root_certificates(roots)\n    .with_no_client_auth();",
+    "explanation": "The handshake authenticates the server through a certificate chain, agrees on keys with an ephemeral exchange, and switches to symmetric encryption because it is far faster. Skip the certificate check and a machine in the middle (MITM) can answer in the server's place, decrypt everything, and forward it on. Forward secrecy means recording traffic today and stealing the key tomorrow reveals nothing. Certificate pinning, mTLS, and SNI are the follow-up questions.",
+    "feedback": "Without verification the tunnel may simply terminate at the attacker.",
+    "practiceCode": "danger_accept_invalid_certs(true)",
+    "question": "What does that leave you with?",
+    "rule": "Encryption without verified identity protects you from nobody in particular.",
+    "success": "You separate identity from encryption rather than treating them as one thing.",
+    "summary": "TLS gives confidentiality, integrity, and identity — in that order of confusion.",
+    "task": "Say what a certificate proves, and what it does not."
+  }
+}

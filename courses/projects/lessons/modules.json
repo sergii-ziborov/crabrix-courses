@@ -1,0 +1,54 @@
+{
+  "concept": "Cargo.toml and sibling files",
+  "contentDigest": "93d5b2be255bf3c1e15dbf77602c502f05b0090d061b47b05ce8bca8a90cce55",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Unit and integration tests",
+        "direction": "next",
+        "title": "Testing"
+      }
+    ],
+    "correction": "Items are private by default; pub is what exposes them.",
+    "misconception": "“It lives in a different file from main”",
+    "traceSteps": [
+      {
+        "detail": "Separate source modules, public API, manifest data, dependency graph, and build evidence before changing any one of them.",
+        "title": "Map the project boundary"
+      },
+      {
+        "detail": "Open the multi-file project, trace mod greeter, and change its public function.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "It compiles from src/main.rs and prints the edited output.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Move one responsibility across a module or package boundary without changing behaviour. Predict which imports, tests, or lock data must change. Keep the focus on cargo.toml and sibling files."
+  },
+  "exerciseKind": "multiFile",
+  "id": "modules",
+  "minutes": 9,
+  "order": 0,
+  "parentID": "projects",
+  "title": "Modules",
+  "writing": {
+    "answers": [
+      "It lives in a different file from main",
+      "Items are private by default, so it needs pub",
+      "A module function has to return a Result"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "mod declares it; pub decides what leaves it.",
+    "exampleCode": "// src/main.rs\nmod greeter;\n\nfn main() {\n    println!(\"{}\", greeter::message());\n}\n\n// src/greeter.rs\npub fn message() -> &'static str {\n    \"hello from a module\"\n}",
+    "explanation": "mod declares a module and use brings a path into scope, while pub decides what actually escapes. Cargo.toml describes the package around them — the same file the package manager reads to resolve your dependencies.",
+    "feedback": "Privacy is the default; pub fn helper makes it reachable.",
+    "practiceCode": "mod util {\n    fn helper() -> u32 { 1 }\n}\nlet value = util::helper();",
+    "question": "Why can't main call helper?",
+    "rule": "Items are private by default; pub is what exposes them.",
+    "success": "It compiles from src/main.rs and prints the edited output.",
+    "summary": "Modules split a crate into files, and privacy shapes the surface.",
+    "task": "Open the multi-file project, trace mod greeter, and change its public function."
+  }
+}

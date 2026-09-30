@@ -1,0 +1,59 @@
+{
+  "concept": "Make a data layout contract explicit at a boundary",
+  "contentDigest": "44cf1bdc2238b2f3215861f859ffc4ae7d94bc1738eb21d1efcbf5c8bd9b4531",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Represent an address without borrow guarantees",
+        "direction": "previous",
+        "title": "Raw Pointers"
+      },
+      {
+        "concept": "Make an implementation promise other unsafe code relies on",
+        "direction": "next",
+        "title": "Unsafe Traits"
+      }
+    ],
+    "correction": "Rust's default layout may change for optimization and is not an FFI contract.",
+    "misconception": "“To allocate on heap”",
+    "traceSteps": [
+      {
+        "detail": "Write down what callers may assume, what the compiler cannot prove, and which boundary is responsible for preserving soundness or cost.",
+        "title": "State the invariant"
+      },
+      {
+        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Create the smallest counterexample that violates the sample's invariant, then repair the abstraction boundary instead of hiding the symptom. Keep the focus on make a data layout contract explicit at a boundary."
+  },
+  "exerciseKind": "planned",
+  "id": "repr-layout",
+  "minutes": 12,
+  "order": 1,
+  "parentID": "unsafe-engineering",
+  "title": "Representation & Layout",
+  "writing": {
+    "answers": [
+      "To define layout",
+      "To allocate on heap",
+      "To add Copy"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCode": "#[repr(C)]\nstruct Header {\n    kind: u16,\n    length: u32,\n}",
+    "explanation": "Rust's default layout may change for optimization and is not an FFI contract. repr(C) gives C-compatible field ordering while fixed integer types make sizes explicit.",
+    "feedback": "Correct: To define layout.",
+    "practiceCode": "#[repr(C)]\nstruct Header {\n    kind: u16,\n    length: u32,\n}",
+    "question": "Why does an FFI struct need repr(C)?",
+    "rule": "Rust's default layout may change for optimization and is not an FFI contract.",
+    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "summary": "Make a data layout contract explicit at a boundary.",
+    "task": "Trace the example, name the guarantee, and identify where it ends."
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "concept": "Borrow local data while threads are guaranteed to join",
+  "contentDigest": "7ffda8e5783f0045a2392114f80fa11f57274ee93b9da7db7596c95bbe1ef653",
+  "depth": {
+    "connections": [
+      {
+        "concept": "join, select, and cancellation",
+        "direction": "previous",
+        "title": "Async Patterns"
+      },
+      {
+        "concept": "Notice a panic that may leave state inconsistent",
+        "direction": "next",
+        "title": "Mutex Poisoning"
+      }
+    ],
+    "correction": "thread::scope proves every spawned thread finishes before borrowed stack data disappears.",
+    "misconception": "“Arrays are static”",
+    "traceSteps": [
+      {
+        "detail": "Name each task or thread, the state it can reach, and every point where work can wait, race, block, or be cancelled.",
+        "title": "Draw the event timeline"
+      },
+      {
+        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Add a second worker or cancellation point. Draw two possible event orders and state the invariant that both orders must preserve. Keep the focus on borrow local data while threads are guaranteed to join."
+  },
+  "exerciseKind": "planned",
+  "id": "scoped-threads",
+  "minutes": 11,
+  "order": 0,
+  "parentID": "concurrency-safety",
+  "title": "Scoped Threads",
+  "writing": {
+    "answers": [
+      "The scope joins it",
+      "Arrays are static",
+      "spawn copies all"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCode": "let values = [2, 4, 6];\nstd::thread::scope(|scope| {\n    scope.spawn(|| {\n        println!(\"{}\", values.len());\n    });\n});",
+    "explanation": "thread::scope proves every spawned thread finishes before borrowed stack data disappears. It avoids unnecessary Arc or cloning when concurrency stays inside one lexical operation.",
+    "feedback": "Correct: The scope joins it.",
+    "practiceCode": "let values = [2, 4, 6];\nstd::thread::scope(|scope| {\n    scope.spawn(|| {\n        println!(\"{}\", values.len());\n    });\n});",
+    "question": "Why may the thread borrow values?",
+    "rule": "thread::scope proves every spawned thread finishes before borrowed stack data disappears.",
+    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "summary": "Borrow local data while threads are guaranteed to join.",
+    "task": "Trace the example, name the guarantee, and identify where it ends."
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "graph-traversal",
+    "categoryTitle": "DFS, BFS & Graph Traversal",
+    "complexity": "O(V+E) time · O(V) space",
+    "difficulty": "medium",
+    "expectedAnswer": "0,1,2,3",
+    "idea": "Repeatedly remove zero-indegree nodes and decrement dependents; leftovers prove a cycle.",
+    "patternID": "kahn-topological",
+    "rustSketch": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "stage": "challenge",
+    "task": "Return lexicographically smallest valid order.",
+    "useCases": "course schedules and build dependency order",
+    "visibleInput": "n=4 edges=0->1,0->2,1->3,2->3"
+  },
+  "concept": "Return lexicographically smallest valid order.",
+  "contentDigest": "15af46f74ec743c5795347a7826bbc6c7252e27c911ddc8c6f3ba893d4e66c86",
+  "depth": {
+    "connections": [
+      {
+        "concept": "course schedules and build dependency order",
+        "direction": "previous",
+        "title": "Kahn Topological Sort: When to Use It"
+      },
+      {
+        "concept": "Append a node after all descendants; a gray-to-gray edge proves a directed cycle.",
+        "direction": "next",
+        "title": "DFS Topological Sort: Mental Model"
+      }
+    ],
+    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
+    "misconception": "“No complexity bound is needed”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Return lexicographically smallest valid order.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "The harness prints PASS kahn-topological, and your explanation still meets O(V+E) time · O(V) space.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on return lexicographically smallest valid order.."
+  },
+  "exerciseKind": "algorithmChallenge",
+  "id": "algorithm.kahn-topological.challenge",
+  "minutes": 11,
+  "order": 23,
+  "parentID": "algorithms-graph-traversal",
+  "title": "Challenge: Kahn Topological Sort",
+  "writing": {
+    "answers": [
+      "O(V+E) time · O(V) space",
+      "No complexity bound is needed",
+      "Always O(n!) time"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Editable solution · verification data stays outside the project",
+    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return lexicographically smallest valid order.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Kahn Topological Sort\")\n}",
+    "explanation": "This is an original Crabrix exercise in the same problem family as common interview-platform questions. Visible input: n=4 edges=0->1,0->2,1->3,2->3. Expected answer: 0,1,2,3. Implement solve instead of printing the expected value directly; Crabrix supplies several verification cases privately when you Run. The input grammar matches the visible example, and whitespace surrounding the complete input is insignificant.",
+    "feedback": "The intended target is O(V+E) time · O(V) space; defend any different tradeoff explicitly.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return lexicographically smallest valid order.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Kahn Topological Sort\")\n}",
+    "question": "Which performance target should guide this solution?",
+    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
+    "success": "The harness prints PASS kahn-topological, and your explanation still meets O(V+E) time · O(V) space.",
+    "summary": "Return lexicographically smallest valid order.",
+    "task": "Return lexicographically smallest valid order."
+  }
+}

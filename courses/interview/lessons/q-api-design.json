@@ -1,0 +1,59 @@
+{
+  "concept": "Making misuse impossible to express",
+  "contentDigest": "448ecef20217370601df94139a116c37560c496dbd6eae12eb5c41527b8cbf8c",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Unit, property, fuzz, integration",
+        "direction": "previous",
+        "title": "Choosing a Test"
+      },
+      {
+        "concept": "Measure, change one thing, measure",
+        "direction": "next",
+        "title": "Profiling First"
+      }
+    ],
+    "correction": "Encode the invariant in the type; documentation is not enforcement.",
+    "misconception": "“It cannot — adding a variant is always safe”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Make one plausible misuse of an API impossible to express.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "The mistake becomes a compile error rather than a comment.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on making misuse impossible to express."
+  },
+  "exerciseKind": "planned",
+  "id": "q-api-design",
+  "minutes": 12,
+  "order": 3,
+  "parentID": "interview-craft",
+  "title": "API Design and Semver",
+  "writing": {
+    "answers": [
+      "It cannot — adding a variant is always safe",
+      "Their exhaustive matches stop compiling — mark it non_exhaustive",
+      "An enum cannot be extended after release"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "The compiler now rejects the argument order mistake.",
+    "exampleCode": "struct AccountId(u64);\nstruct Amount(u64);\n\nfn transfer(\n    from: AccountId,\n    to: AccountId,\n    amount: Amount,\n) {}",
+    "explanation": "Newtypes stop two u64s being swapped, typestate stops a request being sent twice, and returning Result instead of panicking hands the decision to the caller. Semver then constrains what you may change: adding a public enum variant or a trait method is a breaking change, which is why non_exhaustive and sealed traits exist.",
+    "feedback": "non_exhaustive forces a wildcard, which keeps additions non-breaking.",
+    "practiceCode": "pub enum Status { Ok, Failed }",
+    "question": "Why can adding a variant break callers?",
+    "rule": "Encode the invariant in the type; documentation is not enforcement.",
+    "success": "The mistake becomes a compile error rather than a comment.",
+    "summary": "A good API makes the wrong call impossible, not merely documented.",
+    "task": "Make one plausible misuse of an API impossible to express."
+  }
+}

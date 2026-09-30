@@ -1,0 +1,59 @@
+{
+  "concept": "Combine type bounds with borrow relationships",
+  "contentDigest": "f2f6ec17e11df401300f3507471cbaf537744e581ba951b54dd6cd75ad26774d",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Share behavior while allowing an override",
+        "direction": "previous",
+        "title": "Default Trait Methods"
+      },
+      {
+        "concept": "Transform lazily, then choose one consumer",
+        "direction": "next",
+        "title": "Iterator Pipelines"
+      }
+    ],
+    "correction": "A function may be generic over both a data type and a lifetime.",
+    "misconception": "“Only T”",
+    "traceSteps": [
+      {
+        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
+        "title": "Map ownership first"
+      },
+      {
+        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on combine type bounds with borrow relationships."
+  },
+  "exerciseKind": "planned",
+  "id": "generic-lifetimes",
+  "minutes": 11,
+  "order": 3,
+  "parentID": "abstraction-practice",
+  "title": "Generic Lifetimes",
+  "writing": {
+    "answers": [
+      "Both inputs and output",
+      "Only T",
+      "The Ord impl"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCode": "fn choose<'a, T>(left: &'a T, right: &'a T)\n    -> &'a T\nwhere T: Ord {\n    if left > right { left } else { right }\n}",
+    "explanation": "A function may be generic over both a data type and a lifetime. Keep each parameter only when the body needs it; extra bounds make an API less reusable without adding safety.",
+    "feedback": "Correct: Both inputs and output.",
+    "practiceCode": "fn choose<'a, T>(left: &'a T, right: &'a T)\n    -> &'a T\nwhere T: Ord {\n    if left > right { left } else { right }\n}",
+    "question": "What does 'a connect here?",
+    "rule": "A function may be generic over both a data type and a lifetime.",
+    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "summary": "Combine type bounds with borrow relationships.",
+    "task": "Trace the example, name the guarantee, and identify where it ends."
+  }
+}

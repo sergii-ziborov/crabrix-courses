@@ -1,0 +1,54 @@
+{
+  "concept": "Moves and scope",
+  "contentDigest": "d87833b54474a9ea555c337a6324ba31b8f2d68ad2703a438f2bf5732bb6624f",
+  "depth": {
+    "connections": [
+      {
+        "concept": "References and E0502",
+        "direction": "next",
+        "title": "Borrowing"
+      }
+    ],
+    "correction": "One value, one owner; a move ends the previous binding.",
+    "misconception": "“Add mut to a”",
+    "traceSteps": [
+      {
+        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
+        "title": "Map ownership first"
+      },
+      {
+        "detail": "Predict which binding still owns a String after an assignment.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain why no double free is possible.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on moves and scope."
+  },
+  "exerciseKind": "planned",
+  "id": "ownership",
+  "minutes": 8,
+  "order": 0,
+  "parentID": "ownership",
+  "title": "Ownership",
+  "writing": {
+    "answers": [
+      "Add mut to a",
+      "Use a.clone() for b",
+      "Wrap a in a Box"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "The move is what makes a double free impossible.",
+    "exampleCode": "let first = String::from(\"crab\");\nlet second = first; // ownership moves\n// println!(\"{first}\");\n// ^ error[E0382]: value moved\nprintln!(\"{second}\");",
+    "explanation": "Moves transfer that responsibility to a new binding and make the old one unusable. Copy types duplicate instead of moving, and Drop runs the moment the owner leaves scope — which is how Rust frees memory with no garbage collector and no possibility of a double free. When you genuinely need two usable values, clone() makes a second one that owns its own data.",
+    "feedback": "Cloning creates a second owned String rather than moving the first.",
+    "practiceCode": "let a = String::from(\"x\");\nlet b = a;\nprintln!(\"{a}\");",
+    "question": "What is the smallest fix that keeps both usable?",
+    "rule": "One value, one owner; a move ends the previous binding.",
+    "success": "You can explain why no double free is possible.",
+    "summary": "Ownership gives every value one clear cleanup responsibility.",
+    "task": "Predict which binding still owns a String after an assignment."
+  }
+}

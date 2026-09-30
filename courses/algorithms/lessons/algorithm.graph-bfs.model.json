@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "graph-traversal",
+    "categoryTitle": "DFS, BFS & Graph Traversal",
+    "complexity": "O(V+E) time · O(V) space",
+    "difficulty": "easy",
+    "expectedAnswer": "0,1,1,2,2",
+    "idea": "Process the frontier in queue order so first discovery has minimum edge count.",
+    "patternID": "graph-bfs",
+    "rustSketch": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "stage": "model",
+    "task": "Return distance in edges from node 0 to every node.",
+    "useCases": "unweighted shortest paths and layer expansion",
+    "visibleInput": "n=5 edges=(0,1),(0,2),(1,3),(2,4)"
+  },
+  "concept": "Process the frontier in queue order so first discovery has minimum edge count.",
+  "contentDigest": "89012faaf5eeaa04d9e6329298ec637aef482c48d7d12c76c78533238f1e81b7",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Return recursive DFS order using ascending neighbors from node 0.",
+        "direction": "previous",
+        "title": "Challenge: Graph DFS"
+      },
+      {
+        "concept": "unweighted shortest paths and layer expansion",
+        "direction": "next",
+        "title": "Graph BFS: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(V+E) time · O(V) space bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on process the frontier in queue order so first discovery has minimum edge count.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.graph-bfs.model",
+  "minutes": 8,
+  "order": 6,
+  "parentID": "algorithms-graph-traversal",
+  "title": "Graph BFS: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(V+E) time · O(V) space",
+    "exampleCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "explanation": "Graph BFS belongs to DFS, BFS & Graph Traversal. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include unweighted shortest paths and layer expansion.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(V+E) time · O(V) space bound without looking at the code.",
+    "summary": "Process the frontier in queue order so first discovery has minimum edge count.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

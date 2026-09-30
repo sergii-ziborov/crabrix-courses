@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "strings-tries",
+    "categoryTitle": "Tries & String Matching",
+    "complexity": "O(n+m) expected · O(n*m) collision worst",
+    "difficulty": "medium",
+    "expectedAnswer": "0,7",
+    "idea": "Compare rolling hashes first and verify actual bytes only on hash matches.",
+    "patternID": "rabin-karp",
+    "rustSketch": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "stage": "model",
+    "task": "Return every start index of the pattern.",
+    "useCases": "multiple pattern candidates and substring fingerprints",
+    "visibleInput": "text=abracadabra pattern=abra"
+  },
+  "concept": "Compare rolling hashes first and verify actual bytes only on hash matches.",
+  "contentDigest": "5f1251ac591cd16c43d1720180565fee29452c91829452021b6d591d2fffa62b",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Return the Z array.",
+        "direction": "previous",
+        "title": "Challenge: Z Algorithm"
+      },
+      {
+        "concept": "multiple pattern candidates and substring fingerprints",
+        "direction": "next",
+        "title": "Rabin–Karp: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(n+m) expected · O(n*m) collision worst bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on compare rolling hashes first and verify actual bytes only on hash matches.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.rabin-karp.model",
+  "minutes": 11,
+  "order": 15,
+  "parentID": "algorithms-strings-tries",
+  "title": "Rabin–Karp: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(n+m) expected · O(n*m) collision worst",
+    "exampleCode": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "explanation": "Rabin–Karp belongs to Tries & String Matching. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include multiple pattern candidates and substring fingerprints.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(n+m) expected · O(n*m) collision worst bound without looking at the code.",
+    "summary": "Compare rolling hashes first and verify actual bytes only on hash matches.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

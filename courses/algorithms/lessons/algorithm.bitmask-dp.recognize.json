@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "dynamic-2d",
+    "categoryTitle": "2D & Advanced Dynamic Programming",
+    "complexity": "O(2^n * n^2) typical · O(2^n*n) space",
+    "difficulty": "hard",
+    "expectedAnswer": "80",
+    "idea": "Encode the chosen subset in bits and transition by adding one unused item.",
+    "patternID": "bitmask-dp",
+    "rustSketch": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
+    "stage": "recognize",
+    "task": "Return minimum tour cost starting and ending at 0.",
+    "useCases": "small assignment, travelling salesperson, pairing",
+    "visibleInput": "matrix=[[0,10,15,20],[10,0,35,25],[15,35,0,30],[20,25,30,0]]"
+  },
+  "concept": "small assignment, travelling salesperson, pairing",
+  "contentDigest": "fab6c769424d9c8624e6d6c2b73bb3fcd2c6de8b12ee9b8dc066ef95e19afbd0",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Encode the chosen subset in bits and transition by adding one unused item.",
+        "direction": "previous",
+        "title": "Bitmask DP: Mental Model"
+      },
+      {
+        "concept": "Return minimum tour cost starting and ending at 0.",
+        "direction": "next",
+        "title": "Challenge: Bitmask DP"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on small assignment, travelling salesperson, pairing."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.bitmask-dp.recognize",
+  "minutes": 15,
+  "order": 25,
+  "parentID": "algorithms-dynamic-2d",
+  "title": "Bitmask DP: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "small assignment, travelling salesperson, pairing",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Bitmask DP",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Bitmask DP",
+    "explanation": "Reach for this pattern when the prompt contains small assignment, travelling salesperson, pairing. Confirm that its assumptions actually hold, then compare O(2^n * n^2) typical · O(2^n*n) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: small assignment, travelling salesperson, pairing.",
+    "practiceCode": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Bitmask DP.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

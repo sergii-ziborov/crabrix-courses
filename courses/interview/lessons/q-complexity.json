@@ -1,0 +1,59 @@
+{
+  "concept": "Constants, cache, and amortised cost",
+  "contentDigest": "89c303b97269edfa8798ae654d2032a51d500606b0fb5b6f4b108159ce12a132",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Staleness budgets and stampedes",
+        "direction": "previous",
+        "title": "Caching and Invalidation"
+      },
+      {
+        "concept": "Why Rust seeds its hasher",
+        "direction": "next",
+        "title": "Hashing and Collisions"
+      }
+    ],
+    "correction": "Complexity predicts growth; constants decide which one is faster today.",
+    "misconception": "“Always O(1), the buffer never moves”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Estimate the input size at which a HashMap beats a linear scan here.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "Your answer mentions constants and cache behaviour, not only the exponent.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on constants, cache, and amortised cost."
+  },
+  "exerciseKind": "planned",
+  "id": "q-complexity",
+  "minutes": 10,
+  "order": 0,
+  "parentID": "interview-craft",
+  "title": "Complexity in Practice",
+  "writing": {
+    "answers": [
+      "Always O(1), the buffer never moves",
+      "O(1) amortised, with an O(n) copy when it reallocates",
+      "O(log n), like a balanced tree insert"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Same complexity class, very different constants.",
+    "exampleCode": "// O(n), one cache line at a time\nitems.iter().find(|item| item.id == id)\n\n// O(log n), a pointer chase per level\ntree.get(&id)",
+    "explanation": "A linear scan of a contiguous Vec often beats a logarithmic tree for small inputs because the constant factor is cache locality. The useful answer names the input size where the asymptotic term takes over, and mentions amortised cost: push on a Vec is O(1) amortised, but the reallocation that makes it so is O(n) and happens at the worst moment.",
+    "feedback": "with_capacity removes the reallocation when the size is known.",
+    "practiceCode": "let mut v = Vec::new();\nfor item in stream { v.push(item); }",
+    "question": "What is the cost of one push?",
+    "rule": "Complexity predicts growth; constants decide which one is faster today.",
+    "success": "Your answer mentions constants and cache behaviour, not only the exponent.",
+    "summary": "Big-O tells you how something scales, not how fast it is.",
+    "task": "Estimate the input size at which a HashMap beats a linear scan here."
+  }
+}

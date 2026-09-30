@@ -1,0 +1,59 @@
+{
+  "concept": "impl Iterator and the next method",
+  "contentDigest": "7fc9cd1dd6734d28bc8f6c9c4e184e4a9d6b7a78a7ad98cba95b0826b3d7af1d",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Lazy transformations",
+        "direction": "previous",
+        "title": "Iterators"
+      },
+      {
+        "concept": "One output type per implementation",
+        "direction": "next",
+        "title": "Associated Types"
+      }
+    ],
+    "correction": "Implement next(); the adapters are default methods on the trait.",
+    "misconception": "“Returning Some(0)”",
+    "traceSteps": [
+      {
+        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
+        "title": "Map ownership first"
+      },
+      {
+        "detail": "Implement Iterator for a small counter type.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "It works with at least one adapter you did not write.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on impl iterator and the next method."
+  },
+  "exerciseKind": "planned",
+  "id": "iterator-impl",
+  "minutes": 11,
+  "order": 5,
+  "parentID": "abstraction",
+  "title": "Writing an Iterator",
+  "writing": {
+    "answers": [
+      "Returning Some(0)",
+      "Returning None",
+      "Panicking"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Only `next` is written; `take` and `sum` come for free.",
+    "exampleCode": "struct Fibonacci { a: u64, b: u64 }\n\nimpl Iterator for Fibonacci {\n    type Item = u64;\n\n    fn next(&mut self) -> Option<u64> {\n        let value = self.a;\n        self.a = self.b;\n        self.b = value + self.b;\n        Some(value)\n    }\n}\n\nlet fib = Fibonacci { a: 0, b: 1 };\nlet total: u64 = fib.take(10).sum();\nprintln!(\"{total}\");",
+    "explanation": "Iterator requires only next(); everything else — map, filter, take, zip, sum — arrives as default methods. That is why a custom sequence composes with the standard library exactly like a Vec does, without any of it knowing your type exists.",
+    "feedback": "None ends the iteration, and every adapter respects it.",
+    "practiceCode": "impl Iterator for Countdown {\n    type Item = u32;\n    fn next(&mut self) -> Option<u32> { ??? }\n}",
+    "question": "What signals that the sequence has finished?",
+    "rule": "Implement next(); the adapters are default methods on the trait.",
+    "success": "It works with at least one adapter you did not write.",
+    "summary": "Implementing one method gives you the whole adapter library.",
+    "task": "Implement Iterator for a small counter type."
+  }
+}

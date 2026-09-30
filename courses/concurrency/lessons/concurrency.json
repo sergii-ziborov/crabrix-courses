@@ -1,0 +1,54 @@
+{
+  "concept": "spawn, join, and move closures",
+  "contentDigest": "b79232bf2bfaba8bdd1744f45de3b0e91355a541ca3d7848f8ef64e8bb4574e8",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Message passing with mpsc",
+        "direction": "next",
+        "title": "Channels"
+      }
+    ],
+    "correction": "A spawned closure must own what it uses, hence move.",
+    "misconception": "“A return type so the thread can report back”",
+    "traceSteps": [
+      {
+        "detail": "Name each task or thread, the state it can reach, and every point where work can wait, race, block, or be cancelled.",
+        "title": "Draw the event timeline"
+      },
+      {
+        "detail": "Spawn a thread that owns its data and return a result with join.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "The value is computed off the main thread and joined back.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Add a second worker or cancellation point. Draw two possible event orders and state the invariant that both orders must preserve. Keep the focus on spawn, join, and move closures."
+  },
+  "exerciseKind": "planned",
+  "id": "concurrency",
+  "minutes": 11,
+  "order": 0,
+  "parentID": "threads",
+  "title": "Threads",
+  "writing": {
+    "answers": [
+      "A return type so the thread can report back",
+      "move, so the closure owns data rather than borrowing it",
+      "The captured data has to be declared mut"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "move gives the closure ownership so it can outlive this scope.",
+    "exampleCode": "let values = vec![1, 2, 3];\n\nlet handle = std::thread::spawn(move || {\n    values.iter().sum::<i32>()\n});\n\nlet total = handle.join().unwrap();\nprintln!(\"{total}\");",
+    "explanation": "thread::spawn takes a closure that must own everything it touches, which is why move appears so often. join waits for a result. Rust moves many data races from runtime accidents to compile-time errors, because a type that is unsafe to share simply cannot be sent.",
+    "feedback": "The thread may outlive this scope, so a borrow is not enough.",
+    "practiceCode": "let data = vec![1, 2, 3];\nstd::thread::spawn(|| println!(\"{data:?}\"));",
+    "question": "What does the compiler ask for?",
+    "rule": "A spawned closure must own what it uses, hence move.",
+    "success": "The value is computed off the main thread and joined back.",
+    "summary": "Threads run in parallel, and ownership decides what may cross.",
+    "task": "Spawn a thread that owns its data and return a result with join."
+  }
+}

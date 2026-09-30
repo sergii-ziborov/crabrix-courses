@@ -1,0 +1,59 @@
+{
+  "concept": "Absence, failure, and propagation",
+  "contentDigest": "befc5bd21b9a12f623844dd62555e14f490f36f63085da10db48fcf837bcbdf9",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Relationships, not object duration",
+        "direction": "previous",
+        "title": "Lifetime Reasoning"
+      },
+      {
+        "concept": "Thread-safety marker traits",
+        "direction": "next",
+        "title": "Send and Sync"
+      }
+    ],
+    "correction": "Option: absence is normal. Result: the caller needs the reason.",
+    "misconception": "“unwrap_or”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Choose between Option and Result for two APIs and justify each.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "Each choice is explained by what the caller needs to know.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on absence, failure, and propagation."
+  },
+  "exerciseKind": "planned",
+  "id": "q-option-result",
+  "minutes": 8,
+  "order": 3,
+  "parentID": "interview-language",
+  "title": "Option vs Result",
+  "writing": {
+    "answers": [
+      "unwrap_or",
+      "ok_or",
+      "and_then"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "ok_or promotes an absence into a reported failure.",
+    "exampleCode": "fn port(map: &Config) -> Result<u16, String> {\n    map.get(\"port\")\n        .ok_or(\"port is missing\".to_string())?\n        .parse()\n        .map_err(|_| \"not a number\".into())\n}",
+    "explanation": "Option says a value may be absent and that is unremarkable. Result says an operation failed and carries why. Converting between them is routine — ok_or turns absence into an error when the caller does need a reason.",
+    "feedback": "ok_or supplies the error value that absence alone did not carry.",
+    "practiceCode": "let value: Option<u32> = map.get(\"k\");\nlet checked: Result<u32, String> = value.???;",
+    "question": "Which converts Option into Result?",
+    "rule": "Option: absence is normal. Result: the caller needs the reason.",
+    "success": "Each choice is explained by what the caller needs to know.",
+    "summary": "Pick the type that matches what the caller must decide.",
+    "task": "Choose between Option and Result for two APIs and justify each."
+  }
+}

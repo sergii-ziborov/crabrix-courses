@@ -1,0 +1,59 @@
+{
+  "concept": "Bounded queues and load shedding",
+  "contentDigest": "c0fb7754bb02e369fab0e6f8a7a9d2a14fef54a31fb026408939caf6ed4585b2",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Identity, confidentiality, integrity",
+        "direction": "previous",
+        "title": "What TLS Guarantees"
+      },
+      {
+        "concept": "Which anomaly each level allows",
+        "direction": "next",
+        "title": "Transactions and Isolation"
+      }
+    ],
+    "correction": "Every queue needs a bound and a policy for what happens at that bound.",
+    "misconception": "“Drops the oldest items to make room”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Replace an unbounded queue with a bounded one and decide what happens when full.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "The system slows down under load instead of running out of memory.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on bounded queues and load shedding."
+  },
+  "exerciseKind": "planned",
+  "id": "q-backpressure",
+  "minutes": 10,
+  "order": 6,
+  "parentID": "interview-platform",
+  "title": "Backpressure",
+  "writing": {
+    "answers": [
+      "Drops the oldest items to make room",
+      "Grows until the process is killed for using too much memory",
+      "Blocks the producer until a slot frees"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "The bound is the backpressure; awaiting send is the signal.",
+    "exampleCode": "let (tx, rx) = tokio::sync::mpsc::channel(256);\n// Waits once 256 are queued, instead of\n// growing until the process dies.\ntx.send(job).await?;",
+    "explanation": "When a producer is faster than a consumer, an unbounded channel converts a throughput problem into a memory problem and then an OOM. Backpressure means the queue has a bound and the producer waits, sheds load, or fails fast when it is full. Rust makes this explicit: a bounded sender's send is an await, which is the signal you asked for.",
+    "feedback": "Unbounded means the only limit is RAM, and it fails all at once.",
+    "practiceCode": "let (tx, rx) = mpsc::unbounded_channel();",
+    "question": "What does that do under sustained overload?",
+    "rule": "Every queue needs a bound and a policy for what happens at that bound.",
+    "success": "The system slows down under load instead of running out of memory.",
+    "summary": "A queue with no limit is a crash with a delay.",
+    "task": "Replace an unbounded queue with a bounded one and decide what happens when full."
+  }
+}

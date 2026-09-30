@@ -1,0 +1,59 @@
+{
+  "concept": "Choose a return type that matches the data flow",
+  "contentDigest": "ace39b16a6bb72d951d1cb4824110af644aca05d62f297596f51ff90838cc85d",
+  "depth": {
+    "connections": [
+      {
+        "concept": "The common lifetime relationships Rust infers",
+        "direction": "previous",
+        "title": "Lifetime Elision"
+      },
+      {
+        "concept": "Choose behavior at runtime with dyn Trait",
+        "direction": "next",
+        "title": "Trait Objects"
+      }
+    ],
+    "correction": "Return a borrow when the result is a view into an input; return an owned value when new data is created or must escape independently.",
+    "misconception": "“&str is slower”",
+    "traceSteps": [
+      {
+        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
+        "title": "Map ownership first"
+      },
+      {
+        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on choose a return type that matches the data flow."
+  },
+  "exerciseKind": "planned",
+  "id": "owned-or-borrowed",
+  "minutes": 10,
+  "order": 6,
+  "parentID": "ownership-practice",
+  "title": "Owned or Borrowed?",
+  "writing": {
+    "answers": [
+      "It creates new text",
+      "&str is slower",
+      "trim requires it"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCode": "fn label(input: &str) -> String {\n    input.trim().to_uppercase()\n}\nfn trimmed(input: &str) -> &str {\n    input.trim()\n}",
+    "explanation": "Return a borrow when the result is a view into an input; return an owned value when new data is created or must escape independently. The choice affects allocation and API flexibility.",
+    "feedback": "Correct: It creates new text.",
+    "practiceCode": "fn label(input: &str) -> String {\n    input.trim().to_uppercase()\n}\nfn trimmed(input: &str) -> &str {\n    input.trim()\n}",
+    "question": "Why does label return String?",
+    "rule": "Return a borrow when the result is a view into an input; return an owned value when new data is created or must escape independently.",
+    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "summary": "Choose a return type that matches the data flow.",
+    "task": "Trace the example, name the guarantee, and identify where it ends."
+  }
+}

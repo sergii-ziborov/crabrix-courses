@@ -1,0 +1,59 @@
+{
+  "concept": "Notice a panic that may leave state inconsistent",
+  "contentDigest": "8fae65c2d56cf9cd4b92d996eebf150deabe2a7f1d41179c4d82954dd8abc082",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Borrow local data while threads are guaranteed to join",
+        "direction": "previous",
+        "title": "Scoped Threads"
+      },
+      {
+        "concept": "Update one shared value without a lock",
+        "direction": "next",
+        "title": "Atomic State"
+      }
+    ],
+    "correction": "A standard Mutex becomes poisoned when a holder panics.",
+    "misconception": "“The lock is slow”",
+    "traceSteps": [
+      {
+        "detail": "Name each task or thread, the state it can reach, and every point where work can wait, race, block, or be cancelled.",
+        "title": "Draw the event timeline"
+      },
+      {
+        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Add a second worker or cancellation point. Draw two possible event orders and state the invariant that both orders must preserve. Keep the focus on notice a panic that may leave state inconsistent."
+  },
+  "exerciseKind": "planned",
+  "id": "mutex-poisoning",
+  "minutes": 10,
+  "order": 1,
+  "parentID": "concurrency-safety",
+  "title": "Mutex Poisoning",
+  "writing": {
+    "answers": [
+      "A holder panicked",
+      "The lock is slow",
+      "The value moved"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCode": "use std::sync::Mutex;\nlet value = Mutex::new(7);\nmatch value.lock() {\n    Ok(guard) => println!(\"{guard}\"),\n    Err(poisoned) => {\n        println!(\"{}\", *poisoned.into_inner());\n    }\n}",
+    "explanation": "A standard Mutex becomes poisoned when a holder panics. Recovery is possible, but code must decide whether the protected invariant is still trustworthy instead of blindly ignoring the signal.",
+    "feedback": "Correct: A holder panicked.",
+    "practiceCode": "use std::sync::Mutex;\nlet value = Mutex::new(7);\nmatch value.lock() {\n    Ok(guard) => println!(\"{guard}\"),\n    Err(poisoned) => {\n        println!(\"{}\", *poisoned.into_inner());\n    }\n}",
+    "question": "What does poisoning report?",
+    "rule": "A standard Mutex becomes poisoned when a holder panics.",
+    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "summary": "Notice a panic that may leave state inconsistent.",
+    "task": "Trace the example, name the guarantee, and identify where it ends."
+  }
+}

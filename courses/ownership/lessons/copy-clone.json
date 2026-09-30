@@ -1,0 +1,59 @@
+{
+  "concept": "When a value duplicates instead of moving",
+  "contentDigest": "a72bb05ef3e3f621354f77513b30e9e250379b38d14913e32e644b4a78cb254e",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Borrowed views into data",
+        "direction": "previous",
+        "title": "Slices"
+      },
+      {
+        "concept": "Deterministic cleanup without a GC",
+        "direction": "next",
+        "title": "Drop & Scope"
+      }
+    ],
+    "correction": "If a type owns a heap allocation it is not Copy, and duplication must be written down.",
+    "misconception": "“Add mut to name”",
+    "traceSteps": [
+      {
+        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
+        "title": "Map ownership first"
+      },
+      {
+        "detail": "Predict which bindings stay usable after an assignment.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can name why one type copies and the other does not.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on when a value duplicates instead of moving."
+  },
+  "exerciseKind": "planned",
+  "id": "copy-clone",
+  "minutes": 8,
+  "order": 3,
+  "parentID": "ownership",
+  "title": "Copy & Clone",
+  "writing": {
+    "answers": [
+      "Add mut to name",
+      "Use name.clone() for alias",
+      "Wrap it in a Box"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "The integer copies; the String would have moved without .clone().",
+    "exampleCode": "let a = 5;          // i32 is Copy\nlet b = a;\nprintln!(\"{a} {b}\"); // both still usable\n\nlet s = String::from(\"crab\");\nlet t = s.clone();  // explicit deep copy\nprintln!(\"{s} {t}\");",
+    "explanation": "Types that are cheap and have no destructor can be Copy, so assigning them leaves the original usable. Everything that owns a heap allocation is not Copy, and duplicating it means calling .clone() explicitly — the cost is visible in the source rather than hidden in an assignment.",
+    "feedback": "Cloning creates a second owned String, so the original binding stays valid.",
+    "practiceCode": "let name = String::from(\"ada\");\nlet alias = name;\nprintln!(\"{name}\");",
+    "question": "How do you make that compile without changing the println?",
+    "rule": "If a type owns a heap allocation it is not Copy, and duplication must be written down.",
+    "success": "You can name why one type copies and the other does not.",
+    "summary": "Copy duplicates implicitly; Clone duplicates only when you ask.",
+    "task": "Predict which bindings stay usable after an assignment."
+  }
+}

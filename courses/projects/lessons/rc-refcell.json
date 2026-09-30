@@ -1,0 +1,59 @@
+{
+  "concept": "Shared ownership and interior mutability",
+  "contentDigest": "98d51b1cb9b6eb279ac091b76bd09ae94dd09342c5f0a5850d256a7889245ba6",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Heap allocation and recursive types",
+        "direction": "previous",
+        "title": "Box<T>"
+      },
+      {
+        "concept": "Making a type behave like a reference",
+        "direction": "next",
+        "title": "Deref & Drop"
+      }
+    ],
+    "correction": "RefCell moves the borrow rules to runtime; breaking them panics.",
+    "misconception": "“It compiles and works”",
+    "traceSteps": [
+      {
+        "detail": "Separate source modules, public API, manifest data, dependency graph, and build evidence before changing any one of them.",
+        "title": "Map the project boundary"
+      },
+      {
+        "detail": "Share one vector between two handles and mutate it through both.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "Both handles observe the change and the count is correct.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Move one responsibility across a module or package boundary without changing behaviour. Predict which imports, tests, or lock data must change. Keep the focus on shared ownership and interior mutability."
+  },
+  "exerciseKind": "planned",
+  "id": "rc-refcell",
+  "minutes": 12,
+  "order": 1,
+  "parentID": "pointers",
+  "title": "Rc & RefCell",
+  "writing": {
+    "answers": [
+      "It compiles and works",
+      "It panics at runtime",
+      "It is a compile error"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Shared ownership on the outside, controlled mutation on the inside.",
+    "exampleCode": "use std::cell::RefCell;\nuse std::rc::Rc;\n\nlet shared = Rc::new(RefCell::new(vec![1, 2, 3]));\nlet second = Rc::clone(&shared);\n\nsecond.borrow_mut().push(4);\nprintln!(\"{:?}\", shared.borrow());\nprintln!(\"owners {}\", Rc::strong_count(&shared));",
+    "explanation": "Rc<T> keeps a count and frees when it reaches zero, but only hands out shared references. Pairing it with RefCell<T> lets you mutate through that shared handle, with the borrow rules checked at runtime instead — a violation panics rather than failing to compile. Neither is thread-safe; that is Arc and Mutex.",
+    "feedback": "RefCell enforces the same rule, just later and with a panic.",
+    "practiceCode": "let cell = RefCell::new(5);\nlet a = cell.borrow_mut();\nlet b = cell.borrow_mut();",
+    "question": "What happens on the second borrow_mut?",
+    "rule": "RefCell moves the borrow rules to runtime; breaking them panics.",
+    "success": "Both handles observe the change and the count is correct.",
+    "summary": "Rc shares ownership; RefCell moves the borrow check to runtime.",
+    "task": "Share one vector between two handles and mutate it through both."
+  }
+}

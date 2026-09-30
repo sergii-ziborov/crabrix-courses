@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "graph-traversal",
+    "categoryTitle": "DFS, BFS & Graph Traversal",
+    "complexity": "O(V+E) space",
+    "difficulty": "easy",
+    "expectedAnswer": "0,1,4",
+    "idea": "Store only existing neighbors so traversal cost follows vertices plus edges.",
+    "patternID": "adjacency-list",
+    "rustSketch": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "stage": "recognize",
+    "task": "Build an undirected adjacency list and return sorted neighbors of node 2.",
+    "useCases": "sparse graphs, networks, dependency relationships",
+    "visibleInput": "n=5 edges=(0,2),(1,2),(2,4)"
+  },
+  "concept": "sparse graphs, networks, dependency relationships",
+  "contentDigest": "a129cd4d60db6b8605bbea1a914dde0ce6e571f9d4267f2f432a3fcddd7eb714",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Store only existing neighbors so traversal cost follows vertices plus edges.",
+        "direction": "previous",
+        "title": "Adjacency List: Mental Model"
+      },
+      {
+        "concept": "Build an undirected adjacency list and return sorted neighbors of node 2.",
+        "direction": "next",
+        "title": "Challenge: Adjacency List"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on sparse graphs, networks, dependency relationships."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.adjacency-list.recognize",
+  "minutes": 8,
+  "order": 1,
+  "parentID": "algorithms-graph-traversal",
+  "title": "Adjacency List: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "sparse graphs, networks, dependency relationships",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Adjacency List",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Adjacency List",
+    "explanation": "Reach for this pattern when the prompt contains sparse graphs, networks, dependency relationships. Confirm that its assumptions actually hold, then compare O(V+E) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: sparse graphs, networks, dependency relationships.",
+    "practiceCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Adjacency List.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

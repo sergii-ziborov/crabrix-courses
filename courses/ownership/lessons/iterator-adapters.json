@@ -1,0 +1,59 @@
+{
+  "concept": "Transform lazily, then choose one consumer",
+  "contentDigest": "f4f82fddad61c48377fbf726fc874c4b17740ed320f7611a5d3cfc797743255b",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Combine type bounds with borrow relationships",
+        "direction": "previous",
+        "title": "Generic Lifetimes"
+      },
+      {
+        "concept": "Infer shared, mutable, or moved captures",
+        "direction": "next",
+        "title": "Closure Capture Modes"
+      }
+    ],
+    "correction": "Adapters such as map and filter describe work but do nothing until a consumer asks for values.",
+    "misconception": "“At .iter()”",
+    "traceSteps": [
+      {
+        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
+        "title": "Map ownership first"
+      },
+      {
+        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on transform lazily, then choose one consumer."
+  },
+  "exerciseKind": "planned",
+  "id": "iterator-adapters",
+  "minutes": 10,
+  "order": 4,
+  "parentID": "abstraction-practice",
+  "title": "Iterator Pipelines",
+  "writing": {
+    "answers": [
+      "At .iter()",
+      "When sum consumes it",
+      "During parsing"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCode": "let values = [1, 2, 3, 4];\nlet total: i32 = values.iter()\n    .filter(|v| **v % 2 == 0)\n    .map(|v| v * v)\n    .sum();",
+    "explanation": "Adapters such as map and filter describe work but do nothing until a consumer asks for values. A clear pipeline separates selection, transformation, and collection without temporary vectors.",
+    "feedback": "Correct: When sum consumes it.",
+    "practiceCode": "let values = [1, 2, 3, 4];\nlet total: i32 = values.iter()\n    .filter(|v| **v % 2 == 0)\n    .map(|v| v * v)\n    .sum();",
+    "question": "When does the pipeline perform work?",
+    "rule": "Adapters such as map and filter describe work but do nothing until a consumer asks for values.",
+    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "summary": "Transform lazily, then choose one consumer.",
+    "task": "Trace the example, name the guarantee, and identify where it ends."
+  }
+}

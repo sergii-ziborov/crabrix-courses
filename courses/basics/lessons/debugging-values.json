@@ -1,0 +1,59 @@
+{
+  "concept": "Debug, dbg!, and stderr",
+  "contentDigest": "763024fa6ac534fcb331bce0e00aada4e8d64bdf2d03b3f4dc9b3e6b5bad47c0",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Result without panic",
+        "direction": "previous",
+        "title": "Handling Failure"
+      },
+      {
+        "concept": "/// doc comments and examples",
+        "direction": "next",
+        "title": "Comments & Docs"
+      }
+    ],
+    "correction": "dbg! returns its argument and writes diagnostic output to stderr.",
+    "misconception": "“dbg!(mut name)”",
+    "traceSteps": [
+      {
+        "detail": "Name each value's type and starting value, then mark the expression that produces the lesson's result.",
+        "title": "Inventory the values"
+      },
+      {
+        "detail": "Inspect an intermediate value and keep the program's stdout stable.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "The debug probe appears on stderr and the value remains usable.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change one value, type, or boundary in the sample. Write the exact stdout or diagnostic you expect before asking rustc. Keep the focus on debug, dbg!, and stderr."
+  },
+  "exerciseKind": "planned",
+  "id": "debugging-values",
+  "minutes": 6,
+  "order": 5,
+  "parentID": "small-programs",
+  "title": "Inspecting Values",
+  "writing": {
+    "answers": [
+      "dbg!(&name)",
+      "dbg!(mut name)",
+      "dbg!(name.clone)"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Borrowing lets dbg! inspect the Vec without consuming it.",
+    "exampleCode": "let items = vec![\"crab\", \"rust\"];\ndbg!(&items);\nprintln!(\"{} items\", items.len());",
+    "explanation": "The {:?} formatter uses the Debug trait. dbg! prints the expression, source location, and value to stderr, then returns the value unchanged. Borrow with dbg!(&value) when you want to inspect an owned value without moving it. Remove noisy probes or replace them with deliberate logging before shipping.",
+    "feedback": "Pass a shared reference so the debug probe does not take ownership.",
+    "practiceCode": "let name = String::from(\"Ferris\");\ndbg!(name);\nprintln!(\"{name}\");",
+    "question": "Which edit keeps name usable?",
+    "rule": "dbg! returns its argument and writes diagnostic output to stderr.",
+    "success": "The debug probe appears on stderr and the value remains usable.",
+    "summary": "Debug output is evidence for development, not part of the program's user-facing result.",
+    "task": "Inspect an intermediate value and keep the program's stdout stable."
+  }
+}

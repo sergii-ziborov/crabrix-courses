@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "two-pointers",
+    "categoryTitle": "Two Pointers",
+    "complexity": "O(n+m) time · O(1) space",
+    "difficulty": "medium",
+    "expectedAnswer": "1,2,3,5,6,7",
+    "idea": "Fill free capacity from the end so unread source values are never overwritten.",
+    "patternID": "in-place-merge",
+    "rustSketch": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
+    "stage": "recognize",
+    "task": "Merge the second sorted list into the first buffer.",
+    "useCases": "merging sorted buffers with trailing capacity",
+    "visibleInput": "a=[1,3,7,0,0,0] m=3; b=[2,5,6]"
+  },
+  "concept": "merging sorted buffers with trailing capacity",
+  "contentDigest": "054e25b533e58c7792a1cc8284e2a7edea1ebd8137adfb5fde06bc1aa507fb15",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Fill free capacity from the end so unread source values are never overwritten.",
+        "direction": "previous",
+        "title": "Backward In-Place Merge: Mental Model"
+      },
+      {
+        "concept": "Merge the second sorted list into the first buffer.",
+        "direction": "next",
+        "title": "Challenge: Backward In-Place Merge"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on merging sorted buffers with trailing capacity."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.in-place-merge.recognize",
+  "minutes": 11,
+  "order": 25,
+  "parentID": "algorithms-two-pointers",
+  "title": "Backward In-Place Merge: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "merging sorted buffers with trailing capacity",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Backward In-Place Merge",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Backward In-Place Merge",
+    "explanation": "Reach for this pattern when the prompt contains merging sorted buffers with trailing capacity. Confirm that its assumptions actually hold, then compare O(n+m) time · O(1) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: merging sorted buffers with trailing capacity.",
+    "practiceCode": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Backward In-Place Merge.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

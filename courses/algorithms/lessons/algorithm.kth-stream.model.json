@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "heaps-streaming",
+    "categoryTitle": "Heaps & Streaming",
+    "complexity": "O(log k) per item · O(k) space",
+    "difficulty": "medium",
+    "expectedAnswer": "4,4,5",
+    "idea": "Keep k candidates so the heap root is the kth largest value after every insertion.",
+    "patternID": "kth-stream",
+    "rustSketch": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "stage": "model",
+    "task": "With k=3, return the kth largest after adding 4, 5, 8, 2, 10.",
+    "useCases": "live rank tracking and rolling thresholds",
+    "visibleInput": "stream=[4,5,8,2,10]"
+  },
+  "concept": "Keep k candidates so the heap root is the kth largest value after every insertion.",
+  "contentDigest": "b6b9ea05e3752d077781588f24b061cf7855de1e83fee7e70c5f421cb9e5a880",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Return the three largest values in descending order.",
+        "direction": "previous",
+        "title": "Challenge: Top-K with a Min-Heap"
+      },
+      {
+        "concept": "live rank tracking and rolling thresholds",
+        "direction": "next",
+        "title": "Kth Statistic in a Stream: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(log k) per item · O(k) space bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on keep k candidates so the heap root is the kth largest value after every insertion.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.kth-stream.model",
+  "minutes": 11,
+  "order": 6,
+  "parentID": "algorithms-heaps-streaming",
+  "title": "Kth Statistic in a Stream: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(log k) per item · O(k) space",
+    "exampleCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "explanation": "Kth Statistic in a Stream belongs to Heaps & Streaming. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include live rank tracking and rolling thresholds.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(log k) per item · O(k) space bound without looking at the code.",
+    "summary": "Keep k candidates so the heap root is the kth largest value after every insertion.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

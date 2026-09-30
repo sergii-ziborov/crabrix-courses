@@ -1,0 +1,59 @@
+{
+  "concept": "Waiting versus computing",
+  "contentDigest": "e9c1af0a5b1d9314f35e4163e0f3109345f16813a154c3060c5f35dd581b5ccd",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Moving ownership or sharing it",
+        "direction": "previous",
+        "title": "Channels vs Mutex"
+      },
+      {
+        "concept": "Why one sync call stalls a runtime",
+        "direction": "next",
+        "title": "Blocking an Executor"
+      }
+    ],
+    "correction": "Async wins on concurrency; threads win on parallel computation.",
+    "misconception": "“An async runtime with 500 tasks”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Decide between threads and async for two workloads and justify each.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You separate waiting from computing rather than picking by fashion.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on waiting versus computing."
+  },
+  "exerciseKind": "planned",
+  "id": "q-async-vs-threads",
+  "minutes": 11,
+  "order": 3,
+  "parentID": "interview-concurrency",
+  "title": "Async vs Threads",
+  "writing": {
+    "answers": [
+      "An async runtime with 500 tasks",
+      "A thread pool sized to the cores",
+      "One thread per image"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Ten thousand of these is routine; ten thousand threads is not.",
+    "exampleCode": "async fn fetch(id: u32) -> Result<Body, Error> {\n    let response = client.get(id).await?;\n    Ok(response.body().await?)\n}",
+    "explanation": "A thread costs a stack and a scheduler slot, which is fine for a few hundred and painful for a hundred thousand. Async tasks are state machines sharing a small pool of threads, so waiting on ten thousand sockets is cheap — but a task that computes without yielding blocks everything sharing its thread. The dividing line is whether the work waits or works.",
+    "feedback": "It is CPU-bound, so parallelism is what helps, not concurrency.",
+    "practiceCode": "// Resize 500 images across 8 cores.\nlet plan = ???;",
+    "question": "Which is the better fit?",
+    "rule": "Async wins on concurrency; threads win on parallel computation.",
+    "success": "You separate waiting from computing rather than picking by fashion.",
+    "summary": "Threads are for CPU work; async is for waiting.",
+    "task": "Decide between threads and async for two workloads and justify each."
+  }
+}

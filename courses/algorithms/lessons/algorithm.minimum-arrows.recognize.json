@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "greedy-intervals",
+    "categoryTitle": "Greedy & Interval Methods",
+    "complexity": "O(n log n) time · O(1) extra",
+    "difficulty": "hard",
+    "expectedAnswer": "2",
+    "idea": "Sort by interval end and place a point only when the next interval starts after the current point.",
+    "patternID": "minimum-arrows",
+    "rustSketch": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "stage": "recognize",
+    "task": "Return the minimum points needed to hit all intervals.",
+    "useCases": "minimum sensors or arrows covering intervals",
+    "visibleInput": "[(10,16),(2,8),(1,6),(7,12)]"
+  },
+  "concept": "minimum sensors or arrows covering intervals",
+  "contentDigest": "5f1f2b7bf6ad7f344c37b04eb5f91be67e14797171ee2c6868b8f7ef9fb209c5",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Sort by interval end and place a point only when the next interval starts after the current point.",
+        "direction": "previous",
+        "title": "Interval Stabbing: Mental Model"
+      },
+      {
+        "concept": "Return the minimum points needed to hit all intervals.",
+        "direction": "next",
+        "title": "Challenge: Interval Stabbing"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on minimum sensors or arrows covering intervals."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.minimum-arrows.recognize",
+  "minutes": 15,
+  "order": 28,
+  "parentID": "algorithms-greedy-intervals",
+  "title": "Interval Stabbing: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "minimum sensors or arrows covering intervals",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Interval Stabbing",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Interval Stabbing",
+    "explanation": "Reach for this pattern when the prompt contains minimum sensors or arrows covering intervals. Confirm that its assumptions actually hold, then compare O(n log n) time · O(1) extra with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: minimum sensors or arrows covering intervals.",
+    "practiceCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Interval Stabbing.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

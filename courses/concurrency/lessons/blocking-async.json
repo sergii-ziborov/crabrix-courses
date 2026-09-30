@@ -1,0 +1,54 @@
+{
+  "concept": "Keep executor threads available to poll other futures",
+  "contentDigest": "0e9142d1e7fbf84d7c7a1834a906b905c68f628df079e5b3d1cc9efff224452b",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Expect a future to be dropped at any await point",
+        "direction": "previous",
+        "title": "Cancellation Safety"
+      }
+    ],
+    "correction": "A blocking call occupies an executor worker without yielding, so unrelated tasks can stall.",
+    "misconception": "“It moves the future”",
+    "traceSteps": [
+      {
+        "detail": "Name each task or thread, the state it can reach, and every point where work can wait, race, block, or be cancelled.",
+        "title": "Draw the event timeline"
+      },
+      {
+        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Add a second worker or cancellation point. Draw two possible event orders and state the invariant that both orders must preserve. Keep the focus on keep executor threads available to poll other futures."
+  },
+  "exerciseKind": "planned",
+  "id": "blocking-async",
+  "minutes": 11,
+  "order": 2,
+  "parentID": "async-reliability",
+  "title": "Blocking in Async Code",
+  "writing": {
+    "answers": [
+      "It stalls a worker",
+      "It moves the future",
+      "It poisons a lock"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCode": "async fn handler() {\n    // Do not sleep the executor thread:\n    // std::thread::sleep(...);\n    async_timer().await;\n}",
+    "explanation": "A blocking call occupies an executor worker without yielding, so unrelated tasks can stall. Move CPU-heavy or blocking work to a dedicated pool and await its result.",
+    "feedback": "Correct: It stalls a worker.",
+    "practiceCode": "async fn handler() {\n    // Do not sleep the executor thread:\n    // std::thread::sleep(...);\n    async_timer().await;\n}",
+    "question": "Why is a blocking sleep harmful here?",
+    "rule": "A blocking call occupies an executor worker without yielding, so unrelated tasks can stall.",
+    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "summary": "Keep executor threads available to poll other futures.",
+    "task": "Trace the example, name the guarantee, and identify where it ends."
+  }
+}

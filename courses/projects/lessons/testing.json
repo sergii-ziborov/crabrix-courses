@@ -1,0 +1,59 @@
+{
+  "concept": "Unit and integration tests",
+  "contentDigest": "6f53e7a04f9249b523af3074c5b8e18ed43576636d1693d0a686030a59c65280",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Cargo.toml and sibling files",
+        "direction": "previous",
+        "title": "Modules"
+      },
+      {
+        "concept": "Propagation and custom errors",
+        "direction": "next",
+        "title": "Error Design"
+      }
+    ],
+    "correction": "#[cfg(test)] keeps test code out of the release build entirely.",
+    "misconception": "“A return type so the harness can read the result”",
+    "traceSteps": [
+      {
+        "detail": "Separate source modules, public API, manifest data, dependency graph, and build evidence before changing any one of them.",
+        "title": "Map the project boundary"
+      },
+      {
+        "detail": "Add one success case and one boundary case for a pure function.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "Both are deterministic and fail for a deliberately broken implementation.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Move one responsibility across a module or package boundary without changing behaviour. Predict which imports, tests, or lock data must change. Keep the focus on unit and integration tests."
+  },
+  "exerciseKind": "planned",
+  "id": "testing",
+  "minutes": 10,
+  "order": 1,
+  "parentID": "projects",
+  "title": "Testing",
+  "writing": {
+    "answers": [
+      "A return type so the harness can read the result",
+      "An assertion — the test passes no matter what compute returns",
+      "The #[cfg(test)] attribute above the module"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Tests live beside the code and can see its private parts.",
+    "exampleCode": "#[cfg(test)]\nmod tests {\n    use super::*;\n\n    #[test]\n    fn adds_two_numbers() {\n        assert_eq!(add(2, 2), 4);\n    }\n}",
+    "explanation": "#[test] functions are compiled only for the test harness, so they cost nothing in a release build. Unit tests sit beside the code and can reach its private details; integration tests live in tests/ and see only the public API, which is a useful check on your own interface.",
+    "feedback": "A test with no assertion only proves the code did not panic.",
+    "practiceCode": "#[test]\nfn works() {\n    let result = compute();\n}",
+    "question": "What is missing from that test?",
+    "rule": "#[cfg(test)] keeps test code out of the release build entirely.",
+    "success": "Both are deterministic and fail for a deliberately broken implementation.",
+    "summary": "Tests turn behaviour into executable evidence.",
+    "task": "Add one success case and one boundary case for a pure function."
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "strings-tries",
+    "categoryTitle": "Tries & String Matching",
+    "complexity": "O(n+m) time · O(m) space",
+    "difficulty": "medium",
+    "expectedAnswer": "10",
+    "idea": "Use the pattern's border table to reuse matched-prefix knowledge after a mismatch.",
+    "patternID": "kmp",
+    "rustSketch": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "stage": "model",
+    "task": "Return the first pattern index in the text.",
+    "useCases": "linear exact substring search and border queries",
+    "visibleInput": "text=ababcabcabababd pattern=ababd"
+  },
+  "concept": "Use the pattern's border table to reuse matched-prefix knowledge after a mismatch.",
+  "contentDigest": "3e76026c26b397a0a0fb72332b58b0b420f1348912f095c67fb4ca0a29a6ad4d",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Encode consecutive characters as character followed by count.",
+        "direction": "previous",
+        "title": "Challenge: Run-Length Encoding"
+      },
+      {
+        "concept": "linear exact substring search and border queries",
+        "direction": "next",
+        "title": "Knuth–Morris–Pratt: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(n+m) time · O(m) space bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on use the pattern's border table to reuse matched-prefix knowledge after a mismatch.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.kmp.model",
+  "minutes": 11,
+  "order": 9,
+  "parentID": "algorithms-strings-tries",
+  "title": "Knuth–Morris–Pratt: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(n+m) time · O(m) space",
+    "exampleCode": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "explanation": "Knuth–Morris–Pratt belongs to Tries & String Matching. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include linear exact substring search and border queries.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(n+m) time · O(m) space bound without looking at the code.",
+    "summary": "Use the pattern's border table to reuse matched-prefix knowledge after a mismatch.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

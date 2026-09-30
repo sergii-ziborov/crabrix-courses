@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "graph-traversal",
+    "categoryTitle": "DFS, BFS & Graph Traversal",
+    "complexity": "O(V+E) time · O(V) space",
+    "difficulty": "hard",
+    "expectedAnswer": "1,0,2,3",
+    "idea": "Append a node after all descendants; a gray-to-gray edge proves a directed cycle.",
+    "patternID": "dfs-topological",
+    "rustSketch": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "stage": "model",
+    "task": "Return reverse-postorder for ascending neighbors.",
+    "useCases": "dependency ordering and cycle diagnosis",
+    "visibleInput": "n=4 edges=0->2,1->2,2->3"
+  },
+  "concept": "Append a node after all descendants; a gray-to-gray edge proves a directed cycle.",
+  "contentDigest": "56b1836931dc93457b6961a22edde337f8e34a3ce7d1435df99c62af6d0cc5b1",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Return lexicographically smallest valid order.",
+        "direction": "previous",
+        "title": "Challenge: Kahn Topological Sort"
+      },
+      {
+        "concept": "dependency ordering and cycle diagnosis",
+        "direction": "next",
+        "title": "DFS Topological Sort: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(V+E) time · O(V) space bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on append a node after all descendants; a gray-to-gray edge proves a directed cycle.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.dfs-topological.model",
+  "minutes": 15,
+  "order": 24,
+  "parentID": "algorithms-graph-traversal",
+  "title": "DFS Topological Sort: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(V+E) time · O(V) space",
+    "exampleCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "explanation": "DFS Topological Sort belongs to DFS, BFS & Graph Traversal. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include dependency ordering and cycle diagnosis.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(V+E) time · O(V) space bound without looking at the code.",
+    "summary": "Append a node after all descendants; a gray-to-gray edge proves a directed cycle.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "graph-traversal",
+    "categoryTitle": "DFS, BFS & Graph Traversal",
+    "complexity": "O(rows*cols) time · O(rows*cols) space worst",
+    "difficulty": "medium",
+    "expectedAnswer": "5",
+    "idea": "Treat cells as graph nodes and traverse only neighbors satisfying the region predicate.",
+    "patternID": "grid-flood-fill",
+    "rustSketch": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "stage": "recognize",
+    "task": "Return the size of the component containing row 1 column 1.",
+    "useCases": "islands, image fill, maze regions",
+    "visibleInput": "[[1,0,0],[1,1,0],[0,1,1]]"
+  },
+  "concept": "islands, image fill, maze regions",
+  "contentDigest": "dd9f4e4aa52dd43809b975f6eb2d7b18705752d5b6320368c3c945d24443da11",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Treat cells as graph nodes and traverse only neighbors satisfying the region predicate.",
+        "direction": "previous",
+        "title": "Grid Flood Fill: Mental Model"
+      },
+      {
+        "concept": "Return the size of the component containing row 1 column 1.",
+        "direction": "next",
+        "title": "Challenge: Grid Flood Fill"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on islands, image fill, maze regions."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.grid-flood-fill.recognize",
+  "minutes": 11,
+  "order": 13,
+  "parentID": "algorithms-graph-traversal",
+  "title": "Grid Flood Fill: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "islands, image fill, maze regions",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Grid Flood Fill",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Grid Flood Fill",
+    "explanation": "Reach for this pattern when the prompt contains islands, image fill, maze regions. Confirm that its assumptions actually hold, then compare O(rows*cols) time · O(rows*cols) space worst with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: islands, image fill, maze regions.",
+    "practiceCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Grid Flood Fill.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

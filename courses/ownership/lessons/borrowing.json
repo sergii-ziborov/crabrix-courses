@@ -1,0 +1,59 @@
+{
+  "concept": "References and E0502",
+  "contentDigest": "42d46d6300e5d52e77ef5f2663e31b83d559f56367c43a0eb306269e0815494f",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Moves and scope",
+        "direction": "previous",
+        "title": "Ownership"
+      },
+      {
+        "concept": "Borrowed views into data",
+        "direction": "next",
+        "title": "Slices"
+      }
+    ],
+    "correction": "Many shared borrows or one mutable borrow, never both at once.",
+    "misconception": "“Make items immutable”",
+    "traceSteps": [
+      {
+        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
+        "title": "Map ownership first"
+      },
+      {
+        "detail": "Repair E0502 with the smallest edit that keeps the push and the printed value.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "Check passes, Run prints the first item, and the Vec is still extended.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on references and e0502."
+  },
+  "exerciseKind": "borrowDiagnostic",
+  "id": "borrowing",
+  "minutes": 9,
+  "order": 1,
+  "parentID": "ownership",
+  "title": "Borrowing",
+  "writing": {
+    "answers": [
+      "Make items immutable",
+      "Move the println! above the push",
+      "Clone the whole vector"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "The borrow ends at its last use, and the push is fine after that.",
+    "exampleCode": "let mut items = vec![\n    String::from(\"ada\"),\n];\nlet first = &items[0]; // borrow\nprintln!(\"{first}\");   // ...ends\nitems.push(String::from(\"grace\"));",
+    "explanation": "Rust permits many shared references or exactly one mutable reference, never both. The compiler tracks the region where each borrow is actually used, so a borrow ends at its last use rather than at the end of the block — which is why moving one line is often the whole fix.",
+    "feedback": "Ending the shared borrow before the mutation is the minimal change.",
+    "practiceCode": "let mut items = vec![1, 2];\nlet first = &items[0];\nitems.push(3);\nprintln!(\"{first}\");",
+    "question": "Which edit fixes it without removing anything?",
+    "rule": "Many shared borrows or one mutable borrow, never both at once.",
+    "success": "Check passes, Run prints the first item, and the Vec is still extended.",
+    "summary": "Borrowing lets code use a value without taking ownership.",
+    "task": "Repair E0502 with the smallest edit that keeps the push and the printed value."
+  }
+}

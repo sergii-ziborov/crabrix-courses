@@ -1,0 +1,59 @@
+{
+  "concept": "Explicit absence and failure",
+  "contentDigest": "49186b8e86ff484518b9aa8b66c1b4e78ffd1d1edbaa247d05884c88a0dadc89",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Variants and exhaustive handling",
+        "direction": "previous",
+        "title": "Enums & Match"
+      },
+      {
+        "concept": "Vec, String, and HashMap",
+        "direction": "next",
+        "title": "Collections"
+      }
+    ],
+    "correction": "Option for absence, Result when the caller needs the reason.",
+    "misconception": "“Result<T, E>”",
+    "traceSteps": [
+      {
+        "detail": "Name each value's type and starting value, then mark the expression that produces the lesson's result.",
+        "title": "Inventory the values"
+      },
+      {
+        "detail": "Choose Option or Result for two small APIs and handle both branches.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "No unwrap is needed on the normal path.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change one value, type, or boundary in the sample. Write the exact stdout or diagnostic you expect before asking rustc. Keep the focus on explicit absence and failure."
+  },
+  "exerciseKind": "planned",
+  "id": "option-result",
+  "minutes": 10,
+  "order": 2,
+  "parentID": "modeling",
+  "title": "Option & Result",
+  "writing": {
+    "answers": [
+      "Result<T, E>",
+      "Option<T>",
+      "A panic"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "? returns early on the error case, keeping the happy path flat.",
+    "exampleCode": "use std::num::ParseIntError;\n\nfn parse_port(\n    raw: &str,\n) -> Result<u16, ParseIntError> {\n    let port: u16 = raw.parse()?;\n    Ok(port)\n}",
+    "explanation": "Pattern matching and the ? operator keep both cases explicit without null, sentinel values, or exceptions. Reach for Option when absence is normal and expected, and Result when the caller needs to know why something did not work.",
+    "feedback": "There is no error to report — absence is the expected outcome.",
+    "practiceCode": "fn find(id: u32) -> ??? {\n    // nothing found is normal here\n}",
+    "question": "Which fits 'the item may simply not exist'?",
+    "rule": "Option for absence, Result when the caller needs the reason.",
+    "success": "No unwrap is needed on the normal path.",
+    "summary": "Option models absence; Result models failure with a reason.",
+    "task": "Choose Option or Result for two small APIs and handle both branches."
+  }
+}

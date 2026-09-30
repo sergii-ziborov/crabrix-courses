@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "greedy-intervals",
+    "categoryTitle": "Greedy & Interval Methods",
+    "complexity": "O(n) time · O(1) space",
+    "difficulty": "medium",
+    "expectedAnswer": "3",
+    "idea": "When running fuel becomes negative, no station in that failed segment can be a valid start.",
+    "patternID": "gas-station",
+    "rustSketch": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "stage": "model",
+    "task": "Return a valid starting station, or -1.",
+    "useCases": "circular feasibility with cumulative gain",
+    "visibleInput": "gas=[1,2,3,4,5] cost=[3,4,5,1,2]"
+  },
+  "concept": "When running fuel becomes negative, no station in that failed segment can be a valid start.",
+  "contentDigest": "8a29acef725313411bab3ee44c51fce3e624e60f6c3cbbec7e14e2b1b64e8605",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Return the minimum jumps to the final index.",
+        "direction": "previous",
+        "title": "Challenge: Greedy Layered Jumps"
+      },
+      {
+        "concept": "circular feasibility with cumulative gain",
+        "direction": "next",
+        "title": "Gas Station Reset: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(n) time · O(1) space bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on when running fuel becomes negative, no station in that failed segment can be a valid start.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.gas-station.model",
+  "minutes": 11,
+  "order": 18,
+  "parentID": "algorithms-greedy-intervals",
+  "title": "Gas Station Reset: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(n) time · O(1) space",
+    "exampleCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "explanation": "Gas Station Reset belongs to Greedy & Interval Methods. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include circular feasibility with cumulative gain.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(n) time · O(1) space bound without looking at the code.",
+    "summary": "When running fuel becomes negative, no station in that failed segment can be a valid start.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

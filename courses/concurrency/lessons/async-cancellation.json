@@ -1,0 +1,59 @@
+{
+  "concept": "Expect a future to be dropped at any await point",
+  "contentDigest": "ec0afcae89b70edf0e2331912dd24bb5e8781343927c93ac8b666ad745b80f58",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Promise that a value will not move in memory",
+        "direction": "previous",
+        "title": "Pinning Intuition"
+      },
+      {
+        "concept": "Keep executor threads available to poll other futures",
+        "direction": "next",
+        "title": "Blocking in Async Code"
+      }
+    ],
+    "correction": "Selecting or timing out a future may drop it before completion.",
+    "misconception": "“Only at return”",
+    "traceSteps": [
+      {
+        "detail": "Name each task or thread, the state it can reach, and every point where work can wait, race, block, or be cancelled.",
+        "title": "Draw the event timeline"
+      },
+      {
+        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Add a second worker or cancellation point. Draw two possible event orders and state the invariant that both orders must preserve. Keep the focus on expect a future to be dropped at any await point."
+  },
+  "exerciseKind": "planned",
+  "id": "async-cancellation",
+  "minutes": 12,
+  "order": 1,
+  "parentID": "async-reliability",
+  "title": "Cancellation Safety",
+  "writing": {
+    "answers": [
+      "At an await suspension",
+      "Only at return",
+      "Before async fn starts"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCode": "async fn save_then_ack() {\n    save_record().await;\n    // Cancellation here means saved,\n    // but not acknowledged.\n    send_ack().await;\n}",
+    "explanation": "Selecting or timing out a future may drop it before completion. Keep partial state consistent across await points, or wrap the operation so retrying cannot duplicate or lose external effects.",
+    "feedback": "Correct: At an await suspension.",
+    "practiceCode": "async fn save_then_ack() {\n    save_record().await;\n    // Cancellation here means saved,\n    // but not acknowledged.\n    send_ack().await;\n}",
+    "question": "When may cancellation occur?",
+    "rule": "Selecting or timing out a future may drop it before completion.",
+    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "summary": "Expect a future to be dropped at any await point.",
+    "task": "Trace the example, name the guarantee, and identify where it ends."
+  }
+}

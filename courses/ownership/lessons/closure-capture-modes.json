@@ -1,0 +1,59 @@
+{
+  "concept": "Infer shared, mutable, or moved captures",
+  "contentDigest": "4efb915291f79a9df36c7d5e15cb0ea8f0371cd0ff8b927432c844f3c706621b",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Transform lazily, then choose one consumer",
+        "direction": "previous",
+        "title": "Iterator Pipelines"
+      },
+      {
+        "concept": "Track a compile-time state with no stored value",
+        "direction": "next",
+        "title": "Phantom Types"
+      }
+    ],
+    "correction": "A closure borrows, mutably borrows, or moves each captured value according to its body.",
+    "misconception": "“Return type”",
+    "traceSteps": [
+      {
+        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
+        "title": "Map ownership first"
+      },
+      {
+        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on infer shared, mutable, or moved captures."
+  },
+  "exerciseKind": "planned",
+  "id": "closure-capture-modes",
+  "minutes": 11,
+  "order": 5,
+  "parentID": "abstraction-practice",
+  "title": "Closure Capture Modes",
+  "writing": {
+    "answers": [
+      "Capture ownership",
+      "Return type",
+      "Call syntax"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCode": "let name = String::from(\"Ferris\");\nlet announce = move || {\n    println!(\"{name}\");\n};\nannounce();",
+    "explanation": "A closure borrows, mutably borrows, or moves each captured value according to its body. The move keyword transfers captures even when the body would otherwise only borrow them.",
+    "feedback": "Correct: Capture ownership.",
+    "practiceCode": "let name = String::from(\"Ferris\");\nlet announce = move || {\n    println!(\"{name}\");\n};\nannounce();",
+    "question": "What does move change about the captures?",
+    "rule": "A closure borrows, mutably borrows, or moves each captured value according to its body.",
+    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "summary": "Infer shared, mutable, or moved captures.",
+    "task": "Trace the example, name the guarantee, and identify where it ends."
+  }
+}

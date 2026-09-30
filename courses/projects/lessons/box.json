@@ -1,0 +1,59 @@
+{
+  "concept": "Heap allocation and recursive types",
+  "contentDigest": "96f55a893ca626e92893c7a42f286819436a2d409d0aee954bf521fa21007ca9",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Many crates, one lockfile",
+        "direction": "previous",
+        "title": "Workspaces"
+      },
+      {
+        "concept": "Shared ownership and interior mutability",
+        "direction": "next",
+        "title": "Rc & RefCell"
+      }
+    ],
+    "correction": "Box gives a recursive or unsized value a known, pointer-sized home.",
+    "misconception": "“An enum can never refer to itself, boxed or not”",
+    "traceSteps": [
+      {
+        "detail": "Separate source modules, public API, manifest data, dependency graph, and build evidence before changing any one of them.",
+        "title": "Map the project boundary"
+      },
+      {
+        "detail": "Define a recursive type and total its values.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "It compiles, and you can explain why Box is required.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Move one responsibility across a module or package boundary without changing behaviour. Predict which imports, tests, or lock data must change. Keep the focus on heap allocation and recursive types."
+  },
+  "exerciseKind": "planned",
+  "id": "box",
+  "minutes": 9,
+  "order": 0,
+  "parentID": "pointers",
+  "title": "Box<T>",
+  "writing": {
+    "answers": [
+      "An enum can never refer to itself, boxed or not",
+      "The type would have infinite size without an indirection",
+      "An i32 payload is not allowed inside an enum"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Without Box, this enum would need infinite size.",
+    "exampleCode": "enum Tree {\n    Leaf(i32),\n    Node(Box<Tree>, Box<Tree>),\n}\n\nfn sum(tree: &Tree) -> i32 {\n    match tree {\n        Tree::Leaf(value) => *value,\n        Tree::Node(l, r) => sum(l) + sum(r),\n    }\n}",
+    "explanation": "A recursive type has no fixed size, because each level would contain another whole level. Box has a known pointer size, so putting the recursive part behind one makes the type representable. Box also lets a function return a trait object whose concrete size is not known at the call site.",
+    "feedback": "Box<List> makes the recursive field pointer-sized and the type finite.",
+    "practiceCode": "enum List {\n    Cons(i32, List),\n    Nil,\n}",
+    "question": "Why does that recursive enum fail to compile?",
+    "rule": "Box gives a recursive or unsized value a known, pointer-sized home.",
+    "success": "It compiles, and you can explain why Box is required.",
+    "summary": "Box moves a value to the heap behind a single owner.",
+    "task": "Define a recursive type and total its values."
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "graph-traversal",
+    "categoryTitle": "DFS, BFS & Graph Traversal",
+    "complexity": "O(V+E) time · O(V) space",
+    "difficulty": "medium",
+    "expectedAnswer": "true",
+    "idea": "Assign opposite colors across every edge and reject any edge whose endpoints match.",
+    "patternID": "bipartite-coloring",
+    "rustSketch": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "stage": "recognize",
+    "task": "Return whether the graph can be two-colored.",
+    "useCases": "two-team constraints and odd-cycle detection",
+    "visibleInput": "n=4 edges=(0,1),(1,2),(2,3),(3,0)"
+  },
+  "concept": "two-team constraints and odd-cycle detection",
+  "contentDigest": "96008e709f9018580445af457256e6205a7a0e083f1e80f08d044e7c7e0481f3",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Assign opposite colors across every edge and reject any edge whose endpoints match.",
+        "direction": "previous",
+        "title": "Bipartite Coloring: Mental Model"
+      },
+      {
+        "concept": "Return whether the graph can be two-colored.",
+        "direction": "next",
+        "title": "Challenge: Bipartite Coloring"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on two-team constraints and odd-cycle detection."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.bipartite-coloring.recognize",
+  "minutes": 11,
+  "order": 16,
+  "parentID": "algorithms-graph-traversal",
+  "title": "Bipartite Coloring: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "two-team constraints and odd-cycle detection",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Bipartite Coloring",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Bipartite Coloring",
+    "explanation": "Reach for this pattern when the prompt contains two-team constraints and odd-cycle detection. Confirm that its assumptions actually hold, then compare O(V+E) time · O(V) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: two-team constraints and odd-cycle detection.",
+    "practiceCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Bipartite Coloring.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

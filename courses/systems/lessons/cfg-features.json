@@ -1,0 +1,59 @@
+{
+  "concept": "Compiling different code per target",
+  "contentDigest": "1d5fedcc0b621712e967cb9520fe0ab6c7021ba96cf7a49a8b70ef32776627d2",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Derive, attribute, and function macros",
+        "direction": "previous",
+        "title": "Procedural Macros"
+      },
+      {
+        "concept": "Five powers and their invariants",
+        "direction": "next",
+        "title": "unsafe Rust"
+      }
+    ],
+    "correction": "cfg removes code before compilation; a disabled branch never has to be valid.",
+    "misconception": "“Disables the crate for this build entirely”",
+    "traceSteps": [
+      {
+        "detail": "Write down what callers may assume, what the compiler cannot prove, and which boundary is responsible for preserving soundness or cost.",
+        "title": "State the invariant"
+      },
+      {
+        "detail": "Gate a function on a target predicate and on a feature.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "The other branch is absent from the build, not merely unused.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Create the smallest counterexample that violates the sample's invariant, then repair the abstraction boundary instead of hiding the symptom. Keep the focus on compiling different code per target."
+  },
+  "exerciseKind": "planned",
+  "id": "cfg-features",
+  "minutes": 10,
+  "order": 2,
+  "parentID": "meta",
+  "title": "cfg & Features",
+  "writing": {
+    "answers": [
+      "Disables the crate for this build entirely",
+      "Skips the default feature set, so `std` is not enabled",
+      "Enables every feature the crate declares"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Two implementations, one compiled per target.",
+    "exampleCode": "#[cfg(target_os = \"wasi\")]\nfn platform() -> &'static str { \"wasi\" }\n\n#[cfg(not(target_os = \"wasi\"))]\nfn platform() -> &'static str { \"native\" }\n\n#[cfg(feature = \"extras\")]\nmod extras;",
+    "explanation": "#[cfg(...)] removes code before type checking, so a platform-specific branch costs nothing on other targets and does not even have to compile there. Cargo features are the same mechanism driven from the manifest, which is how one crate serves both a no_std embedded user and a full desktop one.",
+    "feedback": "You then opt back in to exactly the features you want.",
+    "practiceCode": "[features]\ndefault = [\"std\"]\nstd = []",
+    "question": "What does `default-features = false` do at the call site?",
+    "rule": "cfg removes code before compilation; a disabled branch never has to be valid.",
+    "success": "The other branch is absent from the build, not merely unused.",
+    "summary": "cfg decides which code is compiled at all.",
+    "task": "Gate a function on a target predicate and on a feature."
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "concept": "Relaxed, Acquire/Release, SeqCst",
+  "contentDigest": "3f2297e89f4665d385003f8f6681618f3ebf3bb33a7b748362e2f97ab4e3f3b5",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Sound abstractions and invariants",
+        "direction": "previous",
+        "title": "Reasoning About unsafe"
+      },
+      {
+        "concept": "What the borrow checker does not prevent",
+        "direction": "next",
+        "title": "Deadlocks"
+      }
+    ],
+    "correction": "Atomicity and ordering are separate promises; Relaxed gives only the first.",
+    "misconception": "“Never — a shared counter always needs SeqCst”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Explain Relaxed, Acquire/Release, and SeqCst in one minute each.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can say what each ordering guarantees and what it costs.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on relaxed, acquire/release, seqcst."
+  },
+  "exerciseKind": "planned",
+  "id": "q-atomics",
+  "minutes": 13,
+  "order": 0,
+  "parentID": "interview-concurrency",
+  "title": "Atomics and Ordering",
+  "writing": {
+    "answers": [
+      "Never — a shared counter always needs SeqCst",
+      "When only the final total matters, not ordering against other data",
+      "Only when a single thread touches the counter"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Release publishes the writes before it; Acquire sees them.",
+    "exampleCode": "use std::sync::atomic::{AtomicBool, Ordering};\n\nREADY.store(true, Ordering::Release);\nif READY.load(Ordering::Acquire) {\n    // everything written before the store\n    // is visible here\n}",
+    "explanation": "Ordering is the interesting half of the answer. Relaxed guarantees only that the operation itself is indivisible; Acquire and Release pair up to publish everything written before a release to whoever performs the matching acquire; SeqCst adds a single global order and costs the most. Reaching for SeqCst everywhere is not wrong, only slow, and saying that out loud is what an interviewer wants.",
+    "feedback": "A pure statistics counter needs indivisibility, not publication.",
+    "practiceCode": "COUNT.fetch_add(1, Ordering::Relaxed);",
+    "question": "When is Relaxed the right choice there?",
+    "rule": "Atomicity and ordering are separate promises; Relaxed gives only the first.",
+    "success": "You can say what each ordering guarantees and what it costs.",
+    "summary": "An atomic is a value several threads may touch without a lock.",
+    "task": "Explain Relaxed, Acquire/Release, and SeqCst in one minute each."
+  }
+}

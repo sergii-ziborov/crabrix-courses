@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "greedy-intervals",
+    "categoryTitle": "Greedy & Interval Methods",
+    "complexity": "O(n log n) time · O(1) extra",
+    "difficulty": "hard",
+    "expectedAnswer": "2",
+    "idea": "Sort by interval end and place a point only when the next interval starts after the current point.",
+    "patternID": "minimum-arrows",
+    "rustSketch": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "stage": "model",
+    "task": "Return the minimum points needed to hit all intervals.",
+    "useCases": "minimum sensors or arrows covering intervals",
+    "visibleInput": "[(10,16),(2,8),(1,6),(7,12)]"
+  },
+  "concept": "Sort by interval end and place a point only when the next interval starts after the current point.",
+  "contentDigest": "c5c247662b684d82d94dfd50f276b501fb8401651a6f783df38bd01ffa4ae18d",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Return maximum profit using one slot per time and deadlines 1-based.",
+        "direction": "previous",
+        "title": "Challenge: Deadline Profit Scheduling"
+      },
+      {
+        "concept": "minimum sensors or arrows covering intervals",
+        "direction": "next",
+        "title": "Interval Stabbing: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(n log n) time · O(1) extra bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on sort by interval end and place a point only when the next interval starts after the current point.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.minimum-arrows.model",
+  "minutes": 15,
+  "order": 27,
+  "parentID": "algorithms-greedy-intervals",
+  "title": "Interval Stabbing: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(n log n) time · O(1) extra",
+    "exampleCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "explanation": "Interval Stabbing belongs to Greedy & Interval Methods. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include minimum sensors or arrows covering intervals.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(n log n) time · O(1) extra bound without looking at the code.",
+    "summary": "Sort by interval end and place a point only when the next interval starts after the current point.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

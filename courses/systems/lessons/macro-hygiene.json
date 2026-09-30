@@ -1,0 +1,59 @@
+{
+  "concept": "Resolve generated names without accidental capture",
+  "contentDigest": "cdf74c0d660aa0731ed9fbc1b48a59c848160d147295d0d4fc668af4929f4999",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Newtype, builder, and typestate",
+        "direction": "previous",
+        "title": "Rust Idioms"
+      },
+      {
+        "concept": "Match Rust syntax as nested tokens, not raw text",
+        "direction": "next",
+        "title": "Token Trees"
+      }
+    ],
+    "correction": "Rust macros track syntax context so identifiers introduced by a macro do not casually collide with names at the call site.",
+    "misconception": "“The caller variable”",
+    "traceSteps": [
+      {
+        "detail": "Write down what callers may assume, what the compiler cannot prove, and which boundary is responsible for preserving soundness or cost.",
+        "title": "State the invariant"
+      },
+      {
+        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Create the smallest counterexample that violates the sample's invariant, then repair the abstraction boundary instead of hiding the symptom. Keep the focus on resolve generated names without accidental capture."
+  },
+  "exerciseKind": "planned",
+  "id": "macro-hygiene",
+  "minutes": 11,
+  "order": 0,
+  "parentID": "macro-design",
+  "title": "Macro Hygiene",
+  "writing": {
+    "answers": [
+      "The defining crate",
+      "The caller variable",
+      "Cargo.lock"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCode": "#[macro_export]\nmacro_rules! answer {\n    () => { $crate::value() };\n}",
+    "explanation": "Rust macros track syntax context so identifiers introduced by a macro do not casually collide with names at the call site. Use explicit paths such as $crate for helper items exported with a macro.",
+    "feedback": "Correct: The defining crate.",
+    "practiceCode": "#[macro_export]\nmacro_rules! answer {\n    () => { $crate::value() };\n}",
+    "question": "What does $crate resolve to at the call site?",
+    "rule": "Rust macros track syntax context so identifiers introduced by a macro do not casually collide with names at the call site.",
+    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "summary": "Resolve generated names without accidental capture.",
+    "task": "Trace the example, name the guarantee, and identify where it ends."
+  }
+}

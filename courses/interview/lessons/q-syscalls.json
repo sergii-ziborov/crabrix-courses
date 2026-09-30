@@ -1,0 +1,59 @@
+{
+  "concept": "Where the cost of IO actually is",
+  "contentDigest": "ee0f7afd90ed500bbdd31431e653296e9eba5e42630a2979a1f02bd08261b6d1",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Pages, faults, and resident size",
+        "direction": "previous",
+        "title": "Virtual Memory"
+      },
+      {
+        "concept": "Streams, datagrams, and trade-offs",
+        "direction": "next",
+        "title": "TCP vs UDP"
+      }
+    ],
+    "correction": "Batch at the boundary: syscalls cost orders of magnitude more than calls.",
+    "misconception": "“It is not async, so it blocks the task”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Count the syscalls in a hot loop and remove the ones that are avoidable.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can point to the buffering that removed them.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on where the cost of io actually is."
+  },
+  "exerciseKind": "planned",
+  "id": "q-syscalls",
+  "minutes": 10,
+  "order": 2,
+  "parentID": "interview-platform",
+  "title": "Syscalls and Buffering",
+  "writing": {
+    "answers": [
+      "It is not async, so it blocks the task",
+      "One syscall per byte, where one per buffer would do",
+      "write_all can fail and is never checked"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "One syscall per line, versus one per buffer.",
+    "exampleCode": "// A write syscall per line.\nfor line in lines { file.write_all(line)?; }\n\n// One syscall per full buffer.\nlet mut out = BufWriter::new(file);\nfor line in lines { out.write_all(line)?; }",
+    "explanation": "Reading a file, opening a socket, or spawning a thread all cross a privilege boundary that costs far more than a function call. That is why buffered IO exists, why writev beats many writes, and why an event loop with epoll or io_uring outperforms a read per connection. Interviewers ask this to see whether you know where the cost of IO actually is.",
+    "feedback": "The boundary crossing dominates; batch before you optimise anything else.",
+    "practiceCode": "for byte in data {\n    socket.write_all(&[byte])?;\n}",
+    "question": "What is wrong with that loop?",
+    "rule": "Batch at the boundary: syscalls cost orders of magnitude more than calls.",
+    "success": "You can point to the buffering that removed them.",
+    "summary": "A syscall is a controlled trip into the kernel, and it is not free.",
+    "task": "Count the syscalls in a hot loop and remove the ones that are avoidable."
+  }
+}

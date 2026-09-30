@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "strings-tries",
+    "categoryTitle": "Tries & String Matching",
+    "complexity": "O(n) time · O(n) output",
+    "difficulty": "easy",
+    "expectedAnswer": "a3b2c1a4",
+    "idea": "Group maximal adjacent equal symbols and emit the symbol with its run length.",
+    "patternID": "run-length-encoding",
+    "rustSketch": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "stage": "model",
+    "task": "Encode consecutive characters as character followed by count.",
+    "useCases": "compression, repeated-span summaries, token runs",
+    "visibleInput": "aaabbcaaaa"
+  },
+  "concept": "Group maximal adjacent equal symbols and emit the symbol with its run length.",
+  "contentDigest": "fae1dd98e10bdfb2e1247ebab84b11ab0bf6558ab56f8990382899b745a022d6",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Return true after ignoring non-alphanumeric ASCII and case.",
+        "direction": "previous",
+        "title": "Challenge: String Two Pointers"
+      },
+      {
+        "concept": "compression, repeated-span summaries, token runs",
+        "direction": "next",
+        "title": "Run-Length Encoding: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(n) time · O(n) output bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on group maximal adjacent equal symbols and emit the symbol with its run length.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.run-length-encoding.model",
+  "minutes": 8,
+  "order": 6,
+  "parentID": "algorithms-strings-tries",
+  "title": "Run-Length Encoding: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(n) time · O(n) output",
+    "exampleCode": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "explanation": "Run-Length Encoding belongs to Tries & String Matching. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include compression, repeated-span summaries, token runs.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(n) time · O(n) output bound without looking at the code.",
+    "summary": "Group maximal adjacent equal symbols and emit the symbol with its run length.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

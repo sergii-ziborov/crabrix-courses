@@ -1,0 +1,59 @@
+{
+  "concept": "Why Rust seeds its hasher",
+  "contentDigest": "f95b34fa32833a9c65555db55adec912d6dc880957aec732944a05241970b019",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Constants, cache, and amortised cost",
+        "direction": "previous",
+        "title": "Complexity in Practice"
+      },
+      {
+        "concept": "Unit, property, fuzz, integration",
+        "direction": "next",
+        "title": "Choosing a Test"
+      }
+    ],
+    "correction": "Hash choice is a security decision whenever the keys are attacker-controlled.",
+    "misconception": "“None — a faster hash is strictly better”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Decide whether a faster hasher is safe for two different key sources.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "The choice is justified by where the keys come from.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on why rust seeds its hasher."
+  },
+  "exerciseKind": "planned",
+  "id": "q-hashmap",
+  "minutes": 10,
+  "order": 1,
+  "parentID": "interview-craft",
+  "title": "Hashing and Collisions",
+  "writing": {
+    "answers": [
+      "None — a faster hash is strictly better",
+      "Chosen keys can be made to collide, turning lookups linear",
+      "It can no longer store String keys"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "A faster hasher is a decision about trust, not only speed.",
+    "exampleCode": "use std::collections::HashMap;\n\n// Default: SipHash, randomly seeded.\nlet mut trusted: HashMap<u32, u32> =\n    HashMap::default();",
+    "explanation": "Lookup cost depends on collisions, and collisions depend on the hash function. Rust's default is SipHash with a per-process random seed precisely so untrusted keys cannot be chosen to collide — the denial-of-service that plagued other languages. Swapping in a faster non-cryptographic hasher is correct for internal keys and dangerous for user input.",
+    "feedback": "That is the classic hash-flooding denial of service.",
+    "practiceCode": "// Keys are HTTP header names from the client.\nlet map: HashMap<String, String, FxBuildHasher>",
+    "question": "What is the risk of that hash choice?",
+    "rule": "Hash choice is a security decision whenever the keys are attacker-controlled.",
+    "success": "The choice is justified by where the keys come from.",
+    "summary": "A hash map is O(1) until an adversary picks your keys.",
+    "task": "Decide whether a faster hasher is safe for two different key sources."
+  }
+}

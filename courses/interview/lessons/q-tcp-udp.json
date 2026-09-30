@@ -1,0 +1,59 @@
+{
+  "concept": "Streams, datagrams, and trade-offs",
+  "contentDigest": "b5e89eb5bd8a97072b3a636b3fee265f4834f7be121498615a30ad7ff34aea2f",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Where the cost of IO actually is",
+        "direction": "previous",
+        "title": "Syscalls and Buffering"
+      },
+      {
+        "concept": "Head-of-line blocking per layer",
+        "direction": "next",
+        "title": "HTTP/1.1, 2, and 3"
+      }
+    ],
+    "correction": "TCP: ordered, reliable, head-of-line blocked. UDP: messages, no promises.",
+    "misconception": "“TCP, so nothing is ever lost”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Choose a transport for a chat protocol and for live audio, and say why.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "Each choice names the guarantee you needed and the one you gave up.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on streams, datagrams, and trade-offs."
+  },
+  "exerciseKind": "planned",
+  "id": "q-tcp-udp",
+  "minutes": 9,
+  "order": 3,
+  "parentID": "interview-platform",
+  "title": "TCP vs UDP",
+  "writing": {
+    "answers": [
+      "TCP, so nothing is ever lost",
+      "UDP, so a late packet is simply skipped",
+      "Either — the difference does not matter here"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "One is a stream with no message boundaries; the other is not.",
+    "exampleCode": "// Stream: framing is your problem.\nlet mut stream = TcpStream::connect(addr)?;\nstream.write_all(&length.to_be_bytes())?;\n\n// Datagram: the boundary is the message.\nlet socket = UdpSocket::bind(\"0.0.0.0:0\")?;\nsocket.send_to(&packet, addr)?;",
+    "explanation": "TCP costs a handshake, retransmission, and head-of-line blocking in exchange for delivery and order. UDP hands you a message that may vanish, arrive twice, or arrive out of order, and leaves reliability to you — which is exactly why QUIC and real-time media build their own on top of it. The right answer names the trade-off rather than declaring one better.",
+    "feedback": "Retransmitting audio that is already too late only adds delay.",
+    "practiceCode": "// Live voice: late audio is worse than none.\nlet transport = ???;",
+    "question": "Which transport fits that workload?",
+    "rule": "TCP: ordered, reliable, head-of-line blocked. UDP: messages, no promises.",
+    "success": "Each choice names the guarantee you needed and the one you gave up.",
+    "summary": "TCP gives you a reliable ordered stream; UDP gives you datagrams and nothing else.",
+    "task": "Choose a transport for a chat protocol and for live audio, and say why."
+  }
+}

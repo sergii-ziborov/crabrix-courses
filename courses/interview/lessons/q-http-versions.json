@@ -1,0 +1,59 @@
+{
+  "concept": "Head-of-line blocking per layer",
+  "contentDigest": "33ad89d7567c00829eb47493d66504d1029f5590365ac5d075b7ca88d964374d",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Streams, datagrams, and trade-offs",
+        "direction": "previous",
+        "title": "TCP vs UDP"
+      },
+      {
+        "concept": "Identity, confidentiality, integrity",
+        "direction": "next",
+        "title": "What TLS Guarantees"
+      }
+    ],
+    "correction": "HTTP/2 removes application blocking; only HTTP/3 removes transport blocking.",
+    "misconception": "“One — only the stream that lost the packet”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Explain what head-of-line blocking means at each layer.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can say which version fixes which layer, and which one it does not.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on head-of-line blocking per layer."
+  },
+  "exerciseKind": "planned",
+  "id": "q-http-versions",
+  "minutes": 10,
+  "order": 4,
+  "parentID": "interview-platform",
+  "title": "HTTP/1.1, 2, and 3",
+  "writing": {
+    "answers": [
+      "One — only the stream that lost the packet",
+      "All ten, because they share one TCP connection",
+      "None — HTTP/2 streams are independent"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Same request, three different blocking stories underneath.",
+    "exampleCode": "// h1: one in flight per connection\n// h2: many streams, one TCP connection\n// h3: many streams, QUIC over UDP\nlet response = client.get(url).send().await?;",
+    "explanation": "HTTP/1.1 sends one request at a time per connection, so browsers opened six. HTTP/2 multiplexes streams over one TCP connection, which removes application-level blocking but not TCP's — one lost packet still stalls every stream. HTTP/3 moves onto QUIC over UDP, so a lost packet stalls only its own stream, and the handshake folds into TLS.",
+    "feedback": "TCP must deliver in order, so the whole connection waits.",
+    "practiceCode": "// One dropped packet, HTTP/2, ten active streams.",
+    "question": "How many of the ten streams stall?",
+    "rule": "HTTP/2 removes application blocking; only HTTP/3 removes transport blocking.",
+    "success": "You can say which version fixes which layer, and which one it does not.",
+    "summary": "Each HTTP version fixed the blocking problem one layer lower.",
+    "task": "Explain what head-of-line blocking means at each layer."
+  }
+}

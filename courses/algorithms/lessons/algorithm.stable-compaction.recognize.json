@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "scans",
+    "categoryTitle": "Linear Scans & State",
+    "complexity": "O(n) time · O(1) extra space",
+    "difficulty": "medium",
+    "expectedAnswer": "4,2,7",
+    "idea": "Write kept elements forward so their relative order survives removal.",
+    "patternID": "stable-compaction",
+    "rustSketch": "fn scan(values: &[i32]) -> Option<usize> {\n    for (index, value) in values.iter().enumerate() {\n        if *value < 0 { return Some(index); }\n    }\n    None\n}",
+    "stage": "recognize",
+    "task": "Remove zeros stably and return the kept prefix as comma-separated values.",
+    "useCases": "remove-in-place, filtering buffers, zero compaction",
+    "visibleInput": "[0, 4, 0, 2, 7, 0]"
+  },
+  "concept": "remove-in-place, filtering buffers, zero compaction",
+  "contentDigest": "dca709bf29acee8008c1ae9227dfb84fdc98bf8fef3362d8fe438998d52656bb",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Write kept elements forward so their relative order survives removal.",
+        "direction": "previous",
+        "title": "Stable Compaction: Mental Model"
+      },
+      {
+        "concept": "Remove zeros stably and return the kept prefix as comma-separated values.",
+        "direction": "next",
+        "title": "Challenge: Stable Compaction"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on remove-in-place, filtering buffers, zero compaction."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.stable-compaction.recognize",
+  "minutes": 11,
+  "order": 16,
+  "parentID": "algorithms-scans",
+  "title": "Stable Compaction: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "remove-in-place, filtering buffers, zero compaction",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Stable Compaction",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Stable Compaction",
+    "explanation": "Reach for this pattern when the prompt contains remove-in-place, filtering buffers, zero compaction. Confirm that its assumptions actually hold, then compare O(n) time · O(1) extra space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: remove-in-place, filtering buffers, zero compaction.",
+    "practiceCode": "fn scan(values: &[i32]) -> Option<usize> {\n    for (index, value) in values.iter().enumerate() {\n        if *value < 0 { return Some(index); }\n    }\n    None\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Stable Compaction.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

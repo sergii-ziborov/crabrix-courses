@@ -1,0 +1,59 @@
+{
+  "concept": "Unit, property, fuzz, integration",
+  "contentDigest": "8728d037bac515d1d80a584b723c94b6af6ed34ab28679a473fee10448d2fef2",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Why Rust seeds its hasher",
+        "direction": "previous",
+        "title": "Hashing and Collisions"
+      },
+      {
+        "concept": "Making misuse impossible to express",
+        "direction": "next",
+        "title": "API Design and Semver"
+      }
+    ],
+    "correction": "Examples check what you thought of; properties check what you did not.",
+    "misconception": "“More unit tests around the parser”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Choose the right kind of test for a parser, a cache, and an HTTP route.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "Each choice names the class of bug it is meant to catch.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on unit, property, fuzz, integration."
+  },
+  "exerciseKind": "planned",
+  "id": "q-testing-strategy",
+  "minutes": 11,
+  "order": 2,
+  "parentID": "interview-craft",
+  "title": "Choosing a Test",
+  "writing": {
+    "answers": [
+      "More unit tests around the parser",
+      "A fuzzer driving malformed input at it",
+      "An integration test over the whole flow"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "The property holds for every input, not for three of them.",
+    "exampleCode": "#[test]\nfn roundtrip() {\n    proptest!(|(value: Vec<u8>)| {\n        let encoded = encode(&value);\n        prop_assert_eq!(decode(&encoded)?, value);\n    });\n}",
+    "explanation": "Unit tests pin down behaviour you already thought of. Property tests generate inputs and check an invariant, which finds the cases you did not. Fuzzing pushes malformed input at a parser until it panics. Integration tests check the seams. A candidate who reaches for all four in the right places is saying something a coverage number cannot.",
+    "feedback": "Fuzzing explores the malformed space no one thinks to write down.",
+    "practiceCode": "// A parser for untrusted binary input.",
+    "question": "Which finds the crash first?",
+    "rule": "Examples check what you thought of; properties check what you did not.",
+    "success": "Each choice names the class of bug it is meant to catch.",
+    "summary": "Different bugs need different tests, and naming them is the answer.",
+    "task": "Choose the right kind of test for a parser, a cache, and an HTTP route."
+  }
+}

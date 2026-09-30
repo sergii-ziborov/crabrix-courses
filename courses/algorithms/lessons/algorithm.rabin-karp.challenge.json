@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "strings-tries",
+    "categoryTitle": "Tries & String Matching",
+    "complexity": "O(n+m) expected · O(n*m) collision worst",
+    "difficulty": "medium",
+    "expectedAnswer": "0,7",
+    "idea": "Compare rolling hashes first and verify actual bytes only on hash matches.",
+    "patternID": "rabin-karp",
+    "rustSketch": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "stage": "challenge",
+    "task": "Return every start index of the pattern.",
+    "useCases": "multiple pattern candidates and substring fingerprints",
+    "visibleInput": "text=abracadabra pattern=abra"
+  },
+  "concept": "Return every start index of the pattern.",
+  "contentDigest": "793121fa263484dc4b48439fe5011534543884dee03ba165e3962b86b36ce033",
+  "depth": {
+    "connections": [
+      {
+        "concept": "multiple pattern candidates and substring fingerprints",
+        "direction": "previous",
+        "title": "Rabin–Karp: When to Use It"
+      },
+      {
+        "concept": "Store one edge per next symbol so shared prefixes occupy shared nodes.",
+        "direction": "next",
+        "title": "Prefix Trie: Mental Model"
+      }
+    ],
+    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
+    "misconception": "“No complexity bound is needed”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Return every start index of the pattern.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "The harness prints PASS rabin-karp, and your explanation still meets O(n+m) expected · O(n*m) collision worst.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on return every start index of the pattern.."
+  },
+  "exerciseKind": "algorithmChallenge",
+  "id": "algorithm.rabin-karp.challenge",
+  "minutes": 11,
+  "order": 17,
+  "parentID": "algorithms-strings-tries",
+  "title": "Challenge: Rabin–Karp",
+  "writing": {
+    "answers": [
+      "O(n+m) expected · O(n*m) collision worst",
+      "No complexity bound is needed",
+      "Always O(n!) time"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Editable solution · verification data stays outside the project",
+    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return every start index of the pattern.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Rabin–Karp\")\n}",
+    "explanation": "This is an original Crabrix exercise in the same problem family as common interview-platform questions. Visible input: text=abracadabra pattern=abra. Expected answer: 0,7. Implement solve instead of printing the expected value directly; Crabrix supplies several verification cases privately when you Run. The input grammar matches the visible example, and whitespace surrounding the complete input is insignificant.",
+    "feedback": "The intended target is O(n+m) expected · O(n*m) collision worst; defend any different tradeoff explicitly.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return every start index of the pattern.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Rabin–Karp\")\n}",
+    "question": "Which performance target should guide this solution?",
+    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
+    "success": "The harness prints PASS rabin-karp, and your explanation still meets O(n+m) expected · O(n*m) collision worst.",
+    "summary": "Return every start index of the pattern.",
+    "task": "Return every start index of the pattern."
+  }
+}

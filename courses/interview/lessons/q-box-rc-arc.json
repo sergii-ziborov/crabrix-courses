@@ -1,0 +1,59 @@
+{
+  "concept": "Ownership and allocation choices",
+  "contentDigest": "afd634ebee654ba270683b5a4015eeb8729bfbd76b0f76ac3661558b52bf4e96",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Thread-safety marker traits",
+        "direction": "previous",
+        "title": "Send and Sync"
+      },
+      {
+        "concept": "Dispatch and code size tradeoffs",
+        "direction": "next",
+        "title": "dyn Trait vs Generics"
+      }
+    ],
+    "correction": "Pick by ownership count first, then by thread boundary.",
+    "misconception": "“Box<Node>”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Match three scenarios to the narrowest pointer that satisfies them.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "Every choice names an ownership count and a thread boundary.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on ownership and allocation choices."
+  },
+  "exerciseKind": "planned",
+  "id": "q-box-rc-arc",
+  "minutes": 12,
+  "order": 1,
+  "parentID": "interview-systems",
+  "title": "Box, Rc, and Arc",
+  "writing": {
+    "answers": [
+      "Box<Node>",
+      "Rc<Node>",
+      "Arc<Node>"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Narrowest type that satisfies the requirement wins.",
+    "exampleCode": "// one owner, on the heap\nlet boxed: Box<u32> = Box::new(1);\n\n// shared, single thread\nlet shared = std::rc::Rc::new(1);\n\n// shared, across threads\nlet threaded = std::sync::Arc::new(1);",
+    "explanation": "Box has exactly one owner and puts the value on the heap. Rc shares ownership on a single thread with a plain count. Arc does the same across threads with an atomic count, which costs more. Choosing the narrowest one that fits is the whole answer.",
+    "feedback": "Shared on one thread: Rc. Arc would pay for atomics you do not need.",
+    "practiceCode": "// Shared by several parents, one thread only.\ntype Node = ???;",
+    "question": "Which pointer type fits that requirement?",
+    "rule": "Pick by ownership count first, then by thread boundary.",
+    "success": "Every choice names an ownership count and a thread boundary.",
+    "summary": "Three pointers, three different ownership questions.",
+    "task": "Match three scenarios to the narrowest pointer that satisfies them."
+  }
+}

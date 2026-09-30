@@ -1,0 +1,59 @@
+{
+  "concept": "Sound abstractions and invariants",
+  "contentDigest": "f545872433178bf876d12c8e12dff7579b11fe2684264be53d53c173d3e4636e",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Dispatch and code size tradeoffs",
+        "direction": "previous",
+        "title": "dyn Trait vs Generics"
+      },
+      {
+        "concept": "Relaxed, Acquire/Release, SeqCst",
+        "direction": "next",
+        "title": "Atomics and Ordering"
+      }
+    ],
+    "correction": "unsafe moves the obligation to you; it never removes it.",
+    "misconception": "“It should return an Option instead of a value”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Review a small unsafe wrapper and list every invariant its safe API protects.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "Safe callers cannot reach undefined behaviour by any input.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on sound abstractions and invariants."
+  },
+  "exerciseKind": "planned",
+  "id": "q-unsafe",
+  "minutes": 12,
+  "order": 3,
+  "parentID": "interview-systems",
+  "title": "Reasoning About unsafe",
+  "writing": {
+    "answers": [
+      "It should return an Option instead of a value",
+      "A safe caller can pass any index, so the invariant is unchecked",
+      "get_unchecked has been deprecated for slices"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "The invariant is checked, then written down beside the block.",
+    "exampleCode": "pub fn first(v: &[u32]) -> Option<u32> {\n    if v.is_empty() { return None; }\n    // SAFETY: the check above proves index 0\n    // exists for this slice.\n    Some(unsafe { *v.get_unchecked(0) })\n}",
+    "explanation": "It permits exactly five operations and leaves the borrow checker fully in force. A sound abstraction documents the invariant its unsafe block relies on and enforces it in the safe API, so no safe caller can ever trigger undefined behaviour.",
+    "feedback": "A safe signature must make the invariant impossible to break.",
+    "practiceCode": "pub fn get(v: &[u32], i: usize) -> u32 {\n    unsafe { *v.get_unchecked(i) }\n}",
+    "question": "Why is that function unsound?",
+    "rule": "unsafe moves the obligation to you; it never removes it.",
+    "success": "Safe callers cannot reach undefined behaviour by any input.",
+    "summary": "unsafe is a claim about an invariant, not a disabled checker.",
+    "task": "Review a small unsafe wrapper and list every invariant its safe API protects."
+  }
+}

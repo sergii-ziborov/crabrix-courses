@@ -1,0 +1,59 @@
+{
+  "concept": "Lazy transformations",
+  "contentDigest": "da398c0b688f80d50507b75fe0542bd70ac0e1f83c0a159de027bb2759d98497",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Fn, FnMut, FnOnce, and capture",
+        "direction": "previous",
+        "title": "Closures"
+      },
+      {
+        "concept": "impl Iterator and the next method",
+        "direction": "next",
+        "title": "Writing an Iterator"
+      }
+    ],
+    "correction": "Adapters are lazy; a consumer is what makes the work happen.",
+    "misconception": "“Every name has already been uppercased”",
+    "traceSteps": [
+      {
+        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
+        "title": "Map ownership first"
+      },
+      {
+        "detail": "Transform a range with filter and map, then collect it.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "The Vec holds only the expected transformed values.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on lazy transformations."
+  },
+  "exerciseKind": "planned",
+  "id": "iterators",
+  "minutes": 11,
+  "order": 4,
+  "parentID": "abstraction",
+  "title": "Iterators",
+  "writing": {
+    "answers": [
+      "Every name has already been uppercased",
+      "None — nothing consumed the iterator",
+      "Only the first element has been mapped"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Nothing runs until collect asks for items.",
+    "exampleCode": "let squares: Vec<u32> = (1..=6)\n    .filter(|v| v % 2 == 0)\n    .map(|v| v * v)\n    .collect();",
+    "explanation": "map and filter build a description of the work; nothing runs until a consumer such as collect, sum, or a for loop asks for items. That laziness is why a long chain still makes a single pass over the data instead of one pass per step.",
+    "feedback": "map returns a lazy adapter; without a consumer it never runs.",
+    "practiceCode": "let names = list.iter().map(|n| n.to_uppercase());\nprintln!(\"done\");",
+    "question": "What work has been done by that point?",
+    "rule": "Adapters are lazy; a consumer is what makes the work happen.",
+    "success": "The Vec holds only the expected transformed values.",
+    "summary": "Iterators compose lazy transformations before consuming results.",
+    "task": "Transform a range with filter and map, then collect it."
+  }
+}

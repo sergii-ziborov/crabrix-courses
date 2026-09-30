@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "greedy-intervals",
+    "categoryTitle": "Greedy & Interval Methods",
+    "complexity": "O(n) time · O(n) output",
+    "difficulty": "medium",
+    "expectedAnswer": "1-2,3-10,12-16",
+    "idea": "Copy intervals before, merge every overlap, then copy intervals after.",
+    "patternID": "insert-interval",
+    "rustSketch": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "stage": "model",
+    "task": "Insert [4,8] and return merged intervals.",
+    "useCases": "adding one booking to an already normalised schedule",
+    "visibleInput": "[(1,2),(3,5),(6,7),(8,10),(12,16)]"
+  },
+  "concept": "Copy intervals before, merge every overlap, then copy intervals after.",
+  "contentDigest": "81c143e9fc07b1716b206cccdf22aca996fb988a2c1771593977665fc70b4a31",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Return merged closed intervals.",
+        "direction": "previous",
+        "title": "Challenge: Merge Intervals"
+      },
+      {
+        "concept": "adding one booking to an already normalised schedule",
+        "direction": "next",
+        "title": "Insert into Sorted Intervals: When to Use It"
+      }
+    ],
+    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
+    "misconception": "“The shortest variable names”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can explain the invariant, termination condition, and O(n) time · O(n) output bound without looking at the code.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on copy intervals before, merge every overlap, then copy intervals after.."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.insert-interval.model",
+  "minutes": 11,
+  "order": 6,
+  "parentID": "algorithms-greedy-intervals",
+  "title": "Insert into Sorted Intervals: Mental Model",
+  "writing": {
+    "answers": [
+      "Its invariant and the state changed by one step",
+      "The shortest variable names",
+      "A recursive implementation in every case"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Rust sketch · target O(n) time · O(n) output",
+    "exampleCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "explanation": "Insert into Sorted Intervals belongs to Greedy & Interval Methods. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include adding one booking to an already normalised schedule.",
+    "feedback": "The invariant explains both correctness and which state may change.",
+    "practiceCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "question": "What should you identify before translating this pattern into Rust?",
+    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "success": "You can explain the invariant, termination condition, and O(n) time · O(n) output bound without looking at the code.",
+    "summary": "Copy intervals before, merge every overlap, then copy intervals after.",
+    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+  }
+}

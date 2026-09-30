@@ -1,0 +1,59 @@
+{
+  "concept": "Named data and methods",
+  "contentDigest": "c47f8c7bde52eba065c922aaa16fb5548b93353ef12e1704b5527cd2a6500794",
+  "depth": {
+    "connections": [
+      {
+        "concept": "/// doc comments and examples",
+        "direction": "previous",
+        "title": "Comments & Docs"
+      },
+      {
+        "concept": "Variants and exhaustive handling",
+        "direction": "next",
+        "title": "Enums & Match"
+      }
+    ],
+    "correction": "self consumes, &self reads, &mut self modifies.",
+    "misconception": "“Nothing — a method may take self by value freely”",
+    "traceSteps": [
+      {
+        "detail": "Name each value's type and starting value, then mark the expression that produces the lesson's result.",
+        "title": "Inventory the values"
+      },
+      {
+        "detail": "Model a Rectangle and add an area method.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "The method borrows the rectangle and prints the expected area.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change one value, type, or boundary in the sample. Write the exact stdout or diagnostic you expect before asking rustc. Keep the focus on named data and methods."
+  },
+  "exerciseKind": "planned",
+  "id": "structs",
+  "minutes": 8,
+  "order": 0,
+  "parentID": "modeling",
+  "title": "Structs",
+  "writing": {
+    "answers": [
+      "Nothing — a method may take self by value freely",
+      "self consumes the counter, so it cannot be used again",
+      "It should return Self so the call can be chained"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "&self borrows, so the caller keeps ownership.",
+    "exampleCode": "struct Rectangle {\n    width: u32,\n    height: u32,\n}\n\nimpl Rectangle {\n    fn area(&self) -> u32 {\n        self.width * self.height\n    }\n}",
+    "explanation": "impl blocks attach constructors and methods to the type. The receiver spells out the ownership contract: self consumes the value, &self borrows it for reading, and &mut self borrows it for modification — so a method signature tells you what it will do before you read the body.",
+    "feedback": "&self or &mut self keeps the value usable after the call.",
+    "practiceCode": "impl Counter {\n    fn bump(self) -> u32 { self.value + 1 }\n}",
+    "question": "What is wrong with that receiver?",
+    "rule": "self consumes, &self reads, &mut self modifies.",
+    "success": "The method borrows the rectangle and prints the expected area.",
+    "summary": "Structs give related data names and a stable shape.",
+    "task": "Model a Rectangle and add an area method."
+  }
+}

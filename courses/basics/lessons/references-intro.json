@@ -1,0 +1,59 @@
+{
+  "concept": "Borrowing for read-only access",
+  "contentDigest": "cd71d83b9b00617dbea6ea970c9033b87e4b2701698ac7cde683d03690e08841",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Turning text into typed data",
+        "direction": "previous",
+        "title": "Parsing Values"
+      },
+      {
+        "concept": "Dot syntax and chained transformations",
+        "direction": "next",
+        "title": "Using Methods"
+      }
+    ],
+    "correction": "&T borrows T for read-only use without transferring ownership.",
+    "misconception": "“fn show(mut text: String)”",
+    "traceSteps": [
+      {
+        "detail": "Name each value's type and starting value, then mark the expression that produces the lesson's result.",
+        "title": "Inventory the values"
+      },
+      {
+        "detail": "Pass text to a function by reference and use the owner afterward.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "The caller retains ownership and no clone is needed.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change one value, type, or boundary in the sample. Write the exact stdout or diagnostic you expect before asking rustc. Keep the focus on borrowing for read-only access."
+  },
+  "exerciseKind": "planned",
+  "id": "references-intro",
+  "minutes": 7,
+  "order": 2,
+  "parentID": "small-programs",
+  "title": "First References",
+  "writing": {
+    "answers": [
+      "fn show(text: &str)",
+      "fn show(mut text: String)",
+      "fn show(text: Box<String>)"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "length borrows text, so main can print it again.",
+    "exampleCode": "fn length(text: &str) -> usize {\n    text.len()\n}\n\nlet name = String::from(\"Crabrix\");\nprintln!(\"{} {name}\", length(&name));",
+    "explanation": "The & symbol creates a borrow. A shared reference such as &str permits reading but not mutation, and it does not own the value it points to. Passing a reference avoids a move, so the original binding remains usable after the call. Later ownership lessons add the precise aliasing rules and mutable references.",
+    "feedback": "Borrowing &str lets show read the text without taking its String owner.",
+    "practiceCode": "fn show(text: String) {\n    println!(\"{text}\");\n}\nlet name = String::from(\"Ferris\");\nshow(name);\nprintln!(\"{name}\");",
+    "question": "What signature keeps name usable?",
+    "rule": "&T borrows T for read-only use without transferring ownership.",
+    "success": "The caller retains ownership and no clone is needed.",
+    "summary": "A shared reference lets a function read a value while the caller keeps ownership.",
+    "task": "Pass text to a function by reference and use the owner afterward."
+  }
+}

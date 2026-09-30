@@ -1,0 +1,59 @@
+{
+  "concept": "Ownership across the C boundary",
+  "contentDigest": "9dbce3e1bec098b5332ed45fcdee6a09b9618b34ca37740a9b03379bc414a3de",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Measure, change one thing, measure",
+        "direction": "previous",
+        "title": "Profiling First"
+      },
+      {
+        "concept": "Clarify duplicates, indices, and complexity first",
+        "direction": "next",
+        "title": "Live Coding: Two Sum"
+      }
+    ],
+    "correction": "repr(C) fixes layout; ownership across the boundary is documentation you enforce.",
+    "misconception": "“CString cannot hold input of that length”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Wrap one C function so no safe caller can misuse it.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "Null, lifetime, and ownership are all handled inside the wrapper.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on ownership across the c boundary."
+  },
+  "exerciseKind": "planned",
+  "id": "q-ffi-abi",
+  "minutes": 13,
+  "order": 5,
+  "parentID": "interview-craft",
+  "title": "FFI and ABI",
+  "writing": {
+    "answers": [
+      "CString cannot hold input of that length",
+      "The buffer is freed before use, so ptr dangles",
+      "as_ptr has to be called inside unsafe"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "The unsafe block is small; the wrapper is where the rules live.",
+    "exampleCode": "#[repr(C)]\npub struct Point { x: f64, y: f64 }\n\nextern \"C\" {\n    fn c_len(ptr: *const u8, len: usize)\n        -> usize;\n}",
+    "explanation": "extern \"C\" fixes the calling convention, repr(C) fixes the layout, and everything about ownership becomes a convention you have to document. Who frees this pointer, may it be null, how long is it valid, and is it aliased are the four questions each call has to answer — and the safe wrapper you write around it is where those answers are enforced.",
+    "feedback": "The CString must outlive every use of the pointer it lends out.",
+    "practiceCode": "let name = CString::new(input)?;\nlet ptr = name.as_ptr();\ndrop(name);\nc_use(ptr);",
+    "question": "What is wrong with that pointer?",
+    "rule": "repr(C) fixes layout; ownership across the boundary is documentation you enforce.",
+    "success": "Null, lifetime, and ownership are all handled inside the wrapper.",
+    "summary": "Crossing into C means giving up every guarantee at the boundary.",
+    "task": "Wrap one C function so no safe caller can misuse it."
+  }
+}

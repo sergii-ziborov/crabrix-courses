@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "greedy-intervals",
+    "categoryTitle": "Greedy & Interval Methods",
+    "complexity": "O(n log n) time · O(n) space",
+    "difficulty": "hard",
+    "expectedAnswer": "142",
+    "idea": "Process jobs by deadline while a heap keeps only the best feasible set.",
+    "patternID": "deadline-scheduling",
+    "rustSketch": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "stage": "recognize",
+    "task": "Return maximum profit using one slot per time and deadlines 1-based.",
+    "useCases": "max reward under unit-time deadlines",
+    "visibleInput": "jobs=(d2,p100),(d1,p19),(d2,p27),(d1,p25),(d3,p15)"
+  },
+  "concept": "max reward under unit-time deadlines",
+  "contentDigest": "2dfe949294a05c32da3614546cad527d56be155f9c470cb8bc470d0fe46c1bd3",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Process jobs by deadline while a heap keeps only the best feasible set.",
+        "direction": "previous",
+        "title": "Deadline Profit Scheduling: Mental Model"
+      },
+      {
+        "concept": "Return maximum profit using one slot per time and deadlines 1-based.",
+        "direction": "next",
+        "title": "Challenge: Deadline Profit Scheduling"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on max reward under unit-time deadlines."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.deadline-scheduling.recognize",
+  "minutes": 15,
+  "order": 25,
+  "parentID": "algorithms-greedy-intervals",
+  "title": "Deadline Profit Scheduling: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "max reward under unit-time deadlines",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Deadline Profit Scheduling",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Deadline Profit Scheduling",
+    "explanation": "Reach for this pattern when the prompt contains max reward under unit-time deadlines. Confirm that its assumptions actually hold, then compare O(n log n) time · O(n) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: max reward under unit-time deadlines.",
+    "practiceCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Deadline Profit Scheduling.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

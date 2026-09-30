@@ -1,0 +1,59 @@
+{
+  "concept": "Separate host-time generation from target code",
+  "contentDigest": "05293fdefbec19d3ecc5f3e90fb16c0e2ba9a7382945235c288076419df44d49",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Match Rust syntax as nested tokens, not raw text",
+        "direction": "previous",
+        "title": "Token Trees"
+      },
+      {
+        "concept": "Represent an address without borrow guarantees",
+        "direction": "next",
+        "title": "Raw Pointers"
+      }
+    ],
+    "correction": "A procedural macro is compiled for and runs on the build host, then emits tokens for the target crate.",
+    "misconception": "“Inside the target app”",
+    "traceSteps": [
+      {
+        "detail": "Write down what callers may assume, what the compiler cannot prove, and which boundary is responsible for preserving soundness or cost.",
+        "title": "State the invariant"
+      },
+      {
+        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Create the smallest counterexample that violates the sample's invariant, then repair the abstraction boundary instead of hiding the symptom. Keep the focus on separate host-time generation from target code."
+  },
+  "exerciseKind": "planned",
+  "id": "proc-macro-boundaries",
+  "minutes": 12,
+  "order": 2,
+  "parentID": "macro-design",
+  "title": "Proc-Macro Boundaries",
+  "writing": {
+    "answers": [
+      "On the build host",
+      "Inside the target app",
+      "In Cargo.toml"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCode": "// Host process:\n#[proc_macro_derive(Builder)]\npub fn derive(input: TokenStream)\n    -> TokenStream {\n    expand(input)\n}",
+    "explanation": "A procedural macro is compiled for and runs on the build host, then emits tokens for the target crate. It cannot depend on target runtime state and should emit spans that point errors back to useful input.",
+    "feedback": "Correct: On the build host.",
+    "practiceCode": "// Host process:\n#[proc_macro_derive(Builder)]\npub fn derive(input: TokenStream)\n    -> TokenStream {\n    expand(input)\n}",
+    "question": "Where does a proc macro execute?",
+    "rule": "A procedural macro is compiled for and runs on the build host, then emits tokens for the target crate.",
+    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "summary": "Separate host-time generation from target code.",
+    "task": "Trace the example, name the guarantee, and identify where it ends."
+  }
+}

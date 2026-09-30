@@ -1,0 +1,59 @@
+{
+  "concept": "Result without panic",
+  "contentDigest": "2803cca94ca9b741ac4eb2dd374fc41aba2dbafa19f1f0ba2295818e11ee8fd3",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Dot syntax and chained transformations",
+        "direction": "previous",
+        "title": "Using Methods"
+      },
+      {
+        "concept": "Debug, dbg!, and stderr",
+        "direction": "next",
+        "title": "Inspecting Values"
+      }
+    ],
+    "correction": "Use Result for failure the caller can reasonably respond to.",
+    "misconception": "“Result parses faster”",
+    "traceSteps": [
+      {
+        "detail": "Name each value's type and starting value, then mark the expression that produces the lesson's result.",
+        "title": "Inventory the values"
+      },
+      {
+        "detail": "Return a descriptive Result for invalid input and handle it at the caller.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "Bad text produces a normal error value, not a panic.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change one value, type, or boundary in the sample. Write the exact stdout or diagnostic you expect before asking rustc. Keep the focus on result without panic."
+  },
+  "exerciseKind": "planned",
+  "id": "recoverable-errors",
+  "minutes": 8,
+  "order": 4,
+  "parentID": "small-programs",
+  "title": "Handling Failure",
+  "writing": {
+    "answers": [
+      "Invalid external text is an expected possibility",
+      "Result parses faster",
+      "Integers can only be returned inside Result"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "The caller chooses what an invalid number means for this program.",
+    "exampleCode": "fn half(raw: &str) -> Result<i32, String> {\n    let value = raw.parse::<i32>()\n        .map_err(|_| \"not a number\".to_string())?;\n    Ok(value / 2)\n}",
+    "explanation": "A function returning Result<T, E> makes callers handle both success and failure. match is the clearest first tool because both branches stay visible. The ? operator becomes useful once a surrounding function also returns a compatible Result. panic and expect are better reserved for broken invariants or controlled examples, not routine bad input.",
+    "feedback": "Let the caller decide how to recover instead of forcing a panic.",
+    "practiceCode": "fn read(raw: &str) -> i32 {\n    raw.parse().unwrap()\n}",
+    "question": "Why is Result a better return type here?",
+    "rule": "Use Result for failure the caller can reasonably respond to.",
+    "success": "Bad text produces a normal error value, not a panic.",
+    "summary": "Result keeps expected failure in the function's type instead of turning it into a crash.",
+    "task": "Return a descriptive Result for invalid input and handle it at the caller."
+  }
+}

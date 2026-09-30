@@ -1,0 +1,59 @@
+{
+  "concept": "Five powers and their invariants",
+  "contentDigest": "e1f0c0d50180944392a57679b138004b8ee2c1650216a8d8618110dcdc1a6a78",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Compiling different code per target",
+        "direction": "previous",
+        "title": "cfg & Features"
+      },
+      {
+        "concept": "extern \"C\", repr(C), and raw pointers",
+        "direction": "next",
+        "title": "FFI"
+      }
+    ],
+    "correction": "unsafe is a claim about an invariant, not permission to skip the rules.",
+    "misconception": "“Nothing — unsafe makes any dereference legal”",
+    "traceSteps": [
+      {
+        "detail": "Write down what callers may assume, what the compiler cannot prove, and which boundary is responsible for preserving soundness or cost.",
+        "title": "State the invariant"
+      },
+      {
+        "detail": "Wrap an unchecked operation in a safe API that cannot be misused.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "No safe caller can trigger undefined behaviour.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Create the smallest counterexample that violates the sample's invariant, then repair the abstraction boundary instead of hiding the symptom. Keep the focus on five powers and their invariants."
+  },
+  "exerciseKind": "planned",
+  "id": "unsafe",
+  "minutes": 13,
+  "order": 0,
+  "parentID": "systems",
+  "title": "unsafe Rust",
+  "writing": {
+    "answers": [
+      "Nothing — unsafe makes any dereference legal",
+      "The pointer is non-null, aligned, and points at a live, initialised value",
+      "The pointer has to be declared mut before it is dereferenced"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "A small block, and the reason it is sound written next to it.",
+    "exampleCode": "fn first(slice: &[u32]) -> Option<u32> {\n    if slice.is_empty() {\n        return None;\n    }\n    // SAFETY: the check above guarantees\n    // that index 0 exists.\n    Some(unsafe { *slice.get_unchecked(0) })\n}",
+    "explanation": "Inside an unsafe block you may dereference a raw pointer, call an unsafe function, access a mutable static, implement an unsafe trait, and read a union field. Everything else is checked exactly as before. The block is a promise that you have verified an invariant the compiler cannot, which is why the convention is to write that invariant down as a SAFETY comment.",
+    "feedback": "unsafe moves the obligation to you; it does not remove it.",
+    "practiceCode": "let value = unsafe { *pointer };",
+    "question": "What must be true for that to be sound?",
+    "rule": "unsafe is a claim about an invariant, not permission to skip the rules.",
+    "success": "No safe caller can trigger undefined behaviour.",
+    "summary": "unsafe unlocks five operations; it does not turn off the borrow checker.",
+    "task": "Wrap an unchecked operation in a safe API that cannot be misused."
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "concept": "async fn, await, and laziness",
+  "contentDigest": "537c4eb0187bc4a982eabb63cec036cfe1ef755cf273e99454d68a93fd0d5b29",
+  "depth": {
+    "connections": [
+      {
+        "concept": "The traits behind thread safety",
+        "direction": "previous",
+        "title": "Send & Sync"
+      },
+      {
+        "concept": "Why async needs an executor",
+        "direction": "next",
+        "title": "Runtimes"
+      }
+    ],
+    "correction": "Futures are lazy: no poll, no progress.",
+    "misconception": "“working, printed as soon as the future is built”",
+    "traceSteps": [
+      {
+        "detail": "Name each task or thread, the state it can reach, and every point where work can wait, race, block, or be cancelled.",
+        "title": "Draw the event timeline"
+      },
+      {
+        "detail": "Explain what a call to an async fn actually produces.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can say why the body has not executed at that point.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Add a second worker or cancellation point. Draw two possible event orders and state the invariant that both orders must preserve. Keep the focus on async fn, await, and laziness."
+  },
+  "exerciseKind": "planned",
+  "id": "futures",
+  "minutes": 12,
+  "order": 0,
+  "parentID": "async",
+  "title": "Futures",
+  "writing": {
+    "answers": [
+      "working, printed as soon as the future is built",
+      "Nothing — the future is never awaited",
+      "It panics because nothing ever polls it"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Nothing happens until the future is awaited or spawned.",
+    "exampleCode": "async fn fetch(id: u32) -> String {\n    format!(\"record {id}\")\n}\n\nasync fn run() {\n    let pending = fetch(7); // nothing ran yet\n    let value = pending.await; // now it runs\n    println!(\"{value}\");\n}",
+    "explanation": "Calling an async fn does nothing on its own: it builds a state machine that makes progress only when polled. .await yields at that point, letting the executor run something else while the operation is pending — which is how one thread can service thousands of waits.",
+    "feedback": "The future is created and dropped without ever being polled.",
+    "practiceCode": "async fn work() { println!(\"working\"); }\n\nfn main() {\n    work();\n}",
+    "question": "What does that print with no await?",
+    "rule": "Futures are lazy: no poll, no progress.",
+    "success": "You can say why the body has not executed at that point.",
+    "summary": "An async function returns a future that has not run yet.",
+    "task": "Explain what a call to an async fn actually produces."
+  }
+}

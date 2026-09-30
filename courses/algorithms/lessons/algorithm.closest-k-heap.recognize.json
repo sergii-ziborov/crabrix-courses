@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "heaps-streaming",
+    "categoryTitle": "Heaps & Streaming",
+    "complexity": "O(n log k) time · O(k) space",
+    "difficulty": "medium",
+    "expectedAnswer": "-2:2,2:-2",
+    "idea": "Keep the worst current winner at the root so a better candidate replaces it.",
+    "patternID": "closest-k-heap",
+    "rustSketch": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "stage": "recognize",
+    "task": "Return the two points closest to the origin, ordered by distance then coordinates.",
+    "useCases": "nearest points, closest values, approximate neighbors",
+    "visibleInput": "[(1,3),(-2,2),(2,-2),(5,1)]"
+  },
+  "concept": "nearest points, closest values, approximate neighbors",
+  "contentDigest": "188f585836bc1244eda562b822255197df0917ff1eff27aa3182d4a24612c0ab",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Keep the worst current winner at the root so a better candidate replaces it.",
+        "direction": "previous",
+        "title": "Bounded Heap for K Closest: Mental Model"
+      },
+      {
+        "concept": "Return the two points closest to the origin, ordered by distance then coordinates.",
+        "direction": "next",
+        "title": "Challenge: Bounded Heap for K Closest"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on nearest points, closest values, approximate neighbors."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.closest-k-heap.recognize",
+  "minutes": 11,
+  "order": 13,
+  "parentID": "algorithms-heaps-streaming",
+  "title": "Bounded Heap for K Closest: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "nearest points, closest values, approximate neighbors",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Bounded Heap for K Closest",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Bounded Heap for K Closest",
+    "explanation": "Reach for this pattern when the prompt contains nearest points, closest values, approximate neighbors. Confirm that its assumptions actually hold, then compare O(n log k) time · O(k) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: nearest points, closest values, approximate neighbors.",
+    "practiceCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Bounded Heap for K Closest.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "dynamic-1d",
+    "categoryTitle": "1D Dynamic Programming",
+    "complexity": "O(n) time · O(1) space",
+    "difficulty": "easy",
+    "expectedAnswer": "15",
+    "idea": "Discard table entries once no future transition can read them.",
+    "patternID": "rolling-dp",
+    "rustSketch": "fn ways(n: usize) -> usize {\n    let (mut previous, mut current) = (1, 1);\n    for _ in 0..n {\n        (previous, current) = (current, previous + current);\n    }\n    previous\n}",
+    "stage": "recognize",
+    "task": "Return the minimum cost to move beyond the final stair.",
+    "useCases": "constant-space Fibonacci-like recurrences",
+    "visibleInput": "cost=[10,15,20]"
+  },
+  "concept": "constant-space Fibonacci-like recurrences",
+  "contentDigest": "3f8c4bda6542995fa4837a857ad78421e7134a6a107cbe3ac53e8e9510c8db26",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Discard table entries once no future transition can read them.",
+        "direction": "previous",
+        "title": "Rolling-State DP: Mental Model"
+      },
+      {
+        "concept": "Return the minimum cost to move beyond the final stair.",
+        "direction": "next",
+        "title": "Challenge: Rolling-State DP"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on constant-space fibonacci-like recurrences."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.rolling-dp.recognize",
+  "minutes": 8,
+  "order": 7,
+  "parentID": "algorithms-dynamic-1d",
+  "title": "Rolling-State DP: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "constant-space Fibonacci-like recurrences",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Rolling-State DP",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Rolling-State DP",
+    "explanation": "Reach for this pattern when the prompt contains constant-space Fibonacci-like recurrences. Confirm that its assumptions actually hold, then compare O(n) time · O(1) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: constant-space Fibonacci-like recurrences.",
+    "practiceCode": "fn ways(n: usize) -> usize {\n    let (mut previous, mut current) = (1, 1);\n    for _ in 0..n {\n        (previous, current) = (current, previous + current);\n    }\n    previous\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Rolling-State DP.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

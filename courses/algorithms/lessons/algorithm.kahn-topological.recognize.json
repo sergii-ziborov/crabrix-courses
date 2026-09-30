@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "graph-traversal",
+    "categoryTitle": "DFS, BFS & Graph Traversal",
+    "complexity": "O(V+E) time · O(V) space",
+    "difficulty": "medium",
+    "expectedAnswer": "0,1,2,3",
+    "idea": "Repeatedly remove zero-indegree nodes and decrement dependents; leftovers prove a cycle.",
+    "patternID": "kahn-topological",
+    "rustSketch": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "stage": "recognize",
+    "task": "Return lexicographically smallest valid order.",
+    "useCases": "course schedules and build dependency order",
+    "visibleInput": "n=4 edges=0->1,0->2,1->3,2->3"
+  },
+  "concept": "course schedules and build dependency order",
+  "contentDigest": "0961ed45e1db258010f14c31b03a4e766da944a36e94a234a7d061aa3b702836",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Repeatedly remove zero-indegree nodes and decrement dependents; leftovers prove a cycle.",
+        "direction": "previous",
+        "title": "Kahn Topological Sort: Mental Model"
+      },
+      {
+        "concept": "Return lexicographically smallest valid order.",
+        "direction": "next",
+        "title": "Challenge: Kahn Topological Sort"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on course schedules and build dependency order."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.kahn-topological.recognize",
+  "minutes": 11,
+  "order": 22,
+  "parentID": "algorithms-graph-traversal",
+  "title": "Kahn Topological Sort: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "course schedules and build dependency order",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Kahn Topological Sort",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Kahn Topological Sort",
+    "explanation": "Reach for this pattern when the prompt contains course schedules and build dependency order. Confirm that its assumptions actually hold, then compare O(V+E) time · O(V) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: course schedules and build dependency order.",
+    "practiceCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Kahn Topological Sort.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

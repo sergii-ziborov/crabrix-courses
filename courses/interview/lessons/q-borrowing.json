@@ -1,0 +1,59 @@
+{
+  "concept": "Aliasing and mutation rules",
+  "contentDigest": "0d0b1c54f247d7f19e2625b53a08fd5265f44ea4ffb501306a839fe4044745bc",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Moves, Copy, Drop, and scope",
+        "direction": "previous",
+        "title": "Explain Ownership"
+      },
+      {
+        "concept": "Relationships, not object duration",
+        "direction": "next",
+        "title": "Lifetime Reasoning"
+      }
+    ],
+    "correction": "Aliasing XOR mutation, checked over the region a borrow is used.",
+    "misconception": "“The vector has to be declared immutable”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "State the borrowing rule and why it prevents data races.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You mention aliasing, mutation, and where each borrow ends.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on aliasing and mutation rules."
+  },
+  "exerciseKind": "borrowDiagnostic",
+  "id": "q-borrowing",
+  "minutes": 9,
+  "order": 1,
+  "parentID": "interview-language",
+  "title": "Why Borrowing Works",
+  "writing": {
+    "answers": [
+      "The vector has to be declared immutable",
+      "A mutable borrow cannot coexist with a shared one",
+      "A Vec cannot be borrowed twice in one scope"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Many readers, or one writer — never at the same time.",
+    "exampleCode": "let mut v = vec![1, 2];\nlet a = &v[0];\nlet b = &v[1];   // two readers: fine\nprintln!(\"{a} {b}\");\nv.push(3);       // writer, after the readers end",
+    "explanation": "Say it as a rule about coexistence: you may have many readers or one writer, never both, and the compiler tracks the region where each borrow is live. That single constraint is what makes data races impossible for safe code without any runtime cost.",
+    "feedback": "One writer excludes all readers for as long as it is live.",
+    "practiceCode": "let mut v = vec![1];\nlet r = &mut v;\nlet s = &v;",
+    "question": "Why does the compiler reject that borrow?",
+    "rule": "Aliasing XOR mutation, checked over the region a borrow is used.",
+    "success": "You mention aliasing, mutation, and where each borrow ends.",
+    "summary": "The borrowing answer is about aliasing versus mutation.",
+    "task": "State the borrowing rule and why it prevents data races."
+  }
+}

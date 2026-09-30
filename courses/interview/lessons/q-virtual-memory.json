@@ -1,0 +1,59 @@
+{
+  "concept": "Pages, faults, and resident size",
+  "contentDigest": "dae9ce0379dc3be3434566e1f3034f2ff7033e686a3e1933481b99a5bb62b403",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Where values live and what a move copies",
+        "direction": "previous",
+        "title": "Stack and Heap"
+      },
+      {
+        "concept": "Where the cost of IO actually is",
+        "direction": "next",
+        "title": "Syscalls and Buffering"
+      }
+    ],
+    "correction": "Allocation reserves addresses; the kernel supplies frames on first touch.",
+    "misconception": "“Twice the file size, once per mapping”",
+    "traceSteps": [
+      {
+        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
+        "title": "Frame the answer"
+      },
+      {
+        "detail": "Explain why a huge allocation can succeed and the first write still stall.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You mention pages, faults, and the difference between virtual and resident.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on pages, faults, and resident size."
+  },
+  "exerciseKind": "planned",
+  "id": "q-virtual-memory",
+  "minutes": 11,
+  "order": 1,
+  "parentID": "interview-platform",
+  "title": "Virtual Memory",
+  "writing": {
+    "answers": [
+      "Twice the file size, once per mapping",
+      "One copy — both mappings share the same page cache frames",
+      "Nothing — mapped pages are never resident"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "The reservation is cheap; the first touch is what costs.",
+    "exampleCode": "// Reserves address space, no frames yet.\nlet mut buffer = Vec::with_capacity(1 << 30);\n// Each new page faults in on first write.\nbuffer.push(1u8);",
+    "explanation": "The MMU maps pages of your address space onto physical frames, so allocating memory usually just reserves address range. Touching a page for the first time causes a page fault the kernel resolves by finding a frame — which is why a large allocation can be instant and the first write to it slow. It also explains mmap, copy-on-write after fork, and why RSS is smaller than virtual size.",
+    "feedback": "Read-only file mappings share frames through the page cache.",
+    "practiceCode": "// Same file, two processes, read-only.\nlet map = unsafe { Mmap::map(&file)? };",
+    "question": "What does mapping it twice cost in physical memory?",
+    "rule": "Allocation reserves addresses; the kernel supplies frames on first touch.",
+    "success": "You mention pages, faults, and the difference between virtual and resident.",
+    "summary": "Every pointer you see is virtual, and the kernel decides what it means.",
+    "task": "Explain why a huge allocation can succeed and the first write still stall."
+  }
+}

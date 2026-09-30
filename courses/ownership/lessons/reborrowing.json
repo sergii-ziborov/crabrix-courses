@@ -1,0 +1,59 @@
+{
+  "concept": "Lend access without consuming the original reference",
+  "contentDigest": "a3a8848a5f96552f5fe2a12768e4f64869100160617839f612808ce0600d1dba",
+  "depth": {
+    "connections": [
+      {
+        "concept": "One temporary writer with exclusive access",
+        "direction": "previous",
+        "title": "Mutable Borrows"
+      },
+      {
+        "concept": "Move one field while borrowing another",
+        "direction": "next",
+        "title": "Partial Moves"
+      }
+    ],
+    "correction": "Passing &mut *value creates a shorter reborrow instead of moving the original mutable reference.",
+    "misconception": "“It was copied”",
+    "traceSteps": [
+      {
+        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
+        "title": "Map ownership first"
+      },
+      {
+        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on lend access without consuming the original reference."
+  },
+  "exerciseKind": "planned",
+  "id": "reborrowing",
+  "minutes": 10,
+  "order": 2,
+  "parentID": "ownership-practice",
+  "title": "Reborrowing",
+  "writing": {
+    "answers": [
+      "It was copied",
+      "Each reborrow ends",
+      "bump returns it"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCode": "fn bump(value: &mut i32) {\n    *value += 1;\n}\nfn twice(value: &mut i32) {\n    bump(&mut *value);\n    bump(&mut *value);\n}",
+    "explanation": "Passing &mut *value creates a shorter reborrow instead of moving the original mutable reference. This lets a helper work briefly and returns control to the outer borrower afterward.",
+    "feedback": "Correct: Each reborrow ends.",
+    "practiceCode": "fn bump(value: &mut i32) {\n    *value += 1;\n}\nfn twice(value: &mut i32) {\n    bump(&mut *value);\n    bump(&mut *value);\n}",
+    "question": "Why is value usable for the second call?",
+    "rule": "Passing &mut *value creates a shorter reborrow instead of moving the original mutable reference.",
+    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "summary": "Lend access without consuming the original reference.",
+    "task": "Trace the example, name the guarantee, and identify where it ends."
+  }
+}

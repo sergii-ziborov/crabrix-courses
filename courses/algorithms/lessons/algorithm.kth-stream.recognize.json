@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "heaps-streaming",
+    "categoryTitle": "Heaps & Streaming",
+    "complexity": "O(log k) per item · O(k) space",
+    "difficulty": "medium",
+    "expectedAnswer": "4,4,5",
+    "idea": "Keep k candidates so the heap root is the kth largest value after every insertion.",
+    "patternID": "kth-stream",
+    "rustSketch": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "stage": "recognize",
+    "task": "With k=3, return the kth largest after adding 4, 5, 8, 2, 10.",
+    "useCases": "live rank tracking and rolling thresholds",
+    "visibleInput": "stream=[4,5,8,2,10]"
+  },
+  "concept": "live rank tracking and rolling thresholds",
+  "contentDigest": "737535a4b8ffc719e58b3fbc02cc51616d3e6495d6b8f2a08a3d5150c02a3a91",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Keep k candidates so the heap root is the kth largest value after every insertion.",
+        "direction": "previous",
+        "title": "Kth Statistic in a Stream: Mental Model"
+      },
+      {
+        "concept": "With k=3, return the kth largest after adding 4, 5, 8, 2, 10.",
+        "direction": "next",
+        "title": "Challenge: Kth Statistic in a Stream"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on live rank tracking and rolling thresholds."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.kth-stream.recognize",
+  "minutes": 11,
+  "order": 7,
+  "parentID": "algorithms-heaps-streaming",
+  "title": "Kth Statistic in a Stream: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "live rank tracking and rolling thresholds",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for Kth Statistic in a Stream",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Kth Statistic in a Stream",
+    "explanation": "Reach for this pattern when the prompt contains live rank tracking and rolling thresholds. Confirm that its assumptions actually hold, then compare O(log k) per item · O(k) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: live rank tracking and rolling thresholds.",
+    "practiceCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing Kth Statistic in a Stream.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "algorithm": {
+    "categoryID": "dynamic-1d",
+    "categoryTitle": "1D Dynamic Programming",
+    "complexity": "O(items*capacity) time · O(capacity) space",
+    "difficulty": "hard",
+    "expectedAnswer": "9",
+    "idea": "Update capacities backward so each item contributes at most once.",
+    "patternID": "zero-one-knapsack",
+    "rustSketch": "fn ways(n: usize) -> usize {\n    let (mut previous, mut current) = (1, 1);\n    for _ in 0..n {\n        (previous, current) = (current, previous + current);\n    }\n    previous\n}",
+    "stage": "recognize",
+    "task": "Return maximum value at capacity 7.",
+    "useCases": "bounded selection under one capacity",
+    "visibleInput": "weights=[1,3,4,5] values=[1,4,5,7]"
+  },
+  "concept": "bounded selection under one capacity",
+  "contentDigest": "e50cec3db1f4d70323b67617f333f0443d1e3933aa8ad1a08428523047173329",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Update capacities backward so each item contributes at most once.",
+        "direction": "previous",
+        "title": "0/1 Knapsack: Mental Model"
+      },
+      {
+        "concept": "Return maximum value at capacity 7.",
+        "direction": "next",
+        "title": "Challenge: 0/1 Knapsack"
+      }
+    ],
+    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "misconception": "“Any problem that contains a Vec”",
+    "traceSteps": [
+      {
+        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
+        "title": "Name the invariant"
+      },
+      {
+        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+        "title": "Predict before checking"
+      },
+      {
+        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on bounded selection under one capacity."
+  },
+  "exerciseKind": "planned",
+  "id": "algorithm.zero-one-knapsack.recognize",
+  "minutes": 15,
+  "order": 28,
+  "parentID": "algorithms-dynamic-1d",
+  "title": "0/1 Knapsack: When to Use It",
+  "writing": {
+    "answers": [
+      "Any problem that contains a Vec",
+      "bounded selection under one capacity",
+      "Only problems with exactly one input value"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Classification checklist for 0/1 Knapsack",
+    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: 0/1 Knapsack",
+    "explanation": "Reach for this pattern when the prompt contains bounded selection under one capacity. Confirm that its assumptions actually hold, then compare O(items*capacity) time · O(capacity) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "feedback": "The useful signal is the operation and guarantee: bounded selection under one capacity.",
+    "practiceCode": "fn ways(n: usize) -> usize {\n    let (mut previous, mut current) = (1, 1);\n    for _ in 0..n {\n        (previous, current) = (current, previous + current);\n    }\n    previous\n}",
+    "question": "Which group is the strongest signal for this pattern?",
+    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "success": "You can justify the choice from constraints rather than from a remembered problem title.",
+    "summary": "Recognise the problem shape before choosing 0/1 Knapsack.",
+    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+  }
+}
