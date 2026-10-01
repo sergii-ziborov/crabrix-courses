@@ -2,7 +2,7 @@
 
 The complete, versioned educational corpus for [Crabrix](https://github.com/sergii-ziborov/Crabrix): seven Rust and Algorithms courses, their native lesson data, checks, and editable starter source.
 
-The baseline contains 48 units and 742 lessons, including the 200-pattern Algorithm Atlas with 600 ordered steps. It also preserves 46 authored project-gallery source trees and 358 term pairs. [The inventory](migration/inventory-summary.json) and [parity report](migration/parity-report.json) are generated from the executed Swift models and the CoursePack reader.
+The baseline contains 48 units and 742 lessons, including the 200-pattern Algorithm Atlas with 600 ordered steps. It also preserves 46 authored Academy Examples and 358 term pairs. All example metadata and Rust source trees are under `courses/projects/library-projects/` and ship in the signed Projects CoursePack. The app reads them from an installed pack; selecting one creates an editable project copy with its own ID and course-version provenance. [The inventory](migration/inventory-summary.json) and [parity report](migration/parity-report.json) are generated from the executed Swift models and the CoursePack reader.
 
 ## Format and delivery
 
