@@ -2,11 +2,9 @@
 
 Sieve of Eratosthenes over a boolean Vec.
 
-## What this project does
+## What to notice
 
-The starter is a complete Rust project. Read `src/main.rs` and its
-`Cargo.toml`, then run it in Crabrix to see the result in **Output**.
-All compilation and execution happen on the device.
+A boolean vector tracks candidates while multiples are marked as composite. Read the outer candidate loop and inner marking loop, then compare the final entries with the printed prime list.
 
 ## Concepts
 

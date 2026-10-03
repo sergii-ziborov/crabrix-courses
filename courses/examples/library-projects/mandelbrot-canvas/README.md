@@ -2,6 +2,14 @@
 
 Run the project and open **Output** to see a native Rust Canvas.
 
+## What to notice
+
+A 32 by 20 grid samples the complex plane. Each point is iterated until it escapes or reaches the step limit, then its count selects a palette index. The local canvas renderer displays the resulting pixel string.
+
+## How it works
+
+Two loops map each pixel to a coordinate in the complex plane. For that coordinate, the code repeatedly updates `(x, y)` and stops when the squared magnitude exceeds four or 30 steps have passed. The step count becomes an index into a six-color palette. The program prints a `CRABRIX_CANVAS` payload, which the local Output view renders as pixels; it also prints a short text result.
+
 ## Concepts
 - `floats`
 - `iteration`

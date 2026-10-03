@@ -2,11 +2,9 @@
 
 A terminal UI built from a local module.
 
-## What this project does
+## What to notice
 
-The starter is a complete Rust project. Read `src/main.rs` and its
-`Cargo.toml`, then run it in Crabrix to see the result in **Output**.
-All compilation and execution happen on the device.
+A local Rust module supplies values that the main file formats as a terminal dashboard. Open both files and trace one value from its source into the displayed line. The split shows how data and presentation can stay separate.
 
 ## Concepts
 

@@ -2,11 +2,9 @@
 
 Turn arithmetic text into typed tokens.
 
-## What this project does
+## What to notice
 
-The starter is a complete Rust project. Read `src/main.rs` and its
-`Cargo.toml`, then run it in Crabrix to see the result in **Output**.
-All compilation and execution happen on the device.
+Arithmetic input is scanned into typed tokens before any evaluation. Follow the cursor across a multi-digit number, whitespace, and an operator. Unexpected characters reveal where lexical validation belongs.
 
 ## Concepts
 

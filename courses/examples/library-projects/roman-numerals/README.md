@@ -2,11 +2,9 @@
 
 Two-way conversion with slices and folds.
 
-## What this project does
+## What to notice
 
-The starter is a complete Rust project. Read `src/main.rs` and its
-`Cargo.toml`, then run it in Crabrix to see the result in **Output**.
-All compilation and execution happen on the device.
+A table of symbols and values drives number conversion in both directions. Trace a subtractive form and compare it with an additive one. Round-trip checks make representation mistakes easier to spot.
 
 ## Concepts
 

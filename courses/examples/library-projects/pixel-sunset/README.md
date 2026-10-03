@@ -2,6 +2,10 @@
 
 Run the project and open **Output** to see a native Rust Canvas.
 
+## What to notice
+
+Rows and columns are converted into sky, sun, and reflected-water colors. Follow one pixel coordinate through the layer rules to its final palette value. Moving the sun or boundary changes the image without storing a new asset.
+
 ## Concepts
 - `loops`
 - `coordinates`

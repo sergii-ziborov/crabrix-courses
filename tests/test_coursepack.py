@@ -53,12 +53,12 @@ class CoursePackTests(unittest.TestCase):
         catalog = ROOT / "catalog.v1.json"
         keys = ROOT / "keys/production-keyring.json"
         self.command("verify-catalog", "--catalog", catalog, "--keys", keys,
-                     "--last-sequence", "2")
+                     "--last-sequence", "3")
         self.command("verify-catalog", "--catalog", catalog, "--keys", keys,
-                     "--last-sequence", "3", ok=False)
+                     "--last-sequence", "4", ok=False)
 
     def test_examples_are_separate_and_each_has_a_readme(self):
-        with zipfile.ZipFile(ROOT / "dist/examples-1.0.0.zip") as archive:
+        with zipfile.ZipFile(ROOT / "dist/examples-1.0.1.zip") as archive:
             files = set(archive.namelist())
             ids = {path.split("/")[1] for path in files if path.startswith("library-projects/")}
             self.assertEqual(len(ids), 46)
@@ -67,11 +67,16 @@ class CoursePackTests(unittest.TestCase):
                 self.assertIn(prefix + "README.md", files)
                 self.assertIn(prefix + "Cargo.toml", files)
                 self.assertIn(prefix + "project.json", files)
-                self.assertTrue(archive.read(prefix + "README.md").strip())
+                self.assertIn(b"## What to notice", archive.read(prefix + "README.md"))
+            self.assertEqual(
+                {name for name in files if name.startswith("media/")},
+                {f"media/{name}.png" for name in (
+                    "ferris-pixel-art", "run-length-encoder", "maze-bfs", "mandelbrot-canvas")}
+            )
         with zipfile.ZipFile(ROOT / "dist/projects-1.0.2.zip") as archive:
             self.assertFalse(any(name.startswith("library-projects/") for name in archive.namelist()))
         self.command("verify", "--descriptor", "dist/examples.descriptor.json",
-                     "--archive", "dist/examples-1.0.0.zip",
+                     "--archive", "dist/examples-1.0.1.zip",
                      "--keys", "keys/production-keyring.json")
 
     def test_signature_domain_separation(self):

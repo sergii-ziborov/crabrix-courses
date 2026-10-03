@@ -2,6 +2,10 @@
 
 Evaluate a board with indexed winning lines.
 
+## What to notice
+
+The board is checked against indexed winning lines, then classified as a win, draw, or unfinished game. Trace a diagonal win and a full board without a winner through the decision path.
+
 ## Concepts
 
 - arrays

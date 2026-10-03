@@ -14,5 +14,13 @@ The exporter source lives in Crabrix's `migration/` directory. `tools/coursepack
 imports that baseline into the authoring tree. The parity report compares the
 reconstructed CoursePacks with the baseline, including text and source bytes.
 
+Examples 1.0.1 adds authored explanations to all 46 project READMEs while
+preserving their Rust and Cargo source files. Four local PNG diagrams were
+created with OpenAI ImageGen at the owner's request: Ferris Pixel Art,
+Run-Length Encoder, Maze Pathfinder, and Mandelbrot Canvas. They are
+illustrations of the accompanying text, not exact execution traces or
+substitutes for the source. Their accessible descriptions and captions are in
+the corresponding `project.json` files. No third-party image was imported.
+
 Publishing the checks and probes makes them inspectable. They are teaching
 data, not cryptographic secrets or a trusted competitive ranking system.

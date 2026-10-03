@@ -2,6 +2,10 @@
 
 Compute a deterministic FNV-1a content fingerprint.
 
+## What to notice
+
+FNV-1a folds bytes into one reproducible fingerprint. Find the XOR and multiply operations inside the byte loop, then change one byte and compare the result. A checksum detects changes; it is not a password hash.
+
 ## Concepts
 
 - bytes

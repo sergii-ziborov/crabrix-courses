@@ -2,11 +2,9 @@
 
 Escape-time fractal drawn with characters.
 
-## What this project does
+## What to notice
 
-The starter is a complete Rust project. Read `src/main.rs` and its
-`Cargo.toml`, then run it in Crabrix to see the result in **Output**.
-All compilation and execution happen on the device.
+Each terminal character represents one point in the complex plane. The repeated update stops when the point escapes or reaches the limit; the count selects a visible glyph. Change the sampled range to explore another region.
 
 ## Concepts
 

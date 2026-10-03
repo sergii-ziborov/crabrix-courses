@@ -2,11 +2,9 @@
 
 Enums that make an invalid transition impossible.
 
-## What this project does
+## What to notice
 
-The starter is a complete Rust project. Read `src/main.rs` and its
-`Cargo.toml`, then run it in Crabrix to see the result in **Output**.
-All compilation and execution happen on the device.
+A traffic signal is modeled with enum states and explicit transitions. Follow each state to its allowed successor. Adding a state makes the compiler reveal every match that needs a new case.
 
 ## Concepts
 

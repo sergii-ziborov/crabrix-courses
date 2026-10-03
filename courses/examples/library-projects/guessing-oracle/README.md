@@ -2,11 +2,9 @@
 
 Deterministic binary search plays its own game.
 
-## What this project does
+## What to notice
 
-The starter is a complete Rust project. Read `src/main.rs` and its
-`Cargo.toml`, then run it in Crabrix to see the result in **Output**.
-All compilation and execution happen on the device.
+The search interval shrinks after each midpoint guess. Track the lower and upper bounds until the target is found, then test a value at either edge. This is binary search presented as a small game.
 
 ## Concepts
 

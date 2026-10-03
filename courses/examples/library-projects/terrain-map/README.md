@@ -2,6 +2,10 @@
 
 Run the project and open **Output** to see a native Rust Canvas.
 
+## What to notice
+
+Coordinates feed deterministic terrain rules that produce islands and water. Follow one cell through the numeric calculation and threshold. Changing the threshold reshapes the map while preserving repeatability.
+
 ## Concepts
 - `hashing`
 - `thresholds`

@@ -2,6 +2,10 @@
 
 Simulate repeatable dice rolls with an LCG.
 
+## What to notice
+
+A seeded linear congruential generator makes repeatable rolls. Trace how the seed changes on every step and how values become die faces. A different seed changes the sequence while keeping it reproducible.
+
 ## Concepts
 
 - arrays

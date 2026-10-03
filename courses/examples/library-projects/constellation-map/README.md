@@ -2,6 +2,10 @@
 
 Run the project and open **Output** to see a native Rust Canvas.
 
+## What to notice
+
+Star records carry positions and brightness into a midnight canvas. Follow one star from its data through coordinate placement and the chosen visible mark. Moving the record should move the star in the output.
+
 ## Concepts
 - `tuples`
 - `distance`

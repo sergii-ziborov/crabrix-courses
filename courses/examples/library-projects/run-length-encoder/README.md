@@ -2,11 +2,13 @@
 
 Compress and expand a string, round-trip checked.
 
-## What this project does
+## What to notice
 
-The starter is a complete Rust project. Read `src/main.rs` and its
-`Cargo.toml`, then run it in Crabrix to see the result in **Output**.
-All compilation and execution happen on the device.
+Consecutive equal characters become a count followed by one character. encode uses a peekable iterator; decode collects ASCII digits as the next count. The sample round-trips, but arbitrary input containing digits needs an escaping rule.
+
+## How it works
+
+`encode` wraps `input.chars()` in `peekable()` so it can see whether the next character extends the current run. It writes the run length and then the character. `decode` gathers digits until a non-digit arrives, repeats that character, and clears the count. `main` verifies the sample with `assert_eq!`. Notice the format has no escape marker for source digits, so it is intentionally limited.
 
 ## Concepts
 

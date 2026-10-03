@@ -2,6 +2,10 @@
 
 Filter structured log lines and count levels.
 
+## What to notice
+
+Log lines are parsed, filtered, and counted by level. Trace one line through all three stages and compare it with one that is skipped. This mirrors the structure of a small real-world data analysis task.
+
 ## Concepts
 
 - lines

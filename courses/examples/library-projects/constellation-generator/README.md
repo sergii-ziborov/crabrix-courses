@@ -2,11 +2,9 @@
 
 Deterministic generative art with no network.
 
-## What this project does
+## What to notice
 
-The starter is a complete Rust project. Read `src/main.rs` and its
-`Cargo.toml`, then run it in Crabrix to see the result in **Output**.
-All compilation and execution happen on the device.
+A local deterministic sequence places stars and connections. The same input produces the same sky, which makes small visual changes easy to compare. Trace the number sequence into positions and the final drawing step.
 
 ## Concepts
 

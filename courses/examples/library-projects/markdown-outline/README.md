@@ -2,6 +2,10 @@
 
 Extract headings into an indented document map.
 
+## What to notice
+
+Headings are detected from lines of Markdown and turned into an indented outline. Look at how the heading prefix determines depth, then try a nested heading and compare the resulting indentation.
+
 ## Concepts
 
 - lines

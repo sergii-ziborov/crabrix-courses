@@ -2,6 +2,10 @@
 
 Keep formulas in small typed functions.
 
+## What to notice
+
+Each conversion formula lives in a small typed function. Trace one input through its calculation and formatted output. Add a boundary value to check both the arithmetic and the display.
+
 ## Concepts
 
 - functions

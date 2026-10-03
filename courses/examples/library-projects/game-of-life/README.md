@@ -2,11 +2,9 @@
 
 Conway's automaton stepped and printed.
 
-## What this project does
+## What to notice
 
-The starter is a complete Rust project. Read `src/main.rs` and its
-`Cargo.toml`, then run it in Crabrix to see the result in **Output**.
-All compilation and execution happen on the device.
+Each cell of a grid changes according to its neighbors. Find the neighbor count and the next-generation rule, then watch the starting pattern evolve. Notice how reading one generation is kept separate from producing the next.
 
 ## Concepts
 

@@ -230,6 +230,7 @@ def validate(args) -> None:
             if len(projects) != 46:
                 raise ValueError(f"expected 46 Academy Examples, found {len(projects)}")
             orders = set()
+            illustrations = set()
             for project_root in projects:
                 project = read_project(project_root)
                 if project["id"] != project_root.name or project["order"] in orders:
@@ -239,9 +240,30 @@ def validate(args) -> None:
                     raise ValueError(f"example source or README missing: {project_root.name}")
                 if not project["files"]["README.md"].strip():
                     raise ValueError(f"empty example README: {project_root.name}")
+                illustration = project.get("illustration")
+                if illustration is not None:
+                    image_path = f"media/{project['id']}.png"
+                    if (illustration.get("path") != image_path
+                            or not illustration.get("alt")
+                            or not illustration.get("caption")
+                            or image_path not in files):
+                        raise ValueError(f"invalid example illustration: {project_root.name}")
+                    image = files[image_path]
+                    if (image[:8] != b"\x89PNG\r\n\x1a\n"
+                            or image[12:16] != b"IHDR" or len(image) < 24):
+                        raise ValueError(f"invalid PNG illustration: {image_path}")
+                    width = int.from_bytes(image[16:20], "big")
+                    height = int.from_bytes(image[20:24], "big")
+                    if (not 0 < width <= 4096 or not 0 < height <= 4096
+                            or width * height > 8_000_000):
+                        raise ValueError(f"oversized illustration: {image_path}")
+                    illustrations.add(image_path)
             if orders != set(range(len(projects))):
                 raise ValueError("example order is not contiguous")
+            if {name for name in files if name.startswith("media/")} != illustrations:
+                raise ValueError("unreferenced example media")
             expected.update(name for name in files if name.startswith("library-projects/"))
+            expected.update(illustrations)
         if set(files) != expected:
             raise ValueError(f"unreferenced or missing files in {root.name}: {sorted(set(files) ^ expected)[:10]}")
     print(f"Validated {len(ids)} courses and {len(lesson_ids)} lessons")
@@ -426,6 +448,10 @@ def parity(args) -> None:
     terms = []
     for cid in by_id:
         archive = args.packages / f"{cid}-{by_id[cid]['contentVersion']}.zip"
+        if not archive.exists():
+            versions = sorted(args.packages.glob(f"{cid}-*.zip"))
+            if versions:
+                archive = versions[-1]
         if archive.exists():
             with zipfile.ZipFile(archive) as packed:
                 terms.extend(json.loads(packed.read("terms.json")))
@@ -434,8 +460,10 @@ def parity(args) -> None:
         changes["termPairs"] = compare(baseline["termPairs"], terms)
     gallery = []
     approved_readmes = []
-    project_archive = args.packages / "examples-1.0.0.zip"
-    if not project_archive.exists():
+    approved_illustrations = []
+    example_archives = sorted(args.packages.glob("examples-*.zip"))
+    project_archive = example_archives[-1] if example_archives else None
+    if project_archive is None:
         project_archive = args.packages / f"projects-{baseline['contentVersion']}.zip"
     if project_archive.exists():
         with zipfile.ZipFile(project_archive) as packed:
@@ -443,21 +471,28 @@ def parity(args) -> None:
             baseline_projects = {item["id"]: item for item in baseline["showcaseProjects"]}
             for pid in gallery_ids:
                 meta = json.loads(packed.read(f"library-projects/{pid}/project.json"))
+                if "illustration" in meta:
+                    approved_illustrations.append(pid)
+                    del meta["illustration"]
                 project = meta["project"]
                 prefix = f"library-projects/{pid}/"
                 project["files"] = {name[len(prefix):]: packed.read(name).decode("utf-8") for name in packed.namelist()
                                     if name.startswith(prefix) and name != prefix + "project.json"}
                 prior_files = baseline_projects.get(pid, {}).get("project", {}).get("files", {})
-                if "README.md" in project["files"] and "README.md" not in prior_files:
+                if "README.md" in project["files"] and project["files"]["README.md"] != prior_files.get("README.md"):
                     approved_readmes.append(pid)
-                    del project["files"]["README.md"]
+                    if "README.md" in prior_files:
+                        project["files"]["README.md"] = prior_files["README.md"]
+                    else:
+                        del project["files"]["README.md"]
                 gallery.append(meta)
     gallery.sort(key=lambda item: item["order"])
     if gallery != baseline["showcaseProjects"]:
         changes["showcaseProjects"] = compare(baseline["showcaseProjects"], gallery)
     report = {"sourceSHA": baseline["sourceSHA"], "baselineDigest": baseline["contentDigest"],
               "missing": missing, "unexpected": unexpected, "unapprovedChanges": changes,
-              "approvedReadmeAdditions": sorted(approved_readmes),
+              "approvedEditorialReadmeChanges": sorted(approved_readmes),
+              "approvedIllustrations": sorted(approved_illustrations),
               "totals": baseline["totals"], "passed": not (missing or unexpected or changes)}
     save(args.out, report)
     print(f"Parity: missing={len(missing)} unexpected={len(unexpected)} unapprovedChanges={len(changes)}")

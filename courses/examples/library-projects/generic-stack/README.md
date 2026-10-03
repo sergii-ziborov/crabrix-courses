@@ -2,11 +2,9 @@
 
 One data structure, any type, with trait bounds.
 
-## What this project does
+## What to notice
 
-The starter is a complete Rust project. Read `src/main.rs` and its
-`Cargo.toml`, then run it in Crabrix to see the result in **Output**.
-All compilation and execution happen on the device.
+A single stack implementation can store different value types. Inspect its generic type parameter, push and pop operations, and the trait bounds used by the examples. An empty pop is represented explicitly.
 
 ## Concepts
 

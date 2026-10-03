@@ -2,11 +2,9 @@
 
 Parse embedded rows into structs and summarise.
 
-## What this project does
+## What to notice
 
-The starter is a complete Rust project. Read `src/main.rs` and its
-`Cargo.toml`, then run it in Crabrix to see the result in **Output**.
-All compilation and execution happen on the device.
+Comma-separated rows become typed records before they are summarized. Inspect the split and conversion steps, then follow one field into the printed report. Try an incomplete row to see the parser boundary.
 
 ## Concepts
 

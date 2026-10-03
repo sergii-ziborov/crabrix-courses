@@ -2,11 +2,9 @@
 
 Build a sorted frequency chart with std.
 
-## What this project does
+## What to notice
 
-The starter is a complete Rust project. Read `src/main.rs` and its
-`Cargo.toml`, then run it in Crabrix to see the result in **Output**.
-All compilation and execution happen on the device.
+Text is split, normalized, counted, and sorted into a word-frequency chart. Follow one word through each stage and try a repeated word with different capitalization.
 
 ## Concepts
 

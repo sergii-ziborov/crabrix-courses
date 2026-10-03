@@ -2,6 +2,10 @@
 
 Evaluate typed tokens with a checked stack.
 
+## What to notice
+
+Tokens are evaluated against a value stack: numbers push, operators consume operands and push a result. Follow one expression token by token, then inspect what happens when operands are missing.
+
 ## Concepts
 
 - Result
