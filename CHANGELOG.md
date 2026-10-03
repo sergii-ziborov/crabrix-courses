@@ -1,5 +1,11 @@
 # Changelog
 
+## Catalog sequence 5 — 2026-10-03
+
+- Published Examples CoursePack 1.0.2 with a code-specific How it works section in every one of the 46 project guides. Each README now has at least 140 words.
+- Corrected descriptions that implied features absent from the unchanged Rust sources, including category totals, tree lookup, turn taking, and draw detection.
+- Retained the four local diagrams, project IDs, Rust and Cargo files, and the seven lesson CoursePacks unchanged.
+
 ## Catalog sequence 4 — 2026-10-03
 
 - Published immutable Examples CoursePack 1.0.1 with expanded project-specific README guides for all 46 examples.

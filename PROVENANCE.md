@@ -22,5 +22,10 @@ illustrations of the accompanying text, not exact execution traces or
 substitutes for the source. Their accessible descriptions and captions are in
 the corresponding `project.json` files. No third-party image was imported.
 
+Examples 1.0.2 expands every project guide with a code-specific explanation
+and corrects wording that overstated a few small demonstrations. The original
+Rust and Cargo source bytes, project identities, and four illustrations are
+unchanged. This is a new immutable package; 1.0.1 remains available.
+
 Publishing the checks and probes makes them inspectable. They are teaching
 data, not cryptographic secrets or a trusted competitive ranking system.

@@ -6,6 +6,10 @@ Run the project and open **Output** to see a native Rust Canvas.
 
 Pixel coordinates pass through combined sine waves before a palette color is chosen. Follow one pixel from its coordinates to the final canvas output. Changing frequency or phase changes the bands without changing the rendering pipeline.
 
+## How it works
+
+Nested loops visit every pixel in a 32 by 16 grid. Three sine or cosine terms combine horizontal, vertical, and diagonal motion into one wave value; the code maps that value to a palette index and appends a hexadecimal character. The completed string is passed to the local canvas renderer. Adjust one coefficient at a time to see which direction changes. The mathematical field is recomputed from coordinates, so no bitmap file is stored in the project.
+
 ## Concepts
 - `trigonometry`
 - `sampling`

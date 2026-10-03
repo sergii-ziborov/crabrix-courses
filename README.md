@@ -20,8 +20,8 @@ python3 tools/coursepack.py validate --courses courses/ --schema schemas/
 python3 tools/coursepack.py build --courses courses/ --out dist/ --deterministic
 python3 tools/coursepack.py parity --legacy migration/baseline-inventory.json --packages dist/ --out migration/parity-report-current.json
 python3 tools/coursepack.py verify --descriptor dist/basics.descriptor.json --archive dist/basics-1.0.1.zip --keys keys/production-keyring.json
-python3 tools/coursepack.py verify --descriptor dist/examples.descriptor.json --archive dist/examples-1.0.1.zip --keys keys/production-keyring.json
-python3 tools/coursepack.py verify-catalog --catalog catalog.v1.json --keys keys/production-keyring.json --last-sequence 3
+python3 tools/coursepack.py verify --descriptor dist/examples.descriptor.json --archive dist/examples-1.0.2.zip --keys keys/production-keyring.json
+python3 tools/coursepack.py verify-catalog --catalog catalog.v1.json --keys keys/production-keyring.json --last-sequence 4
 python3 -m unittest discover -s tests
 ```
 
