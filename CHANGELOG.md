@@ -1,5 +1,11 @@
 # Changelog
 
+## Catalog sequence 4 — 2026-10-03
+
+- Published immutable Examples CoursePack 1.0.1 with expanded project-specific README guides for all 46 examples.
+- Added original local diagrams and captions for Ferris Pixel Art, Run-Length Encoder, Maze Pathfinder, and Mandelbrot Canvas. Rust sources and Cargo manifests did not change.
+- Kept the seven lesson CoursePacks unchanged; the signed catalog points to their same content digests and the new Examples package.
+
 ## Catalog sequence 3 — 2026-10-03
 
 - Split the 46 Academy Examples into an optional `examples` CoursePack 1.0.0.
