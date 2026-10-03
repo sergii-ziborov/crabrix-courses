@@ -6,6 +6,10 @@ Simulate repeatable dice rolls with an LCG.
 
 A seeded linear congruential generator makes repeatable rolls. Trace how the seed changes on every step and how values become die faces. A different seed changes the sequence while keeping it reproducible.
 
+## How it works
+
+The `next` function mutates a seed with wrapping arithmetic. Each generated number is reduced modulo six and used as an index into an array of face counts; the display adds one to that index so faces read 1 through 6. Because the initial seed is fixed, all 120 rolls repeat across runs. Try a different seed, then compare histograms. Modulo reduction can introduce bias, so this is a repeatable simulation exercise rather than a fair or secure dice source.
+
 ## Concepts
 
 - arrays

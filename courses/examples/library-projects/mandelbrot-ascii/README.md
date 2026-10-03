@@ -6,6 +6,10 @@ Escape-time fractal drawn with characters.
 
 Each terminal character represents one point in the complex plane. The repeated update stops when the point escapes or reaches the limit; the count selects a visible glyph. Change the sampled range to explore another region.
 
+## How it works
+
+`escape` repeatedly updates a complex point until its squared distance exceeds four or the iteration limit is reached. `main` maps each terminal cell to a coordinate in the complex plane, uses the escape count to choose one of eight shade characters, and prints the rows. Darker-looking regions correspond to points that remain bounded longer under this finite test. Change the sampled coordinate range or iteration limit to reveal different detail; each character is computed again on every run.
+
 ## Concepts
 
 - `floats`

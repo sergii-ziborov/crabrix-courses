@@ -6,6 +6,10 @@ Run the project and open **Output** to see a native Rust Canvas.
 
 Star records carry positions and brightness into a midnight canvas. Follow one star from its data through coordinate placement and the chosen visible mark. Moving the record should move the star in the output.
 
+## How it works
+
+The star data is an array of `(x, y, brightness)` tuples. A flat pixel buffer starts at the background palette value; each star writes a brighter value at `y * W + x`. After placement, the program emits the pixel string and palette metadata for the local canvas. Move a star to a new in-range coordinate to check the indexing rule. The data drives the image directly, so the visual asset is generated at run time instead of bundled as a picture.
+
 ## Concepts
 - `tuples`
 - `distance`

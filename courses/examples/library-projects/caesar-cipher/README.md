@@ -6,6 +6,10 @@ Transform ASCII text one character at a time.
 
 This example shifts letters through a fixed alphabet and leaves other characters to an explicit branch. Trace one character through classification, shift, and output. Compare the result with the input before changing the shift distance.
 
+## How it works
+
+`shift` only transforms ASCII lowercase letters. It converts a letter to a zero-based offset from `a`, adds the shift, and uses modulo 26 to wrap after `z`. `encode` maps this function over the input characters and collects a new `String`; punctuation and uppercase letters pass through unchanged. Try shifting `z` by one and a mixed-case sentence by two. The example illustrates a reversible substitution, not secure encryption.
+
 ## Concepts
 
 - char

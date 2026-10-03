@@ -6,6 +6,10 @@ Run the project and open **Output** to see a native Rust Canvas.
 
 A grid changes a generation at a time under local neighbor rules. Inspect how the current state is read and the next state is written, then change the starting cells to see a different pattern emerge.
 
+## How it works
+
+The grid is a flat `Vec<bool>`, so a cell at `(x, y)` lives at `y * W + x`. `neighbors` checks eight surrounding coordinates and ignores positions outside the fixed border. `main` writes one complete next generation to a separate vector, then converts live cells to palette value `2` for the local canvas output. It advances only one generation. Change a starting cluster and compare the next image; edge cells do not wrap around to the opposite side.
+
 ## Concepts
 - `grids`
 - `neighbors`

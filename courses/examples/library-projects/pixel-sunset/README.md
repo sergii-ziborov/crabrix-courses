@@ -6,6 +6,10 @@ Run the project and open **Output** to see a native Rust Canvas.
 
 Rows and columns are converted into sky, sun, and reflected-water colors. Follow one pixel coordinate through the layer rules to its final palette value. Moving the sun or boundary changes the image without storing a new asset.
 
+## How it works
+
+The nested coordinate loops choose a color for every cell of a 24 by 16 image. The code checks whether a coordinate falls inside the circular sun, then applies sky, horizon, and water rules before appending a palette index to the pixel string. The local canvas renderer interprets the completed grid. Move the sun center or alter the water boundary to see the generated scene shift. No image is downloaded by this project; its picture is a result of the Rust computation.
+
 ## Concepts
 - `loops`
 - `coordinates`

@@ -4,7 +4,11 @@ Validate turn order and reject repeated words.
 
 ## What to notice
 
-Turn order and repeated-word checks determine whether a move is valid. Trace one accepted word and one rejected word, then inspect how the chain state changes only on a valid turn.
+Repeated-word and adjacent-letter checks determine whether a sequence is valid. Trace one accepted chain and one rejected chain, then inspect the first condition that returns an error.
+
+## How it works
+
+The validator first inserts lowercase copies of all words into a `HashSet` and rejects a repeated word. It then examines adjacent pairs with `windows(2)`, requiring the last character of one word to equal the first character of the next. The two sample chains exercise success and failure. Duplicate detection ignores case, but the boundary-character comparison uses the original spelling. Try changing a word's capitalization to see those two rules diverge; there is no interactive turn-taking in this project.
 
 ## Concepts
 

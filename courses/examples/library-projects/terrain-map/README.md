@@ -6,6 +6,10 @@ Run the project and open **Output** to see a native Rust Canvas.
 
 Coordinates feed deterministic terrain rules that produce islands and water. Follow one cell through the numeric calculation and threshold. Changing the threshold reshapes the map while preserving repeatability.
 
+## How it works
+
+`noise(x, y)` mixes each coordinate with wrapping integer arithmetic, so the same cell gets the same value on every run. The program adds a distance-from-edge term, assigns the result to water, shore, land, or a high palette band, and appends a hexadecimal palette index for each grid cell. The local canvas renders that 24 by 16 string. Adjust a threshold to change the coastline, then rerun to confirm the output is deterministic. This is stylized procedural terrain, not real elevation data.
+
 ## Concepts
 - `hashing`
 - `thresholds`
