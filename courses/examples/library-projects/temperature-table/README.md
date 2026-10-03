@@ -2,11 +2,9 @@
 
 Formatting, floats, and a tidy aligned table.
 
-## What this project does
+## What to notice
 
-The starter is a complete Rust project. Read `src/main.rs` and its
-`Cargo.toml`, then run it in Crabrix to see the result in **Output**.
-All compilation and execution happen on the device.
+Small conversion formulas feed a neatly aligned table. Follow one number through the calculation and its formatting width. Negative or larger values are useful checks for the display.
 
 ## Concepts
 

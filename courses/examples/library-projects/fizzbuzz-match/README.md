@@ -2,11 +2,9 @@
 
 The classic, written the way Rust wants it.
 
-## What this project does
+## What to notice
 
-The starter is a complete Rust project. Read `src/main.rs` and its
-`Cargo.toml`, then run it in Crabrix to see the result in **Output**.
-All compilation and execution happen on the device.
+The combined divisibility case must be considered along with the individual cases. Follow each match arm for a number divisible by both factors, one factor, and neither. The branch order makes the rule readable.
 
 ## Concepts
 

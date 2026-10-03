@@ -2,6 +2,10 @@
 
 Summarize sensor samples without losing units.
 
+## What to notice
+
+Sensor samples are summarized without losing their unit context. Follow one reading into the aggregate and final report. Adding an outlier reveals which summary values change.
+
 ## Concepts
 
 - newtype

@@ -2,6 +2,10 @@
 
 Transform ASCII text one character at a time.
 
+## What to notice
+
+This example shifts letters through a fixed alphabet and leaves other characters to an explicit branch. Trace one character through classification, shift, and output. Compare the result with the input before changing the shift distance.
+
 ## Concepts
 
 - char

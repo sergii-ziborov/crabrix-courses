@@ -2,6 +2,10 @@
 
 Turn numeric data into a terminal chart.
 
+## What to notice
+
+Each input value becomes a row of repeated characters, turning numbers into a chart you can read in a terminal. Follow the loop that pairs a label with its bar and look at the formatting that keeps rows aligned.
+
 ## Concepts
 
 - arrays

@@ -15,9 +15,10 @@ the full executed `TermTrainDeck.all` corpus plus Algorithm Atlas terms.
 fidelity; it does not certify every algorithm answer.
 
 The later [current parity report](migration/parity-report-current.json) checks
-the standalone Examples pack against the same immutable baseline. It permits
-20 new README files and changed transport metadata while comparing every
-original lesson, answer, validator, example project source, ID, and order.
+the standalone Examples pack against the same immutable baseline. It records
+the 46 authored README expansions and four local illustrations as approved
+editorial changes while comparing every original lesson, answer, validator,
+example Rust source, ID, and order.
 
 The app-side installed reader, transition resources, progress migration, and
 download lifecycle are separate integration gates. Content parity alone does

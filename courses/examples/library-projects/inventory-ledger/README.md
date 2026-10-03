@@ -2,6 +2,10 @@
 
 Apply typed stock transactions to a BTreeMap.
 
+## What to notice
+
+Stock changes are typed transactions applied to an ordered item map. Trace one addition or removal into the final inventory. The BTreeMap gives a stable printed order while transaction handling controls valid changes.
+
 ## Concepts
 
 - enum

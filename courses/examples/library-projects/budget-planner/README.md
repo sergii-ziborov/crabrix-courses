@@ -2,6 +2,10 @@
 
 Model expenses and calculate category totals.
 
+## What to notice
+
+Expenses are records rather than loose strings. Follow one expense from its amount and category into the totals and the final report. Changing a single item should affect the matching category without changing unrelated totals.
+
 ## Concepts
 
 - struct

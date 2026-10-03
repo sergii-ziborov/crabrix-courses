@@ -2,6 +2,10 @@
 
 Run the project and open **Output** to see a native Rust Canvas.
 
+## What to notice
+
+Pixel coordinates pass through combined sine waves before a palette color is chosen. Follow one pixel from its coordinates to the final canvas output. Changing frequency or phase changes the bands without changing the rendering pipeline.
+
 ## Concepts
 - `trigonometry`
 - `sampling`

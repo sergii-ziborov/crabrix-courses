@@ -2,6 +2,10 @@
 
 Dispatch one event to different trait objects.
 
+## What to notice
+
+Several handlers implement one event trait. The dispatcher can call them through trait objects without depending on each concrete handler type. Add another handler and compare the dispatch code before and after.
+
 ## Concepts
 
 - trait object

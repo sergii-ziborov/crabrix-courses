@@ -2,6 +2,10 @@
 
 Encode valid machine transitions with enums.
 
+## What to notice
+
+Actions are interpreted in an explicit machine state. Follow one valid purchase through its transitions, then compare an action that is rejected in the current state.
+
 ## Concepts
 
 - enum

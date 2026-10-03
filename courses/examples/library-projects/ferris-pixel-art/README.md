@@ -2,11 +2,13 @@
 
 Render a crab from strings and iterators.
 
-## What this project does
+## What to notice
 
-The starter is a complete Rust project. Read `src/main.rs` and its
-`Cargo.toml`, then run it in Crabrix to see the result in **Output**.
-All compilation and execution happen on the device.
+Ferris is stored as six rows of text, not as a bitmap. Spaces and backslashes are part of the drawing: their positions determine the shape in Output. Read the array first, then the iterator that prints one row per line.
+
+## How it works
+
+The `ferris` array holds the art as six raw string literals. Raw strings keep the backslashes readable; each element is one output row. `iter().for_each` prints those rows in order with `println!`, while the header and closing line are printed separately. Try editing one row and run again: a single extra space can shift that part of the crab.
 
 ## Concepts
 

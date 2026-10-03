@@ -2,6 +2,10 @@
 
 Validate turn order and reject repeated words.
 
+## What to notice
+
+Turn order and repeated-word checks determine whether a move is valid. Trace one accepted word and one rejected word, then inspect how the chain state changes only on a valid turn.
+
 ## Concepts
 
 - HashSet

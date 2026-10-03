@@ -2,6 +2,10 @@
 
 Run the project and open **Output** to see a native Rust Canvas.
 
+## What to notice
+
+A grid changes a generation at a time under local neighbor rules. Inspect how the current state is read and the next state is written, then change the starting cells to see a different pattern emerge.
+
 ## Concepts
 - `grids`
 - `neighbors`

@@ -2,11 +2,9 @@
 
 One lazy chain from raw text to a ranked result.
 
-## What this project does
+## What to notice
 
-The starter is a complete Rust project. Read `src/main.rs` and its
-`Cargo.toml`, then run it in Crabrix to see the result in **Output**.
-All compilation and execution happen on the device.
+Raw input passes through a sequence of small iterator adapters to produce ranked output. Identify which stage filters, which transforms, and where the lazy chain is finally consumed. Moving a stage can change the result.
 
 ## Concepts
 
