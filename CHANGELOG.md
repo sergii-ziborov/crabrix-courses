@@ -1,5 +1,13 @@
 # Changelog
 
+## Catalog sequence 3 — 2026-10-03
+
+- Split the 46 Academy Examples into an optional `examples` CoursePack 1.0.0.
+- Added a descriptive `README.md` to the 20 examples that lacked one; all 46 now have one.
+- Published Cargo & Real Projects 1.0.2 without a duplicate gallery. Its lessons and
+  starter projects are unchanged. Earlier packages remain immutable.
+- Added a second publisher key with an overlap period; both public keys remain trusted.
+
 ## 1.0.1 — 2026-09-30
 
 - Completed the baseline export with 99 base Term Train pairs omitted from

@@ -222,7 +222,25 @@ def validate(args) -> None:
                     expected.update(base + name for name in lesson["starterProject"]["files"])
                 if lesson["exerciseKind"] == "algorithmChallenge" and "challenge" not in lesson:
                     raise ValueError(f"challenge missing: {lid}")
-        if root.name == "projects":
+        if root.name == "examples":
+            if course["units"] != [] or load(root / "terms.json") != []:
+                raise ValueError("examples pack must contain projects, not lessons or terms")
+            gallery = root / "library-projects"
+            projects = sorted(p for p in gallery.iterdir() if p.is_dir()) if gallery.exists() else []
+            if len(projects) != 46:
+                raise ValueError(f"expected 46 Academy Examples, found {len(projects)}")
+            orders = set()
+            for project_root in projects:
+                project = read_project(project_root)
+                if project["id"] != project_root.name or project["order"] in orders:
+                    raise ValueError(f"example identity/order: {project_root.name}")
+                orders.add(project["order"])
+                if not {"Cargo.toml", "README.md", project["project"]["entryFile"]} <= set(project["files"]):
+                    raise ValueError(f"example source or README missing: {project_root.name}")
+                if not project["files"]["README.md"].strip():
+                    raise ValueError(f"empty example README: {project_root.name}")
+            if orders != set(range(len(projects))):
+                raise ValueError("example order is not contiguous")
             expected.update(name for name in files if name.startswith("library-projects/"))
         if set(files) != expected:
             raise ValueError(f"unreferenced or missing files in {root.name}: {sorted(set(files) ^ expected)[:10]}")
@@ -266,7 +284,9 @@ def build(args) -> None:
                       "language": course["language"], "contentVersion": course["contentVersion"],
                       "archiveName": archive.name, "archiveBytes": archive.stat().st_size,
                       "archiveSHA256": sha(archive.read_bytes()), "courseDigest": course["contentDigest"],
-                      "minimumAppVersion": "1.1", "requiredCapabilities": ["coursepack-v1"]}
+                      "minimumAppVersion": "1.1", "requiredCapabilities":
+                      ["coursepack-v1", "examples-gallery-v1"] if course["id"] == "examples"
+                      else ["coursepack-v1"]}
         save(args.out / f"{course['id']}.descriptor.payload.json", descriptor)
         print(f"Built {archive.name} {descriptor['archiveSHA256']}")
 
@@ -389,9 +409,19 @@ def parity(args) -> None:
             course = read_course(root)
             found[course["id"]] = course
     missing = sorted(set(by_id) - set(found))
-    unexpected = sorted(set(found) - set(by_id))
-    changes = {cid: compare(by_id[cid], found[cid]) for cid in sorted(set(by_id) & set(found))}
-    changes = {cid: paths for cid, paths in changes.items() if paths}
+    unexpected = sorted(set(found) - set(by_id) - {"examples"})
+    changes = {}
+    for cid in sorted(set(by_id) & set(found)):
+        original = by_id[cid]
+        current = dict(found[cid])
+        if cid == "projects":
+            # Transport revision and removal of its embedded gallery are
+            # approved; the authored course lessons must remain identical.
+            current["contentVersion"] = original["contentVersion"]
+            current["contentDigest"] = original["contentDigest"]
+        differences = compare(original, current)
+        if differences:
+            changes[cid] = differences
     # The static project gallery and derived term data are part of the baseline too.
     terms = []
     for cid in by_id:
@@ -403,22 +433,31 @@ def parity(args) -> None:
     if terms != baseline["termPairs"]:
         changes["termPairs"] = compare(baseline["termPairs"], terms)
     gallery = []
-    project_archive = args.packages / f"projects-{baseline['contentVersion']}.zip"
+    approved_readmes = []
+    project_archive = args.packages / "examples-1.0.0.zip"
+    if not project_archive.exists():
+        project_archive = args.packages / f"projects-{baseline['contentVersion']}.zip"
     if project_archive.exists():
         with zipfile.ZipFile(project_archive) as packed:
             gallery_ids = sorted({name.split("/")[1] for name in packed.namelist() if name.startswith("library-projects/")})
+            baseline_projects = {item["id"]: item for item in baseline["showcaseProjects"]}
             for pid in gallery_ids:
                 meta = json.loads(packed.read(f"library-projects/{pid}/project.json"))
                 project = meta["project"]
                 prefix = f"library-projects/{pid}/"
                 project["files"] = {name[len(prefix):]: packed.read(name).decode("utf-8") for name in packed.namelist()
                                     if name.startswith(prefix) and name != prefix + "project.json"}
+                prior_files = baseline_projects.get(pid, {}).get("project", {}).get("files", {})
+                if "README.md" in project["files"] and "README.md" not in prior_files:
+                    approved_readmes.append(pid)
+                    del project["files"]["README.md"]
                 gallery.append(meta)
     gallery.sort(key=lambda item: item["order"])
     if gallery != baseline["showcaseProjects"]:
         changes["showcaseProjects"] = compare(baseline["showcaseProjects"], gallery)
     report = {"sourceSHA": baseline["sourceSHA"], "baselineDigest": baseline["contentDigest"],
               "missing": missing, "unexpected": unexpected, "unapprovedChanges": changes,
+              "approvedReadmeAdditions": sorted(approved_readmes),
               "totals": baseline["totals"], "passed": not (missing or unexpected or changes)}
     save(args.out, report)
     print(f"Parity: missing={len(missing)} unexpected={len(unexpected)} unapprovedChanges={len(changes)}")

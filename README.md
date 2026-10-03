@@ -1,8 +1,8 @@
 # Crabrix Courses
 
-The complete, versioned educational corpus for [Crabrix](https://github.com/sergii-ziborov/Crabrix): seven Rust and Algorithms courses, their native lesson data, checks, and editable starter source.
+The complete, versioned educational corpus for [Crabrix](https://github.com/sergii-ziborov/Crabrix): seven Rust and Algorithms courses, their native lesson data, checks, editable starter source, and a separate downloadable Examples gallery.
 
-The baseline contains 48 units and 742 lessons, including the 200-pattern Algorithm Atlas with 600 ordered steps. It also preserves 46 authored Academy Examples and 358 term pairs. All example metadata and Rust source trees are under `courses/projects/library-projects/` and ship in the signed Projects CoursePack. The app reads them from an installed pack; selecting one creates an editable project copy with its own ID and course-version provenance. [The inventory](migration/inventory-summary.json) and [parity report](migration/parity-report.json) are generated from the executed Swift models and the CoursePack reader.
+The baseline contains 48 units and 742 lessons, including the 200-pattern Algorithm Atlas with 600 ordered steps. It also preserves 46 authored Academy Examples and 358 term pairs. All example metadata, Rust source trees, and individual README files are under `courses/examples/library-projects/` and ship in the signed Examples CoursePack. The gallery downloads separately from Cargo & Real Projects; selecting an example creates an editable project copy with its own ID and pack-version provenance. [The inventory](migration/inventory-summary.json), [original parity report](migration/parity-report.json), and [current parity report](migration/parity-report-current.json) record the original and split layouts. The current parity report allows only the 20 newly authored example READMEs and transport/version metadata changes; original lesson and Rust source content remain equal.
 
 ## Format and delivery
 
@@ -18,9 +18,10 @@ Python 3.11+ and `cryptography` are required for signature verification. From th
 python3 tools/coursepack.py inventory --baseline migration/baseline-inventory.json --out migration/inventory-summary.json
 python3 tools/coursepack.py validate --courses courses/ --schema schemas/
 python3 tools/coursepack.py build --courses courses/ --out dist/ --deterministic
-python3 tools/coursepack.py parity --legacy migration/baseline-inventory.json --packages dist/ --out migration/parity-report.json
+python3 tools/coursepack.py parity --legacy migration/baseline-inventory.json --packages dist/ --out migration/parity-report-current.json
 python3 tools/coursepack.py verify --descriptor dist/basics.descriptor.json --archive dist/basics-1.0.1.zip --keys keys/production-keyring.json
-python3 tools/coursepack.py verify-catalog --catalog catalog.v1.json --keys keys/production-keyring.json --last-sequence 1
+python3 tools/coursepack.py verify --descriptor dist/examples.descriptor.json --archive dist/examples-1.0.0.zip --keys keys/production-keyring.json
+python3 tools/coursepack.py verify-catalog --catalog catalog.v1.json --keys keys/production-keyring.json --last-sequence 2
 python3 -m unittest discover -s tests
 ```
 
