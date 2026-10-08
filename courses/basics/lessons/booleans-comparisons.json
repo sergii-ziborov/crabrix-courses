@@ -1,6 +1,6 @@
 {
   "concept": "Comparisons and logical operators",
-  "contentDigest": "bc1f97965e30c3520abd7f50389325356ae5e97d358f7b3d79fd5248c6919f41",
+  "contentDigest": "8e9776466701d5154466a8ef9769da1557d8f10527701b95b9124b3fe60fef02",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "booleans-comparisons",
-  "minutes": 5,
+  "minutes": 9,
   "order": 4,
   "parentID": "foundations",
   "title": "Booleans",
@@ -47,13 +47,18 @@
     "correctAnswer": 0,
     "exampleCaption": "The name says what must be true before work starts.",
     "exampleCode": "let builds = 4;\nlet errors = 0;\nlet ready = builds > 0 && errors == 0;\nif ready {\n    println!(\"ready\");\n}",
-    "explanation": "Comparisons such as ==, <, and >= produce bool. Logical && and || combine conditions and short-circuit, so the right side runs only when it can affect the answer. The ! operator negates a bool. Requiring an actual bool prevents the accidental truthiness rules that make 0, empty strings, and null behave differently across languages.",
+    "explanation": "A condition is not an arbitrary number or string in Rust. Comparisons such as builds > 0 and errors == 0 each produce a bool. The example combines them into ready, a name that expresses the decision the program needs to make. That makes the if branch easy to inspect: it runs only after at least one build exists and no errors remain. If your code says if count, rustc asks for a real boolean condition instead of guessing whether zero should mean false.\n\nThe logical operators also control which work is performed. For left && right, a false left side settles the answer, so right is not evaluated. For left || right, a true left side settles it. This is short-circuiting, shown in the diagram by the crossed-out right branch. It matters when the right expression is expensive or valid only after the left has checked a precondition. Do not use side effects on the right merely because you expect them to run: the operator may skip them. Predict the result for each pair of boolean values, then use ! to reverse one condition and check that the branch still says what you intend.\n\nYou can use short-circuiting as a safe guard, for example checking that an index is in range before reading an element on the right side of &&. Reverse the order and the protection disappears. Parentheses help when a condition mixes && and ||: write the grouping you mean instead of making a future reader remember precedence. A descriptive name such as ready often makes the decision clearer than repeating the whole expression at every if.",
     "feedback": "Write the condition you mean explicitly, such as count > 0.",
     "practiceCode": "let count = 3;\nif count {\n    println!(\"items\");\n}",
     "question": "What must replace count in the condition?",
     "rule": "if requires bool; Rust has no implicit numeric truthiness.",
-    "success": "The branch runs only when both requirements are true.",
-    "summary": "Conditions are real bool values, never numbers pretending to be true or false.",
-    "task": "Combine two comparisons into one clearly named condition."
+    "success": "The branch runs only for the intended combination of values. You can explain why each skipped right-hand expression was unnecessary.",
+    "summary": "A comparison produces a bool, and a branch requires one. && and || can skip their right-hand expression as soon as the result is known.",
+    "task": "Build a clearly named condition from two comparisons. Predict whether the right side of && runs when the left is false, and whether the right side of || runs when the left is true."
+  },
+  "illustration": {
+    "path": "media/booleans-comparisons.png",
+    "alt": "A comparison produces a bool; false skips the right side of &&, while true skips the right side of ||.",
+    "caption": "Short-circuit operators evaluate only the right-hand expression needed to determine the result."
   }
 }

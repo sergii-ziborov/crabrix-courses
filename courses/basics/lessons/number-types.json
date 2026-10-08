@@ -1,6 +1,6 @@
 {
   "concept": "Integer and floating-point types",
-  "contentDigest": "3ffdaff7235b21528bd0b75199d4b3f17f710ad3f9edf1e6a85ce93b7e0a7f70",
+  "contentDigest": "6ad14e44e22727cb30fa255172411447658d68d4ad88d8e42c8612dda8fa81bd",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "number-types",
-  "minutes": 6,
+  "minutes": 10,
   "order": 3,
   "parentID": "foundations",
   "title": "Numbers",
@@ -47,13 +47,13 @@
     "correctAnswer": 1,
     "exampleCaption": "The annotations document three different jobs.",
     "exampleCode": "let files: usize = 4;\nlet temperature: f64 = 21.5;\nlet mask: u8 = 0b1010;\nprintln!(\"{files} {temperature} {mask}\");",
-    "explanation": "Rust does not silently mix unrelated numeric types. Signed integers can represent negatives, unsigned integers spend the whole range above zero, usize is designed for indexes and lengths, and floating-point values trade exact decimal representation for range. Start with inference, then annotate where the domain or an API requires a specific type.",
+    "explanation": "Integers and floating-point values model different kinds of information. A signed integer such as i32 can represent negative values; an unsigned type such as u8 uses its bits for nonnegative values. usize is the natural type for an index or collection length because it matches the platform’s address width. f64 represents a broad range of fractional values, but most decimal fractions are approximations in binary, so exact equality is often the wrong test for a measured quantity. None of these types is automatically better: start with what the domain means.\n\nIn the example, files is a length-like count, temperature is fractional, and mask is one byte of bit flags. Those annotations tell a reader why the three values should not be treated as interchangeable. Rust refuses to add unrelated numeric types without a conversion, which forces you to choose the result range and sign deliberately. Before adding a cast, ask whether negative values are possible, whether the result can exceed the smaller type, and whether rounding matters. Try an explicit conversion only after answering those questions; a broad as cast can hide a narrowing mistake rather than solve it.\n\nType inference still has rules. A bare integer literal commonly defaults to i32 when nothing else constrains it, and a bare floating literal commonly defaults to f64. An assignment, function parameter, or explicit annotation can provide the needed context. That is why the same literal may be accepted in one place and rejected in another. Read the expected and found types in the diagnostic instead of adding as automatically; a conversion should express a deliberate boundary between numeric domains.",
     "feedback": "Convert deliberately only after deciding which range and sign rule the result needs.",
     "practiceCode": "let left: u32 = 4;\nlet right: i32 = 2;\nlet total = left + right;",
     "question": "Why is the addition rejected?",
     "rule": "Numeric conversions are explicit because ranges and precision differ.",
-    "success": "Each value uses a type that fits its real job without a broad cast.",
-    "summary": "A numeric type states the range, precision, and operations a value supports.",
-    "task": "Choose a type for a count, a temperature, and one byte of flags."
+    "success": "The values compile with types that match their jobs. You can justify every conversion and identify one situation where a narrowing cast would be unsafe.",
+    "summary": "Choosing a number type records a promise about range and precision. Rust makes conversions explicit so that promise cannot change silently at an arithmetic boundary.",
+    "task": "Choose types for a file count, a temperature, and one byte of flags. Explain the range or precision each choice needs; then try mixing two types and decide which explicit conversion preserves the intended result."
   }
 }

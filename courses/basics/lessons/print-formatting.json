@@ -1,6 +1,6 @@
 {
   "concept": "Format strings and placeholders",
-  "contentDigest": "37e12283c1b312ce5073aa74d5deae529288395cd417b661625ddda8922dff76",
+  "contentDigest": "5662f7be8e6cd9ef3b47a13cf589a00c7421a9ffb0afa02f31111ae807892ee5",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "print-formatting",
-  "minutes": 5,
+  "minutes": 9,
   "order": 2,
   "parentID": "foundations",
   "title": "Printing Values",
@@ -47,13 +47,18 @@
     "correctAnswer": 1,
     "exampleCaption": "Names can be captured directly inside a checked format string.",
     "exampleCode": "let name = \"Ferris\";\nlet builds = 4;\nprintln!(\"{name} ran {builds} builds\");\nprintln!(\"{builds:>3}\");",
-    "explanation": "A format string is checked while the program compiles. Named captures keep simple output readable, positional placeholders are useful when order matters, and width or alignment specifiers make tables predictable. The values are not glued into the string at runtime by guesswork: every placeholder must match an argument the macro can see.",
+    "explanation": "println! takes a format string and turns values into a line on stdout. In the example, {name} and {builds} capture bindings with those names. The macro checks the placeholders while compiling, so a misspelled capture or missing positional argument becomes a diagnostic before the program runs. This is safer than assembling a message with a chain of ad hoc string additions, especially when the output becomes a log line or a table someone else must read.\n\nFormatting controls presentation without changing the stored value. In {builds:>3}, the colon introduces a format specification: > right-aligns the value in a field three characters wide. With builds = 4, that line begins with two spaces and then 4. Predict the whitespace rather than relying on how a proportional font looks. Try replacing a named capture with {} and pass the value explicitly; then remove the argument and observe how rustc identifies the mismatch. Use formatting to communicate, but keep business decisions outside the format string so the data and its display remain easy to reason about.\n\nA placeholder also asks the value to support the requested formatting trait. Ordinary {} output uses Display, while {:?} is a Debug view often useful during inspection. If a custom type has no suitable implementation, rustc reports that requirement rather than inventing a representation. The width in :>3 is a minimum, not a maximum: a longer number is not truncated. Use that rule to predict both a one-digit and a four-digit count before running.",
     "feedback": "println! is a macro, so malformed placeholders become compiler errors.",
     "practiceCode": "let language = \"Rust\";\nprintln!(\"Learning {language}\");",
     "question": "When is the format string checked?",
     "rule": "Every formatting placeholder must have a value known to println!.",
-    "success": "stdout contains both values and the compiler reports no missing argument.",
-    "summary": "Formatting lets one checked template describe exactly how values become text.",
-    "task": "Print a name and a build count, then align the number to the right."
+    "success": "stdout contains the expected words and alignment; the malformed positional call fails at compile time. You can explain which placeholder consumed each value.",
+    "summary": "A format string is a checked template: each placeholder has a value, and the finished line follows the template exactly, including spaces and alignment.",
+    "task": "Print a name and build count on one line, then right-align the count to width three on the next. Record the exact spaces you expect. Switch one capture to {} and deliberately omit its argument once."
+  },
+  "illustration": {
+    "path": "media/print-formatting.png",
+    "alt": "Two placeholders receive a string and a number, producing one formatted line on stdout.",
+    "caption": "Format strings pair each placeholder with a value; the compiler checks their number and types before the program prints."
   }
 }

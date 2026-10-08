@@ -222,6 +222,24 @@ def validate(args) -> None:
                     expected.update(base + name for name in lesson["starterProject"]["files"])
                 if lesson["exerciseKind"] == "algorithmChallenge" and "challenge" not in lesson:
                     raise ValueError(f"challenge missing: {lid}")
+                illustration = lesson.get("illustration")
+                if illustration is not None:
+                    image_path = f"media/{lid}.png"
+                    if (illustration.get("path") != image_path
+                            or not illustration.get("alt", "").strip()
+                            or not illustration.get("caption", "").strip()
+                            or image_path not in files):
+                        raise ValueError(f"invalid lesson illustration: {lid}")
+                    image = files[image_path]
+                    if (image[:8] != b"\x89PNG\r\n\x1a\n"
+                            or image[12:16] != b"IHDR" or len(image) < 24):
+                        raise ValueError(f"invalid PNG illustration: {image_path}")
+                    width = int.from_bytes(image[16:20], "big")
+                    height = int.from_bytes(image[20:24], "big")
+                    if (not 0 < width <= 4096 or not 0 < height <= 4096
+                            or width * height > 8_000_000):
+                        raise ValueError(f"oversized illustration: {image_path}")
+                    expected.add(image_path)
         if root.name == "examples":
             if course["units"] != [] or load(root / "terms.json") != []:
                 raise ValueError("examples pack must contain projects, not lessons or terms")

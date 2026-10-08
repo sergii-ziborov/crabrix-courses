@@ -1,6 +1,6 @@
 {
   "concept": "let, mut, and shadowing",
-  "contentDigest": "ab5a4d9242eecae10505a8cf02424fd1e47c84a8a20a479f874681919286b43d",
+  "contentDigest": "0919bdcf8b72c6c9805032a280dabd69285a2f5d6cbd0fccb22807f880145315",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "variables",
-  "minutes": 6,
+  "minutes": 10,
   "order": 1,
   "parentID": "foundations",
   "title": "Variables",
@@ -47,13 +47,13 @@
     "correctAnswer": 1,
     "exampleCaption": "Shadowing makes a new binding; mut changes an existing one.",
     "exampleCode": "let total = 10;        // immutable\nlet total = total + 5; // shadowed\nlet mut counter = 0;   // mutable\ncounter += 1;",
-    "explanation": "Rust makes state changes visible in the code with mut, so a reader never has to guess whether something moves under them. Shadowing is a different tool: it creates a brand new binding with the same name, which may even have a different type, leaving the original untouched.",
+    "explanation": "Start by reading each let as a promise about one binding. In let total = 10, the name total cannot be reassigned. The next line, let total = total + 5, does not change that first binding: the right side reads its value, then a new binding with the same name hides it. This is shadowing. It is useful when data passes through a clear transformation, such as trimming text and then parsing it, because the name can follow the meaning of the value even when its type changes.\n\nMutation is a different promise. let mut counter = 0 permits counter += 1 to update one existing binding. Choose mut when the same piece of state evolves over time, such as a counter in a loop; choose shadowing when a new stage of computation replaces the old view. Neither choice makes every value in the program mutable. Try removing mut and read the compiler error, then try replacing the update with a new let counter = counter + 1. Compare which version better communicates your intent to the next reader.\n\nA useful test is to put a transformation at the same scope and ask whether the earlier form should still be available. Shadowing hides that earlier binding under the reused name; it does not mutate memory by magic. In a nested block, a shadowed name can stop hiding the outer one when the block ends. This is why naming and scope matter as much as the presence of mut.",
     "feedback": "Add mut, or shadow with a second let if a new binding is what you meant.",
     "practiceCode": "let value = 5;\nvalue = 6;",
     "question": "Why is the reassignment rejected?",
     "rule": "mut permits mutation; shadowing replaces the binding entirely.",
-    "success": "It compiles with no unused-mutation warning.",
-    "summary": "Bindings are immutable unless you opt in.",
-    "task": "Create an immutable value, shadow it, then update one mutable counter."
+    "success": "The final program compiles without an unnecessary-mut warning. You can point to the new binding created by shadowing and to the single existing binding updated through mut.",
+    "summary": "A binding names a value. Rust keeps that binding fixed by default, asks for mut when the value must change, and uses a fresh let when you want to shadow it.",
+    "task": "Create an immutable value, shadow it with a transformed value, and update one mutable counter. Predict which names can be reassigned before compiling; then remove mut once and explain the diagnostic."
   }
 }

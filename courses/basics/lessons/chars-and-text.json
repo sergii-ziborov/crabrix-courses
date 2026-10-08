@@ -1,6 +1,6 @@
 {
   "concept": "char, &str, and Unicode",
-  "contentDigest": "48a93158c6ef5da4b46ed87e6a20f0e3e205e9b279a83d1d736171bb2ae4ed65",
+  "contentDigest": "5c5f1f25610bb4bdb8f17d696244d9606a6c0288b1d218ffd84276220631a05f",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "chars-and-text",
-  "minutes": 6,
+  "minutes": 10,
   "order": 5,
   "parentID": "foundations",
   "title": "Characters & Text",
@@ -47,13 +47,13 @@
     "correctAnswer": 1,
     "exampleCaption": "The crab is one char but several UTF-8 bytes.",
     "exampleCode": "let crab: char = '🦀';\nlet word: &str = \"Rust\";\nprintln!(\"{crab} {}\", word.len());",
-    "explanation": "Single quotes create a char and double quotes create string text. A visible character can occupy several UTF-8 bytes, so text length is not automatically the number of symbols a person sees. Use chars() when you need Unicode scalar values and bytes() when the encoding bytes themselves are the subject.",
+    "explanation": "Single quotes construct a char, while double quotes construct text. A char is one Unicode scalar value, not necessarily one byte. The crab emoji in the example fits in one char but occupies several UTF-8 bytes. &str is a borrowed view of UTF-8 text; its len() reports bytes. If you ask for chars().count(), you count scalar values instead. A user-perceived character can contain more than one scalar, such as a letter plus a combining mark, so even that count is not a universal measure of what a person sees.\n\nRust does not allow s[0] on a string because byte position zero is not a safe general-purpose character index. Instead, choose the operation that matches the question: bytes() when inspecting the encoding, chars() when processing scalars, and a grapheme-aware library when the interface needs visible clusters. This distinction prevents slicing through a multibyte UTF-8 sequence. Try printing the byte length and scalar count for plain ASCII and for the crab emoji. Predict both numbers before running, then compare them with the output and explain why they differ.\n\nConsider the visible letter é. It can be stored as one scalar or as e followed by a combining accent; those forms can look the same while having different byte and scalar counts. That is why text handling should start from the user question, not from a convenient index. Byte length is useful for storage and protocols, scalar iteration for some parsing tasks, and grapheme clusters for many cursor and selection operations.",
     "feedback": "Use text.chars().count() when Unicode scalar values are the unit you need.",
     "practiceCode": "let text = \"🦀\";\nprintln!(\"{}\", text.len());",
     "question": "What does len() report for &str?",
     "rule": "String indexing by an arbitrary byte is forbidden because UTF-8 boundaries matter.",
-    "success": "You can explain why a Unicode symbol may occupy more than one byte.",
-    "summary": "A char is one Unicode scalar value; &str is a borrowed sequence of UTF-8 bytes.",
-    "task": "Print one char and compare byte length with chars().count()."
+    "success": "Your prediction matches the output, and you can say which counting method answers which question without treating bytes as visible characters.",
+    "summary": "Rust text has several useful units: bytes for encoding, Unicode scalar values for char, and sometimes multiple scalars for one visible symbol.",
+    "task": "Print a char and a borrowed string, then compare len() with chars().count() for ASCII and an emoji. Predict the byte and scalar counts before running."
   }
 }
