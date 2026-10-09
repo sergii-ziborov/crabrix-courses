@@ -82,8 +82,8 @@ CATEGORY = {
         "Rust BinaryHeap is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data.",
     ),
     "graph-traversal": (
-        "Traversal marks reached vertices so each reachable part is processed deliberately. Define when a vertex becomes seen: on insertion or removal.",
-        "Choose DFS for depth-oriented exploration and BFS for equal-cost layers; directed edges and disconnected components change the plan.",
+        "A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal.",
+        "Choose a representation for the operations first; when traversing, DFS explores depth and BFS follows equal-cost layers. Directed edges and disconnected components change the plan.",
         "Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component.",
         "An adjacency list and VecDeque make breadth-first work explicit. Mark before enqueuing to avoid duplicate frontier entries.",
     ),
@@ -95,7 +95,7 @@ CATEGORY = {
     ),
     "backtracking": (
         "Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains.",
-        "Use it when constraints prune combinations early and the task asks for one or all valid constructions.",
+        "Use pruning when partial choices can already be ruled out. Meet-in-the-middle instead trades two exhaustive half-enumerations for a smaller search space.",
         "Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable.",
         "For recursive search, push a choice, recurse, then undo it; for meet-in-the-middle, collect each half before matching them. In Rust, clone a path only when storing a completed answer.",
     ),
@@ -107,7 +107,7 @@ CATEGORY = {
     ),
     "dynamic-1d": (
         "A one-dimensional DP state summarizes a prefix or a single parameter. Define its meaning before writing a recurrence.",
-        "Choose DP when subproblems overlap and an optimal answer can be composed from smaller answers; a greedy guess needs its own proof.",
+        "Choose a recurrence when subproblems overlap. Some patterns summarize a frontier instead of a full DP table; either representation needs an invariant, and any greedy shortcut needs proof.",
         "Test the base state, the first transition, impossible states, and whether an in-place update accidentally reuses an item twice.",
         "Use Option or a safe sentinel for unreachable states, and choose an iteration direction that matches the recurrence's dependencies.",
     ),
@@ -131,7 +131,7 @@ CATEGORY = {
     ),
     "advanced-structures": (
         "An advanced structure or offline query order packages an invariant across operations. Name what each node, block, or reordered query state stores.",
-        "Choose it only when simpler scans or prefix arrays cannot satisfy both update and query limits.",
+        "Choose it when the required operation sequence, query volume, or substring structure exceeds a simple scan or prefix summary; compare the real time and memory limits first.",
         "Test empty ranges, repeated updates, undo operations where supported, and the exact boundary between adjacent blocks.",
         "Keep representation and operations separate in Rust. Verify a tiny instance against a straightforward reference implementation before optimizing.",
     ),
