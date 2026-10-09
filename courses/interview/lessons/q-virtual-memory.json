@@ -1,6 +1,6 @@
 {
   "concept": "Pages, faults, and resident size",
-  "contentDigest": "dae9ce0379dc3be3434566e1f3034f2ff7033e686a3e1933481b99a5bb62b403",
+  "contentDigest": "0179ee11f4447dd9667871f0523c11b43f28e3a3219fcc616dbe366cd647be27",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "q-virtual-memory",
-  "minutes": 11,
+  "minutes": 18,
   "order": 1,
   "parentID": "interview-platform",
   "title": "Virtual Memory",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "The reservation is cheap; the first touch is what costs.",
     "exampleCode": "// Reserves address space, no frames yet.\nlet mut buffer = Vec::with_capacity(1 << 30);\n// Each new page faults in on first write.\nbuffer.push(1u8);",
-    "explanation": "The MMU maps pages of your address space onto physical frames, so allocating memory usually just reserves address range. Touching a page for the first time causes a page fault the kernel resolves by finding a frame — which is why a large allocation can be instant and the first write to it slow. It also explains mmap, copy-on-write after fork, and why RSS is smaller than virtual size.",
+    "explanation": "The MMU maps pages of your address space onto physical frames, so allocating memory usually just reserves address range. Touching a page for the first time causes a page fault the kernel resolves by finding a frame — which is why a large allocation can be instant and the first write to it slow. It also explains mmap, copy-on-write after fork, and why RSS is smaller than virtual size.\n\nA process uses virtual addresses. The operating system and hardware map regions of that address space to physical memory or backing storage as needed, with page tables mediating access. Reserving an address range is not the same as filling every page with committed physical memory. Many systems map pages lazily, so the first access can trigger a page fault that the kernel resolves. But allocation behavior varies by allocator, operating system, and mapping flags; do not promise that every large allocation is instant.\n\nThis model explains several useful observations. Resident set size counts memory currently resident, while virtual size can include reserved or mapped regions not resident. A shared library may be mapped into several processes without every page being physically duplicated. Copy-on-write lets processes share pages until one writes and needs a private copy. A page fault is not always an error: it can be normal lazy materialization. An invalid access, however, may produce a protection fault.\n\nFor an interview, walk through one address from a program pointer to a page-table translation and a physical frame. Then ask what happens on the first read, a write to a copy-on-write page, and an access outside a valid mapping. Distinguish address-space reservation, committed memory, and actual residency. This matters for profiling memory: a process can have a huge virtual range and modest physical use, or many small allocations that fragment memory and hurt locality.\n\nA mapped file can expose bytes through virtual memory without copying all of them into a separate user buffer at once, but access can still fault and I/O can still occur. Mapping is not a free read. Mention protection bits too: a virtual page can be readable, writable, executable, or inaccessible according to mapping policy.",
     "feedback": "Read-only file mappings share frames through the page cache.",
     "practiceCode": "// Same file, two processes, read-only.\nlet map = unsafe { Mmap::map(&file)? };",
     "question": "What does mapping it twice cost in physical memory?",

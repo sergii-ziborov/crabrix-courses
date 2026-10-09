@@ -1,6 +1,6 @@
 {
   "concept": "Where the cost of IO actually is",
-  "contentDigest": "ee0f7afd90ed500bbdd31431e653296e9eba5e42630a2979a1f02bd08261b6d1",
+  "contentDigest": "08baa6168f68b9717b317ed8cd89479742be4a051ce2042511aaf63d7f270906",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "q-syscalls",
-  "minutes": 10,
+  "minutes": 16,
   "order": 2,
   "parentID": "interview-platform",
   "title": "Syscalls and Buffering",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "One syscall per line, versus one per buffer.",
     "exampleCode": "// A write syscall per line.\nfor line in lines { file.write_all(line)?; }\n\n// One syscall per full buffer.\nlet mut out = BufWriter::new(file);\nfor line in lines { out.write_all(line)?; }",
-    "explanation": "Reading a file, opening a socket, or spawning a thread all cross a privilege boundary that costs far more than a function call. That is why buffered IO exists, why writev beats many writes, and why an event loop with epoll or io_uring outperforms a read per connection. Interviewers ask this to see whether you know where the cost of IO actually is.",
+    "explanation": "Reading a file, opening a socket, or spawning a thread all cross a privilege boundary that costs far more than a function call. That is why buffering and batching can help when per-call overhead matters, while event loops can handle many mostly idle connections efficiently. Interviewers ask this to see whether you know where the cost of IO actually is.\n\nA system call crosses from user code into the kernel to request a privileged operation. The transition and work on the other side have cost, but there is no single fixed ratio to a function call: data size, caching, contention, device latency, and kernel path all matter. Buffered I/O can combine many small writes into fewer requests. Scatter/gather I/O can send several buffers in one call. Batching is valuable when per-call overhead is a measurable part of the workload, not as a rule to apply blindly.\n\nAn event loop uses readiness or completion notifications so a thread need not block separately on every mostly idle connection. `epoll` and `io_uring` expose different Linux models, but neither guarantees superiority for every operation. A simple blocking read may be the best choice for a small tool. In Rust, a crate's API may buffer or batch internally, so profile the actual program before assuming the source line maps to one syscall.\n\nIn an interview, describe one concrete path: a program calls write, the kernel validates the request and copies or references data according to the API, then the call returns a result that may be partial or an error. Explain why a loop must handle short writes. If the question is performance, propose a measurement: syscall count, bytes per call, time waiting on I/O, and tail latency. The answer should connect the kernel boundary to the observed workload, not just name a fashionable interface.\n\nBatching introduces a latency tradeoff: waiting to accumulate a large buffer can delay one small urgent write. Set a flush policy based on payload size or time budget. Partial I/O remains possible even after batching, so the loop must track bytes completed and retry the rest without duplicating already-sent data.",
     "feedback": "The boundary crossing dominates; batch before you optimise anything else.",
     "practiceCode": "for byte in data {\n    socket.write_all(&[byte])?;\n}",
     "question": "What is wrong with that loop?",
@@ -55,5 +55,10 @@
     "success": "You can point to the buffering that removed them.",
     "summary": "A syscall is a controlled trip into the kernel, and it is not free.",
     "task": "Count the syscalls in a hot loop and remove the ones that are avoidable."
+  },
+  "illustration": {
+    "path": "media/q-syscalls.png",
+    "alt": "A buffered write crosses the user and kernel boundary at a system call.",
+    "caption": "Buffering can reduce calls; callers still must check the returned count."
   }
 }

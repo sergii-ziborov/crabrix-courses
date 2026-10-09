@@ -1,6 +1,6 @@
 {
   "concept": "Making at-least-once safe",
-  "contentDigest": "27b5dca0fc8b0d8942137c29235a258aac0a7e283f84799b4d74dfe90fe7981b",
+  "contentDigest": "9609209c83f59fb6c922dc2b5e5dfa0ed3c273a39a988721c2c47a66ddb2e43b",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "q-idempotency",
-  "minutes": 10,
+  "minutes": 16,
   "order": 3,
   "parentID": "interview-data",
   "title": "Idempotency and Retries",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "The key is what makes the second attempt safe.",
     "exampleCode": "let response = client\n    .post(url)\n    .header(\"Idempotency-Key\", request_id)\n    .json(&payment)\n    .send()\n    .await?;",
-    "explanation": "Networks make at-least-once the default, so the same request will arrive twice. Reads and overwrites are naturally idempotent; increments, appends, and charges are not. The fix is an idempotency key the server records with the result, so a repeat returns the first outcome instead of doing the work again. Retries also need jitter, or they synchronise into a thundering herd.",
+    "explanation": "Retries and lost responses can cause the same logical request to reach a server more than once. Reads and overwrites are naturally idempotent; increments, appends, and charges are not. The fix is an idempotency key the server records with the result, so a repeat returns the first outcome instead of doing the work again. Retries also need jitter, or they synchronise into a thundering herd.\n\nA retry may repeat an operation when the caller cannot tell whether the first attempt succeeded. A timeout is ambiguous: the server might have committed the change and lost the response. Idempotency means repeating the same logical request has the same intended effect as performing it once. Setting a value to a fixed state can be idempotent; incrementing a balance or charging a card usually is not. Do not assume the network itself always delivers at least once or that every read has no side effects.\n\nGive each logical operation a stable idempotency key. The server records the key and outcome atomically with the operation where possible. A retry with the same key returns the recorded outcome rather than repeating the effect. Define how long keys live, what happens if the same key is reused with different parameters, and how concurrent duplicates race. A key stored after charging but before saving the result leaves a dangerous gap; the transaction boundary matters.\n\nFor an interview, draw the timeline: request sent, server commits, response lost, caller retries. Then explain how the dedupe record makes the second request safe. Add exponential backoff with jitter so clients do not all retry at once under overload. If an external provider is involved, propagate a stable key when it supports one and reconcile uncertain results. The goal is a recoverable outcome under ambiguity, not a promise that the network will behave exactly once.",
     "feedback": "A relative update is not idempotent without a key to recognise it by.",
     "practiceCode": "POST /accounts/7/balance  {\"add\": 10}",
     "question": "What goes wrong when the client retries a timeout?",
@@ -55,5 +55,10 @@
     "success": "A duplicate request returns the original result and charges once.",
     "summary": "A retry is only safe if the operation is idempotent.",
     "task": "Make a non-idempotent endpoint safe to retry."
+  },
+  "illustration": {
+    "path": "media/q-idempotency.png",
+    "alt": "A repeated request with the same key can return its stored result without repeating the local effect.",
+    "caption": "External effects still require coordinated handling."
   }
 }

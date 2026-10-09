@@ -1,6 +1,6 @@
 {
   "concept": "Identity, confidentiality, integrity",
-  "contentDigest": "c930eebb0c7eb46df09f52606c1f042551e3c4997b303769285e93f760f668a5",
+  "contentDigest": "fc5f4c16dfe078e3f63916babb5d207a8a691d1552acd4af3774143864ff8286",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "q-tls",
-  "minutes": 11,
+  "minutes": 18,
   "order": 5,
   "parentID": "interview-platform",
   "title": "What TLS Guarantees",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Verification is the part people disable and regret.",
     "exampleCode": "let config = ClientConfig::builder()\n    .with_root_certificates(roots)\n    .with_no_client_auth();",
-    "explanation": "The handshake authenticates the server through a certificate chain, agrees on keys with an ephemeral exchange, and switches to symmetric encryption because it is far faster. Skip the certificate check and a machine in the middle (MITM) can answer in the server's place, decrypt everything, and forward it on. Forward secrecy means recording traffic today and stealing the key tomorrow reveals nothing. Certificate pinning, mTLS, and SNI are the follow-up questions.",
+    "explanation": "The handshake authenticates the server through a certificate chain, agrees on keys with an ephemeral exchange, and switches to symmetric encryption because it is far faster. Skip the certificate check and a machine in the middle (MITM) can answer in the server's place, decrypt everything, and forward it on. Forward secrecy means recording traffic today and stealing the key tomorrow reveals nothing. Certificate pinning, mTLS, and SNI are the follow-up questions.\n\nTLS aims to authenticate the endpoint and protect data in transit with confidentiality and integrity. In a typical web connection, the client validates a certificate chain for the requested hostname and negotiates keys. The details depend on TLS version and configuration, but modern handshakes use ephemeral key exchange to establish secrets and symmetric cryptography to protect application records efficiently. If certificate validation is skipped, an attacker able to intercept traffic can impersonate the server even while the bytes appear encrypted.\n\nForward secrecy means that compromise of a long-term authentication key later does not, by itself, reveal past session traffic recorded under properly negotiated ephemeral secrets. It does not protect a compromised endpoint or keys stolen while a session is active. Mutual TLS adds client certificate authentication when both sides need that identity. SNI helps route a connection to the right server name; it is not itself proof of identity. Certificate pinning can reduce some trust paths but creates operational risks during key rotation.\n\nIn an interview, describe what the client verifies, what keys protect the data, and what threat remains. Then apply it to a concrete failure: wrong hostname, expired certificate, untrusted issuer, or a user clicking through a warning. Never suggest disabling validation as a normal workaround. If discussing performance, note resumption and connection reuse rather than claiming encryption is the dominant cost without evidence.\n\nAuthentication depends on which identity is checked. A valid certificate for the wrong hostname should fail. Encryption without trustworthy identity still allows an active attacker to interpose.",
     "feedback": "Without verification the tunnel may simply terminate at the attacker.",
     "practiceCode": "danger_accept_invalid_certs(true)",
     "question": "What does that leave you with?",

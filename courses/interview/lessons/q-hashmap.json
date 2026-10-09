@@ -1,6 +1,6 @@
 {
   "concept": "Why Rust seeds its hasher",
-  "contentDigest": "f95b34fa32833a9c65555db55adec912d6dc880957aec732944a05241970b019",
+  "contentDigest": "27ffbe99d551c9c7b92d37d2b14521fa711d2e80e77838fd21f98eb56b467035",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "q-hashmap",
-  "minutes": 10,
+  "minutes": 16,
   "order": 1,
   "parentID": "interview-craft",
   "title": "Hashing and Collisions",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "A faster hasher is a decision about trust, not only speed.",
     "exampleCode": "use std::collections::HashMap;\n\n// Default: SipHash, randomly seeded.\nlet mut trusted: HashMap<u32, u32> =\n    HashMap::default();",
-    "explanation": "Lookup cost depends on collisions, and collisions depend on the hash function. Rust's default is SipHash with a per-process random seed precisely so untrusted keys cannot be chosen to collide — the denial-of-service that plagued other languages. Swapping in a faster non-cryptographic hasher is correct for internal keys and dangerous for user input.",
+    "explanation": "Lookup cost depends on collisions, and collisions depend on the hash function. Rust's standard map uses randomized seeding for collision resistance, while the exact hash algorithm is not a stable public guarantee. Swapping in a faster non-cryptographic hasher is correct for internal keys and dangerous for user input.\n\nA hash map maps keys to buckets using a hash function and resolves collisions according to its implementation. Expected lookup can be close to constant time under suitable distribution and load, but a worst-case collision pattern can degrade performance. In Rust, the standard map uses randomized seeding to make attacker-controlled collision selection harder; do not rely on one fixed hash algorithm as a permanent API guarantee. Choosing a custom faster hasher may help trusted internal keys but can weaken resistance to adversarial inputs.\n\nThe choice of key type matters too. A large string costs time to hash and compare. A small integer key is cheaper, but it may not represent the domain meaning as clearly. Hash maps do not promise a stable iteration order; do not serialize their iteration directly when output order matters. Capacity and growth affect allocation and memory overhead. A B-tree can be preferable when ordered traversal or range queries are central.\n\nFor an interview, separate algorithmic expectations from a security claim. State the key distribution, who controls keys, the required lookup rate, and whether order matters. Then explain how you would benchmark a realistic workload and test collision-sensitive behavior. The strong answer does not promise O(1) in every case or say the standard hasher is universally fastest; it connects a hasher choice to the input threat model.\n\nAlso discuss deletion: removing entries can leave internal capacity allocated, so a map that once held a million keys may retain memory after it becomes small. Rebuilding or shrinking can help when memory pressure matters. The API and version determine the exact behavior; measure the live process rather than assuming removal releases every byte.",
     "feedback": "That is the classic hash-flooding denial of service.",
     "practiceCode": "// Keys are HTTP header names from the client.\nlet map: HashMap<String, String, FxBuildHasher>",
     "question": "What is the risk of that hash choice?",

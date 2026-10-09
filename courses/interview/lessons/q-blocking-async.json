@@ -1,6 +1,6 @@
 {
   "concept": "Why one sync call stalls a runtime",
-  "contentDigest": "c9d0e2e4057fa512a26f0d517610d273d068df885ba91ee90e244f19042e6de8",
+  "contentDigest": "046d102545361834e5b6d887b1b1e7a763a9677fcc565bd82ea2d2f94256d8a5",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "q-blocking-async",
-  "minutes": 10,
+  "minutes": 16,
   "order": 4,
   "parentID": "interview-concurrency",
   "title": "Blocking an Executor",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "The blocking call is moved off the async threads.",
     "exampleCode": "let text = tokio::task::spawn_blocking(|| {\n    std::fs::read_to_string(\"big.csv\")\n})\n.await??;",
-    "explanation": "Async executors run many tasks on few threads and rely on each task yielding at an await. A synchronous file read, a long computation, or a std Mutex held across an await occupies its thread and starves every task queued behind it. The fixes are spawn_blocking, a dedicated pool, or an async-aware version of the call.",
+    "explanation": "Async executors run many tasks on few threads and rely on each task yielding at an await. A synchronous file read, a long computation, or a std Mutex held across an await occupies its thread and starves every task queued behind it. The fixes are spawn_blocking, a dedicated pool, or an async-aware version of the call.\n\nAn async function does not turn every operation inside it into nonblocking work. An executor polls tasks on worker threads. If a task calls a synchronous sleep or performs a long CPU loop, that worker cannot poll other ready tasks until the call returns or the code yields. Even a short operation can matter at high concurrency if it appears in every request. The right diagnosis is to measure the delay of unrelated tasks while the suspicious operation runs.\n\nA synchronous mutex is not automatically wrong in async code. It can protect a tiny critical section that never crosses an `.await`. Holding a guard across an await is dangerous because the task may suspend while retaining the lock; other tasks then wait, and some executors may reject a non-Send future. Use an async-aware mutex only when waiting for the lock should itself yield, and still keep the guarded work short. Do not assume that switching mutex types fixes a long blocking calculation.\n\nMove true blocking operations to a dedicated blocking pool or thread, with owned inputs and explicit result/error handling. CPU-heavy work may need a bounded compute pool so it does not overwhelm the process. Observe what happens when the caller cancels: offloaded synchronous work may continue after its async handle is dropped. In an interview answer, state the workload, the harm to executor fairness, the chosen boundary for offloading, and a measurement that would confirm improvement.\n\nFor a blocking API you cannot replace, name the maximum number of concurrent calls you will offload. An unbounded blocking pool can preserve executor responsiveness while overwhelming storage or CPU elsewhere. Backpressure belongs at that boundary too. After the change, compare timer jitter and request tail latency under load.",
     "feedback": "The read is synchronous, so the task never yields while it runs.",
     "practiceCode": "async fn handler() {\n    let data = std::fs::read(\"big.bin\").unwrap();\n}",
     "question": "What does that do to the other tasks?",
@@ -55,5 +55,10 @@
     "success": "No task holds an executor thread while it waits on something synchronous.",
     "summary": "One blocking call can stall an entire async runtime.",
     "task": "Find the blocking call in an async handler and move it off the runtime."
+  },
+  "illustration": {
+    "path": "media/q-blocking-async.png",
+    "alt": "Blocking work can stall an async executor worker while other tasks wait.",
+    "caption": "Keep blocking operations off executor workers when they can stall progress."
   }
 }

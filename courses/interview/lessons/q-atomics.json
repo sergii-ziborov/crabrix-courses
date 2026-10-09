@@ -1,6 +1,6 @@
 {
   "concept": "Relaxed, Acquire/Release, SeqCst",
-  "contentDigest": "3f2297e89f4665d385003f8f6681618f3ebf3bb33a7b748362e2f97ab4e3f3b5",
+  "contentDigest": "2810b66a0d5209f7f85d98380f62eea2ea9d49ec4fd97a5938b2a6abbdb9f7aa",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "q-atomics",
-  "minutes": 13,
+  "minutes": 21,
   "order": 0,
   "parentID": "interview-concurrency",
   "title": "Atomics and Ordering",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Release publishes the writes before it; Acquire sees them.",
     "exampleCode": "use std::sync::atomic::{AtomicBool, Ordering};\n\nREADY.store(true, Ordering::Release);\nif READY.load(Ordering::Acquire) {\n    // everything written before the store\n    // is visible here\n}",
-    "explanation": "Ordering is the interesting half of the answer. Relaxed guarantees only that the operation itself is indivisible; Acquire and Release pair up to publish everything written before a release to whoever performs the matching acquire; SeqCst adds a single global order and costs the most. Reaching for SeqCst everywhere is not wrong, only slow, and saying that out loud is what an interviewer wants.",
+    "explanation": "Ordering is the interesting half of the answer. Relaxed guarantees only that the operation itself is indivisible; Acquire and Release pair up to publish everything written before a release to whoever performs the matching acquire; SeqCst adds a single global order and costs the most. SeqCst provides a stronger model, but it does not repair a flawed protocol and its cost depends on the architecture and operation.\n\nAn atomic operation is indivisible with respect to competing atomic accesses, but a sequence of two atomics is not automatically a transaction. For a shared event counter whose final value is read after all workers join, `fetch_add` with Relaxed ordering may be enough: the count is accurate, and the join supplies the completion boundary. If an atomic flag publishes ordinary data written by one thread, the flag also needs appropriate synchronization so another thread sees the data after observing the flag. A release store paired with an acquire load can provide that relationship.\n\nSequential consistency gives a stronger global ordering model for sequentially consistent atomic operations. It is easier to reason about in many cases, but it is not a cure for an incorrect protocol, and its performance cost varies by architecture and operation. Do not claim it is always slow or always sufficient. The ordering rule should follow the invariant: what data must a reader see, and after which observation?\n\nFor an interview, draw producer and consumer timelines. Mark the data write, the flag store, the flag load, and the data read. Explain why seeing the flag is meaningful only with the right synchronization. Then contrast it with a simple counter that needs no publication of other data. If the proof becomes hard to communicate, a mutex may be the better engineering choice. Correctness and maintainability outrank a speculative micro-optimization.\n\nIf the interviewer asks about Relaxed, say what it deliberately does not promise: visibility ordering for unrelated ordinary writes.",
     "feedback": "A pure statistics counter needs indivisibility, not publication.",
     "practiceCode": "COUNT.fetch_add(1, Ordering::Relaxed);",
     "question": "When is Relaxed the right choice there?",
@@ -55,5 +55,10 @@
     "success": "You can say what each ordering guarantees and what it costs.",
     "summary": "An atomic is a value several threads may touch without a lock.",
     "task": "Explain Relaxed, Acquire/Release, and SeqCst in one minute each."
+  },
+  "illustration": {
+    "path": "media/q-atomics.png",
+    "alt": "Atomic operations coordinate shared memory with a selected ordering guarantee.",
+    "caption": "Atomic correctness depends on both the operation and its memory ordering."
   }
 }

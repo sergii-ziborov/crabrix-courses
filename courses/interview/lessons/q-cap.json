@@ -1,6 +1,6 @@
 {
   "concept": "What happens during a partition",
-  "contentDigest": "5350caf4e34b87a73d97454e43871d0cdec7004e98929beb57353f2e27f94bef",
+  "contentDigest": "3add24d589ebc6eade9ce3920c1fe9961d54f9753d3e2922195daa139878b61c",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "q-cap",
-  "minutes": 11,
+  "minutes": 18,
   "order": 2,
   "parentID": "interview-data",
   "title": "CAP in Practice",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "The quorum is where the choice is actually made.",
     "exampleCode": "// 5 replicas, write quorum 3, read quorum 3.\n// 3 + 3 > 5, so a read sees the last write\n// and a minority partition cannot accept\n// writes at all.",
-    "explanation": "When the network splits you either refuse writes to stay consistent, or accept them and diverge. Everything else — quorums, leader election, eventual consistency, CRDTs — is a way of choosing where on that line to sit. Saying pick two is the answer that gets followed up; saying what your system does during a partition is the one that lands.",
+    "explanation": "When the network splits you either refuse writes to stay consistent, or accept them and diverge. Everything else — quorums, leader election, eventual consistency, CRDTs — is a way of choosing where on that line to sit. Saying pick two is the answer that gets followed up; saying what your system does during a partition is the one that lands.\n\nThe CAP result is about what a distributed system can guarantee when a network partition separates participants. If it keeps accepting operations on both sides, it cannot also guarantee a single immediately consistent view of those operations. If it preserves a strong consistency contract, some requests may have to wait or fail until communication is restored. This is a narrower and more useful statement than treating consistency, availability, and partition tolerance as three features you choose on a normal day.\n\nDescribe a two-region account service during a partition. If both regions accept a withdrawal from the same balance without coordination, they may both approve against stale state and later conflict. If only the leader region accepts writes, clients in the isolated region may lose write availability. Another product, such as a collaborative notes app, may accept concurrent edits and reconcile them later. The right behavior depends on what inconsistency the domain can tolerate.\n\nA strong interview answer names the exact consistency requirement, the operation that must remain available, and what happens during a partition. Quorums and leader election are mechanisms with their own failure modes, not magic exceptions. Define 'available' carefully: in CAP it means every request to a nonfailed node receives a response, not merely that a website usually loads. Discuss recovery too: when links heal, how are divergent versions detected, merged, or rejected?\n\nDo not use CAP to explain every latency tradeoff. Even with no partition, a distributed system can trade consistency against latency, cost, and failure tolerance in ways CAP does not classify. Name the partition scenario first. Then discuss normal-operation choices separately, such as quorum size, placement, and caching, without calling them an escape from the theorem.",
     "feedback": "Carts are merge-friendly, so availability is worth more than strictness.",
     "practiceCode": "// Shopping cart, network split, user adds an item.",
     "question": "Which behaviour usually fits a cart?",

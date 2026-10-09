@@ -1,6 +1,6 @@
 {
   "concept": "Unit, property, fuzz, integration",
-  "contentDigest": "8728d037bac515d1d80a584b723c94b6af6ed34ab28679a473fee10448d2fef2",
+  "contentDigest": "6d9360d24f135dd6664b74abb37306b4a416a011037a733083dee36c925007cb",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "q-testing-strategy",
-  "minutes": 11,
+  "minutes": 18,
   "order": 2,
   "parentID": "interview-craft",
   "title": "Choosing a Test",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "The property holds for every input, not for three of them.",
     "exampleCode": "#[test]\nfn roundtrip() {\n    proptest!(|(value: Vec<u8>)| {\n        let encoded = encode(&value);\n        prop_assert_eq!(decode(&encoded)?, value);\n    });\n}",
-    "explanation": "Unit tests pin down behaviour you already thought of. Property tests generate inputs and check an invariant, which finds the cases you did not. Fuzzing pushes malformed input at a parser until it panics. Integration tests check the seams. A candidate who reaches for all four in the right places is saying something a coverage number cannot.",
+    "explanation": "Unit tests pin down behaviour you already thought of. Property tests generate inputs and check an invariant, which finds the cases you did not. Fuzzing pushes malformed input at a parser until it panics. Integration tests check the seams. A candidate who reaches for all four in the right places is saying something a coverage number cannot.\n\nDifferent tests answer different questions. A unit test can pin one known rule with a small input. A property test generates many inputs and checks an invariant, such as parse-then-format preserving a value. A fuzz target feeds malformed or unexpected inputs to a parser and watches for crashes or violated assertions. An integration test checks boundaries among modules or a real storage adapter. None of these is a substitute for knowing what behavior matters to users.\n\nStart with a parser. Unit tests cover empty input, a normal record, and a known malformed delimiter. A property test can assert that valid generated records round-trip through serialization and parsing. Fuzzing can explore arbitrary bytes that a hand-written list never anticipated. An integration test can verify that a parsed record is stored and later retrieved through the public API. Keep a regression test for every serious bug found by fuzzing so it stays covered.\n\nIn an interview, prioritize by risk and cost. Pure functions are cheap to test often; network-dependent end-to-end tests may be slower and more fragile. Coverage percentage reports which lines ran, not whether the assertions were meaningful. Describe one failure mode each layer is meant to catch, how tests run in development, and what remains for manual or production observation. A good strategy is a set of evidence sources, not a pile of test labels.\n\nWhen a property test fails, save the minimized counterexample as a named regression test. When a fuzz target finds malformed input that panics, classify whether the panic violates the API contract. Add a resource limit for deeply nested or huge inputs as well; not every parser failure is a type or memory safety bug.",
     "feedback": "Fuzzing explores the malformed space no one thinks to write down.",
     "practiceCode": "// A parser for untrusted binary input.",
     "question": "Which finds the crash first?",
@@ -55,5 +55,10 @@
     "success": "Each choice names the class of bug it is meant to catch.",
     "summary": "Different bugs need different tests, and naming them is the answer.",
     "task": "Choose the right kind of test for a parser, a cache, and an HTTP route."
+  },
+  "illustration": {
+    "path": "media/q-testing-strategy.png",
+    "alt": "Unit and integration checks cover different boundaries in a Rust project.",
+    "caption": "A useful testing strategy matches tests to failure boundaries."
   }
 }

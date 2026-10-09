@@ -1,6 +1,6 @@
 {
   "concept": "Absence, failure, and propagation",
-  "contentDigest": "befc5bd21b9a12f623844dd62555e14f490f36f63085da10db48fcf837bcbdf9",
+  "contentDigest": "a08b5d836e4f90af8d769ae347d2b66dae99f791af2e1f00b5e31d3c7c809a51",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "q-option-result",
-  "minutes": 8,
+  "minutes": 13,
   "order": 3,
   "parentID": "interview-language",
   "title": "Option vs Result",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "ok_or promotes an absence into a reported failure.",
     "exampleCode": "fn port(map: &Config) -> Result<u16, String> {\n    map.get(\"port\")\n        .ok_or(\"port is missing\".to_string())?\n        .parse()\n        .map_err(|_| \"not a number\".into())\n}",
-    "explanation": "Option says a value may be absent and that is unremarkable. Result says an operation failed and carries why. Converting between them is routine — ok_or turns absence into an error when the caller does need a reason.",
+    "explanation": "Option says a value may be absent and that is unremarkable. Result says an operation failed and carries why. Converting between them is routine — ok_or turns absence into an error when the caller does need a reason.\n\nChoose the enum according to the decision the caller must make. `Option<T>` represents an ordinary absence: a lookup may find no element. `Result<T, E>` represents a success or a failure whose reason is useful: parsing text can fail because the input is malformed. These meanings affect error messages, retries, and control flow. `unwrap()` removes the branch by panicking when the other variant appears, so it is a poor default at a user-input boundary.\n\nGive a layered example. A cache lookup can return `Option<Value>`. If a missing key is normal, the caller may supply a default. If a required key is absent, the caller can use `ok_or_else` to turn `None` into a domain error. A database lookup can return `Result<Option<Value>, DbError>` because 'not found' and 'database unavailable' are different outcomes. Collapsing both to `None` hides the operational failure.\n\nFor an interview answer, describe the successful type and each alternative with a real caller action. Match when the current layer can recover; use `?` to propagate an error when a higher layer owns the decision. Add context at the boundary where you know which operation failed. Avoid saying `Result` is always better because it carries more information. Extra information is useful only when the domain actually has a failure to explain.\n\nIf a caller needs both absence and a possible infrastructure failure, `Result<Option<T>, E>` can be clearer than inventing a sentinel error. Explain which layer turns None into an error, if any.",
     "feedback": "ok_or supplies the error value that absence alone did not carry.",
     "practiceCode": "let value: Option<u32> = map.get(\"k\");\nlet checked: Result<u32, String> = value.???;",
     "question": "Which converts Option into Result?",

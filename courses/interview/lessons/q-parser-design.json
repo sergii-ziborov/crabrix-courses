@@ -1,6 +1,6 @@
 {
   "concept": "Separate tokenization, grammar, and diagnostics",
-  "contentDigest": "90fd9e6b83f36705a4f05b07c5fd30d90f0a3e577ab35b872522073eaba2c817",
+  "contentDigest": "cbcfcbe72f483901633363944c4a9f5d43cc51db886be1372cc086eb1b2d4888",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "q-parser-design",
-  "minutes": 12,
+  "minutes": 19,
   "order": 2,
   "parentID": "interview-live-coding",
   "title": "Design a Parser",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "struct Span { start: usize, end: usize }\nenum Token<'a> {\n    Word(&'a str, Span),\n    Number(u64, Span),\n}",
-    "explanation": "A strong answer defines input ownership, source spans, recovery strategy, and whether the parser returns a tree or events. Separate lexing from grammar only when that boundary improves errors or complexity.",
+    "explanation": "A strong answer defines input ownership, source spans, recovery strategy, and whether the parser returns a tree or events. Separate lexing from grammar only when that boundary improves errors or complexity.\n\nA parser design starts with the language and its error contract. Is input trusted? Must the parser preserve exact source positions? Should it return one tree, a stream of events, or partial results with diagnostics? Define a small grammar and one ambiguous case before choosing an algorithm. A tokenizer can simplify grammar code by turning characters into identifiers, numbers, and punctuation with spans. For a tiny format, a separate lexer may be unnecessary; choose the boundary that improves clarity and error messages.\n\nFor a configuration file, make the parser distinguish a missing field, an invalid number, and an unexpected token. Each diagnostic should point to a source span and explain what was expected. If recovery is required, decide where to resume after an error so one bad line does not hide every later issue. Avoid panic on malformed input. Parsing is the boundary from bytes or text into validated domain values, so a successful result should satisfy invariants the rest of the program can trust.\n\nIn an interview, show one input moving through tokenization, grammar recognition, AST construction, and validation. Discuss ownership of source text: copying every token into a String may be simple but expensive, while borrowing slices ties results to the input lifetime. Test empty input, nested structures, invalid UTF-8 if bytes are accepted, and a deeply nested case that could exhaust recursion. The answer should explain how errors help a user fix a file, not just how the happy path builds a tree.",
     "feedback": "Correct: Precise diagnostics.",
     "practiceCode": "struct Span { start: usize, end: usize }\nenum Token<'a> {\n    Word(&'a str, Span),\n    Number(u64, Span),\n}",
     "question": "Why retain source spans?",
@@ -55,5 +55,10 @@
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Separate tokenization, grammar, and diagnostics.",
     "task": "Trace the example, name the guarantee, and identify where it ends."
+  },
+  "illustration": {
+    "path": "media/q-parser-design.png",
+    "alt": "A tokenizer and parser turn 1 + 2 * 3 into a syntax tree that respects precedence.",
+    "caption": "Good parsers preserve structure and report a source position on errors."
   }
 }

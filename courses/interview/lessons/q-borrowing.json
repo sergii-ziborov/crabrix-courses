@@ -1,6 +1,6 @@
 {
   "concept": "Aliasing and mutation rules",
-  "contentDigest": "0d0b1c54f247d7f19e2625b53a08fd5265f44ea4ffb501306a839fe4044745bc",
+  "contentDigest": "6c035b5f9999c81ad4de7b8af529d5f25cd47b7c7e2b68e1ac7c41f017ed7ffe",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "borrowDiagnostic",
   "id": "q-borrowing",
-  "minutes": 9,
+  "minutes": 14,
   "order": 1,
   "parentID": "interview-language",
   "title": "Why Borrowing Works",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Many readers, or one writer — never at the same time.",
     "exampleCode": "let mut v = vec![1, 2];\nlet a = &v[0];\nlet b = &v[1];   // two readers: fine\nprintln!(\"{a} {b}\");\nv.push(3);       // writer, after the readers end",
-    "explanation": "Say it as a rule about coexistence: you may have many readers or one writer, never both, and the compiler tracks the region where each borrow is live. That single constraint is what makes data races impossible for safe code without any runtime cost.",
+    "explanation": "Say it as a rule about coexistence: you may have many readers or one writer, never both, and the compiler tracks the region where each borrow is live. That single constraint is what makes data races impossible for safe code without any runtime cost.\n\nBorrowing separates temporary access from ownership. With shared references, several readers may coexist. A mutable reference requires exclusive access to the same value for the region where it is live. Rust tracks uses of borrows, so the relevant region can end before the closing brace when the reference is no longer used. That is why a read can be followed by a mutation in one scope if the read borrow has truly ended. The rule concerns overlapping access, not a ban on ever having both forms in one function.\n\nShow the rule on a vector. Hold a shared reference to its first element, then attempt to push another element while that reference is still needed. A push may reallocate the vector, invalidating an element reference; the compiler rejects that overlap. Read or copy the needed value first, let the borrow end, and then push. This is a concrete safety story the interviewer can follow.\n\nBe careful with broad claims. Safe Rust prevents unsynchronized data races, but borrowing alone does not prove the program is logically correct, deadlock-free, or free of runtime panics. Interior mutability types may enforce their access rules at runtime. If asked how to fix a borrow error, first draw owner, readers, writer, and last uses. Then narrow a scope, change an API to borrow less, or move data only when that matches the desired ownership. A clone is one option, not the default answer.\n\nA borrowed reference also cannot outlive its owner. Explain this lifetime relationship when the example crosses a function boundary.",
     "feedback": "One writer excludes all readers for as long as it is live.",
     "practiceCode": "let mut v = vec![1];\nlet r = &mut v;\nlet s = &v;",
     "question": "Why does the compiler reject that borrow?",

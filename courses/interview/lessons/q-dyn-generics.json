@@ -1,6 +1,6 @@
 {
   "concept": "Dispatch and code size tradeoffs",
-  "contentDigest": "e7b9ee07b825698f31d98a9a6095243426b0f60e49ae9f5beb5ba4e890840546",
+  "contentDigest": "9ce1f1d2aa0815dfbe84b991b03fb056189a3b7e9943187ba2f49d2839432172",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "q-dyn-generics",
-  "minutes": 11,
+  "minutes": 18,
   "order": 2,
   "parentID": "interview-systems",
   "title": "dyn Trait vs Generics",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "One is chosen while compiling, the other while running.",
     "exampleCode": "fn draw_static<S: Shape>(s: &S) { s.draw(); }\nfn draw_dynamic(s: &dyn Shape) { s.draw(); }\n\nlet mixed: Vec<Box<dyn Shape>> =\n    vec![Box::new(circle), Box::new(square)];",
-    "explanation": "A generic bound is monomorphised: one specialised copy per concrete type, direct calls, inlinable, larger binary. dyn Trait keeps one copy and dispatches through a vtable, which is smaller and lets heterogeneous types share a collection at the cost of an indirection.",
+    "explanation": "A generic bound is monomorphised: one specialised copy per concrete type, direct calls, inlinable, larger binary. dyn Trait keeps one copy and dispatches through a vtable, which is smaller and lets heterogeneous types share a collection at the cost of an indirection.\n\nWith a generic `T: Trait`, callers supply a concrete type and the compiler can specialize code for that type. This often permits inlining and avoids a per-call virtual dispatch, but different concrete instantiations can increase code size and compile time. With `dyn Trait`, a trait object pairs data with a vtable for methods allowed by object safety. Calls through it use dynamic dispatch, and a collection can hold different concrete implementations behind one pointer type.\n\nGive the interviewer a design example. A hot inner loop operating on one known iterator type may benefit from generics. A plugin registry holding several handler implementations may need `Box<dyn Handler>` because the concrete types differ at runtime. The actual speed difference must be measured; cache behavior and work inside each method can dominate dispatch overhead. Generic code can still be large for reasons beyond one simple 'copy per type' story, and trait objects still involve allocation only when you choose a heap-owning pointer such as Box.\n\nMention object safety when relevant: not every trait can become `dyn Trait`, especially methods returning `Self` or generic methods without suitable bounds. A trait object also encodes a lifetime for the underlying data. State the required flexibility, binary-size pressure, and call-site performance before choosing. The best answer is a decision tied to constraints, not a universal claim that one mechanism is faster.",
     "feedback": "Slice elements share one size, so the concrete type must be erased.",
     "practiceCode": "fn handle(items: &[???]) { }",
     "question": "Which is required for a slice of different concrete types?",
@@ -55,5 +55,10 @@
     "success": "You mention monomorphisation, binary size, and the vtable.",
     "summary": "Static dispatch trades code size for speed; dynamic trades the reverse.",
     "task": "Compare a generic call with a trait object and name the trade-off."
+  },
+  "illustration": {
+    "path": "media/q-dyn-generics.png",
+    "alt": "Generic and trait-object dispatch offer different ways to call behavior through a trait.",
+    "caption": "Choose dispatch based on API shape, code size, and runtime needs."
   }
 }

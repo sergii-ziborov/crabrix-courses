@@ -1,6 +1,6 @@
 {
   "concept": "Combine lookup speed with recency updates",
-  "contentDigest": "5fe3002b93263d74d9e6afc2920d86002b0824651f90b3b218be8e7608cc5464",
+  "contentDigest": "205c5c48172b1de08d74b0b24a3bbe53c1419f0fd278acc4051b9d0148aa5a9f",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "q-lru-design",
-  "minutes": 13,
+  "minutes": 21,
   "order": 1,
   "parentID": "interview-live-coding",
   "title": "Design an LRU Cache",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "struct Lru<K, V> {\n    capacity: usize,\n    // map: K -> node\n    // order: most to least recent\n    marker: std::marker::PhantomData<(K, V)>,\n}",
-    "explanation": "Explain why a hash map alone cannot evict the least recent key in O(1). The usual design pairs lookup with an order structure and makes capacity, ownership, and mutation costs explicit.",
+    "explanation": "Explain why a hash map alone cannot evict the least recent key in O(1). The usual design pairs lookup with an order structure and makes capacity, ownership, and mutation costs explicit.\n\nAn LRU cache evicts the least recently used entry when capacity is full. A hash map gives fast lookup by key but does not by itself maintain recency order. A doubly linked list or another order structure can move an accessed node to the most-recent end in O(1), while the map locates the node in expected O(1). The design becomes tricky at the boundary between the map and the list: both must refer to the same entry without leaving stale links or violating Rust's ownership rules.\n\nIn Rust, one practical solution is an indexed arena: store nodes in a Vec or slab, keep indices in the map, and maintain previous/next indices. Reuse removed slots carefully so stale indices cannot target a new node without validation. Another option is a well-tested library when the interview is about product design rather than pointer mechanics. Define capacity zero, replacement of an existing key, and whether a read updates recency. Eviction should remove the map entry and unlink the node together.\n\nTrace a cache of capacity two through put A, put B, get A, put C. The expected eviction is B. Then test updating A and inserting when capacity is zero. State that hash-map operations are expected O(1), while a balanced-tree alternative changes bounds and memory costs. If concurrent access matters, discuss a lock or sharding and whether recency updates on every read create contention. A strong answer names invariants and edge cases before optimizing.",
     "feedback": "Correct: An order list.",
     "practiceCode": "struct Lru<K, V> {\n    capacity: usize,\n    // map: K -> node\n    // order: most to least recent\n    marker: std::marker::PhantomData<(K, V)>,\n}",
     "question": "What second structure tracks recency?",

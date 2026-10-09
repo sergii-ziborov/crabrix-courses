@@ -1,6 +1,6 @@
 {
   "concept": "Staleness budgets and stampedes",
-  "contentDigest": "9b62cde352821c913895d4d9090a1e610af32f2dd011d09d7e7f182047a672be",
+  "contentDigest": "6ffe0707eae0ac31e55d7fbe79e655e554ed4896192e7a445c2c8c72624317b4",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "q-caching",
-  "minutes": 11,
+  "minutes": 18,
   "order": 4,
   "parentID": "interview-data",
   "title": "Caching and Invalidation",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Bounded, with a policy for what leaves and when.",
     "exampleCode": "let cache = LruCache::new(10_000);\nif let Some(hit) = cache.get(&key) {\n    return Ok(hit.clone());\n}\nlet value = load(&key).await?;\ncache.put(key, value.clone());",
-    "explanation": "A TTL trades staleness for simplicity, explicit invalidation trades simplicity for correctness, and write-through trades write latency for both. The failure modes are the interesting part: a stampede when a hot key expires, and unbounded growth without an eviction policy. Naming which staleness your product can tolerate is the real answer.",
+    "explanation": "A TTL trades staleness for simplicity, explicit invalidation trades simplicity for correctness, and write-through trades write latency for both. The failure modes are the interesting part: a stampede when a hot key expires, and unbounded growth without an eviction policy. Naming which staleness your product can tolerate is the real answer.\n\nA cache is a second copy of data, so every design must answer when that copy is valid. A time-to-live is easy to operate but permits bounded staleness. Explicit invalidation can reduce staleness but must account for every writer and failure path. Write-through updates cache and source together from the application's point of view, but partial failure and ordering still need a policy. The right choice depends on whether a stale value is harmless, confusing, or financially dangerous.\n\nSuppose a product page is read thousands of times but price changes rarely. A short TTL may be acceptable for descriptive text, while a checkout price needs a fresh authoritative check. When a hot key expires, many callers can stampede the database. Use request coalescing, a staggered expiry, or stale-while-revalidate where the product permits it. Put a capacity and eviction policy on the cache; otherwise high-cardinality keys can consume unbounded memory.\n\nFor an interview, write the read path, write path, failure path, and invalidation path on the board. Ask how the cache behaves when the source is down and how a client knows it got an old value. Measure hit rate alongside tail latency and database load; a high hit rate can still hide one critical uncached query. State the acceptable staleness as a product requirement before arguing about implementation.\n\nCache keys need versioning too. If an authorization rule or schema changes, a key that omits the relevant version can return a logically invalid result even before its TTL expires. Define whether negative results are cached and for how long; an absent item that soon appears is a common source of stale behavior. Test invalidation under concurrent writes.",
     "feedback": "A single flight lock or early refresh is what stops the herd.",
     "practiceCode": "// One very hot key, TTL expires, 5k requests\n// per second.",
     "question": "What happens at the moment it expires?",

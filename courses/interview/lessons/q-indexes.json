@@ -1,6 +1,6 @@
 {
   "concept": "Leftmost prefix and write cost",
-  "contentDigest": "8c74669a9ba371a8e81f759f07874fb4a3ea650153572801ee8a71c1f6a1e52e",
+  "contentDigest": "2678fc884008c2efed91685884c34dc5e508789e59d9ab299b9e8ba4f84220f5",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "q-indexes",
-  "minutes": 11,
+  "minutes": 18,
   "order": 1,
   "parentID": "interview-data",
   "title": "Indexes and B-trees",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "The column order in the index decides which queries it serves.",
     "exampleCode": "CREATE INDEX ON orders (customer_id, created_at);\n\n-- uses it\nWHERE customer_id = 7\n-- does not\nWHERE created_at > now() - interval '1 day'",
-    "explanation": "A B-tree index turns a full scan into a logarithmic descent, which is why the leftmost-prefix rule matters: an index on (a, b) helps a query filtering on a, and on a and b, but not one filtering only on b. Every index also has to be maintained on write, so a table with ten indexes is a slow table to insert into.",
+    "explanation": "A B-tree index turns a full scan into a logarithmic descent, which is why the leftmost-prefix rule matters: an index on (a, b) helps a query filtering on a, and on a and b, but not one filtering only on b. Every index also has to be maintained on write, so a table with ten indexes is a slow table to insert into.\n\nAn index is another data structure maintained alongside table rows so some queries can avoid examining every row. A B-tree-family index commonly supports equality, range scans, and ordered traversal. For a composite index on `(account_id, created_at)`, queries restricted by account can often use the leading part, and a query for one account ordered by time can benefit from the second part. A query only on `created_at` may not use the index efficiently, though optimizers and specialized access paths vary by database.\n\nIndexes cost storage and write work. Each insert or update that changes an indexed field may need to modify the index. An index on a low-selectivity column can be less useful than it looks, and a query planner may choose a scan for a small table. Do not add an index solely because a WHERE clause exists. Inspect the actual query plan and measure it with representative row counts and distributions.\n\nFor an interview, start from a concrete query and data shape. Explain which predicate narrows the search, whether the requested columns are covered, and whether an ordered scan avoids a separate sort. Then state the cost to writes and memory. Test after adding the index: plans can change as statistics and data grow. The leftmost-prefix heuristic is useful, but a real planner makes the final decision.\n\nA covering index may avoid fetching full table rows when it contains every value a query needs. That can be faster for a frequent narrow query but makes the index larger and more expensive to maintain. Discuss cardinality and selectivity with real data: an index useful on a huge selective table may do little on a tiny table.",
     "feedback": "Skipping the leading column means the sorted order no longer helps.",
     "practiceCode": "CREATE INDEX ON events (tenant_id, kind, at);\nWHERE kind = 'click' AND at > $1",
     "question": "Does that query use the index?",
@@ -55,5 +55,10 @@
     "success": "You can state the leftmost-prefix rule and the write-side cost.",
     "summary": "An index is a sorted structure that trades write cost for read speed.",
     "task": "Explain why a composite index helps one query and not another."
+  },
+  "illustration": {
+    "path": "media/q-indexes.png",
+    "alt": "A B-tree index can locate selective rows but adds maintenance to writes.",
+    "caption": "Indexes trade read speed for storage and write work."
   }
 }

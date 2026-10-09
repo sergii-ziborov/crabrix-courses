@@ -1,6 +1,6 @@
 {
   "concept": "Sound abstractions and invariants",
-  "contentDigest": "f545872433178bf876d12c8e12dff7579b11fe2684264be53d53c173d3e4636e",
+  "contentDigest": "d88876dc8b6d62c9d3a5a56208ab4ed4c3fabf7797b426b32e69fd5a2c50ee61",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "q-unsafe",
-  "minutes": 12,
+  "minutes": 19,
   "order": 3,
   "parentID": "interview-systems",
   "title": "Reasoning About unsafe",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "The invariant is checked, then written down beside the block.",
     "exampleCode": "pub fn first(v: &[u32]) -> Option<u32> {\n    if v.is_empty() { return None; }\n    // SAFETY: the check above proves index 0\n    // exists for this slice.\n    Some(unsafe { *v.get_unchecked(0) })\n}",
-    "explanation": "It permits exactly five operations and leaves the borrow checker fully in force. A sound abstraction documents the invariant its unsafe block relies on and enforces it in the safe API, so no safe caller can ever trigger undefined behaviour.",
+    "explanation": "It permits exactly five operations and leaves the borrow checker fully in force. A sound abstraction documents the invariant its unsafe block relies on and enforces it in the safe API, so no safe caller can ever trigger undefined behaviour.\n\n`unsafe` permits operations whose preconditions the compiler cannot fully verify. It is not a switch that disables ordinary type checking and borrowing rules. A sound wrapper exposes a safe API only if every safe caller input preserves the assumptions used by its internal unsafe operations. For example, a helper that reads the first slice element with `get_unchecked(0)` must ensure the slice is nonempty before dereferencing. A safe `slice.first()` is usually simpler and may optimize just as well.\n\nExplain the proof obligation as four questions: what must be true, where is it established, how long does it remain true, and can a safe caller make it false? For raw pointers, that may include validity, alignment, initialization, bounds, provenance, and aliasing. For FFI, it also includes the foreign function's actual signature and ownership contract. A passing test cannot prove that undefined behavior is absent, so keep the unsafe block small and the invariant close.\n\nAvoid a common interview trap: listing only the syntax categories without explaining why they need a proof. It is valuable to know the permitted operations, but the stronger answer is an example of a safety invariant and how a wrapper enforces it. Mention code review, Miri or sanitizers as useful evidence where applicable, while making clear that tooling complements reasoning rather than replacing it.\n\nAn unsafe function shifts some preconditions to its caller; a safe wrapper retains responsibility for enforcing them itself. Distinguish those two API shapes. A `SAFETY` comment at the call site should explain why the preconditions hold there, while the unsafe function documentation must state them precisely.",
     "feedback": "A safe signature must make the invariant impossible to break.",
     "practiceCode": "pub fn get(v: &[u32], i: usize) -> u32 {\n    unsafe { *v.get_unchecked(i) }\n}",
     "question": "Why is that function unsound?",
