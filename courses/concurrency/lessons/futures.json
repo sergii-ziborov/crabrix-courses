@@ -1,6 +1,6 @@
 {
   "concept": "async fn, await, and laziness",
-  "contentDigest": "537c4eb0187bc4a982eabb63cec036cfe1ef755cf273e99454d68a93fd0d5b29",
+  "contentDigest": "abbf94f8808885da232739147108eb7caca7628b82c1577448d44db23023333c",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "futures",
-  "minutes": 12,
+  "minutes": 19,
   "order": 0,
   "parentID": "async",
   "title": "Futures",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Nothing happens until the future is awaited or spawned.",
     "exampleCode": "async fn fetch(id: u32) -> String {\n    format!(\"record {id}\")\n}\n\nasync fn run() {\n    let pending = fetch(7); // nothing ran yet\n    let value = pending.await; // now it runs\n    println!(\"{value}\");\n}",
-    "explanation": "Calling an async fn does nothing on its own: it builds a state machine that makes progress only when polled. .await yields at that point, letting the executor run something else while the operation is pending — which is how one thread can service thousands of waits.",
+    "explanation": "Calling an async fn does nothing on its own: it builds a state machine that makes progress only when polled. .await yields at that point, letting the executor run something else while the operation is pending — which is how one thread can service thousands of waits.\n\nCalling an `async fn` creates a future that represents work to be performed. It does not run the body to completion immediately. An executor polls the future; it may return `Poll::Pending`, register a way to be woken, and yield the thread to other tasks. When the awaited operation can make progress, the waker schedules another poll. Eventually the future returns `Poll::Ready(value)`. This is why many I/O waits can share a small number of threads.\n\nAn `.await` marks a point where the task may suspend. Local values that are needed afterward become part of the future's state, which affects memory usage and whether the future can be safely sent between executor threads. Code between await points still runs synchronously until it yields or completes, so a long CPU loop can monopolize an executor worker even though it sits inside an async function.\n\nWrite a short async function that logs before and after an awaited timer. Observe that constructing its future does not print the whole sequence; running it on an executor does. Then launch two timer futures concurrently and compare the elapsed time with running them one after the other. Avoid thinking of each future as a thread. A future is a state machine plus a polling contract; the runtime decides when and where to poll it. That distinction helps you choose between async waiting, blocking work, and true parallel computation.\n\nA future normally needs to be polled by an executor to make progress. Merely storing it in a variable does not schedule it. That is a common source of confusion when an async call appears to do nothing. Trace where the future is awaited, spawned, or otherwise polled.",
     "feedback": "The future is created and dropped without ever being polled.",
     "practiceCode": "async fn work() { println!(\"working\"); }\n\nfn main() {\n    work();\n}",
     "question": "What does that print with no await?",
@@ -55,5 +55,10 @@
     "success": "You can say why the body has not executed at that point.",
     "summary": "An async function returns a future that has not run yet.",
     "task": "Explain what a call to an async fn actually produces."
+  },
+  "illustration": {
+    "path": "media/futures.png",
+    "alt": "An executor polls a future, waits for a wake-up, and polls again until ready.",
+    "caption": "A future makes progress when an executor polls it."
   }
 }

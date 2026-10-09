@@ -1,6 +1,6 @@
 {
   "concept": "Message passing with mpsc",
-  "contentDigest": "54cebf67a0663d45c5ef0338a2e9bd8fdbc1513fd2c1f793efee2133ab8f2a78",
+  "contentDigest": "0f092dc638be2fe4fc83053ca2d2c58ce8696d389051c973c0d30ce8684b9e2d",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "channels",
-  "minutes": 11,
+  "minutes": 18,
   "order": 1,
   "parentID": "threads",
   "title": "Channels",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Ownership transfers with the message, so no lock is needed.",
     "exampleCode": "use std::sync::mpsc;\nuse std::thread;\n\nlet (tx, rx) = mpsc::channel();\n\nfor id in 0..3 {\n    let tx = tx.clone();\n    thread::spawn(move || {\n        tx.send(format!(\"worker {id}\")).unwrap();\n    });\n}\ndrop(tx); // so the loop can end\n\nfor message in rx {\n    println!(\"{message}\");\n}",
-    "explanation": "An mpsc channel moves values from many producers to one consumer, and the move is what makes it safe — once sent, the sender no longer owns the value. The receiver iterates until every sender is dropped, so the loop ends on its own rather than needing a sentinel message.",
+    "explanation": "An mpsc channel moves values from many producers to one consumer, and the move is what makes it safe — once sent, the sender no longer owns the value. The receiver iterates until every sender is dropped, so the loop ends on its own rather than needing a sentinel message.\n\nA channel separates the producer of a value from its consumer. In a multi-producer, single-consumer channel, several senders can submit messages to one receiver. Sending an owned `String` moves it into the channel; the sender cannot keep changing the same object afterward. That ownership transfer is a simple way to avoid sharing mutable state. If the sender needs its own copy too, make that duplication explicit.\n\nThe receiver loop can continue until every sender handle is dropped. A cloned sender counts as another live producer, even when it never sends anything. Accidentally keeping one clone in the main thread can make a receiving loop wait forever, because the channel is still open. Track sender ownership on paper and drop unused handles deliberately. Also handle `send` failure: the receiver may already be gone, and the failed send can return the unsent value to the caller.\n\nTry spawning two producers that each send a labeled message. Do not assume which message arrives first unless you add an ordering mechanism. The receiver should process both and then finish once all senders are gone. Next, leave a sender clone alive and observe why the loop does not terminate; remove it and rerun. Channels work well when a task can be expressed as a stream of owned messages. A mutex is more suitable when workers truly need coordinated access to one shared object. Choose the communication shape before choosing the primitive.\n\nIf the consumer is slower than producers, an unbounded channel can accumulate messages and memory. A bounded channel gives backpressure: senders wait or receive an error when capacity is exhausted. Choose a capacity by measuring the burst you can afford to buffer and the latency you can tolerate.",
     "feedback": "Every live sender keeps the channel open; drop the ones you do not use.",
     "practiceCode": "let (tx, rx) = mpsc::channel();\nlet worker = tx.clone();\nfor message in rx { println!(\"{message}\"); }",
     "question": "Why might that loop never end?",

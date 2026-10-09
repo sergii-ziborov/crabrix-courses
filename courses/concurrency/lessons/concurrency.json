@@ -1,6 +1,6 @@
 {
   "concept": "spawn, join, and move closures",
-  "contentDigest": "b79232bf2bfaba8bdd1744f45de3b0e91355a541ca3d7848f8ef64e8bb4574e8",
+  "contentDigest": "463d61c28e5be363755bb6cc79813292e4871fed2fc0993657312f4974f1b631",
   "depth": {
     "connections": [
       {
@@ -29,7 +29,7 @@
   },
   "exerciseKind": "planned",
   "id": "concurrency",
-  "minutes": 11,
+  "minutes": 18,
   "order": 0,
   "parentID": "threads",
   "title": "Threads",
@@ -42,7 +42,7 @@
     "correctAnswer": 1,
     "exampleCaption": "move gives the closure ownership so it can outlive this scope.",
     "exampleCode": "let values = vec![1, 2, 3];\n\nlet handle = std::thread::spawn(move || {\n    values.iter().sum::<i32>()\n});\n\nlet total = handle.join().unwrap();\nprintln!(\"{total}\");",
-    "explanation": "thread::spawn takes a closure that must own everything it touches, which is why move appears so often. join waits for a result. Rust moves many data races from runtime accidents to compile-time errors, because a type that is unsafe to share simply cannot be sent.",
+    "explanation": "thread::spawn takes a closure that must own everything it touches, which is why move appears so often. join waits for a result. Rust moves many data races from runtime accidents to compile-time errors, because a type that is unsafe to share simply cannot be sent.\n\nConcurrency means several tasks can make progress during overlapping periods; it does not automatically mean every task runs on a separate CPU core. `thread::spawn` starts an operating-system thread and returns a handle. A `move` closure often transfers owned data into that thread so the worker cannot outlive a borrowed local variable. `join()` waits for the worker and returns its result or a panic payload. Decide what to do with a panic rather than blindly assuming success.\n\nTrace a small program with two workers, each owning a different input. The main thread starts both before joining either, so their work can overlap. If you join the first immediately before spawning the second, you have written a mostly sequential workflow. Move a `String` into one worker and try to use the original binding afterward; the compiler points to the ownership transfer. Clone only when both threads truly need independent owned data, or share through a deliberate thread-safe abstraction.\n\nRust's type system rules out many unsynchronized shared-memory data races by enforcing `Send`, `Sync`, and borrowing. It does not guarantee your result is logically correct: ordering bugs, deadlocks, and missed messages are still possible. Write down which thread owns each value and how the results meet again. Test with different scheduling, but rely on an explicit synchronization design rather than hoping a test run visits every interleaving. A clear spawn/join boundary makes the lifetime of the work visible.\n\nBefore adding workers, identify whether the task is CPU-bound or waiting on I/O. Threads can overlap both kinds of work, but overhead and shared-state contention may erase the benefit for tiny tasks. Measure a realistic workload and verify that results remain deterministic where your application requires it.",
     "feedback": "The thread may outlive this scope, so a borrow is not enough.",
     "practiceCode": "let data = vec![1, 2, 3];\nstd::thread::spawn(|| println!(\"{data:?}\"));",
     "question": "What does the compiler ask for?",
@@ -50,5 +50,10 @@
     "success": "The value is computed off the main thread and joined back.",
     "summary": "Threads run in parallel, and ownership decides what may cross.",
     "task": "Spawn a thread that owns its data and return a result with join."
+  },
+  "illustration": {
+    "path": "media/concurrency.png",
+    "alt": "Two threads overlap work before their results are joined.",
+    "caption": "Spawn independent work before joining to allow overlap."
   }
 }

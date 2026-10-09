@@ -1,6 +1,6 @@
 {
   "concept": "Promise that a value will not move in memory",
-  "contentDigest": "50b872602126c4e243499c07b9aaccc946aa74995377eb5c8e9747153f6d297d",
+  "contentDigest": "5bbb80efca7e7ca2e2653d1e447ce76c4941928f848ab1c9f0e01dcccaa4c2c7",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "pinning-intuition",
-  "minutes": 12,
+  "minutes": 19,
   "order": 0,
   "parentID": "async-reliability",
   "title": "Pinning Intuition",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "use std::pin::Pin;\nfn poll_name(value: Pin<&mut String>) {\n    println!(\"{}\", value.len());\n}",
-    "explanation": "Pin protects location-sensitive values after they are pinned; it does not make every value immovable from creation. Most users interact through pinned futures while libraries handle the unsafe construction details.",
+    "explanation": "Pin protects location-sensitive values after they are pinned; it does not make every value immovable from creation. Most users interact through pinned futures while libraries handle the unsafe construction details.\n\nSome future state machines can contain references into their own stored state while suspended. Moving such a value after those references become valid could invalidate them. `Pin<P>` is a contract that the value reached through pointer `P` will not be moved again if the value's type relies on pinning. It is not a magical freeze of every value from birth, and it does not mean the surrounding pointer variable can never move.\n\nMany ordinary types are `Unpin`, so pinning adds no movement restriction for them. A type that is `!Unpin` needs more care: once pinned, safe code must not move its inner value out through the pinned pointer. APIs that project pinned fields or construct self-referential structures carry subtle invariants. At this stage, use library-provided safe pinning helpers and avoid writing `unsafe` projections to make a compiler error disappear.\n\nCompare a plain `String`, which can be moved between bindings, with a future that a runtime stores and polls repeatedly. Think of pinning as protecting the address of the future's internal state across polls. Then read an API signature accepting `Pin<&mut F>` and identify what it promises to the future implementation. Do not infer that every async function creates self-references or that `Box::pin` is required for every future. The practical rule is to follow the executor and library API, and to treat `Pin` as a movement guarantee with a precisely defined start.",
     "feedback": "Correct: Stable location.",
     "practiceCode": "use std::pin::Pin;\nfn poll_name(value: Pin<&mut String>) {\n    println!(\"{}\", value.len());\n}",
     "question": "What does Pin guarantee about the value?",

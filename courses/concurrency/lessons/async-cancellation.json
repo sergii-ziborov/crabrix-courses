@@ -1,6 +1,6 @@
 {
   "concept": "Expect a future to be dropped at any await point",
-  "contentDigest": "ec0afcae89b70edf0e2331912dd24bb5e8781343927c93ac8b666ad745b80f58",
+  "contentDigest": "477ca6dbb48d5a7bc1d6a46d4e205779f388d5d2025046026b2c91a46ecbb2b2",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "async-cancellation",
-  "minutes": 12,
+  "minutes": 19,
   "order": 1,
   "parentID": "async-reliability",
   "title": "Cancellation Safety",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "async fn save_then_ack() {\n    save_record().await;\n    // Cancellation here means saved,\n    // but not acknowledged.\n    send_ack().await;\n}",
-    "explanation": "Selecting or timing out a future may drop it before completion. Keep partial state consistent across await points, or wrap the operation so retrying cannot duplicate or lose external effects.",
+    "explanation": "Selecting or timing out a future may drop it before completion. Keep partial state consistent across await points, or wrap the operation so retrying cannot duplicate or lose external effects.\n\nAn async operation may be cancelled when its future is dropped, often after it has yielded at an `.await`. Work already completed before that point remains completed. A dropped future does not reverse a file write, database transaction, sent message, or charge to an external service. This creates a gap between “the caller did not receive a result” and “nothing happened.” Retry logic must account for that gap.\n\nConsider `save_record().await` followed by `send_ack().await`. If the task stops between the two awaits, the record exists but the acknowledgement may not. Repeating the whole operation could create a duplicate record. Give each request a stable identifier and design the save as idempotent, or use a transaction/outbox pattern when the storage and notification must coordinate. Store enough progress that a restarted worker can decide what remains. A timeout tells the caller how long it waited, not whether the remote side performed the action.\n\nDraw cancellation points on a three-step operation: prepare, commit, notify. At each point, list which externally visible effects already happened and what a retry would do. Test by injecting cancellation after the commit boundary. A guard can release an in-process mutex when dropped, but it cannot roll back arbitrary external effects. For spawned tasks, also check the runtime's ownership rules: dropping a handle may detach rather than cancel. Define both the cancellation path and the normal completion path before selecting a timeout or `select!` branch.",
     "feedback": "Correct: At an await suspension.",
     "practiceCode": "async fn save_then_ack() {\n    save_record().await;\n    // Cancellation here means saved,\n    // but not acknowledged.\n    send_ack().await;\n}",
     "question": "When may cancellation occur?",
@@ -55,5 +55,10 @@
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Expect a future to be dropped at any await point.",
     "task": "Trace the example, name the guarantee, and identify where it ends."
+  },
+  "illustration": {
+    "path": "media/async-cancellation.png",
+    "alt": "A task is cancelled after one external effect completed but before acknowledgement.",
+    "caption": "Cancellation does not undo effects that already happened."
   }
 }

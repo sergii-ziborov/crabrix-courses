@@ -1,6 +1,6 @@
 {
   "concept": "Update one shared value without a lock",
-  "contentDigest": "c61c5d717986dbb1aa007386052210c54a38d89ce84060c89b4c13cf556c670b",
+  "contentDigest": "de3b58bc2f65b88c32253282f3aeaf25565c5b79076f3c2bf6bc06445ad54633",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "atomics-basics",
-  "minutes": 12,
+  "minutes": 19,
   "order": 2,
   "parentID": "concurrency-safety",
   "title": "Atomic State",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "use std::sync::atomic::{\n    AtomicUsize, Ordering,\n};\nlet count = AtomicUsize::new(0);\ncount.fetch_add(1, Ordering::Relaxed);",
-    "explanation": "Atomic operations are indivisible but still need an ordering that describes cross-thread visibility. Use the weakest ordering justified by a written synchronization argument, not by habit.",
+    "explanation": "Atomic operations are indivisible but still need an ordering that describes cross-thread visibility. Use the weakest ordering justified by a written synchronization argument, not by habit.\n\nAn atomic value supports operations that are indivisible with respect to competing threads. `fetch_add` on `AtomicUsize`, for example, prevents two workers from losing an increment by reading and writing the same stale count. This makes atomics a good fit for simple counters, flags, and some carefully designed state machines. It does not turn a sequence of several atomic operations into one transaction. If two fields must change together, a mutex may express the invariant more clearly.\n\nMemory ordering answers a second question: when another thread sees an atomic change, which ordinary memory writes are guaranteed visible too? `Relaxed` is enough for a count whose only requirement is an accurate final total after workers join. A flag that publishes prepared data generally needs a release store and an acquire load, or another synchronization design. `SeqCst` gives a stronger global ordering model, but choosing it blindly does not fix a flawed state machine.\n\nStart with several threads incrementing a shared atomic counter and compare `fetch_add` with a failed idea built from separate `load` and `store` calls. Then draw a producer that fills a buffer and sets a ready flag; explain why the consumer must not read the buffer before it observes readiness through an appropriate synchronization operation. Keep unsafe shared-memory examples out of an introductory exercise. State the invariant first, pick the weakest ordering you can justify only after understanding it, and prefer a mutex if the proof is hard to explain.",
     "feedback": "Correct: Visibility constraints.",
     "practiceCode": "use std::sync::atomic::{\n    AtomicUsize, Ordering,\n};\nlet count = AtomicUsize::new(0);\ncount.fetch_add(1, Ordering::Relaxed);",
     "question": "What does an atomic ordering describe?",
