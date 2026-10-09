@@ -16,7 +16,7 @@ import zipfile
 DESCRIPTOR_DOMAIN = b"Crabrix.CourseDescriptor.v1\n"
 CATALOG_DOMAIN = b"Crabrix.CourseCatalog.v1\n"
 ZIP_TIME = (1980, 1, 1, 0, 0, 0)
-MAX_ARCHIVE = 64 * 1024 * 1024
+MAX_ARCHIVE = 80 * 1024 * 1024
 MAX_UNPACKED = 128 * 1024 * 1024
 MAX_ENTRIES = 5000
 MAX_FILE = 16 * 1024 * 1024
@@ -224,8 +224,12 @@ def validate(args) -> None:
                     raise ValueError(f"challenge missing: {lid}")
                 illustration = lesson.get("illustration")
                 if illustration is not None:
-                    image_path = f"media/{lid}.png"
-                    if (illustration.get("path") != image_path
+                    image_path = illustration.get("path")
+                    allowed_images = {f"media/{lid}.png"}
+                    if root.name == "algorithms":
+                        allowed_images.update({f"media/{unit['id']}-{variant}.png"
+                                               for variant in ("a", "b")})
+                    if (image_path not in allowed_images
                             or not illustration.get("alt", "").strip()
                             or not illustration.get("caption", "").strip()
                             or image_path not in files):

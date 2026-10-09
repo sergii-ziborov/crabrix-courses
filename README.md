@@ -4,7 +4,7 @@ The complete, versioned educational corpus for [Crabrix](https://github.com/serg
 
 The baseline contains 48 units and 742 lessons, including the 200-pattern Algorithm Atlas with 600 ordered steps. It also preserves 46 authored Academy Examples and 358 term pairs. All example metadata, Rust source trees, and individual README files are under `courses/examples/library-projects/` and ship in the signed Examples CoursePack. The 46 READMEs now include a project-specific explanation that the app shows before the source preview. Four examples include local diagrams under `courses/examples/media/`. The gallery downloads separately from Cargo & Real Projects; selecting an example creates an editable project copy with its own ID and pack-version provenance. [The inventory](migration/inventory-summary.json), [original parity report](migration/parity-report.json), and [current parity report](migration/parity-report-current.json) record the original and current layouts. The current parity report records these editorial changes separately; original lesson data and example Rust source remain equal.
 
-The six Rust courses contain 142 lessons. On the `codex/deeper-lessons` authoring branch, each has at least twice the original explanatory word count, and at least every other lesson has a generated diagram with alt text and a caption. The expanded copy is live on the [free Learn website](https://crabrix.com/learn/). The 600 Algorithm Atlas steps retain their earlier text. App downloads still use the last signed catalog until new production-signed CoursePacks are released; changed authoring files are not a signed release.
+All 742 lessons have expanded explanations and worked guidance: 142 Rust lessons and 600 Algorithm Atlas steps. Every other lesson has a generated infographic with alt text and a caption. Atlas uses two five-pattern diagrams per unit, so 40 images illustrate 300 steps without duplicating the same image in the downloadable pack. The [free Learn website](https://crabrix.com/learn/) presents the same authored curriculum. App downloads use production-signed CoursePacks; each changed course receives a new content version and descriptor.
 
 ## Format and delivery
 
@@ -21,9 +21,9 @@ python3 tools/coursepack.py inventory --baseline migration/baseline-inventory.js
 python3 tools/coursepack.py validate --courses courses/ --schema schemas/
 python3 tools/coursepack.py build --courses courses/ --out dist/ --deterministic
 python3 tools/coursepack.py parity --legacy migration/baseline-inventory.json --packages dist/ --out migration/parity-report-current.json
-python3 tools/coursepack.py verify --descriptor dist/basics.descriptor.json --archive dist/basics-1.0.1.zip --keys keys/production-keyring.json
+python3 tools/coursepack.py verify --descriptor dist/basics.descriptor.json --archive dist/basics-1.0.2.zip --keys keys/production-keyring.json
 python3 tools/coursepack.py verify --descriptor dist/examples.descriptor.json --archive dist/examples-1.0.2.zip --keys keys/production-keyring.json
-python3 tools/coursepack.py verify-catalog --catalog catalog.v1.json --keys keys/production-keyring.json --last-sequence 4
+python3 tools/coursepack.py verify-catalog --catalog catalog.v1.json --keys keys/production-keyring.json --last-sequence 5
 python3 -m unittest discover -s tests
 ```
 
