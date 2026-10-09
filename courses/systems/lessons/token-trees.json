@@ -1,6 +1,6 @@
 {
   "concept": "Match Rust syntax as nested tokens, not raw text",
-  "contentDigest": "bba73b5a615ace72e6f10670a6ce2072cd5024eb78faa00292b95a31155ab901",
+  "contentDigest": "f2193e41a331714767db54d170285bd56d8485e0e599d2ff162383cda16fd871",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "token-trees",
-  "minutes": 11,
+  "minutes": 18,
   "order": 1,
   "parentID": "macro-design",
   "title": "Token Trees",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "macro_rules! twice {\n    ($value:expr) => {{\n        let once = $value;\n        once + once\n    }};\n}",
-    "explanation": "macro_rules! consumes token trees with balanced delimiters. Fragment specifiers such as expr and ty let the parser validate shapes before expansion, producing safer patterns than string substitution.",
+    "explanation": "macro_rules! consumes token trees with balanced delimiters. Fragment specifiers such as expr and ty let the parser validate shapes before expansion, producing safer patterns than string substitution.\n\nRust tokenizes macro input into structured pieces. Identifiers, punctuation, and literals are tokens; balanced parentheses, brackets, and braces form delimited groups that can contain more tokens. A macro does not receive raw characters to split by hand. In a function-like invocation such as `show!({a, b})`, the name `show` selects the macro, while the input stream inside the invocation contains a brace group with `a`, a comma, and `b`. Keeping that boundary clear prevents confusion when reading a procedural macro parser.\n\nA `macro_rules!` pattern can ask the compiler to parse a fragment as an expression, type, identifier, or other supported shape. A pattern like `($value:expr)` rejects input that is not an expression before the transcriber runs. Repetition syntax can accept comma-separated lists, but test empty input, a single item, and a trailing comma explicitly. For the example, expand `twice!(2 + 3)` by hand and notice that the temporary evaluates the expression once before adding it to itself. That matters if the expression has side effects. Treat macros as syntax APIs: define accepted forms, produce readable errors, and avoid making a clever pattern harder to understand than an ordinary function.\n\nDelimiter groups matter for error reporting too: a missing closing brace changes the token tree before your macro matcher sees it. Distinguish lexical or parse errors from a pattern that simply did not match. Keep an example for every arm in documentation, especially if one arm accepts an optional comma or nested group; syntax APIs deserve the same testing care as functions.",
     "feedback": "Correct: A Rust expression.",
     "practiceCode": "macro_rules! twice {\n    ($value:expr) => {{\n        let once = $value;\n        once + once\n    }};\n}",
     "question": "What does :expr require?",
@@ -55,5 +55,10 @@
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Match Rust syntax as nested tokens, not raw text.",
     "task": "Trace the example, name the guarantee, and identify where it ends."
+  },
+  "illustration": {
+    "path": "media/token-trees.png",
+    "alt": "A macro invocation passes a brace group containing two identifiers separated by punctuation.",
+    "caption": "Macro input is structured as token groups, not raw text."
   }
 }

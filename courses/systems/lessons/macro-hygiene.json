@@ -1,6 +1,6 @@
 {
   "concept": "Resolve generated names without accidental capture",
-  "contentDigest": "cdf74c0d660aa0731ed9fbc1b48a59c848160d147295d0d4fc668af4929f4999",
+  "contentDigest": "8afa32b86098dde4bff5e032e6c523ecc1cc587f6dbc982624147e2ce180066c",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "macro-hygiene",
-  "minutes": 11,
+  "minutes": 18,
   "order": 0,
   "parentID": "macro-design",
   "title": "Macro Hygiene",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "#[macro_export]\nmacro_rules! answer {\n    () => { $crate::value() };\n}",
-    "explanation": "Rust macros track syntax context so identifiers introduced by a macro do not casually collide with names at the call site. Use explicit paths such as $crate for helper items exported with a macro.",
+    "explanation": "Rust macros track syntax context so identifiers introduced by a macro do not casually collide with names at the call site. Use explicit paths such as $crate for helper items exported with a macro.\n\nA macro can introduce identifiers in the caller's scope, and those names must resolve predictably. Rust's syntax contexts protect many identifiers introduced by a declarative macro from accidentally capturing a similarly named local value. This is hygiene, but it is not a reason to ignore names entirely: exported macros still need a stable way to refer to helper items from their defining crate. `$crate::helper` points to that crate even when a caller renames its dependency. A plain unqualified helper name may accidentally resolve in the caller's scope or fail there.\n\nTry exporting a macro that calls an internal helper and invoke it from a separate crate. First use an unqualified helper name and observe the failure. Then use `$crate::helper` and ensure the helper is reachable in the way the expansion needs. If the macro creates a local temporary, choose a small scope and test with a caller variable of the same spelling. Also test the macro when the dependency is renamed in Cargo.toml. Inspect expanded code when a diagnostic seems to point at an unfamiliar name. Hygiene reduces accidental capture, while explicit paths and careful API tests make an exported macro dependable across crate boundaries.\n\nWhen a macro is exported, run a small downstream consumer test rather than invoking it only inside its defining crate. The consumer catches path assumptions that local tests hide. Give public helper items namespaced paths and avoid relying on imports that happen to be present in one caller. This keeps the macro usable as the crate evolves.",
     "feedback": "Correct: The defining crate.",
     "practiceCode": "#[macro_export]\nmacro_rules! answer {\n    () => { $crate::value() };\n}",
     "question": "What does $crate resolve to at the call site?",

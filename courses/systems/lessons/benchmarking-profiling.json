@@ -1,6 +1,6 @@
 {
   "concept": "Find the real bottleneck before optimizing",
-  "contentDigest": "be970dec288d0d543e7e557956b53db874af57442bd8dc0b639bf62ef34d3e10",
+  "contentDigest": "02a43b74138becec94884cace6e3b54030f7b792e1116be3a2a0801b71226a8d",
   "depth": {
     "connections": [
       {
@@ -29,7 +29,7 @@
   },
   "exerciseKind": "planned",
   "id": "benchmarking-profiling",
-  "minutes": 11,
+  "minutes": 18,
   "order": 3,
   "parentID": "unsafe-engineering",
   "title": "Benchmark & Profile",
@@ -42,7 +42,7 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "let start = std::time::Instant::now();\nlet answer = workload();\nstd::hint::black_box(answer);\nprintln!(\"{:?}\", start.elapsed());",
-    "explanation": "A benchmark measures a stable workload; a profiler explains where its time or allocations go. Change one variable, protect against optimized-away work, and compare distributions rather than one lucky run.",
+    "explanation": "A benchmark measures a stable workload; a profiler explains where its time or allocations go. Change one variable, protect against optimized-away work, and compare distributions rather than one lucky run.\n\nA benchmark asks how a specific workload behaves under controlled conditions. A profiler asks where time, allocations, or waits occur during that workload. Start with a question that matters to a user, such as median parse latency for a typical file or worst-case response time for a large project. Use a release build, warm up when appropriate, and keep input, hardware, and environment stable between comparisons. One `Instant` measurement is useful for a quick observation but too noisy to settle a small optimization.\n\nA compiler may remove work whose result is unused, so a benchmark must keep the result observable; `black_box` can help prevent an obvious optimization in a microbenchmark but does not make the benchmark realistic by itself. Record a distribution over repeated runs and look for variance from caching, scheduling, and I/O. Profile the slow case before changing code. If allocations dominate, reserve capacity or borrow data; if the algorithm scales poorly, a container or complexity change may matter more. Change one variable, rerun the same workload, and keep a correctness test. Report both the improvement and its cost in memory, code complexity, or startup time.\n\nFor a before-and-after report, include the input shape, sample count, median and slower-tail observations, build mode, and what you held constant. If the result is within the noise, say so. A useful profile names the expensive path and gives enough context to reproduce it; a colorful flame graph without a workload description is not an engineering conclusion.",
     "feedback": "Correct: Measure a workload.",
     "practiceCode": "let start = std::time::Instant::now();\nlet answer = workload();\nstd::hint::black_box(answer);\nprintln!(\"{:?}\", start.elapsed());",
     "question": "What should happen before optimization?",

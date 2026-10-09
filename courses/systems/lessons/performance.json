@@ -1,6 +1,6 @@
 {
   "concept": "Allocation, iterators, and measuring",
-  "contentDigest": "b1cbfb41a0ba37d93ca348bf8d18025cba9c5118be708035f54e2bf5c1da9309",
+  "contentDigest": "95c352fb22d5366eaca61452939174b7e55292e3dc254780d639c17d6e8d25c2",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "performance",
-  "minutes": 12,
+  "minutes": 19,
   "order": 2,
   "parentID": "systems",
   "title": "Performance",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "One allocation instead of a resize on nearly every push.",
     "exampleCode": "let mut values = Vec::with_capacity(1_000);\nfor index in 0..1_000 {\n    values.push(index * 2);\n}\n\n// Borrow instead of cloning to read.\nfn total(values: &[usize]) -> usize {\n    values.iter().sum()\n}",
-    "explanation": "Iterator chains compile to roughly the same code as a hand-written loop, so readability is rarely the cost. What does cost is allocating in a hot loop, cloning to satisfy the borrow checker, and choosing the wrong container. Reserve capacity when the size is known, borrow instead of cloning, and measure in release — a debug build is not evidence.",
+    "explanation": "Iterator chains compile to roughly the same code as a hand-written loop, so readability is rarely the cost. What does cost is allocating in a hot loop, cloning to satisfy the borrow checker, and choosing the wrong container. Reserve capacity when the size is known, borrow instead of cloning, and measure in release — a debug build is not evidence.\n\nPerformance work begins with a workload and a measurement. A release build is essential because debug checks and missing optimizations can dominate a microbenchmark. Use realistic input sizes and record latency distributions or throughput, not one attractive timing. Profile before changing code: time may be in parsing, allocation, I/O, locking, or an algorithmic choice far from the line that looks complicated. An iterator chain is often optimized well, but verify hot paths rather than treating any syntax as inherently free or expensive.\n\nIn the example, `Vec::with_capacity(1_000)` avoids repeated growth when the final size is known. It does not avoid initializing each pushed element. Borrowing a slice in `total` avoids cloning the vector just to read it. Next, compare a linear search with a `HashMap` lookup for your actual access pattern; the map's build cost and memory overhead can outweigh faster repeated lookups for a tiny input. Change one variable at a time, rerun under similar conditions, and keep a correctness test alongside the benchmark. State the tradeoff: perhaps more memory buys lower tail latency, or an extra allocation simplifies a cold path. Optimize the measured bottleneck and stop when the improvement is no longer meaningful to the product.\n\nBeware of a fast path that worsens the slowest cases. Reserving capacity may reduce allocations but increase peak memory if most inputs are tiny. A hash map may speed lookup while making iteration order unsuitable for a UI. State the workload distribution and the user-visible metric before choosing the optimization. Keep the simpler version if the measured gain is negligible.",
     "feedback": "The clone is never needed: map already produces new Strings.",
     "practiceCode": "fn shout(items: &Vec<String>) -> Vec<String> {\n    items.clone().iter()\n        .map(|s| s.to_uppercase())\n        .collect()\n}",
     "question": "Which change removes the wasted work?",

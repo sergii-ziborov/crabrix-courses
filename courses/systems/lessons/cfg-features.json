@@ -1,6 +1,6 @@
 {
   "concept": "Compiling different code per target",
-  "contentDigest": "1d5fedcc0b621712e967cb9520fe0ab6c7021ba96cf7a49a8b70ef32776627d2",
+  "contentDigest": "7947b685f753b740849e1dc23dc523a5b7e954f9c0cf7188f25ab86f801b7290",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "cfg-features",
-  "minutes": 10,
+  "minutes": 16,
   "order": 2,
   "parentID": "meta",
   "title": "cfg & Features",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Two implementations, one compiled per target.",
     "exampleCode": "#[cfg(target_os = \"wasi\")]\nfn platform() -> &'static str { \"wasi\" }\n\n#[cfg(not(target_os = \"wasi\"))]\nfn platform() -> &'static str { \"native\" }\n\n#[cfg(feature = \"extras\")]\nmod extras;",
-    "explanation": "#[cfg(...)] removes code before type checking, so a platform-specific branch costs nothing on other targets and does not even have to compile there. Cargo features are the same mechanism driven from the manifest, which is how one crate serves both a no_std embedded user and a full desktop one.",
+    "explanation": "#[cfg(...)] removes code before type checking, so a platform-specific branch costs nothing on other targets and does not even have to compile there. Cargo features are the same mechanism driven from the manifest, which is how one crate serves both a no_std embedded user and a full desktop one.\n\nConditional compilation decides which items exist in a particular build. A `#[cfg(target_os = \"wasi\")]` function is present only for matching targets; the opposite branch is present elsewhere. Cargo features are named inputs to this selection, often supplied by downstream users. Because a disabled branch is not part of the resulting item set, its behavior is not a runtime toggle and it must be checked in a build where it is enabled. Test the supported feature combinations rather than assuming the default build covers them.\n\nFeatures in a dependency graph are generally additive: if two dependents enable different features of the same package, Cargo can compile that package with their union. Design features so enabling an extra capability does not silently remove another. For mutually exclusive choices, use explicit compile errors or separate types/configuration instead of pretending feature flags are exclusive switches. A `no_std` library might gate an allocation-backed helper behind a feature, but its core API must still compile without it. Run `cargo check --no-default-features` and a feature-enabled build for that design. Document what each feature changes, which target constraints it carries, and whether it affects public API. If callers need to choose at runtime, use a value or trait object instead of `cfg`.\n\nRemember that code behind a disabled cfg may go untested for months. Put each supported target or feature combination into a build matrix that you can run locally or in release preparation. If a feature changes public types, document the resulting API surface for downstream crates. Do not use mutually exclusive features as a substitute for a real runtime configuration choice.",
     "feedback": "You then opt back in to exactly the features you want.",
     "practiceCode": "[features]\ndefault = [\"std\"]\nstd = []",
     "question": "What does `default-features = false` do at the call site?",
@@ -55,5 +55,10 @@
     "success": "The other branch is absent from the build, not merely unused.",
     "summary": "cfg decides which code is compiled at all.",
     "task": "Gate a function on a target predicate and on a feature."
+  },
+  "illustration": {
+    "path": "media/cfg-features.png",
+    "alt": "A cfg gate includes a feature module in one build and omits it in another.",
+    "caption": "Conditional compilation changes which code enters a build."
   }
 }

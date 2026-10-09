@@ -1,6 +1,6 @@
 {
   "concept": "Pattern-based code generation",
-  "contentDigest": "88ef6e8f51c378399376e524b69c0fd468c84dec3ae9c73b4b6ab17f8f8a0367",
+  "contentDigest": "fe4318ac3c21332da995035badfa8888701c9fc96e0a4963e9ab03947129a330",
   "depth": {
     "connections": [
       {
@@ -29,7 +29,7 @@
   },
   "exerciseKind": "planned",
   "id": "declarative-macros",
-  "minutes": 12,
+  "minutes": 19,
   "order": 0,
   "parentID": "meta",
   "title": "macro_rules!",
@@ -42,7 +42,7 @@
     "correctAnswer": 1,
     "exampleCaption": "One rule, any number of arguments, all checked after expansion.",
     "exampleCode": "macro_rules! maximum {\n    ($first:expr) => { $first };\n    ($first:expr, $($rest:expr),+) => {\n        { let rest = maximum!($($rest),+);\n      if $first > rest { $first }\n          else { rest } }\n    };\n}\n\nprintln!(\"{}\", maximum!(3, 9, 2, 7));",
-    "explanation": "A declarative macro takes token trees, not values, so it can accept a variable number of arguments and shapes a function cannot. Fragment specifiers such as expr and ident say what each capture must be, and the expansion is type-checked afterwards like any other code.",
+    "explanation": "A declarative macro takes token trees, not values, so it can accept a variable number of arguments and shapes a function cannot. Fragment specifiers such as expr and ident say what each capture must be, and the expansion is type-checked afterwards like any other code.\n\nA `macro_rules!` definition contains arms. Each arm has a pattern that matches input syntax and a transcriber that emits output syntax. The compiler tries arms in order. In `maximum!`, the one-expression arm ends recursion; the repeated arm captures one expression and a nonempty comma-separated rest. That is a compile-time transformation. Values are evaluated only when the expanded Rust code runs, and the expansion is type-checked in the caller's context. A macro can accept shapes that an ordinary function signature cannot, but this flexibility raises the cost of reading errors and maintaining the API.\n\nTrace `maximum!(3, 9, 2)` on paper: the repeated arm reduces the tail, then compares the first expression with that result. Ask whether an argument with side effects is evaluated once. The temporary for the recursive result helps, but each arm still deserves review. Use a function when types and arity are fixed; use a macro when syntax transformation or variable arity is essential. Keep exported macros small, document accepted forms, and test both successful expansions and expected compile failures. When an error appears far inside generated code, inspect the expansion and simplify the invocation until the mismatched pattern is clear.\n\nMacro expansions can evaluate captured expressions more than once if the transcriber repeats them. For an expression with side effects, that changes program behavior. Use temporary bindings and inspect each arm. Also avoid returning a fragment with unexpected precedence; wrap a generated expression in a block or parentheses where its surrounding syntax could change how it is parsed.",
     "feedback": "expr captures a whole expression and keeps its grouping.",
     "practiceCode": "macro_rules! square {\n    ($value:???) => { $value * $value };\n}",
     "question": "Which fragment specifier accepts any expression?",
@@ -50,5 +50,10 @@
     "success": "It expands correctly for one, two, and many arguments.",
     "summary": "macro_rules! matches syntax patterns and expands to code.",
     "task": "Write a macro that accepts a variable number of expressions."
+  },
+  "illustration": {
+    "path": "media/declarative-macros.png",
+    "alt": "A fictional macro invocation matches two expression fragments and expands into a Rust expression at compile time.",
+    "caption": "A declarative macro transforms matched syntax before the expanded program is type-checked."
   }
 }

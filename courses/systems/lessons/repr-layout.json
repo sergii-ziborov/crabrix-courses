@@ -1,6 +1,6 @@
 {
   "concept": "Make a data layout contract explicit at a boundary",
-  "contentDigest": "44cf1bdc2238b2f3215861f859ffc4ae7d94bc1738eb21d1efcbf5c8bd9b4531",
+  "contentDigest": "1de33aa820ba96e0dd9c8ee4c65d31144fa8175c19d961a0cf07444baf6d3f40",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "repr-layout",
-  "minutes": 12,
+  "minutes": 19,
   "order": 1,
   "parentID": "unsafe-engineering",
   "title": "Representation & Layout",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "#[repr(C)]\nstruct Header {\n    kind: u16,\n    length: u32,\n}",
-    "explanation": "Rust's default layout may change for optimization and is not an FFI contract. repr(C) gives C-compatible field ordering while fixed integer types make sizes explicit.",
+    "explanation": "Rust's default layout may change for optimization and is not an FFI contract. repr(C) gives C-compatible field ordering while fixed integer types make sizes explicit.\n\nRust's default struct representation is chosen for Rust code, not as an external wire or ABI contract. `#[repr(C)]` requests C-compatible field ordering and layout rules for the target, including padding between fields. It does not make a struct packed, remove padding, or guarantee the same total size on every architecture. Fixed-width fields such as `u16` and `u32` make individual sizes explicit, but alignment and endianness still matter when bytes cross a file or network boundary.\n\nFor the example `Header`, draw offsets for `kind` and `length` under a typical C layout and locate any padding before the `u32`. Then compare the result with a C declaration built for the same target. Use `size_of` and `align_of` as checks, not as the only specification. Do not serialize a `repr(C)` struct by copying its raw bytes into a protocol: padding can be uninitialized, and a different machine may use another byte order. Define a wire format with explicit field widths and endianness instead. Reserve `repr(C)` for genuine language or ABI interoperability where both sides agree on ownership and representation.\n\nFor unions, bitfields, and packed data, the boundary becomes more complicated than a simple struct. A packed field may be unaligned, so taking an ordinary reference to it can be invalid. Read or write such representations through the appropriate unaligned operations when required. Most application data should use a deliberate parser rather than treating external bytes as an in-memory Rust struct.",
     "feedback": "Correct: To define layout.",
     "practiceCode": "#[repr(C)]\nstruct Header {\n    kind: u16,\n    length: u32,\n}",
     "question": "Why does an FFI struct need repr(C)?",

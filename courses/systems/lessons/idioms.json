@@ -1,6 +1,6 @@
 {
   "concept": "Newtype, builder, and typestate",
-  "contentDigest": "76b2373a5d7edddeb9c4264aa71a26a84b6f5490865aedabd49577fca24e01c9",
+  "contentDigest": "0507a197c8f36854a1e6004ce84f70d919276af2d2965b354aa9cdb33ff61e49",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "idioms",
-  "minutes": 11,
+  "minutes": 18,
   "order": 3,
   "parentID": "systems",
   "title": "Rust Idioms",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Two integers that can no longer be confused for each other.",
     "exampleCode": "#[derive(Debug, Clone, Copy, PartialEq)]\nstruct UserId(u64);\n\n#[derive(Debug, Clone, Copy, PartialEq)]\nstruct OrderId(u64);\n\nfn load_user(id: UserId) -> String {\n    format!(\"user {}\", id.0)\n}\n\n// load_user(OrderId(7)) would not compile.\nprintln!(\"{}\", load_user(UserId(7)));",
-    "explanation": "A newtype gives a bare value a meaning the type system can enforce, so a UserId cannot be passed where an OrderId belongs. A builder makes many optional parameters readable, and typestate encodes a protocol in types so calling a method in the wrong order simply does not compile.",
+    "explanation": "A newtype gives a bare value a meaning the type system can enforce, so a UserId cannot be passed where an OrderId belongs. A builder makes many optional parameters readable, and typestate encodes a protocol in types so calling a method in the wrong order simply does not compile.\n\nRust idioms use types and ownership to make intentions visible. A `UserId` newtype prevents accidentally passing an `OrderId`, even though both wrap `u64`. It is a zero-cost distinction in ordinary compiled code, but you still need explicit conversion at serialization and database boundaries. `Option` expresses absence; `Result` expresses failure with context. These enums make callers handle states that might otherwise be hidden in nulls or sentinel integers. Use pattern matching when it makes the state transition easier to read.\n\nA builder is valuable when an object has several optional settings or validation before construction. Typestate goes further by representing stages as different types, so only a configured value exposes `send()`. Both patterns add API surface and can be overkill for a small internal helper. Start with a simple constructor; add richer types when misuse is likely or the workflow truly has stages. In the example, attempt `load_user(OrderId(7))` and use the compiler error to explain the boundary. Then design a `ParsedConfig` that can become `ValidatedConfig` only after checking required fields. The goal is to encode stable domain rules, not to make every local variable into a wrapper. A good idiom reduces the amount of explanation needed at each call site.\n\nWatch for type complexity that merely moves confusion. A builder with dozens of states can make an API harder to discover than a validated configuration struct. Show users a normal construction path in documentation, and keep error messages close to invalid input. Types are strongest when the domain invariant is stable and the compiler can give a clear failure at the call site.",
     "feedback": "Three bare u64s are interchangeable; AccountId and Amount are not.",
     "practiceCode": "fn transfer(from: u64, to: u64, amount: u64) { }\ntransfer(amount, from, to);",
     "question": "What does a newtype fix here?",
@@ -55,5 +55,10 @@
     "success": "Mixing it with another id of the same underlying type fails to compile.",
     "summary": "Rust's patterns push mistakes from runtime to compile time.",
     "task": "Wrap a primitive in a newtype and pass it through one function."
+  },
+  "illustration": {
+    "path": "media/idioms.png",
+    "alt": "An Option value is matched into explicit Some and None paths.",
+    "caption": "Types can make absence an explicit state callers must consider."
   }
 }

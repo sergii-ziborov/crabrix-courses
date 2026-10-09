@@ -1,6 +1,6 @@
 {
   "concept": "Make an implementation promise other unsafe code relies on",
-  "contentDigest": "24f128ab916b739bfb427f7c7d97d81a41cced08c03de8e80b66e5e8540f4893",
+  "contentDigest": "f9adce212b22058a2f86d11434506b014b66be31c176333417a79ecb195f75a8",
   "depth": {
     "connections": [
       {
@@ -14,7 +14,7 @@
         "title": "Benchmark & Profile"
       }
     ],
-    "correction": "An unsafe trait means incorrect implementation can cause undefined behavior in code that trusts it.",
+    "correction": "An unsafe trait defines a safety contract. An implementor must prove its type preserves that contract for every safe caller; merely writing unsafe impl does not establish the invariant.",
     "misconception": "“Traits are unchecked”",
     "traceSteps": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "unsafe-traits",
-  "minutes": 13,
+  "minutes": 21,
   "order": 2,
   "parentID": "unsafe-engineering",
   "title": "Unsafe Traits",
@@ -45,9 +45,9 @@
       "It uses an array"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "The example makes the contract visible in code.",
-    "exampleCode": "unsafe trait StableAddress {}\n\nstruct FixedBuffer([u8; 16]);\n// SAFETY: instances never expose moves.\nunsafe impl StableAddress for FixedBuffer {}",
-    "explanation": "An unsafe trait means incorrect implementation can cause undefined behavior in code that trusts it. Document every invariant precisely and keep the unsafe impl beside evidence that it holds.",
+    "exampleCaption": "A narrow contract makes the implementor's proof concrete: zero is a valid u8 and therefore a valid Byte.",
+    "exampleCode": "/// # Safety\n/// The all-zero bit pattern must be a valid Self value.\nunsafe trait ZeroIsValid {}\n\n#[repr(transparent)]\nstruct Byte(u8);\n// SAFETY: every u8 bit pattern is valid, including zero.\nunsafe impl ZeroIsValid for Byte {}",
+    "explanation": "An unsafe trait means incorrect implementation can cause undefined behavior in code that trusts it. Document every invariant precisely and keep the unsafe impl beside evidence that it holds.\n\nAn unsafe trait is a promise whose incorrect implementation can invalidate assumptions made by other code. Its documentation must state the invariant precisely: which operations, lifetimes, alignment, or thread interactions are safe, and what every implementor must maintain. The `unsafe` keyword on the impl means the implementor has checked that contract; it is not a compiler proof. A generic caller may rely on the trait bound and therefore cannot recheck each concrete implementation.\n\nAvoid vague contracts such as “instances never expose moves” unless the type truly enforces that property. A plain `FixedBuffer` can be moved between bindings, so claiming stable address for it would be unsound. For a learning example, use the standard `Send` contract instead: a type may be transferred to another thread only when doing so cannot cause a data race or invalid access. Examine every field before adding an `unsafe impl`; a non-atomic shared pointer can break the claim. Prefer safe auto traits and existing library abstractions wherever possible. If you must author an unsafe trait, write a safety section with concrete counterexamples, place each impl beside its proof, and review changes to the type's internals against that proof.\n\nThe teaching trait example has no consumer that relies on the promise, so it illustrates syntax rather than proving a real unsafe abstraction. In production, state exactly what unsafe generic code may assume from the bound. Then try to construct a counterexample type and see whether the proposed contract rules it out. If the contract cannot be written precisely, the trait is not ready to publish.",
     "feedback": "Correct: Callers rely on its promise.",
     "practiceCode": "unsafe trait StableAddress {}\n\nstruct FixedBuffer([u8; 16]);\n// SAFETY: instances never expose moves.\nunsafe impl StableAddress for FixedBuffer {}",
     "question": "Why must that Send impl be unsafe?",
@@ -55,5 +55,10 @@
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Make an implementation promise other unsafe code relies on.",
     "task": "Trace the example, name the guarantee, and identify where it ends."
+  },
+  "illustration": {
+    "path": "media/unsafe-traits.png",
+    "alt": "An unsafe trait contract connects implementor obligations to a generic caller relying on them.",
+    "caption": "Implementors uphold the safety invariant that callers may trust."
   }
 }
