@@ -1,6 +1,6 @@
 {
   "concept": "Relationships between borrows",
-  "contentDigest": "cfb11d38a60adb02fe4a933a420fa73685a72327a4f3f6e4b6e73f168804e558",
+  "contentDigest": "c837e06e5b8d713f03bcf3086ca1093874a8e4456949b973ef0d32bea01d4bb2",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "lifetimes",
-  "minutes": 12,
+  "minutes": 19,
   "order": 2,
   "parentID": "abstraction",
   "title": "Lifetimes",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "The struct is tied to the text it borrows.",
     "exampleCode": "struct Excerpt<'a> {\n    part: &'a str,\n}\n\nimpl<'a> Excerpt<'a> {\n    fn part(&self) -> &str {\n        self.part\n    }\n}",
-    "explanation": "Elision handles the common shapes, so you write annotations only when the relationship is genuinely ambiguous — typically when several references go in and one comes out. A struct holding a reference needs one too, because the struct cannot outlive what it borrows.",
+    "explanation": "Elision handles the common shapes, so you write annotations only when the relationship is genuinely ambiguous — typically when several references go in and one comes out. A struct holding a reference needs one too, because the struct cannot outlive what it borrows.\n\nA reference field makes a struct dependent on data owned elsewhere. `Excerpt<'a>` says its `part` cannot be used after the borrowed text becomes invalid. The annotation documents and checks a relationship; it does not allocate, copy, or lengthen the source string. If an `Excerpt` must outlive the source, the model should own a `String` instead of holding `&str`.\n\nIn the example, `part(&self)` returns a view of the existing borrowed text. The method receiver is borrowed, so the caller keeps the `Excerpt`; the result remains tied to the validity of both the struct and the underlying source. Try constructing an excerpt from a string created inside an inner block and moving the excerpt outside. The compiler rejects that use because the owner ends first. Move the use inside the block, or change the struct to own its data. Neither fix requires an invented longer lifetime label.\n\nLifetime elision saves annotations in signatures with an obvious input-output relationship. Explicit names become useful when a returned reference could come from several inputs, or when a type stores references. A name such as `'a` means the linked borrows must satisfy the same validity relationship; it does not mean they were created at the same time or live for exactly the same duration. Draw the scope of each owner, then the interval where the reference is used. The intersection of those intervals is the practical boundary to reason about.",
     "feedback": "Write struct Holder<'a> { value: &'a str } so the relationship is stated.",
     "practiceCode": "struct Holder {\n    value: &str,\n}",
     "question": "Why is that struct definition rejected?",
@@ -55,5 +55,10 @@
     "success": "The struct cannot outlive the data it points into.",
     "summary": "Lifetime annotations connect the borrows in a signature.",
     "task": "Store a borrowed slice in a struct and explain the annotation."
+  },
+  "illustration": {
+    "path": "media/lifetimes.png",
+    "alt": "Two input borrow intervals overlap; a returned borrow is valid only within their shared interval.",
+    "caption": "The returned reference cannot outlive either possible source."
   }
 }

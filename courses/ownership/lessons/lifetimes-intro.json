@@ -1,6 +1,6 @@
 {
   "concept": "Why references stay valid",
-  "contentDigest": "c395597cbbebc91f680d8430a58d90c246d776b7b08b15859ab07aaf0bb27819",
+  "contentDigest": "b314910e25cc680f52d0b7165e4ee0fc4ff70a89618be6cc25f9c374b8b8ccef",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "lifetimes-intro",
-  "minutes": 10,
+  "minutes": 16,
   "order": 5,
   "parentID": "ownership",
   "title": "Lifetime Intuition",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "One name ties the result to both inputs.",
     "exampleCode": "fn longest<'a>(\n    left: &'a str,\n    right: &'a str,\n) -> &'a str {\n    if left.len() > right.len() {\n        left\n    } else {\n        right\n    }\n}",
-    "explanation": "An annotation does not change how long anything lives. It tells the compiler how input and output borrows are connected, so it can prove a returned reference never outlives the data behind it. Most of the time inference handles this and you write nothing at all.",
+    "explanation": "An annotation does not change how long anything lives. It tells the compiler how input and output borrows are connected, so it can prove a returned reference never outlives the data behind it. Most of the time inference handles this and you write nothing at all.\n\nA lifetime is a relationship the compiler uses to prove a reference is valid when it is used. It is not a timer and an annotation cannot keep memory alive. In `longest`, both input references are related to the returned reference through `'a`. The caller must use the result only while the selected input could still be valid. This is conservative: at compile time the function could return either argument, so the result is limited by the shorter applicable borrow.\n\nTrace a call where one string lives for the whole function and another is created in an inner block. You may compare them and print the chosen slice inside that block. You cannot keep the returned reference for use after the inner string has gone away, because it might point into that string. Moving a lifetime annotation to a different letter would not change the data's scope. The remedy is to shorten the use of the result, return an owned `String`, or change which data the result can borrow from.\n\nMost functions do not need written lifetime parameters. A function with one borrowed input and a borrowed output often has an obvious relationship, and Rust applies elision rules. Add annotations when multiple inputs make the source of the output ambiguous or when a struct stores a reference. In an error message, identify the owner of each referenced value and the last point at which it is alive. That timeline is more useful than trying random apostrophe labels until the code compiles.",
     "feedback": "With one input reference it is inferred; with two the relationship must be stated.",
     "practiceCode": "fn pick(a: &str, b: &str) -> &str {\n    if a.len() > b.len() { a } else { b }\n}",
     "question": "Why does that need an annotation?",
@@ -55,5 +55,10 @@
     "success": "No returned reference can outlive the data it points into.",
     "summary": "Lifetimes describe relationships between references, not timers.",
     "task": "Describe which input borrow a returned reference may depend on."
+  },
+  "illustration": {
+    "path": "media/lifetimes-intro.png",
+    "alt": "A reference timeline begins after its value and ends before the value is dropped.",
+    "caption": "A borrowed reference cannot be used beyond its source value."
   }
 }

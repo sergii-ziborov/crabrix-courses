@@ -1,6 +1,6 @@
 {
   "concept": "Transform lazily, then choose one consumer",
-  "contentDigest": "f4f82fddad61c48377fbf726fc874c4b17740ed320f7611a5d3cfc797743255b",
+  "contentDigest": "36836c22b7ff7c78f908a7a36dee8731084695a280ef79e29064d21db2c2d5b4",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "iterator-adapters",
-  "minutes": 10,
+  "minutes": 16,
   "order": 4,
   "parentID": "abstraction-practice",
   "title": "Iterator Pipelines",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "let values = [1, 2, 3, 4];\nlet total: i32 = values.iter()\n    .filter(|v| **v % 2 == 0)\n    .map(|v| v * v)\n    .sum();",
-    "explanation": "Adapters such as map and filter describe work but do nothing until a consumer asks for values. A clear pipeline separates selection, transformation, and collection without temporary vectors.",
+    "explanation": "Adapters such as map and filter describe work but do nothing until a consumer asks for values. A clear pipeline separates selection, transformation, and collection without temporary vectors.\n\nAn iterator pipeline can read like a data-processing sentence: choose items, transform each chosen item, then consume the result. The sample starts with borrowed values from an array, filters for even numbers, squares them, and sums the squares. The final answer is 20 for `[1, 2, 3, 4]`. The adapters are lazy; `sum()` repeatedly pulls the next item through the chain. No intermediate vector is required.\n\nLook closely at references. `values.iter()` yields `&i32`, while `filter` passes a reference to each item into its predicate, so the closure sees an extra reference layer and the example uses `**v`. The following `map` receives each iterator item and can use normal dereference arithmetic. Writing types beside the closures for one exercise can demystify those stars. If you use `into_iter()` on an owned vector instead, values are moved into the pipeline, changing what remains available afterward.\n\nUse `inspect` temporarily to see when each element reaches a stage. Then insert `.take(1)` before `sum()` and predict which elements are evaluated. Be careful where you place it: taking one input before a filter is different from taking one matched output after a filter. A pipeline becomes hard to read when it hides side effects in `map` or uses many conversions without names. Split it into intermediate bindings when the operations need explanation. The goal is a clear ownership and evaluation story, not the fewest lines.\n\nTry replacing the array with a vector and selecting `.iter()` versus `.into_iter()`. The numeric answer stays the same, but the ownership of the source changes. That is part of the API contract.",
     "feedback": "Correct: When sum consumes it.",
     "practiceCode": "let values = [1, 2, 3, 4];\nlet total: i32 = values.iter()\n    .filter(|v| **v % 2 == 0)\n    .map(|v| v * v)\n    .sum();",
     "question": "When does the pipeline perform work?",

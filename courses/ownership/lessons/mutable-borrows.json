@@ -1,6 +1,6 @@
 {
   "concept": "One temporary writer with exclusive access",
-  "contentDigest": "540230b38f8643e5eb9cf833ef571999d5a01c6df29300deb7fae15623d1b3a6",
+  "contentDigest": "51490f054032d17ea0b2c7fa879dd92472793c8aa6b2deb6263d65445232a41a",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "mutable-borrows",
-  "minutes": 9,
+  "minutes": 14,
   "order": 1,
   "parentID": "ownership-practice",
   "title": "Mutable Borrows",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "fn add_one(value: &mut i32) {\n    *value += 1;\n}\nlet mut score = 6;\nadd_one(&mut score);\nprintln!(\"{score}\");",
-    "explanation": "An &mut reference permits mutation without transferring ownership. Exclusivity lasts through its final use, preventing another reader or writer from observing a half-finished update.",
+    "explanation": "An &mut reference permits mutation without transferring ownership. Exclusivity lasts through its final use, preventing another reader or writer from observing a half-finished update.\n\nAn `&mut T` gives one caller exclusive temporary access to a value. The owner still exists, but it cannot read or write through another path while the mutable borrow is active. This is more than a rule about syntax: it prevents a reader from seeing a partially updated structure and prevents two writers from racing to change the same state. After the last use of the borrow, the owner can be used again.\n\nIn `add_one`, the star in `*value += 1` follows the mutable reference to the integer it points at. `score` must be declared `mut` so it can be borrowed mutably. The call lends access; it does not move `score` into the function. The final print shows the updated owned value. Try storing `let edit = &mut score;`, then attempt to print `score` before `edit` is last used. The compiler flags the overlapping access. Move the print after that last use and the program becomes valid.\n\nThe same pattern applies to methods on vectors and structs. A mutable borrow lets a helper change an object in place without returning a replacement object. Keep the exclusive region short and meaningful. If a large function needs many unrelated mutable borrows, split it into operations with clear boundaries. This can make borrow errors easier to diagnose and can reveal which fields should be separate. Reach for interior mutability only when ordinary exclusive borrowing cannot express the actual access pattern.",
     "feedback": "Correct: Exclusive write access.",
     "practiceCode": "fn add_one(value: &mut i32) {\n    *value += 1;\n}\nlet mut score = 6;\nadd_one(&mut score);\nprintln!(\"{score}\");",
     "question": "What does &mut grant temporarily?",

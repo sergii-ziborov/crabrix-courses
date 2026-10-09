@@ -1,6 +1,6 @@
 {
   "concept": "Choose behavior at runtime with dyn Trait",
-  "contentDigest": "1e95bd8f7988ca3cd24b37687b58384f8c1f8929d37cf819fe6c84de8d68eb13",
+  "contentDigest": "ed57b15d22994f72f7cd567c9632239f20882dab2cb13acfb3293d08286731e9",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "trait-objects",
-  "minutes": 11,
+  "minutes": 18,
   "order": 0,
   "parentID": "abstraction-practice",
   "title": "Trait Objects",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "trait Draw { fn draw(&self); }\nfn render(items: &[Box<dyn Draw>]) {\n    for item in items {\n        item.draw();\n    }\n}",
-    "explanation": "A trait object stores a pointer to data and a table of methods. It enables mixed concrete types in one collection at the cost of dynamic dispatch and some optimization opportunities.",
+    "explanation": "A trait object stores a pointer to data and a table of methods. It enables mixed concrete types in one collection at the cost of dynamic dispatch and some optimization opportunities.\n\nA trait object lets code work with a value whose concrete type is chosen at runtime. `Box<dyn Draw>` owns a value on the heap while exposing only the `Draw` behavior. A vector of these boxes can contain buttons, charts, and labels as long as each implements `Draw`. A generic `Vec<T>` normally has one concrete `T` for all entries, so it cannot directly hold several unrelated structs. The trait object is the bridge when a heterogeneous collection is genuinely needed.\n\nAt a call to `item.draw()`, the program follows a method table associated with that value's concrete type. This adds an indirection and can limit some optimizations, but it also means new implementers can join the collection without rewriting the renderer. The object still obeys ownership rules: the vector owns the boxes, and borrowing the slice for `render` does not consume them. `&dyn Draw` would borrow a single drawable instead of owning it.\n\nThe trait must be usable as an object; not every trait method fits. A method that returns bare `Self` or is generic over another type may need a `where Self: Sized` restriction or a different design. Start with a small behavior contract such as `draw(&self)`. Implement it for two types, store both in one vector, and count the calls. Use static generic dispatch when all values have one concrete type known at compile time. Choose dynamic dispatch for the runtime mixture, not as a default for every trait.",
     "feedback": "Correct: The concrete method.",
     "practiceCode": "trait Draw { fn draw(&self); }\nfn render(items: &[Box<dyn Draw>]) {\n    for item in items {\n        item.draw();\n    }\n}",
     "question": "What does dyn Trait choose at runtime?",

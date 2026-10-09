@@ -1,6 +1,6 @@
 {
   "concept": "impl Iterator and the next method",
-  "contentDigest": "7fc9cd1dd6734d28bc8f6c9c4e184e4a9d6b7a78a7ad98cba95b0826b3d7af1d",
+  "contentDigest": "9141c734a7f5b85889250fbc3bebf8d51704a8e25f65daa66d3cb062c46b82b3",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "iterator-impl",
-  "minutes": 11,
+  "minutes": 18,
   "order": 5,
   "parentID": "abstraction",
   "title": "Writing an Iterator",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Only `next` is written; `take` and `sum` come for free.",
     "exampleCode": "struct Fibonacci { a: u64, b: u64 }\n\nimpl Iterator for Fibonacci {\n    type Item = u64;\n\n    fn next(&mut self) -> Option<u64> {\n        let value = self.a;\n        self.a = self.b;\n        self.b = value + self.b;\n        Some(value)\n    }\n}\n\nlet fib = Fibonacci { a: 0, b: 1 };\nlet total: u64 = fib.take(10).sum();\nprintln!(\"{total}\");",
-    "explanation": "Iterator requires only next(); everything else — map, filter, take, zip, sum — arrives as default methods. That is why a custom sequence composes with the standard library exactly like a Vec does, without any of it knowing your type exists.",
+    "explanation": "Iterator requires only next(); everything else — map, filter, take, zip, sum — arrives as default methods. That is why a custom sequence composes with the standard library exactly like a Vec does, without any of it knowing your type exists.\n\nImplementing `Iterator` means defining the type of each item and one method, `next`. Each call either returns `Some(item)` and advances internal state or returns `None` when the sequence is finished. The default adapters then work automatically because they are expressed in terms of repeated `next` calls. That is the core composability advantage: your `Fibonacci` can be filtered, zipped, limited, and summed like an iterator from the standard library.\n\nWalk through the sample with initial `a` and `b` values. Record the returned `value` before updating the state, then compute the pair for the next call. Test the first six outputs by hand. For an unbounded sequence, a consumer like `collect::<Vec<_>>()` would never finish; use `.take(n)` or another finite stopping rule. Also consider arithmetic overflow: with `u64`, sufficiently large Fibonacci numbers exceed the type. Decide whether `next` should stop with `None`, use checked addition, or deliberately wrap, and document that choice.\n\nA good custom iterator keeps `next` small and makes its state invariant clear. If the sequence owns its data, consuming it may be natural; if callers need the source afterward, return an iterator that borrows it. Implement `size_hint` only when you can provide a truthful bound. The small required interface is powerful, but correctness of state transitions remains your responsibility.\n\n`None` normally means the sequence has ended. Consumers may ask for `next()` again, so document whether your iterator stays finished; implementing `FusedIterator` is an additional promise only when that behavior is guaranteed. Test the terminal state and any overflow boundary, not merely the first few values.\n\nA final call after completion should have a documented outcome.",
     "feedback": "None ends the iteration, and every adapter respects it.",
     "practiceCode": "impl Iterator for Countdown {\n    type Item = u32;\n    fn next(&mut self) -> Option<u32> { ??? }\n}",
     "question": "What signals that the sequence has finished?",

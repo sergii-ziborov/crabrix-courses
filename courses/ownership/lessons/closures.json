@@ -1,6 +1,6 @@
 {
   "concept": "Fn, FnMut, FnOnce, and capture",
-  "contentDigest": "7c17aab33a68ea2a78a3ce08d71856d15b7a78d2bc09cf1ddbf32aff476f91aa",
+  "contentDigest": "c8922d55437e6139b50d801ebbc9e4cb0f2490e012eecfa0c8862c3dbd983116",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "closures",
-  "minutes": 11,
+  "minutes": 18,
   "order": 3,
   "parentID": "abstraction",
   "title": "Closures",
@@ -47,7 +47,7 @@
     "correctAnswer": 2,
     "exampleCaption": "Three closures, three different relationships with `total`.",
     "exampleCode": "let total = 10;\nlet read = || println!(\"total {total}\"); // Fn\nread();\n\nlet mut count = 0;\nlet mut bump = || count += 1;            // FnMut\nbump();\nbump();\nprintln!(\"count {count}\");",
-    "explanation": "Rust infers whether a closure needs a shared borrow (Fn), a mutable borrow (FnMut), or ownership (FnOnce) from what the body does. `move` forces capture by value, which is what makes a closure safe to send to another thread — the ownership question is answered at compile time rather than by a convention.",
+    "explanation": "Rust infers whether a closure needs a shared borrow (Fn), a mutable borrow (FnMut), or ownership (FnOnce) from what the body does. `move` forces capture by value, which is what makes a closure safe to send to another thread — the ownership question is answered at compile time rather than by a convention.\n\nA closure is a callable value that may carry data from the surrounding scope. The first example only reads `total`, so it can satisfy `Fn`; the second changes `count`, so it needs mutable access and satisfies `FnMut`. A closure that consumes a captured value may be callable only once and satisfy `FnOnce`. These traits describe what callers may do with the closure, not just what the closure returns.\n\nCapture is inferred per variable. A shared read usually borrows, a mutation needs an exclusive borrow, and consuming an owned value may move it into the closure. The `move` keyword forces capture by value, but it does not automatically make every call consume the captured value. A moved-in `String` can still be read on repeated calls if the body only borrows it. This distinction matters for thread work: the closure must own data it will use after the creating stack frame is gone, and the relevant types must meet any thread-safety bounds.\n\nRun the sample and try to read `count` while the mutating closure will be called again. The active mutable borrow explains the compiler's objection. Call the closure for the last time before reading the value, or confine it to a shorter scope. Then write a closure that calls `drop(name)` to see why it becomes `FnOnce`. Choose a callback bound based on how often the caller must invoke it and whether mutation is part of the contract.\n\nA closure can capture different variables in different ways. One captured counter may be mutated while another captured configuration is only read. Reason about each capture separately instead of assigning one ownership mode to the whole surrounding scope.",
     "feedback": "It gives the String away, so it can only be called once.",
     "practiceCode": "let name = String::from(\"ada\");\nlet consume = move || name;",
     "question": "Which trait does that closure implement?",

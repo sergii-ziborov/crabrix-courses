@@ -1,6 +1,6 @@
 {
   "concept": "Parameters can take, borrow, or copy a value",
-  "contentDigest": "914b5e19bbf4ddaea406718aff2f3bc06a9f478d847f493c2560e21bd9704b47",
+  "contentDigest": "18c27b2115cad4bb187f1b9d14103b18217ebff25b98062cff0d459f18ebb473",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "move-functions",
-  "minutes": 9,
+  "minutes": 14,
   "order": 0,
   "parentID": "ownership-practice",
   "title": "Moves Across Functions",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "fn inspect(text: &str) {\n    println!(\"{text}\");\n}\nlet name = String::from(\"Ferris\");\ninspect(&name);\nprintln!(\"{name}\");",
-    "explanation": "A parameter of type String takes ownership, while &str only borrows text. Read the signature before deciding whether the caller should keep using its value.",
+    "explanation": "A parameter of type String takes ownership, while &str only borrows text. Read the signature before deciding whether the caller should keep using its value.\n\nA function signature is an ownership map. `fn inspect(text: &str)` asks for temporary read access and lets the caller keep its `String`. `fn store(text: String)` takes ownership, so the caller cannot use that binding after the call unless the function returns it or the caller cloned it beforehand. A parameter like `i32` is passed by value too, but `i32` is `Copy`, which leaves the original usable. The syntax is the same; the type determines the effect.\n\nWalk through the example: `name` owns its bytes, `&name` creates a borrowed view for `inspect`, and the borrow ends after its final use in the call. The last `println!` can therefore read `name`. Change `inspect` to accept `String` and pass `name` without `&`; the final print now triggers a move error. Returning a `String` is a legitimate design if the function transforms ownership, but a printing helper has no reason to consume its input.\n\nWhen designing an API, use `&str` if any UTF-8 text view will do, `&String` only when the `String` container itself matters, and `String` when ownership or mutation independent of the caller is required. For mutable access without transfer, use `&mut String`. Try calling one borrowed helper with both a string literal and an owned string. The more flexible signature often makes the surrounding code simpler and avoids clones inserted only to satisfy an unnecessarily consuming function.",
     "feedback": "Correct: inspect only borrowed it.",
     "practiceCode": "fn inspect(text: &str) {\n    println!(\"{text}\");\n}\nlet name = String::from(\"Ferris\");\ninspect(&name);\nprintln!(\"{name}\");",
     "question": "Why can name be printed after inspect?",
@@ -55,5 +55,10 @@
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Parameters can take, borrow, or copy a value.",
     "task": "Trace the example, name the guarantee, and identify where it ends."
+  },
+  "illustration": {
+    "path": "media/move-functions.png",
+    "alt": "Function parameter lanes compare ownership transfer, shared borrowing, and exclusive mutation.",
+    "caption": "The parameter type tells the caller whether ownership moves or is lent."
   }
 }

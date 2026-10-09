@@ -1,6 +1,6 @@
 {
   "concept": "Lazy transformations",
-  "contentDigest": "da398c0b688f80d50507b75fe0542bd70ac0e1f83c0a159de027bb2759d98497",
+  "contentDigest": "17a73ae9058cf6f56ae9d27877b0e306b6027b45ee10495683d396ee9500132b",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "iterators",
-  "minutes": 11,
+  "minutes": 18,
   "order": 4,
   "parentID": "abstraction",
   "title": "Iterators",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Nothing runs until collect asks for items.",
     "exampleCode": "let squares: Vec<u32> = (1..=6)\n    .filter(|v| v % 2 == 0)\n    .map(|v| v * v)\n    .collect();",
-    "explanation": "map and filter build a description of the work; nothing runs until a consumer such as collect, sum, or a for loop asks for items. That laziness is why a long chain still makes a single pass over the data instead of one pass per step.",
+    "explanation": "map and filter build a description of the work; nothing runs until a consumer such as collect, sum, or a for loop asks for items. That laziness is why a long chain still makes a single pass over the data instead of one pass per step.\n\nAn iterator is a sequence of values produced on demand. Calling `.filter()` or `.map()` builds another iterator; it does not run the closure over every element immediately. A consumer such as `.collect()`, `.sum()`, or a `for` loop pulls values through the chain. In the example, each requested output asks the filter for the next even input, then squares that value. There is no separate vector of filtered values unless you explicitly collect one.\n\nThis laziness can save allocations and allow early stopping. Add `.take(2)` before collecting and only two matching results are needed. Conversely, if you want to reuse results repeatedly, collecting may be the right choice. Be attentive to item types: `.iter()` yields references, `.iter_mut()` yields mutable references, and `.into_iter()` consumes the collection. A chain that looks visually similar can therefore borrow, mutate, or move its source.\n\nFor practice, insert a temporary `inspect` adapter that prints each value passing a stage. Observe that nothing prints before the consumer runs. Then change the consumer from `collect` to `sum` and predict the answer. Finally, try to use the original collection after `.into_iter()` and after `.iter()`. Iterator syntax is most readable when the operations tell a clear story—selection, transformation, then consumption—and when ownership of the source is intentional.\n\nA lazy chain is useful only when a consumer eventually requests values. If you create an iterator and discard it, even a `map` closure with a print statement will never run. Use a loop for side effects when that intent is clearer.",
     "feedback": "map returns a lazy adapter; without a consumer it never runs.",
     "practiceCode": "let names = list.iter().map(|n| n.to_uppercase());\nprintln!(\"done\");",
     "question": "What work has been done by that point?",
@@ -55,5 +55,10 @@
     "success": "The Vec holds only the expected transformed values.",
     "summary": "Iterators compose lazy transformations before consuming results.",
     "task": "Transform a range with filter and map, then collect it."
+  },
+  "illustration": {
+    "path": "media/iterators.png",
+    "alt": "Numbers one through six pass through an even filter and square map to become four, sixteen, and thirty-six.",
+    "caption": "Adapters describe work; the consumer pulls the resulting values through the chain."
   }
 }

@@ -1,6 +1,6 @@
 {
   "concept": "Move one field while borrowing another",
-  "contentDigest": "bc70af968dde5bfe99699fe24b3ca4c8a1b166e4429bd10a17222434afa28b06",
+  "contentDigest": "b18defb4c804c9acd0cb20cfd0f11f255557f93db6d340c1ba263932d56c1f55",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "partial-moves",
-  "minutes": 10,
+  "minutes": 16,
   "order": 3,
   "parentID": "ownership-practice",
   "title": "Partial Moves",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "struct User {\n    name: String,\n    level: u8,\n}\nlet user = User {\n    name: \"Ada\".into(), level: 7,\n};\nlet name = user.name;\nprintln!(\"{}\", user.level);",
-    "explanation": "Destructuring can move an owned field and copy or borrow the rest. After a partial move the whole struct is unavailable, but fields that were not moved may still be used directly.",
+    "explanation": "Destructuring can move an owned field and copy or borrow the rest. After a partial move the whole struct is unavailable, but fields that were not moved may still be used directly.\n\nA struct can be partly moved when one field owns data and another field is still independently usable. In the example, `user.name` is a `String`, so assigning it to `name` transfers that field's ownership. `user.level` is a `u8`, so it can still be read and copied. The whole `user` value can no longer be used as a complete `User` because one of its fields is missing. The compiler tracks that state precisely.\n\nThis is useful when consuming one payload but retaining metadata. Destructure a value and decide for each field whether to move, copy, or borrow it. A pattern such as `let User { name, ref level } = user;` moves `name` and borrows `level`. If you need the original struct intact, borrow the name instead of moving it, or clone only that field when an independent owned copy is truly needed. Cloning the entire struct is often wasteful and hides the intended ownership transfer.\n\nTry printing `name` and `user.level`, then attempt `println!(\"{user:?}\")` after the move and inspect the error. Rebuild a new `User` from the moved name and copied level to see how ownership can be reassembled. Some types implementing `Drop` cannot have individual fields moved out this way, because their destructor expects a complete value. In those cases, consider replacing a field through an `Option` or using an API that consumes the whole object deliberately.\n\nWith larger structs, destructuring at the boundary of a function can make the intended field-level ownership transfer clearer than scattered accesses throughout the body.",
     "feedback": "Correct: It was moved.",
     "practiceCode": "struct User {\n    name: String,\n    level: u8,\n}\nlet user = User {\n    name: \"Ada\".into(), level: 7,\n};\nlet name = user.name;\nprintln!(\"{}\", user.level);",
     "question": "Why is user.name no longer available?",

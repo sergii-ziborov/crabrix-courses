@@ -1,6 +1,6 @@
 {
   "concept": "Lend access without consuming the original reference",
-  "contentDigest": "a3a8848a5f96552f5fe2a12768e4f64869100160617839f612808ce0600d1dba",
+  "contentDigest": "23e82223eaf443c73ee1204062e48aaaa7911e52efce0eaffb0eaaa93010961a",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "reborrowing",
-  "minutes": 10,
+  "minutes": 16,
   "order": 2,
   "parentID": "ownership-practice",
   "title": "Reborrowing",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "fn bump(value: &mut i32) {\n    *value += 1;\n}\nfn twice(value: &mut i32) {\n    bump(&mut *value);\n    bump(&mut *value);\n}",
-    "explanation": "Passing &mut *value creates a shorter reborrow instead of moving the original mutable reference. This lets a helper work briefly and returns control to the outer borrower afterward.",
+    "explanation": "Passing &mut *value creates a shorter reborrow instead of moving the original mutable reference. This lets a helper work briefly and returns control to the outer borrower afterward.\n\nA mutable reference can temporarily lend its access to another function. In `twice`, each `bump(&mut *value)` creates a shorter reborrow from the outer `&mut i32`. The first helper finishes before the second begins. The original reference is not consumed, so it can be used again after the helper calls. The important property is the timeline: there is one active writer at a time.\n\nThe `*` dereferences the outer reference to the value, and `&mut` forms a new mutable borrow of it. Rust often performs this reborrow implicitly at a call site, but writing it out makes the mechanism visible. If the first helper kept the reference beyond its call, the second exclusive borrow could not start. A return value tied to that borrow may also keep it active. Read compiler errors as a sequence of active loans rather than as a demand to clone a mutable reference; mutable references are not freely duplicable.\n\nTry adding a print through `value` between the two `bump` calls, then after both calls. Both are fine if each reborrow has ended. Next, return the first reborrow from a helper and try to call `bump` again before its last use; the conflict shows why the short duration matters. Reborrowing is common in methods that coordinate several mutating helpers, and understanding it keeps such code simple without resorting to shared runtime mutation.",
     "feedback": "Correct: Each reborrow ends.",
     "practiceCode": "fn bump(value: &mut i32) {\n    *value += 1;\n}\nfn twice(value: &mut i32) {\n    bump(&mut *value);\n    bump(&mut *value);\n}",
     "question": "Why is value usable for the second call?",
@@ -55,5 +55,10 @@
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Lend access without consuming the original reference.",
     "task": "Trace the example, name the guarantee, and identify where it ends."
+  },
+  "illustration": {
+    "path": "media/reborrowing.png",
+    "alt": "One outer mutable reference lends two nonoverlapping short mutable borrows to helpers.",
+    "caption": "Each helper briefly borrows exclusive access; the outer reference resumes afterward."
   }
 }

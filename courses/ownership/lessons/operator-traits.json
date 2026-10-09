@@ -1,6 +1,6 @@
 {
   "concept": "Add, Display, From, and Into",
-  "contentDigest": "d61736a9156763a4f639c126815d62affc4d5c5d86f7caadb1c59c5c6c5e4070",
+  "contentDigest": "2bea440edfe50e7a1631a97e4e1a08b5713a83cda3803528e9dc4c8ec3533e35",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "operator-traits",
-  "minutes": 11,
+  "minutes": 18,
   "order": 7,
   "parentID": "abstraction",
   "title": "Operator Traits",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Implement From and Into arrives automatically.",
     "exampleCode": "use std::fmt;\nuse std::ops::Add;\n\n#[derive(Debug, Clone, Copy)]\nstruct Money(i64);\n\nimpl Add for Money {\n    type Output = Money;\n    fn add(self, other: Money) -> Money {\n        Money(self.0 + other.0)\n    }\n}\n\nimpl fmt::Display for Money {\n    fn fmt(\n        &self,\n        f: &mut fmt::Formatter<'_>,\n    ) -> fmt::Result {\n        write!(f, \"{}\", self.0 as f64 / 100.0)\n    }\n}",
-    "explanation": "a + b calls Add::add, {} calls Display::fmt, and .into() calls Into, which you get for free by implementing From. Because they are normal traits, your own types participate in the same syntax as the built-in ones, and the compiler checks the result type at every use.",
+    "explanation": "a + b calls Add::add, {} calls Display::fmt, and .into() calls Into, which you get for free by implementing From. Because they are normal traits, your own types participate in the same syntax as the built-in ones, and the compiler checks the result type at every use.\n\nOperator syntax in Rust is backed by trait implementations. `a + b` invokes `Add::add`, and the implementation selects an associated `Output` type. In the `Money` example, adding two money values yields another `Money`; the newtype prevents an ordinary integer from being treated as money without an explicit conversion. This is useful because a small wrapper can make invalid operations harder to write while keeping familiar arithmetic syntax.\n\nDo not overload an operator merely because you can. Readers expect `+` to combine values predictably; surprising side effects or hidden I/O make code harder to trust. Decide whether addition consumes operands, borrows them, or needs multiple implementations. The sample's `Money` is `Copy`, so by-value addition is cheap. A large owned type may benefit from reference-based implementations to avoid unnecessary moves. Use checked arithmetic or a wider representation if overflow matters for the domain.\n\n`Display` and `Debug` serve different readers: `Display` is an intentional user-facing representation, while `Debug` helps inspect a value during development. `From<T> for U` expresses an infallible conversion and provides `Into<U>` automatically; a fallible conversion belongs in `TryFrom`. Implement a formatter for `Money`, add two values, and compare the result with your expected units. Keep the trait's semantic promise as clear as its syntax.\n\nFor a domain type, specify units and error behavior before implementing arithmetic. Money measured in cents should not add to a temperature, and a conversion from floating-point input may be lossy or fallible. A `From` implementation must not hide a failure; use `TryFrom` when invalid input is possible. Write tests for zero, negative values if allowed, and overflow boundaries. Operator syntax makes code compact, but the type system and tests must keep its meaning precise.",
     "feedback": "The standard library has impl<T, U: From<T>> Into<U> for T.",
     "practiceCode": "impl From<u32> for Money {\n    fn from(v: u32) -> Money {\n        Money(i64::from(v))\n    }\n}\nlet m: Money = 500_u32.into();",
     "question": "Why does .into() work without writing an Into impl?",

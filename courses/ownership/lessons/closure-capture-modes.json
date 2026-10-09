@@ -1,6 +1,6 @@
 {
   "concept": "Infer shared, mutable, or moved captures",
-  "contentDigest": "4efb915291f79a9df36c7d5e15cb0ea8f0371cd0ff8b927432c844f3c706621b",
+  "contentDigest": "addb895f949f569b25e3549792fc9723674859c5b18e106bbe4a2cd2e7938ea9",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "closure-capture-modes",
-  "minutes": 11,
+  "minutes": 18,
   "order": 5,
   "parentID": "abstraction-practice",
   "title": "Closure Capture Modes",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "let name = String::from(\"Ferris\");\nlet announce = move || {\n    println!(\"{name}\");\n};\nannounce();",
-    "explanation": "A closure borrows, mutably borrows, or moves each captured value according to its body. The move keyword transfers captures even when the body would otherwise only borrow them.",
+    "explanation": "A closure borrows, mutably borrows, or moves each captured value according to its body. The move keyword transfers captures even when the body would otherwise only borrow them.\n\nThe callable traits describe how a closure uses its captured environment. A closure that only reads captures can be called through `Fn`. One that mutates a captured variable needs `FnMut`, so the closure value must be mutable when invoked. One that consumes a captured value may be callable only once and satisfies `FnOnce`. `Fn` is the most reusable capability; `FnOnce` is the least demanding bound for a caller that invokes a callback exactly once.\n\nIn the sample, `move` transfers `name` into `announce`, allowing the closure to own the string independently of the original binding. But the body merely prints by borrowing its captured string, so the closure can still be called more than once. Add `drop(name)` inside the body and it consumes the capture; a second call then fails. This is why `move` and `FnOnce` should not be treated as synonyms. Capturing by value answers who owns the data; the body determines what kind of calls remain possible.\n\nExperiment with three closures: read a counter, increment it, and consume a string. Try passing each to functions bounded by `Fn`, `FnMut`, and `FnOnce`, then read the errors. A callback API should ask for no more capability than it needs. If it calls the callback once, an `FnOnce` bound accepts the widest set of closures. If it may call repeatedly without mutable access to the closure, `Fn` is the right promise.",
     "feedback": "Correct: Capture ownership.",
     "practiceCode": "let name = String::from(\"Ferris\");\nlet announce = move || {\n    println!(\"{name}\");\n};\nannounce();",
     "question": "What does move change about the captures?",
@@ -55,5 +55,10 @@
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Infer shared, mutable, or moved captures.",
     "task": "Trace the example, name the guarantee, and identify where it ends."
+  },
+  "illustration": {
+    "path": "media/closure-capture-modes.png",
+    "alt": "Fn reads captured data, FnMut changes it, and FnOnce may consume it.",
+    "caption": "How a closure uses its captures determines which call traits it supports."
   }
 }

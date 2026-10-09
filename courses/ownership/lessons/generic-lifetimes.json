@@ -1,6 +1,6 @@
 {
   "concept": "Combine type bounds with borrow relationships",
-  "contentDigest": "f2f6ec17e11df401300f3507471cbaf537744e581ba951b54dd6cd75ad26774d",
+  "contentDigest": "7a44e5c4c502324b5cd3553299d1fdc33e30d1fce674579ababcd6e53285c83f",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "generic-lifetimes",
-  "minutes": 11,
+  "minutes": 18,
   "order": 3,
   "parentID": "abstraction-practice",
   "title": "Generic Lifetimes",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "fn choose<'a, T>(left: &'a T, right: &'a T)\n    -> &'a T\nwhere T: Ord {\n    if left > right { left } else { right }\n}",
-    "explanation": "A function may be generic over both a data type and a lifetime. Keep each parameter only when the body needs it; extra bounds make an API less reusable without adding safety.",
+    "explanation": "A function may be generic over both a data type and a lifetime. Keep each parameter only when the body needs it; extra bounds make an API less reusable without adding safety.\n\nThe `choose` signature has two independent kinds of abstraction. `T: Ord` says what operation the body may perform on the values: comparison. `'a` says how long the borrowed inputs and returned reference are related. These parameters solve different problems. Replacing the lifetime with a broader trait bound cannot make a dangling reference safe, and adding a lifetime cannot make an incomparable type satisfy `Ord`.\n\nThe result borrows one of the two inputs. Because the body may choose either, the caller must use it only while both candidate sources are valid. Suppose the left value lives throughout a function and the right value lives in an inner block. Calling `choose` and using the result inside the block is fine. Keeping the result for use after that block is not, because it might point to the right value. The generic type does not change this rule; it applies whether `T` is an integer, a string wrapper, or a custom ordered type.\n\nTry calling `choose` with two `i32` values, then with a custom type that implements `Ord`. Next, create one input in a smaller scope and observe the lifetime error when the result escapes it. Fix the use site, not the annotation label. Keep trait bounds as narrow as the implementation needs, and keep lifetime relationships as specific as the returned data requires. A clear signature explains both the operation and the ownership story.\n\nThe letter chosen for a lifetime has no special power. Rename it consistently and the contract is the same. The useful information is which references share the label and which output is tied to them.",
     "feedback": "Correct: Both inputs and output.",
     "practiceCode": "fn choose<'a, T>(left: &'a T, right: &'a T)\n    -> &'a T\nwhere T: Ord {\n    if left > right { left } else { right }\n}",
     "question": "What does 'a connect here?",
@@ -55,5 +55,10 @@
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Combine type bounds with borrow relationships.",
     "task": "Trace the example, name the guarantee, and identify where it ends."
+  },
+  "illustration": {
+    "path": "media/generic-lifetimes.png",
+    "alt": "Left borrow lasts from time one to eight, right from four to eleven, and the returned borrow only from four to eight.",
+    "caption": "A generic return reference is valid only while both possible borrowed inputs remain valid."
   }
 }

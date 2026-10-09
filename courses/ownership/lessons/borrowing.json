@@ -1,6 +1,6 @@
 {
   "concept": "References and E0502",
-  "contentDigest": "42d46d6300e5d52e77ef5f2663e31b83d559f56367c43a0eb306269e0815494f",
+  "contentDigest": "fb8092aea1a95d49981b96fbe4d3a67a5dd1cf2bc18258fdbae86cae9127ed23",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "borrowDiagnostic",
   "id": "borrowing",
-  "minutes": 9,
+  "minutes": 14,
   "order": 1,
   "parentID": "ownership",
   "title": "Borrowing",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "The borrow ends at its last use, and the push is fine after that.",
     "exampleCode": "let mut items = vec![\n    String::from(\"ada\"),\n];\nlet first = &items[0]; // borrow\nprintln!(\"{first}\");   // ...ends\nitems.push(String::from(\"grace\"));",
-    "explanation": "Rust permits many shared references or exactly one mutable reference, never both. The compiler tracks the region where each borrow is actually used, so a borrow ends at its last use rather than at the end of the block — which is why moving one line is often the whole fix.",
+    "explanation": "Rust permits many shared references or exactly one mutable reference, never both. The compiler tracks the region where each borrow is actually used, so a borrow ends at its last use rather than at the end of the block — which is why moving one line is often the whole fix.\n\nBorrowing lets a function use data while its owner remains responsible for it. A shared reference, written `&T`, permits reading; many readers can coexist. A mutable reference, `&mut T`, permits writing but must have exclusive access for the duration of that borrow. This rule prevents a reader from holding a pointer into a vector while a writer grows the vector and possibly moves its buffer.\n\nIn the example, `first` points at the first element of `items`. The print is its last use. Only after that point does `items.push(...)` change the vector. Reverse those two lines and the shared borrow overlaps the mutation; the compiler rejects the code. The lexical braces are not the only clue: modern borrow checking follows the actual last use. This is why rearranging an operation can solve the conflict without adding a clone or another container.\n\nFor practice, first read two elements through separate shared references; both are allowed. Then try to push while either reference is still used later. Read the error as a timeline: identify when the read borrow starts, its final use, and where the write was attempted. Move the write after those uses or finish the reads first. Avoid treating every borrow error as a reason to copy data. Most are signals that the program needs a clearer order of operations. When the order truly cannot change, reconsider the structure that owns the data.\n\nA shared borrow does not promise that the underlying allocation is immortal. It only prevents incompatible mutation while the reference is used. That distinction matters whenever a container might resize or be dropped.",
     "feedback": "Ending the shared borrow before the mutation is the minimal change.",
     "practiceCode": "let mut items = vec![1, 2];\nlet first = &items[0];\nitems.push(3);\nprintln!(\"{first}\");",
     "question": "Which edit fixes it without removing anything?",

@@ -1,6 +1,6 @@
 {
   "concept": "The common lifetime relationships Rust infers",
-  "contentDigest": "db31d56dd7085f7d7ead888e554bf10e3d2a9f7b1f7a37af64257000aaba4041",
+  "contentDigest": "28bdcd59f7307537939d6ceaa8d133bf9e60b79d44f1066f5d82321c41f90377",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "lifetime-elision",
-  "minutes": 9,
+  "minutes": 14,
   "order": 5,
   "parentID": "ownership-practice",
   "title": "Lifetime Elision",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "fn first(text: &str) -> &str {\n    text.split(' ').next().unwrap_or(text)\n}",
-    "explanation": "Rust omits obvious lifetime annotations using a small set of rules. One borrowed input can usually determine the returned borrow, keeping signatures readable without weakening the proof.",
+    "explanation": "Rust omits obvious lifetime annotations using a small set of rules. One borrowed input can usually determine the returned borrow, keeping signatures readable without weakening the proof.\n\nElision means the compiler fills in common lifetime relationships you did not write. In `fn first(text: &str) -> &str`, the only borrowed input is `text`, so the returned slice must be tied to it. The function cannot create a reference that outlives the caller's text. Writing the equivalent named lifetime can be educational, but it does not make the result live longer or change runtime behavior.\n\nThe simple rules become less obvious with two borrowed inputs. A function `fn choose(a: &str, b: &str) -> &str` leaves the compiler unable to know which input the result borrows from. If the body can return either, name a shared relationship in the signature. If the result always comes from `a`, make that explicit. Methods have a useful convention: when `&self` is an input, an elided output borrow is tied to `self` unless you specify otherwise. These are rules of signature interpretation, not guesses based on the function body.\n\nPractice by writing the explicit version of `first` and checking that it compiles exactly as before. Then add a second borrowed parameter used only as a search needle; if the return still comes from `text`, annotate that relationship accurately. Draw arrows from the output reference back to the input that owns its data. This skill makes API signatures easier to read and avoids over-annotating code where elision already communicates the contract clearly.",
     "feedback": "Correct: One input determines output.",
     "practiceCode": "fn first(text: &str) -> &str {\n    text.split(' ').next().unwrap_or(text)\n}",
     "question": "Why does first need no named lifetime?",

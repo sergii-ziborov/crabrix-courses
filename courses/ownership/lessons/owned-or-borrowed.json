@@ -1,6 +1,6 @@
 {
   "concept": "Choose a return type that matches the data flow",
-  "contentDigest": "ace39b16a6bb72d951d1cb4824110af644aca05d62f297596f51ff90838cc85d",
+  "contentDigest": "4c254318ba18057cb090c551ed09a01cfb4832675c6ff6d790ff94e72fff11c1",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "owned-or-borrowed",
-  "minutes": 10,
+  "minutes": 16,
   "order": 6,
   "parentID": "ownership-practice",
   "title": "Owned or Borrowed?",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "fn label(input: &str) -> String {\n    input.trim().to_uppercase()\n}\nfn trimmed(input: &str) -> &str {\n    input.trim()\n}",
-    "explanation": "Return a borrow when the result is a view into an input; return an owned value when new data is created or must escape independently. The choice affects allocation and API flexibility.",
+    "explanation": "Return a borrow when the result is a view into an input; return an owned value when new data is created or must escape independently. The choice affects allocation and API flexibility.\n\nThe lifetime of the data behind a return value should determine its type. `trimmed(input: &str) -> &str` returns a view into existing bytes, so it can avoid allocation, but the caller cannot keep the result after the input is gone. `label(input: &str) -> String` creates uppercase text in a new owned buffer. The caller may keep that buffer independently of the input. Neither choice is universally better; each promises a different relationship.\n\nFollow the example with a `String` created in an inner block. A borrowed trimmed view must be used before the source leaves the block. An owned uppercase result can be moved out and printed afterward. If a function sometimes borrows and sometimes must allocate, `std::borrow::Cow<'a, str>` can express either case, but it adds complexity that a beginner API may not need. First choose a clear owned or borrowed contract, then optimize if measurements justify it.\n\nDo not return a reference to a local `String` assembled inside a function; the value would be dropped when the function returns. Return that `String` by value instead, relying on move semantics. Conversely, do not allocate just to return a substring that the caller will use briefly while the input remains alive. Test both signatures with a string literal and with an owned string. Ask who owns the bytes after the call and how long the result must remain valid; those answers should make the return type feel inevitable.\n\nA borrowed return can still be ergonomic: callers can call `.to_owned()` only when they need independence. That lets the common short-lived path avoid allocation while preserving an explicit escape hatch.",
     "feedback": "Correct: It creates new text.",
     "practiceCode": "fn label(input: &str) -> String {\n    input.trim().to_uppercase()\n}\nfn trimmed(input: &str) -> &str {\n    input.trim()\n}",
     "question": "Why does label return String?",
@@ -55,5 +55,10 @@
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Choose a return type that matches the data flow.",
     "task": "Trace the example, name the guarantee, and identify where it ends."
+  },
+  "illustration": {
+    "path": "media/owned-or-borrowed.png",
+    "alt": "A trimmed view points into the original text while uppercase transformation produces a new owned buffer.",
+    "caption": "Borrow for a view into existing bytes; own newly created bytes."
   }
 }

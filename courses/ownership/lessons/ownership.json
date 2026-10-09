@@ -1,6 +1,6 @@
 {
   "concept": "Moves and scope",
-  "contentDigest": "d87833b54474a9ea555c337a6324ba31b8f2d68ad2703a438f2bf5732bb6624f",
+  "contentDigest": "e21ef75ea0e36240fd6a9077bf4007307314978aa38b80476be6307bd4efdb2a",
   "depth": {
     "connections": [
       {
@@ -29,7 +29,7 @@
   },
   "exerciseKind": "planned",
   "id": "ownership",
-  "minutes": 8,
+  "minutes": 13,
   "order": 0,
   "parentID": "ownership",
   "title": "Ownership",
@@ -42,7 +42,7 @@
     "correctAnswer": 1,
     "exampleCaption": "The move is what makes a double free impossible.",
     "exampleCode": "let first = String::from(\"crab\");\nlet second = first; // ownership moves\n// println!(\"{first}\");\n// ^ error[E0382]: value moved\nprintln!(\"{second}\");",
-    "explanation": "Moves transfer that responsibility to a new binding and make the old one unusable. Copy types duplicate instead of moving, and Drop runs the moment the owner leaves scope — which is how Rust frees memory with no garbage collector and no possibility of a double free. When you genuinely need two usable values, clone() makes a second one that owns its own data.",
+    "explanation": "Moves transfer that responsibility to a new binding and make the old one unusable. Copy types duplicate instead of moving, and Drop runs the moment the owner leaves scope — which is how Rust frees memory with no garbage collector and no possibility of a double free. When you genuinely need two usable values, clone() makes a second one that owns its own data.\n\nThink of ownership as the answer to one question: who is responsible for cleaning up this value? A `String` owns a growable heap buffer, so there must be a single owner when that buffer is released. In the example, `first` initially owns it. `let second = first` transfers that responsibility; it does not make a second buffer. If both bindings could free the same allocation, the program would be unsafe, so the compiler refuses to use `first` afterward.\n\nTrace the example line by line. Before the assignment, `first` is valid. After it, only `second` is valid. At the end of the scope, `second` is dropped and its buffer is freed once. For a small integer, assignment behaves differently because `i32` implements `Copy`: both bindings contain independent bits and remain usable. When you need two independent strings, `.clone()` creates another allocation, and the explicit call shows the cost.\n\nOwnership is also an API design tool. A function taking `String` may keep or transform the value; one taking `&str` only needs to read it. Before adding a clone to silence a move error, ask whether the function should borrow instead. Try passing the example string to a printing function first by value and then by reference. Observe which signature lets the caller print it again. The compiler error identifies where the value moved; use that location to decide who should own the data next.\n\nThe same move rule applies when a value enters a collection or is returned from a function. Follow the owner rather than memorizing special cases for each syntax form.",
     "feedback": "Cloning creates a second owned String rather than moving the first.",
     "practiceCode": "let a = String::from(\"x\");\nlet b = a;\nprintln!(\"{a}\");",
     "question": "What is the smallest fix that keeps both usable?",
@@ -50,5 +50,10 @@
     "success": "You can explain why no double free is possible.",
     "summary": "Ownership gives every value one clear cleanup responsibility.",
     "task": "Predict which binding still owns a String after an assignment."
+  },
+  "illustration": {
+    "path": "media/ownership.png",
+    "alt": "A String moves from a to b; a becomes unavailable and b drops the data at scope end.",
+    "caption": "One owner is responsible for cleanup after a move."
   }
 }
