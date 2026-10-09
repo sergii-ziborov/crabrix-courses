@@ -1,6 +1,6 @@
 {
   "concept": "Make optional capability additive and explicit",
-  "contentDigest": "5d5018f347954cf727bc93258f0fe5f0791a841f306ca2eded27e28b0ec02003",
+  "contentDigest": "f4cb29d77120377cc3e9eb59f5e6119bd5ade18e9a18b7eebae43efd7a5869ef",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "feature-design",
-  "minutes": 11,
+  "minutes": 18,
   "order": 3,
   "parentID": "cargo-workflow",
   "title": "Feature Design",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "#[cfg(feature = \"color\")]\nfn paint() { println!(\"color\"); }\n\n#[cfg(not(feature = \"color\"))]\nfn paint() { println!(\"plain\"); }",
-    "explanation": "Cargo features are unified across a dependency graph, so disabling one consumer's feature may not disable it globally. Prefer additive capabilities and avoid features that make the same API mean incompatible things.",
+    "explanation": "Cargo features are unified across a dependency graph, so disabling one consumer's feature may not disable it globally. Prefer additive capabilities and avoid features that make the same API mean incompatible things.\n\nA feature is a named, additive capability a crate can enable at compile time. `#[cfg(feature = \"color\")]` includes code only when that feature is active; another branch can provide behavior without it. A feature is not a runtime switch, so a binary cannot toggle it after compilation. The public API exposed under different feature sets should be understandable and tested in each supported configuration.\n\nCargo unifies feature requests for the same package in a dependency graph. If one dependency path asks for feature A and another asks for feature B, the package may be built with both. That makes mutually exclusive features fragile: downstream users can accidentally activate the combination. Prefer features that add independent capabilities and keep a sensible default. If two backends truly cannot coexist, document and enforce that constraint explicitly, or consider a different design.\n\nCreate a tiny crate with a `color` feature and compile it with and without `--features color`. Then add two dependents that request different features of the same library and inspect the resulting feature graph with `cargo tree -e features`. Test `--no-default-features` if you claim that mode works. Avoid assuming that setting `default-features = false` at one edge globally disables defaults; another path can enable them. Feature design is part of the compatibility contract, not only a way to reduce compile time.\n\nA feature name should describe the capability it adds. Avoid names that merely encode an internal implementation file, because external users will depend on the public meaning over time.",
     "feedback": "Correct: Additive capability.",
     "practiceCode": "#[cfg(feature = \"color\")]\nfn paint() { println!(\"color\"); }\n\n#[cfg(not(feature = \"color\"))]\nfn paint() { println!(\"plain\"); }",
     "question": "What style makes features compose well?",
@@ -55,5 +55,10 @@
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Make optional capability additive and explicit.",
     "task": "Trace the example, name the guarantee, and identify where it ends."
+  },
+  "illustration": {
+    "path": "media/feature-design.png",
+    "alt": "Two dependents request different additive features and Cargo activates their union.",
+    "caption": "Features are unified across dependency paths."
   }
 }

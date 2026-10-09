@@ -1,6 +1,6 @@
 {
   "concept": "Keep API examples checked by the test suite",
-  "contentDigest": "5ec4aff5721cfa0567fc43797e74357648b70f53f51ec41a1ceeea9b257c1329",
+  "contentDigest": "38110a36e4bc62c8642a0448e2e493925cf28236dbef413b36834ef6bc726eb0",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "doc-examples",
-  "minutes": 9,
+  "minutes": 14,
   "order": 2,
   "parentID": "project-quality",
   "title": "Executable Documentation",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "/// Adds one.\n///\n/// ```\n/// assert_eq!(demo::add_one(4), 5);\n/// ```\npub fn add_one(v: i32) -> i32 { v + 1 }",
-    "explanation": "Rust documentation code blocks can compile and run as tests: cargo test builds every ``` block in a doc comment and runs it. A small realistic example teaches usage and fails when an API change makes the documentation stale.",
+    "explanation": "Rust documentation examples in Rust code fences can compile and run as tests during cargo test, unless their fence attributes opt out or change execution. A small realistic example teaches usage and fails when an API change makes the documentation stale.\n\nA documentation example is a small public usage test. A Rust code block in a `///` comment can be compiled and run by rustdoc during `cargo test`. The sample demonstrates `add_one` with an assertion, so a changed return value can fail the documentation check. In a library crate named `demo`, the example imports the public item as `demo::add_one`; use the actual crate name in a real package. Documentation that calls an item without bringing it into scope can fail even when the function itself is correct.\n\nKeep a doc example focused on the call a user is likely to make, including setup only when needed. Explain the purpose, important input constraints, and meaning of the return value in prose. You can hide incidental setup lines with rustdoc's `#` marker, but the behavior being promised should remain visible. Some fences are marked `no_run` or `ignore` for specific reasons; those attributes affect whether a block executes, so avoid claiming every fenced block is automatically a test.\n\nRun `cargo test --doc` after changing a public API and see whether the example still works. Try deliberately changing the asserted value to observe the failure. Then add an edge-case example if it clarifies behavior, but resist turning documentation into a long test suite. A good example is both readable on the docs page and executable in the test harness. It prevents a common drift: code changes while the published instructions continue teaching an obsolete call.\n\nIf a code block requires network access or another external resource, it may be unsuitable as a routine doctest. Show the API in a short self-contained example and put slower environment-dependent checks in integration tests. Keep the documentation honest about what runs automatically.",
     "feedback": "Correct: cargo test.",
     "practiceCode": "/// Adds one.\n///\n/// ```\n/// assert_eq!(demo::add_one(4), 5);\n/// ```\npub fn add_one(v: i32) -> i32 { v + 1 }",
     "question": "What checks a Rust doc example?",
@@ -55,5 +55,10 @@
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Keep API examples checked by the test suite.",
     "task": "Trace the example, name the guarantee, and identify where it ends."
+  },
+  "illustration": {
+    "path": "media/doc-examples.png",
+    "alt": "A documentation assertion passes through compilation and cargo test to a green result.",
+    "caption": "An executable example can catch documentation that no longer matches the API."
   }
 }

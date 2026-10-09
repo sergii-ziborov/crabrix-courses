@@ -1,6 +1,6 @@
 {
   "concept": "Separate runtime, build, and test-only tools",
-  "contentDigest": "6da982c78e92797185d5e2f8bcd34dc3d3cc2890270a04b17c7d4c1daff33a29",
+  "contentDigest": "bfb92b79bd961bc521ece6b14895996e4f40fdc89dd18b2050c241da0e9247c9",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "dependency-kinds",
-  "minutes": 10,
+  "minutes": 16,
   "order": 2,
   "parentID": "cargo-workflow",
   "title": "Dependency Kinds",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "[dependencies]\nlog = \"0.4\"\n\n[dev-dependencies]\npretty_assertions = \"1\"",
-    "explanation": "Normal dependencies become part of a target graph, build dependencies support build scripts, and dev dependencies exist for tests and examples. The distinction keeps production graphs smaller and clearer.",
+    "explanation": "Normal dependencies become part of a target graph, build dependencies support build scripts, and dev dependencies exist for tests and examples. The distinction keeps production graphs smaller and clearer.\n\nCargo separates dependencies by the role they play in a package. Normal `[dependencies]` are needed to build the library or binary target. `[build-dependencies]` are available to a `build.rs` script that runs during the build, often to generate files or detect native libraries. `[dev-dependencies]` support tests, examples, and benchmarks but are not ordinary runtime dependencies of the published library. The distinction helps make a package's requirements understandable.\n\nRead the sample manifest and ask where each crate is used. A logging interface needed by production code belongs under normal dependencies. A prettier assertion formatter used only in tests belongs under dev dependencies. Moving it into normal dependencies may unnecessarily expand consumers' build graphs. Conversely, placing a production import under dev dependencies makes a normal build fail even if tests happen to compile in a different configuration.\n\nDependency kinds do not by themselves make a crate trustworthy or small. Versions, features, and transitive dependencies still matter. Use `cargo tree` with the relevant target or feature flags to inspect the resolved graph. Add one test-only helper and confirm `cargo build` does not need its API in production code. Then add a build script only if there is a real build-time task; generated code adds another layer to debug. Treat each manifest section as a statement of when that capability is actually required.",
     "feedback": "Correct: dev-dependencies.",
     "practiceCode": "[dependencies]\nlog = \"0.4\"\n\n[dev-dependencies]\npretty_assertions = \"1\"",
     "question": "Where does a test-only crate belong?",

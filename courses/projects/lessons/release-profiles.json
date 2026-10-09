@@ -1,6 +1,6 @@
 {
   "concept": "Tune optimization without changing source behavior",
-  "contentDigest": "4d36414ccbbcd246893d298d641e1e41771df24960c3c6edb268dddebed866be",
+  "contentDigest": "8de98f0223e55d30796868ae1d01fb4a53949adac8717722db9de9240ef5ded8",
   "depth": {
     "connections": [
       {
@@ -29,7 +29,7 @@
   },
   "exerciseKind": "planned",
   "id": "release-profiles",
-  "minutes": 10,
+  "minutes": 16,
   "order": 3,
   "parentID": "project-quality",
   "title": "Release Profiles",
@@ -42,7 +42,7 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "[profile.release]\nopt-level = 3\nlto = \"thin\"\ndebug = 1",
-    "explanation": "Cargo profiles configure optimization, debug information, panic strategy, and more. Measure the real workload before trading compile time, binary size, or debuggability for speed.",
+    "explanation": "Cargo profiles configure optimization, debug information, panic strategy, and more. Measure the real workload before trading compile time, binary size, or debuggability for speed.\n\nA Cargo profile controls how a target is compiled. The default development profile favors fast builds and useful diagnostics; the release profile typically enables stronger optimization. Settings such as `opt-level`, `lto`, debug information, and panic behavior change compile time, runtime speed, binary size, or the quality of stack traces. There is no one best combination for every workload.\n\nThe sample enables optimization and thin link-time optimization while retaining some debug information. That is a reasonable candidate to measure, not a universal prescription. Compare debug and release builds on a representative task. If a binary is latency-sensitive, measure latency; if it must fit a size limit, measure bytes; if production crashes need investigation, keep enough symbols to diagnose them. A microbenchmark on an empty loop may say little about a real application doing I/O and allocation.\n\nUse `cargo build --release` to create the optimized artifact, and keep tests running in the configurations you support. Some bugs only appear under different optimization or feature combinations, even though safe Rust prevents many memory errors. Record the baseline before changing a profile, change one setting, and compare the same workload. If the result is within noise, prefer the simpler configuration. Release settings should be driven by evidence and operational needs, not by copying every available optimization flag into the manifest.",
     "feedback": "Correct: Measurements.",
     "practiceCode": "[profile.release]\nopt-level = 3\nlto = \"thin\"\ndebug = 1",
     "question": "What should guide profile changes?",

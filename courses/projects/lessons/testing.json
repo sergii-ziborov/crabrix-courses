@@ -1,6 +1,6 @@
 {
   "concept": "Unit and integration tests",
-  "contentDigest": "6f53e7a04f9249b523af3074c5b8e18ed43576636d1693d0a686030a59c65280",
+  "contentDigest": "b2d61dd8f0ecd289d3007250e0085e6e9d7a8516dd96022e8ff97ded33c78d03",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "testing",
-  "minutes": 10,
+  "minutes": 16,
   "order": 1,
   "parentID": "projects",
   "title": "Testing",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Tests live beside the code and can see its private parts.",
     "exampleCode": "#[cfg(test)]\nmod tests {\n    use super::*;\n\n    #[test]\n    fn adds_two_numbers() {\n        assert_eq!(add(2, 2), 4);\n    }\n}",
-    "explanation": "#[test] functions are compiled only for the test harness, so they cost nothing in a release build. Unit tests sit beside the code and can reach its private details; integration tests live in tests/ and see only the public API, which is a useful check on your own interface.",
+    "explanation": "#[test] functions are compiled only for the test harness, so they cost nothing in a release build. Unit tests sit beside the code and can reach its private details; integration tests live in tests/ and see only the public API, which is a useful check on your own interface.\n\nA test records an observable promise. `#[test]` marks a function that the test harness runs under `cargo test`; an assertion compares the actual value with a prediction. The sample puts tests beside the implementation in a `#[cfg(test)]` module, which is a good place for small unit tests of edge cases and private helpers. The module is only compiled when testing, so it does not become a normal production code path.\n\nStart with a function that adds two numbers. Test a typical case, zero, and a boundary that might reveal overflow or an incorrect sign. Name tests for the behavior they protect rather than the implementation line they execute. If a test fails, its assertion should tell you what input produced the mismatch. A test that merely repeats the function's code is weak: it can share the same mistake. Prefer a simple expected result you can justify independently.\n\nIntegration tests under `tests/` compile as separate crates and call the public library API. They are useful when you want evidence that an external consumer can use the package as intended. A practical suite usually combines focused unit tests with a few end-to-end cases. Tests do not prove an implementation correct for every input, but they make intended behavior executable and guard against later changes. Run the narrowest relevant test while editing and the full suite before shipping; both speeds of feedback matter.",
     "feedback": "A test with no assertion only proves the code did not panic.",
     "practiceCode": "#[test]\nfn works() {\n    let result = compute();\n}",
     "question": "What is missing from that test?",

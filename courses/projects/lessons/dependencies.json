@@ -1,6 +1,6 @@
 {
   "concept": "crates.io, SemVer, and features",
-  "contentDigest": "05da444599274979e5df80b720e1219cd16b40729a0d9587c86a15373a3f1e65",
+  "contentDigest": "7496aaffa4750bbcef425a73d18f359187e2428b97d8f849b7d897a1c7271ae3",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "dependencies",
-  "minutes": 10,
+  "minutes": 16,
   "order": 3,
   "parentID": "projects",
   "title": "Dependencies",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "A requirement, a feature set, and an opt-out of defaults.",
     "exampleCode": "[dependencies]\nserde = { version = \"1\", features = [\"derive\"] }\nsmallvec = \"1\"\nmemchr = { version = \"2\", default-features = false }",
-    "explanation": "\"1.2\" means any 1.x at or above 1.2, because Cargo follows SemVer: patch and minor releases must stay compatible. The resolver picks the highest match and records the exact choice in Cargo.lock, and features let one crate ship optional pieces you opt into rather than paying for by default.",
+    "explanation": "\"1.2\" means any 1.x at or above 1.2, because Cargo follows SemVer: patch and minor releases must stay compatible. The resolver picks the highest match and records the exact choice in Cargo.lock, and features let one crate ship optional pieces you opt into rather than paying for by default.\n\nA dependency declaration is a compatibility request, not a permanent pin. In Cargo's default caret requirement, `version = \"1.2\"` accepts compatible 1.x releases from 1.2 upward but not 2.0. `Cargo.lock` records the concrete versions selected for a particular resolution, so two developers can rebuild the same application graph. Read both files when investigating why a new release did or did not appear in your build.\n\nFeatures let a dependency expose optional capabilities. In the example, `serde` with `derive` enables procedural derives; `default-features = false` on another dependency removes only that dependency edge's default request. Features are unified when the same package is reached through several paths, so another dependency can still turn a feature on. Treat features as additive options, and inspect the resolved feature graph when behavior surprises you.\n\nBefore adding a crate, check what problem it solves, whether its API fits the project, and what it brings into the build. A small dependency can be worthwhile, but every dependency adds a maintenance and security surface. Pinning every version forever is not a substitute for tests; compatible updates still need verification. Practice with `cargo tree` to inspect the graph, update one package deliberately, and run tests after the lockfile changes. Keep direct dependency declarations clear and leave transitive selection to the resolver unless a real constraint requires intervention.\n\nWhen reading a version requirement, pay attention to pre-release versions and major version zero, whose compatibility rules are narrower. Do not infer safety solely from a SemVer range; examine release notes and run meaningful tests after updates.",
     "feedback": "Below 1.0 the minor number is the breaking one, so 0.4.x only.",
     "practiceCode": "[dependencies]\nexample = \"0.4\"",
     "question": "Which version can that requirement resolve to?",

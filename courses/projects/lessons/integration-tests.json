@@ -1,6 +1,6 @@
 {
   "concept": "Test the public API as an outside user",
-  "contentDigest": "5dff847885f806aab69bd319b70bb9c64085e53447173203d642466e9d4a4374",
+  "contentDigest": "cfc2ed75ec48ac61f3cb6f9fd2e6e224b399ed915269ef6770bef8ab8d3aec3e",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "integration-tests",
-  "minutes": 10,
+  "minutes": 16,
   "order": 0,
   "parentID": "project-quality",
   "title": "Integration Tests",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "// tests/public_api.rs\nuse demo::answer;\n\n#[test]\nfn answer_is_stable() {\n    assert_eq!(answer(), 42);\n}",
-    "explanation": "Files under tests/ compile as separate crates and can only use the library's public API. That boundary catches accidental reliance on private implementation details.",
+    "explanation": "Files under tests/ compile as separate crates and can only use the library's public API. That boundary catches accidental reliance on private implementation details.\n\nAn integration test behaves like an external user of your library. Each file under `tests/` is compiled as a separate crate and imports the public API by crate name. It cannot reach private helpers simply because they exist in the same repository. That constraint is valuable: if a test can accomplish a real task through the public interface, downstream callers probably can too.\n\nThe sample test imports `demo::answer` and asserts a stable result. Add a second test for a boundary case and a third for an error path. Give each a name that describes the promised behavior. Avoid testing private implementation details through elaborate scaffolding; those tests can become brittle when you refactor without changing the external contract. Unit tests next to the code are still useful for focused private logic. The two test locations serve different levels of confidence.\n\nIf an integration test needs a binary or fixture, make setup explicit and keep test cases independent so order does not matter. A test that relies on shared mutable files or network state can fail intermittently and hide real regressions. Run `cargo test --test public_api` while developing that file, then `cargo test` for the full suite. When a test fails, distinguish a library behavior change from a test assumption that was never part of the public contract. A small, representative collection of black-box tests often gives more confidence than many tests coupled to internal functions.",
     "feedback": "Correct: It is a separate crate.",
     "practiceCode": "// tests/public_api.rs\nuse demo::answer;\n\n#[test]\nfn answer_is_stable() {\n    assert_eq!(answer(), 42);\n}",
     "question": "Why can this test not use private items?",
@@ -55,5 +55,10 @@
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Test the public API as an outside user.",
     "task": "Trace the example, name the guarantee, and identify where it ends."
+  },
+  "illustration": {
+    "path": "media/integration-tests.png",
+    "alt": "Separate integration test files call a library through its public API and report their results.",
+    "caption": "External tests exercise the interface a real consumer can reach."
   }
 }

@@ -1,6 +1,6 @@
 {
   "concept": "Build the same resolved graph again",
-  "contentDigest": "6d146ac20e0f6396ed46f23da190858e3486f9db8f1274f3fcf632c7a64167da",
+  "contentDigest": "e363fb5d58af6a0d28ca1f5e282cf49faf491d6fd22d64674e593b6acc29020f",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "lockfile-reproducibility",
-  "minutes": 10,
+  "minutes": 16,
   "order": 4,
   "parentID": "cargo-workflow",
   "title": "Lockfile Reproducibility",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "[[package]]\nname = \"smallvec\"\nversion = \"1.13.2\"\nchecksum = \"...\"",
-    "explanation": "Cargo.toml describes allowed versions while Cargo.lock records the exact chosen graph. Applications normally commit the lockfile so a later build does not silently select newer compatible releases.",
+    "explanation": "Cargo.toml describes allowed versions while Cargo.lock records the exact chosen graph. Applications normally commit the lockfile so a later build does not silently select newer compatible releases.\n\n`Cargo.toml` says which versions are acceptable; `Cargo.lock` records which exact package versions the resolver selected. If a manifest permits several compatible releases, the lockfile keeps subsequent ordinary builds on the same chosen graph until an update changes it. This helps a team reproduce a bug and compare results without silently pulling a newer dependency on every checkout.\n\nAn application normally commits its lockfile. A library crate may also commit one for its own development and tests, but downstream consumers resolve dependencies using their own lockfiles. The lockfile is therefore not a universal promise that every consumer uses the library author's exact dependency graph. If you are publishing a binary or deploying a service, review lockfile changes along with source changes, because a dependency update can alter behavior even when your own code is unchanged.\n\nTry `cargo update -p package_name` in a disposable branch and inspect the lockfile diff. Run tests and, where relevant, a release build. To check whether a clean machine can reproduce the selected graph without modifying the lockfile, use `cargo build --locked`. Be aware that a lockfile pins versions, not the entire operating environment or external native libraries. Reproducibility improves when toolchain, build flags, and platform assumptions are recorded too.",
     "feedback": "Correct: The exact graph.",
     "practiceCode": "[[package]]\nname = \"smallvec\"\nversion = \"1.13.2\"\nchecksum = \"...\"",
     "question": "What does Cargo.lock pin?",

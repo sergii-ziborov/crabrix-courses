@@ -1,6 +1,6 @@
 {
   "concept": "Preserve a cause while explaining the failed operation",
-  "contentDigest": "952e54b76c1b7e025a6993c7123a0b12b4e32ad533bc30dc086684267c5138e0",
+  "contentDigest": "907d23e96dc2a515df92ecc2dc4681853c815b88d308f1d431000762703769e1",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "error-context",
-  "minutes": 11,
+  "minutes": 18,
   "order": 1,
   "parentID": "project-quality",
   "title": "Error Context",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "fn port(text: &str) -> Result<u16, String> {\n    text.parse().map_err(|error| {\n        format!(\"invalid port {text}: {error}\")\n    })\n}",
-    "explanation": "A useful error says what operation failed and retains the original cause. Add context at abstraction boundaries rather than replacing specific information with one vague message.",
+    "explanation": "A useful error says what operation failed and retains the original cause. Add context at abstraction boundaries rather than replacing specific information with one vague message.\n\nAn error should carry enough information for someone at the boundary to understand what failed. `text.parse::<u16>()` can report a parsing failure, but a caller may need to know that this text was supposed to be a port. The example's `map_err` adds the offending value and the operation while preserving the underlying cause in the formatted message. At a higher layer, you might add which configuration file or command supplied that value.\n\nThe useful question is where to add context. A low-level parser knows syntax; a configuration loader knows the field name; a CLI knows what the user was trying to do. Each layer should add only the information it owns. Replacing every error with the same \"invalid input\" string erases evidence. Duplicating full messages at every layer produces noise. Structured error types or source chains can preserve machine-readable causes until the final presentation layer chooses wording.\n\nTry the port function with valid text, letters, and a number too large for `u16`. Check that the user-facing message distinguishes where the failure occurred without exposing irrelevant internal details. If recovery is possible, return `Result` so the caller can decide. If the error is logged, include enough context to reproduce it while avoiding secrets or full sensitive input. Good diagnostics are a collaboration between error type, call-site context, and final display—not a single catch-all message.",
     "feedback": "Correct: The original cause.",
     "practiceCode": "fn port(text: &str) -> Result<u16, String> {\n    text.parse().map_err(|error| {\n        format!(\"invalid port {text}: {error}\")\n    })\n}",
     "question": "What should context preserve?",

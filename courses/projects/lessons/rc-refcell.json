@@ -1,6 +1,6 @@
 {
   "concept": "Shared ownership and interior mutability",
-  "contentDigest": "98d51b1cb9b6eb279ac091b76bd09ae94dd09342c5f0a5850d256a7889245ba6",
+  "contentDigest": "e4f16afcae01cf02530dccacdfeb9c1d22f43f36c861125a76b007d9d9cbb232",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "rc-refcell",
-  "minutes": 12,
+  "minutes": 19,
   "order": 1,
   "parentID": "pointers",
   "title": "Rc & RefCell",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Shared ownership on the outside, controlled mutation on the inside.",
     "exampleCode": "use std::cell::RefCell;\nuse std::rc::Rc;\n\nlet shared = Rc::new(RefCell::new(vec![1, 2, 3]));\nlet second = Rc::clone(&shared);\n\nsecond.borrow_mut().push(4);\nprintln!(\"{:?}\", shared.borrow());\nprintln!(\"owners {}\", Rc::strong_count(&shared));",
-    "explanation": "Rc<T> keeps a count and frees when it reaches zero, but only hands out shared references. Pairing it with RefCell<T> lets you mutate through that shared handle, with the borrow rules checked at runtime instead — a violation panics rather than failing to compile. Neither is thread-safe; that is Arc and Mutex.",
+    "explanation": "Rc<T> keeps a count and frees when it reaches zero, but only hands out shared references. Pairing it with RefCell<T> lets you mutate through that shared handle, with the borrow rules checked at runtime instead — a violation panics rather than failing to compile. Neither is thread-safe; that is Arc and Mutex.\n\n`Rc<T>` provides shared ownership within one thread. Each clone of an `Rc` is another strong handle to the same allocation, not a deep copy of `T`. The allocation is released when its last strong owner disappears. Because multiple owners can access the same value, `Rc<T>` normally provides shared read access. Wrapping the value in `RefCell<T>` permits mutation by checking the borrow rule at runtime.\n\nIn the sample, both `shared` and `second` refer to the same cell. A `borrow_mut()` guard grants exclusive access while it is alive; a `borrow()` guard permits reading, possibly alongside other readers. If a writer and reader overlap, `RefCell` panics, or `try_borrow` returns an error. Keep the guard's lifetime short. If the mutation is awkward only because the ownership design is unclear, a simpler owner with explicit mutable borrowing may be preferable.\n\nUse `Rc<RefCell<T>>` for a local graph or UI state where several single-threaded owners truly need to share a mutable value. It is not a concurrency primitive. `Rc` does not implement the thread-safety traits needed for cross-thread sharing, and `RefCell` does not synchronize threads. The rough cross-thread counterparts are `Arc<T>` for shared ownership and a `Mutex<T>` or another synchronization strategy for mutation. Draw each owner and each active borrow separately; counting handles and checking access are two different mechanisms.\n\nIf you need only several read-only owners, `Rc<T>` alone is simpler. Add `RefCell` only when mutation behind shared ownership is a real requirement.",
     "feedback": "RefCell enforces the same rule, just later and with a panic.",
     "practiceCode": "let cell = RefCell::new(5);\nlet a = cell.borrow_mut();\nlet b = cell.borrow_mut();",
     "question": "What happens on the second borrow_mut?",
@@ -55,5 +55,10 @@
     "success": "Both handles observe the change and the count is correct.",
     "summary": "Rc shares ownership; RefCell moves the borrow check to runtime.",
     "task": "Share one vector between two handles and mutate it through both."
+  },
+  "illustration": {
+    "path": "media/rc-refcell.png",
+    "alt": "Two Rc owners share one RefCell allocation; separate panels show multiple read guards or one write guard.",
+    "caption": "Rc counts owners, while RefCell checks access at runtime."
   }
 }
