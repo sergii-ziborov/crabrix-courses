@@ -14,7 +14,7 @@
     "visibleInput": "2 7 + 3 * 4 -"
   },
   "concept": "expression evaluators and stack machines",
-  "contentDigest": "a8aaa3037320e88dbf318f81c803d71523e1f79e3d1d27cee5f0fc388ac62217",
+  "contentDigest": "6a256e779f7918902efaddefb782c7444ea3db4a4c8efcfbfddc6af85df8cff1",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `2 7 + 3 * 4 -`, write the state before the first update. Explain how it represents this claim: Push operands and reduce the latest operands whenever an operator arrives. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `23`. Vec works as a stack; VecDeque supplies efficient operations at both ends. Avoid removing from the front of a Vec in a long loop."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Defend the O(n) time · O(n) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on expression evaluators and stack machines."
+    "transferChallenge": "Change the visible input `2 7 + 3 * 4 -` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Postfix Evaluation survives, which state must be updated, and whether the O(n) time · O(n) space bound still holds. Look for nested structure, next-greater relationships, or ordered processing. A plain scan is enough when no unresolved state must be retained."
   },
   "exerciseKind": "planned",
   "id": "algorithm.postfix-evaluation.recognize",
-  "minutes": 8,
+  "minutes": 12,
   "order": 4,
   "parentID": "algorithms-stacks-queues",
   "title": "Postfix Evaluation: When to Use It",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Postfix Evaluation",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Postfix Evaluation",
-    "explanation": "Reach for this pattern when the prompt contains expression evaluators and stack machines. Confirm that its assumptions actually hold, then compare O(n) time · O(n) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for Postfix Evaluation when it asks for expression evaluators and stack machines. Here the concrete task is: Evaluate the space-separated postfix expression. The visible input `2 7 + 3 * 4 -` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for nested structure, next-greater relationships, or ordered processing. A plain scan is enough when no unresolved state must be retained. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Push operands and reduce the latest operands whenever an operator arrives. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(n) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `23` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Vec works as a stack; VecDeque supplies efficient operations at both ends. Avoid removing from the front of a Vec in a long loop. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: expression evaluators and stack machines.",
     "practiceCode": "fn balanced(text: &str) -> bool {\n    let mut stack = Vec::new();\n    for ch in text.chars() {\n        match ch {\n            '(' | '[' | '{' => stack.push(ch),\n            ')' => if stack.pop() != Some('(') { return false; },\n            ']' => if stack.pop() != Some('[') { return false; },\n            '}' => if stack.pop() != Some('{') { return false; },\n            _ => {}\n        }\n    }\n    stack.is_empty()\n}",
     "question": "Which group is the strongest signal for this pattern?",

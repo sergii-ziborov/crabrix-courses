@@ -14,7 +14,7 @@
     "visibleInput": "start=0,0 goal=3,2"
   },
   "concept": "goal-directed pathfinding with useful geometry",
-  "contentDigest": "3a8ce2275c99543cb88b2e0f8dc20bae693807890f61839b75f10e5c6ba0edc6",
+  "contentDigest": "4df474afb0a84d0357571918ccb453d58732838e4c373fa4b78dc217a4312559",
   "depth": {
     "connections": [
       {
@@ -32,19 +32,19 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `start=0,0 goal=3,2`, write the state before the first update. Explain how it represents this claim: Prioritize distance-so-far plus an admissible estimate that never overstates remaining cost. Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `5`. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Defend the O(E) worst · frontier depends on heuristic bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on goal-directed pathfinding with useful geometry."
+    "transferChallenge": "Change the visible input `start=0,0 goal=3,2` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from A* Search survives, which state must be updated, and whether the O(E) worst · frontier depends on heuristic bound still holds. Inspect weight signs and graph direction: non-negative shortest paths, negative edges, and zero-one weights support different algorithms."
   },
   "exerciseKind": "planned",
   "id": "algorithm.a-star.recognize",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for A* Search",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: A* Search",
-    "explanation": "Reach for this pattern when the prompt contains goal-directed pathfinding with useful geometry. Confirm that its assumptions actually hold, then compare O(E) worst · frontier depends on heuristic with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for A* Search when it asks for goal-directed pathfinding with useful geometry. Here the concrete task is: On a 4x4 empty grid, return shortest moves from (0,0) to (3,2) using Manhattan heuristic. The visible input `start=0,0 goal=3,2` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Inspect weight signs and graph direction: non-negative shortest paths, negative edges, and zero-one weights support different algorithms. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Prioritize distance-so-far plus an admissible estimate that never overstates remaining cost. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(E) worst · frontier depends on heuristic; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `5` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: goal-directed pathfinding with useful geometry.",
     "practiceCode": "// Dijkstra invariant:\n// when the smallest tentative distance is popped and is current,\n// no later non-negative path can improve that node.",
     "question": "Which group is the strongest signal for this pattern?",

@@ -14,7 +14,7 @@
     "visibleInput": "[1,4,7];[2,5,8];[0,6,9]"
   },
   "concept": "Merge the three sorted sequences.",
-  "contentDigest": "65a0beb9848cd0c9ff6e94367f7c7c1d9ae704649729282fa4390a441f6e72ae",
+  "contentDigest": "f97289e3b50ac2ee83206fc6854c1d02376514514f91be640034c4fb8f8a2aa6",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“No complexity bound is needed”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `[1,4,7];[2,5,8];[0,6,9]`, write the state before the first update. Explain how it represents this claim: Push one frontier item per sorted source and advance only the source that wins. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded."
       },
       {
-        "detail": "Merge the three sorted sequences.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `0,1,2,4,5,6,7,8,9`. Rust BinaryHeap is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data."
       },
       {
-        "detail": "The harness prints PASS k-way-merge, and your explanation still meets O(N log k) time · O(k) space.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Defend the O(N log k) time · O(k) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on merge the three sorted sequences.."
+    "transferChallenge": "Change the visible input `[1,4,7];[2,5,8];[0,6,9]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from K-Way Heap Merge survives, which state must be updated, and whether the O(N log k) time · O(k) space bound still holds. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.k-way-merge.challenge",
-  "minutes": 11,
+  "minutes": 15,
   "order": 11,
   "parentID": "algorithms-heaps-streaming",
   "title": "Challenge: K-Way Heap Merge",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Editable solution · verification data stays outside the project",
     "exampleCode": "pub fn solve(input: &str) -> String {\n    // Merge the three sorted sequences.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement K-Way Heap Merge\")\n}",
-    "explanation": "This is an original Crabrix exercise in the same problem family as common interview-platform questions. Visible input: [1,4,7];[2,5,8];[0,6,9]. Expected answer: 0,1,2,4,5,6,7,8,9. Implement solve instead of printing the expected value directly; Crabrix supplies several verification cases privately when you Run. The input grammar matches the visible example, and whitespace surrounding the complete input is insignificant.",
+    "explanation": "Solve the exact task, not just the visible example: Merge the three sorted sequences. On input `[1,4,7];[2,5,8];[0,6,9]`, the expected answer is `0,1,2,4,5,6,7,8,9`. That output gives you a test oracle for one case, while the private checks also exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Push one frontier item per sorted source and advance only the source that wins. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot explain `0,1,2,4,5,6,7,8,9`, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Rust BinaryHeap is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(N log k) time · O(k) space; explain which operation dominates it and how many times the input can trigger that operation. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
     "feedback": "The intended target is O(N log k) time · O(k) space; defend any different tradeoff explicitly.",
     "practiceCode": "pub fn solve(input: &str) -> String {\n    // Merge the three sorted sequences.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement K-Way Heap Merge\")\n}",
     "question": "Which performance target should guide this solution?",

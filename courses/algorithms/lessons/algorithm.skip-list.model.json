@@ -14,7 +14,7 @@
     "visibleInput": "[3,6,7,9,12,19,17,26,21,25]"
   },
   "concept": "Promote nodes randomly into sparse express lanes and descend when the next jump overshoots.",
-  "contentDigest": "d63db3c11dc2ae19c1888ac1773e232ccf9b880fbcffa857acfbf0e982aa30ff",
+  "contentDigest": "c2e84a5a57df11ebb9a22f7248008d6e89732a2816832d329ba73f0fd60ec7c6",
   "depth": {
     "connections": [
       {
@@ -32,19 +32,19 @@
     "misconception": "“The shortest variable names”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `[3,6,7,9,12,19,17,26,21,25]`, write the state before the first update. Explain how it represents this claim: Promote nodes randomly into sparse express lanes and descend when the next jump overshoots. An advanced structure or offline query order packages an invariant across operations. Name what each node, block, or reordered query state stores."
       },
       {
-        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `true`. Keep representation and operations separate in Rust. Verify a tiny instance against a straightforward reference implementation before optimizing."
       },
       {
-        "detail": "You can explain the invariant, termination condition, and O(log n) expected search/update · O(n) space bound without looking at the code.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test empty ranges, repeated updates, undo operations where supported, and the exact boundary between adjacent blocks. Defend the O(log n) expected search/update · O(n) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on promote nodes randomly into sparse express lanes and descend when the next jump overshoots.."
+    "transferChallenge": "Change the visible input `[3,6,7,9,12,19,17,26,21,25]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Skip List survives, which state must be updated, and whether the O(log n) expected search/update · O(n) space bound still holds. Choose it only when simpler scans or prefix arrays cannot satisfy both update and query limits."
   },
   "exerciseKind": "planned",
   "id": "algorithm.skip-list.model",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Rust sketch · target O(log n) expected search/update · O(n) space",
     "exampleCode": "// Advanced structures start from the same discipline:\n// define the query monoid, update semantics, and the invariant that\n// makes each decomposition smaller than the original problem.",
-    "explanation": "Skip List belongs to Advanced Data Structures. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include probabilistic ordered maps and concurrent-friendly indexes.",
+    "explanation": "Begin with the concrete question: Return whether 19 is found after inserting the values. For the visible input `[3,6,7,9,12,19,17,26,21,25]`, the stated result is `true`. Before reading code, name the smallest piece of information that must survive from one step to the next. An advanced structure or offline query order packages an invariant across operations. Name what each node, block, or reordered query state stores. That is the mental model for Skip List; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Promote nodes randomly into sparse express lanes and descend when the next jump overshoots. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is an invariant note rather than a complete program. Turn it into explicit state and transitions before coding. Keep representation and operations separate in Rust. Verify a tiny instance against a straightforward reference implementation before optimizing. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(log n) expected search/update · O(n) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test empty ranges, repeated updates, undo operations where supported, and the exact boundary between adjacent blocks. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
     "feedback": "The invariant explains both correctness and which state may change.",
     "practiceCode": "// Advanced structures start from the same discipline:\n// define the query monoid, update semantics, and the invariant that\n// makes each decomposition smaller than the original problem.",
     "question": "What should you identify before translating this pattern into Rust?",

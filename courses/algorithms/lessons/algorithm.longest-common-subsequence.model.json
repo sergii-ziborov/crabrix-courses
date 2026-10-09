@@ -14,7 +14,7 @@
     "visibleInput": "abcde and ace"
   },
   "concept": "Match equal symbols diagonally; otherwise discard one suffix boundary and keep the better result.",
-  "contentDigest": "3b3261f7710bfe8465a261dbc79ae52b0be9a46e4192f494aa1bec5102b2f222",
+  "contentDigest": "d22425100bd69ed62f8d1e8e234cbdde1d1f1f2b99fe552f1a5e278613dc1f9e",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“The shortest variable names”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `abcde and ace`, write the state before the first update. Explain how it represents this claim: Match equal symbols diagonally; otherwise discard one suffix boundary and keep the better result. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit."
       },
       {
-        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `3`. Index tables consistently where the state is tabular. Compress dimensions only after the full recurrence and its dependency order are clear."
       },
       {
-        "detail": "You can explain the invariant, termination condition, and O(n*m) time · O(min(n,m)) space possible bound without looking at the code.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Defend the O(n*m) time · O(min(n,m)) space possible bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on match equal symbols diagonally; otherwise discard one suffix boundary and keep the better result.."
+    "transferChallenge": "Change the visible input `abcde and ace` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Longest Common Subsequence survives, which state must be updated, and whether the O(n*m) time · O(min(n,m)) space possible bound still holds. Write the dependency arrows before choosing loop order; a recurrence that reads the future cannot be filled left to right without adjustment."
   },
   "exerciseKind": "planned",
   "id": "algorithm.longest-common-subsequence.model",
-  "minutes": 11,
+  "minutes": 12,
   "order": 6,
   "parentID": "algorithms-dynamic-2d",
   "title": "Longest Common Subsequence: Mental Model",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Rust sketch · target O(n*m) time · O(min(n,m)) space possible",
     "exampleCode": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
-    "explanation": "Longest Common Subsequence belongs to 2D & Advanced Dynamic Programming. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include diffs, sequence similarity, deletion distance.",
+    "explanation": "Begin with the concrete question: Return the LCS length. For the visible input `abcde and ace`, the stated result is `3`. Before reading code, name the smallest piece of information that must survive from one step to the next. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit. That is the mental model for Longest Common Subsequence; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Match equal symbols diagonally; otherwise discard one suffix boundary and keep the better result. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Index tables consistently where the state is tabular. Compress dimensions only after the full recurrence and its dependency order are clear. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n*m) time · O(min(n,m)) space possible. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
     "feedback": "The invariant explains both correctness and which state may change.",
     "practiceCode": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
     "question": "What should you identify before translating this pattern into Rust?",

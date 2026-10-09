@@ -14,7 +14,7 @@
     "visibleInput": "[(1,4),(2,5),(4,6)]"
   },
   "concept": "Sort starts and ends as signed events and integrate active state across coordinates.",
-  "contentDigest": "05ad1ad00228592083af89180afda31dda61ad8fa5ead5d32efc7de0a7dd5404",
+  "contentDigest": "38239b5afb1ef1ba5a3478434e8dc5658b219d68c294eabd5c1b3d93882f5fd2",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“The shortest variable names”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `[(1,4),(2,5),(4,6)]`, write the state before the first update. Explain how it represents this claim: Sort starts and ends as signed events and integrate active state across coordinates. A greedy step commits to a local choice. Give the exchange or dominance reason that an optimal solution can still include that choice."
       },
       {
-        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `2`. Keep interval endpoint conventions explicit where they apply. If sorting is part of the method, its Rust comparator must encode the proof's exact tie break."
       },
       {
-        "detail": "You can explain the invariant, termination condition, and O(n log n) time · O(n) events bound without looking at the code.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test touching intervals, equal endpoints, empty input, and a locally attractive choice that blocks a better future choice. Defend the O(n log n) time · O(n) events bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on sort starts and ends as signed events and integrate active state across coordinates.."
+    "transferChallenge": "Change the visible input `[(1,4),(2,5),(4,6)]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Sweep-Line Events survives, which state must be updated, and whether the O(n log n) time · O(n) events bound still holds. When the method sorts intervals or events, use the coordinate and tie break required by its proof. Other greedy walks keep an invariant without sorting."
   },
   "exerciseKind": "planned",
   "id": "algorithm.sweep-line-events.model",
-  "minutes": 11,
+  "minutes": 12,
   "order": 9,
   "parentID": "algorithms-greedy-intervals",
   "title": "Sweep-Line Events: Mental Model",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Rust sketch · target O(n log n) time · O(n) events",
     "exampleCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
-    "explanation": "Sweep-Line Events belongs to Greedy & Interval Methods. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include overlap counts, skyline changes, resource demand.",
+    "explanation": "Begin with the concrete question: Return maximum simultaneous sessions; process ends before starts at equal time. For the visible input `[(1,4),(2,5),(4,6)]`, the stated result is `2`. Before reading code, name the smallest piece of information that must survive from one step to the next. A greedy step commits to a local choice. Give the exchange or dominance reason that an optimal solution can still include that choice. That is the mental model for Sweep-Line Events; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Sort starts and ends as signed events and integrate active state across coordinates. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Keep interval endpoint conventions explicit where they apply. If sorting is part of the method, its Rust comparator must encode the proof's exact tie break. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n log n) time · O(n) events. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test touching intervals, equal endpoints, empty input, and a locally attractive choice that blocks a better future choice. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
     "feedback": "The invariant explains both correctness and which state may change.",
     "practiceCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
     "question": "What should you identify before translating this pattern into Rust?",

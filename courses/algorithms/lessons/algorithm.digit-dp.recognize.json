@@ -14,7 +14,7 @@
     "visibleInput": "bound=25 sum=5"
   },
   "concept": "count numbers under a bound satisfying digit constraints",
-  "contentDigest": "4b463b562ac1fa51f12584ba238d131e9c856da7fa26be56de27da4f8815f51f",
+  "contentDigest": "50c6f39907024a3f10c52f76195f8003c41e5fd3865fa8493c01793379b47511",
   "depth": {
     "connections": [
       {
@@ -32,19 +32,19 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `bound=25 sum=5`, write the state before the first update. Explain how it represents this claim: Process digits with position, tight-bound, leading-zero, and property state. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `3`. Index tables consistently where the state is tabular. Compress dimensions only after the full recurrence and its dependency order are clear."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Defend the O(digits * states * base) time bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on count numbers under a bound satisfying digit constraints."
+    "transferChallenge": "Change the visible input `bound=25 sum=5` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Digit DP survives, which state must be updated, and whether the O(digits * states * base) time bound still holds. Write the dependency arrows before choosing loop order; a recurrence that reads the future cannot be filled left to right without adjustment."
   },
   "exerciseKind": "planned",
   "id": "algorithm.digit-dp.recognize",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Digit DP",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Digit DP",
-    "explanation": "Reach for this pattern when the prompt contains count numbers under a bound satisfying digit constraints. Confirm that its assumptions actually hold, then compare O(digits * states * base) time with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for Digit DP when it asks for count numbers under a bound satisfying digit constraints. Here the concrete task is: Count integers from 0 through 25 whose digit sum is 5. The visible input `bound=25 sum=5` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Write the dependency arrows before choosing loop order; a recurrence that reads the future cannot be filled left to right without adjustment. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Process digits with position, tight-bound, leading-zero, and property state. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(digits * states * base) time; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `3` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Index tables consistently where the state is tabular. Compress dimensions only after the full recurrence and its dependency order are clear. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: count numbers under a bound satisfying digit constraints.",
     "practiceCode": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
     "question": "Which group is the strongest signal for this pattern?",

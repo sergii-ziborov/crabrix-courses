@@ -14,7 +14,7 @@
     "visibleInput": "a=[1,3,7,0,0,0] m=3; b=[2,5,6]"
   },
   "concept": "merging sorted buffers with trailing capacity",
-  "contentDigest": "054e25b533e58c7792a1cc8284e2a7edea1ebd8137adfb5fde06bc1aa507fb15",
+  "contentDigest": "e4f60c6581f277351fddd31f29b24ab87dfcb645dee77c861d0e65c96d0c75b9",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `a=[1,3,7,0,0,0] m=3; b=[2,5,6]`, write the state before the first update. Explain how it represents this claim: Fill free capacity from the end so unread source values are never overwritten. Two positions move according to a monotone fact: after one comparison, some candidates can be ruled out permanently. Name that fact."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `1,2,3,5,6,7`. Use explicit bounds for both indices. If the algorithm mutates a vector, separate read and write positions so ownership stays clear."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test pointers meeting, crossing, duplicate values, and the smallest valid input; many off-by-one errors hide there. Defend the O(n+m) time · O(1) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on merging sorted buffers with trailing capacity."
+    "transferChallenge": "Change the visible input `a=[1,3,7,0,0,0] m=3; b=[2,5,6]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Backward In-Place Merge survives, which state must be updated, and whether the O(n+m) time · O(1) space bound still holds. Check whether the input is sorted, whether you may reorder it, and whether moving a pointer preserves the answer you seek."
   },
   "exerciseKind": "planned",
   "id": "algorithm.in-place-merge.recognize",
-  "minutes": 11,
+  "minutes": 12,
   "order": 25,
   "parentID": "algorithms-two-pointers",
   "title": "Backward In-Place Merge: When to Use It",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Backward In-Place Merge",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Backward In-Place Merge",
-    "explanation": "Reach for this pattern when the prompt contains merging sorted buffers with trailing capacity. Confirm that its assumptions actually hold, then compare O(n+m) time · O(1) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for Backward In-Place Merge when it asks for merging sorted buffers with trailing capacity. Here the concrete task is: Merge the second sorted list into the first buffer. The visible input `a=[1,3,7,0,0,0] m=3; b=[2,5,6]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Check whether the input is sorted, whether you may reorder it, and whether moving a pointer preserves the answer you seek. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Fill free capacity from the end so unread source values are never overwritten. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Two positions move according to a monotone fact: after one comparison, some candidates can be ruled out permanently. Name that fact. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n+m) time · O(1) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `1,2,3,5,6,7` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test pointers meeting, crossing, duplicate values, and the smallest valid input; many off-by-one errors hide there. Use explicit bounds for both indices. If the algorithm mutates a vector, separate read and write positions so ownership stays clear. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: merging sorted buffers with trailing capacity.",
     "practiceCode": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
     "question": "Which group is the strongest signal for this pattern?",

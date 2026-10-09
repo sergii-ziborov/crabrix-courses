@@ -14,7 +14,7 @@
     "visibleInput": "push4 push7 push2 delete2 min"
   },
   "concept": "sliding heaps and priority updates without handles",
-  "contentDigest": "80a32b899784488b881f693075a1763d475c66cd97fd14a9a929dde165392d8f",
+  "contentDigest": "2e57b651756d145b6bf4728798d87ed9c42a7ea3cf3b456df6de2d3c04698061",
   "depth": {
     "connections": [
       {
@@ -32,19 +32,19 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `push4 push7 push2 delete2 min`, write the state before the first update. Explain how it represents this claim: Record invalidated values separately and discard stale roots only when they surface. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `4`. Rust BinaryHeap is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Defend the O(log n) amortised operation · O(n) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on sliding heaps and priority updates without handles."
+    "transferChallenge": "Change the visible input `push4 push7 push2 delete2 min` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Lazy Heap Deletion survives, which state must be updated, and whether the O(log n) amortised operation · O(n) space bound still holds. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work."
   },
   "exerciseKind": "planned",
   "id": "algorithm.lazy-heap-deletion.recognize",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Lazy Heap Deletion",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Lazy Heap Deletion",
-    "explanation": "Reach for this pattern when the prompt contains sliding heaps and priority updates without handles. Confirm that its assumptions actually hold, then compare O(log n) amortised operation · O(n) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for Lazy Heap Deletion when it asks for sliding heaps and priority updates without handles. Here the concrete task is: Apply the push/delete operations, then return the valid minimum requested by min. The visible input `push4 push7 push2 delete2 min` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Record invalidated values separately and discard stale roots only when they surface. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(log n) amortised operation · O(n) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `4` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Rust BinaryHeap is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: sliding heaps and priority updates without handles.",
     "practiceCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
     "question": "Which group is the strongest signal for this pattern?",

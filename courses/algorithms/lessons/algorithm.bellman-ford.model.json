@@ -14,7 +14,7 @@
     "visibleInput": "edges=0->1:4,0->2:5,1->2:-2"
   },
   "concept": "Relax every edge V-1 times; an improvement on the next pass proves a reachable negative cycle.",
-  "contentDigest": "38010f9a43bb4077a8820bfff3ed426c5795aae56938d0643096629af73861f8",
+  "contentDigest": "c1b04814910789c33767e975450928fb237e5c99ae65d3b8f8279db1c26d9306",
   "depth": {
     "connections": [
       {
@@ -32,19 +32,19 @@
     "misconception": "“The shortest variable names”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `edges=0->1:4,0->2:5,1->2:-2`, write the state before the first update. Explain how it represents this claim: Relax every edge V-1 times; an improvement on the next pass proves a reachable negative cycle. Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state."
       },
       {
-        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `0,4,2`. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic."
       },
       {
-        "detail": "You can explain the invariant, termination condition, and O(VE) time · O(V) space bound without looking at the code.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Defend the O(VE) time · O(V) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on relax every edge v-1 times; an improvement on the next pass proves a reachable negative cycle.."
+    "transferChallenge": "Change the visible input `edges=0->1:4,0->2:5,1->2:-2` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Bellman–Ford survives, which state must be updated, and whether the O(VE) time · O(V) space bound still holds. Inspect weight signs and graph direction: non-negative shortest paths, negative edges, and zero-one weights support different algorithms."
   },
   "exerciseKind": "planned",
   "id": "algorithm.bellman-ford.model",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Rust sketch · target O(VE) time · O(V) space",
     "exampleCode": "// Dijkstra invariant:\n// when the smallest tentative distance is popped and is current,\n// no later non-negative path can improve that node.",
-    "explanation": "Bellman–Ford belongs to Shortest Paths, MST & Flow. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include negative edges and negative-cycle detection.",
+    "explanation": "Begin with the concrete question: Return shortest distances from 0. For the visible input `edges=0->1:4,0->2:5,1->2:-2`, the stated result is `0,4,2`. Before reading code, name the smallest piece of information that must survive from one step to the next. Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state. That is the mental model for Bellman–Ford; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Relax every edge V-1 times; an improvement on the next pass proves a reachable negative cycle. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is an invariant note rather than a complete program. Turn it into explicit state and transitions before coding. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(VE) time · O(V) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
     "feedback": "The invariant explains both correctness and which state may change.",
     "practiceCode": "// Dijkstra invariant:\n// when the smallest tentative distance is popped and is current,\n// no later non-negative path can improve that node.",
     "question": "What should you identify before translating this pattern into Rust?",

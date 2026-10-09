@@ -14,7 +14,7 @@
     "visibleInput": "[1,3] and [2,4]"
   },
   "concept": "Binary-search a partition where every left-side value is no larger than every right-side value.",
-  "contentDigest": "17248e0c28ba7cca6738f3fd9c7e00d0fd83452e6b0e50b840d1a5963ebff1e7",
+  "contentDigest": "f7649d8c23f93203a1964087437b082ee5da06fc844ba12cd0c8e9ee5c59088d",
   "depth": {
     "connections": [
       {
@@ -32,19 +32,19 @@
     "misconception": "“The shortest variable names”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `[1,3] and [2,4]`, write the state before the first update. Explain how it represents this claim: Binary-search a partition where every left-side value is no larger than every right-side value. Binary search maintains an interval that is still capable of containing the answer. State precisely why the discarded half cannot contain it."
       },
       {
-        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `2.5`. Use half-open bounds consistently and compute the midpoint without overflowing large integer indices."
       },
       {
-        "detail": "You can explain the invariant, termination condition, and O(log min(n,m)) time · O(1) space bound without looking at the code.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Check no match, duplicate matches, the first and last valid positions, and an answer at the boundary of the search domain. Defend the O(log min(n,m)) time · O(1) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on binary-search a partition where every left-side value is no larger than every right-side value.."
+    "transferChallenge": "Change the visible input `[1,3] and [2,4]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Partition Median survives, which state must be updated, and whether the O(log min(n,m)) time · O(1) space bound still holds. It needs ordering, a monotone predicate, or another proved structure that lets one half be discarded; merely containing numbers is not enough."
   },
   "exerciseKind": "planned",
   "id": "algorithm.partition-median.model",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Rust sketch · target O(log min(n,m)) time · O(1) space",
     "exampleCode": "fn lower_bound(values: &[i32], target: i32) -> usize {\n    let (mut low, mut high) = (0, values.len());\n    while low < high {\n        let mid = low + (high - low) / 2;\n        if values[mid] < target { low = mid + 1; } else { high = mid; }\n    }\n    low\n}",
-    "explanation": "Partition Median belongs to Binary Search. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include median or kth item across two sorted arrays.",
+    "explanation": "Begin with the concrete question: Return the median of the two sorted arrays. For the visible input `[1,3] and [2,4]`, the stated result is `2.5`. Before reading code, name the smallest piece of information that must survive from one step to the next. Binary search maintains an interval that is still capable of containing the answer. State precisely why the discarded half cannot contain it. That is the mental model for Partition Median; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Binary-search a partition where every left-side value is no larger than every right-side value. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use half-open bounds consistently and compute the midpoint without overflowing large integer indices. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(log min(n,m)) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check no match, duplicate matches, the first and last valid positions, and an answer at the boundary of the search domain. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
     "feedback": "The invariant explains both correctness and which state may change.",
     "practiceCode": "fn lower_bound(values: &[i32], target: i32) -> usize {\n    let (mut low, mut high) = (0, values.len());\n    while low < high {\n        let mid = low + (high - low) / 2;\n        if values[mid] < target { low = mid + 1; } else { high = mid; }\n    }\n    low\n}",
     "question": "What should you identify before translating this pattern into Rust?",

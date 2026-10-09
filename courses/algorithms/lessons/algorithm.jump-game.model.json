@@ -14,7 +14,7 @@
     "visibleInput": "[2,3,1,1,4]"
   },
   "concept": "Maintain the farthest reachable index and fail only when the scan moves beyond it.",
-  "contentDigest": "a07d321e04a9fd24ba6cd7520babc99dac372ffcd09d879757c6c93a0146b960",
+  "contentDigest": "4bbffc6bd7c4b2e95fd02453ba4cb9b9d2eaeef4676419b47ae4d06629da090c",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“The shortest variable names”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `[2,3,1,1,4]`, write the state before the first update. Explain how it represents this claim: Maintain the farthest reachable index and fail only when the scan moves beyond it. A greedy step commits to a local choice. Give the exchange or dominance reason that an optimal solution can still include that choice."
       },
       {
-        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `true`. Keep interval endpoint conventions explicit where they apply. If sorting is part of the method, its Rust comparator must encode the proof's exact tie break."
       },
       {
-        "detail": "You can explain the invariant, termination condition, and O(n) time · O(1) space bound without looking at the code.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test touching intervals, equal endpoints, empty input, and a locally attractive choice that blocks a better future choice. Defend the O(n) time · O(1) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on maintain the farthest reachable index and fail only when the scan moves beyond it.."
+    "transferChallenge": "Change the visible input `[2,3,1,1,4]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Greedy Reach Frontier survives, which state must be updated, and whether the O(n) time · O(1) space bound still holds. When the method sorts intervals or events, use the coordinate and tie break required by its proof. Other greedy walks keep an invariant without sorting."
   },
   "exerciseKind": "planned",
   "id": "algorithm.jump-game.model",
-  "minutes": 11,
+  "minutes": 12,
   "order": 12,
   "parentID": "algorithms-greedy-intervals",
   "title": "Greedy Reach Frontier: Mental Model",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Rust sketch · target O(n) time · O(1) space",
     "exampleCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
-    "explanation": "Greedy Reach Frontier belongs to Greedy & Interval Methods. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include reachability with forward jump capacity.",
+    "explanation": "Begin with the concrete question: Return whether the final index is reachable. For the visible input `[2,3,1,1,4]`, the stated result is `true`. Before reading code, name the smallest piece of information that must survive from one step to the next. A greedy step commits to a local choice. Give the exchange or dominance reason that an optimal solution can still include that choice. That is the mental model for Greedy Reach Frontier; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Maintain the farthest reachable index and fail only when the scan moves beyond it. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Keep interval endpoint conventions explicit where they apply. If sorting is part of the method, its Rust comparator must encode the proof's exact tie break. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test touching intervals, equal endpoints, empty input, and a locally attractive choice that blocks a better future choice. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
     "feedback": "The invariant explains both correctness and which state may change.",
     "practiceCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
     "question": "What should you identify before translating this pattern into Rust?",

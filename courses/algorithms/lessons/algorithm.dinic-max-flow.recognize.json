@@ -14,7 +14,7 @@
     "visibleInput": "0->1:3,0->2:2,1->2:1,1->3:2,2->3:3"
   },
   "concept": "capacity networks, matching, assignment",
-  "contentDigest": "4ce7624e031e46629987710226042a5255e303988e88d26a28b5b3a147314f73",
+  "contentDigest": "aa901058513757aff854bec038c68367cf98b208ad088ee35dc6be061916f1d4",
   "depth": {
     "connections": [
       {
@@ -32,19 +32,19 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `0->1:3,0->2:2,1->2:1,1->3:2,2->3:3`, write the state before the first update. Explain how it represents this claim: Build a level graph with BFS and send blocking flows through level-respecting edges. Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `5`. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Defend the O(V^2 E) general bound · O(V+E) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on capacity networks, matching, assignment."
+    "transferChallenge": "Change the visible input `0->1:3,0->2:2,1->2:1,1->3:2,2->3:3` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Dinic Maximum Flow survives, which state must be updated, and whether the O(V^2 E) general bound · O(V+E) space bound still holds. Inspect weight signs and graph direction: non-negative shortest paths, negative edges, and zero-one weights support different algorithms."
   },
   "exerciseKind": "planned",
   "id": "algorithm.dinic-max-flow.recognize",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Dinic Maximum Flow",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Dinic Maximum Flow",
-    "explanation": "Reach for this pattern when the prompt contains capacity networks, matching, assignment. Confirm that its assumptions actually hold, then compare O(V^2 E) general bound · O(V+E) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for Dinic Maximum Flow when it asks for capacity networks, matching, assignment. Here the concrete task is: Return maximum flow from 0 to 3. The visible input `0->1:3,0->2:2,1->2:1,1->3:2,2->3:3` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Inspect weight signs and graph direction: non-negative shortest paths, negative edges, and zero-one weights support different algorithms. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Build a level graph with BFS and send blocking flows through level-respecting edges. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(V^2 E) general bound · O(V+E) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `5` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: capacity networks, matching, assignment.",
     "practiceCode": "// Dijkstra invariant:\n// when the smallest tentative distance is popped and is current,\n// no later non-negative path can improve that node.",
     "question": "Which group is the strongest signal for this pattern?",

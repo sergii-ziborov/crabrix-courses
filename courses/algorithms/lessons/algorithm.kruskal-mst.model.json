@@ -14,7 +14,7 @@
     "visibleInput": "edges=0-1:1,0-2:4,1-2:2,1-3:5,2-3:3"
   },
   "concept": "Sort edges and add one only when union-find says it joins different components.",
-  "contentDigest": "2e10b1c050af86d377ffeba1c6eb5684a736d5a1a011e959aa020cd04cdaa5be",
+  "contentDigest": "10866099d45d78abfdcc4951caf29a7ad5c5eacf886b07b5365ebb4f26ab1af4",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“The shortest variable names”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `edges=0-1:1,0-2:4,1-2:2,1-3:5,2-3:3`, write the state before the first update. Explain how it represents this claim: Sort edges and add one only when union-find says it joins different components. Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state."
       },
       {
-        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `1,2,3`. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic."
       },
       {
-        "detail": "You can explain the invariant, termination condition, and O(E log E) time · O(V) DSU space bound without looking at the code.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Defend the O(E log E) time · O(V) DSU space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on sort edges and add one only when union-find says it joins different components.."
+    "transferChallenge": "Change the visible input `edges=0-1:1,0-2:4,1-2:2,1-3:5,2-3:3` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Kruskal Minimum Spanning Tree survives, which state must be updated, and whether the O(E log E) time · O(V) DSU space bound still holds. Inspect weight signs and graph direction: non-negative shortest paths, negative edges, and zero-one weights support different algorithms."
   },
   "exerciseKind": "planned",
   "id": "algorithm.kruskal-mst.model",
-  "minutes": 11,
+  "minutes": 12,
   "order": 12,
   "parentID": "algorithms-weighted-graphs",
   "title": "Kruskal Minimum Spanning Tree: Mental Model",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Rust sketch · target O(E log E) time · O(V) DSU space",
     "exampleCode": "// Dijkstra invariant:\n// when the smallest tentative distance is popped and is current,\n// no later non-negative path can improve that node.",
-    "explanation": "Kruskal Minimum Spanning Tree belongs to Shortest Paths, MST & Flow. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include minimum spanning forests and sparse edge lists.",
+    "explanation": "Begin with the concrete question: Return the MST edge weights in chosen order. For the visible input `edges=0-1:1,0-2:4,1-2:2,1-3:5,2-3:3`, the stated result is `1,2,3`. Before reading code, name the smallest piece of information that must survive from one step to the next. Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state. That is the mental model for Kruskal Minimum Spanning Tree; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Sort edges and add one only when union-find says it joins different components. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is an invariant note rather than a complete program. Turn it into explicit state and transitions before coding. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(E log E) time · O(V) DSU space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
     "feedback": "The invariant explains both correctness and which state may change.",
     "practiceCode": "// Dijkstra invariant:\n// when the smallest tentative distance is popped and is current,\n// no later non-negative path can improve that node.",
     "question": "What should you identify before translating this pattern into Rust?",

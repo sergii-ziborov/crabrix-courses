@@ -14,7 +14,7 @@
     "visibleInput": "n=5 unions=(0,1),(1,2),(3,4)"
   },
   "concept": "Compress find paths and attach smaller trees beneath larger roots.",
-  "contentDigest": "6a13229478243d0c5646b6307559fe8d86e775758ba073e01fa1b1352eb3c4a0",
+  "contentDigest": "5449b60de4eab26f21e099a4b46f8a1a4319dd41461e3472fa22cbfd55c898c1",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“The shortest variable names”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `n=5 unions=(0,1),(1,2),(3,4)`, write the state before the first update. Explain how it represents this claim: Compress find paths and attach smaller trees beneath larger roots. An advanced structure or offline query order packages an invariant across operations. Name what each node, block, or reordered query state stores."
       },
       {
-        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `2`. Keep representation and operations separate in Rust. Verify a tiny instance against a straightforward reference implementation before optimizing."
       },
       {
-        "detail": "You can explain the invariant, termination condition, and Almost O(1) amortised · O(n) space bound without looking at the code.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test empty ranges, repeated updates, undo operations where supported, and the exact boundary between adjacent blocks. Defend the Almost O(1) amortised · O(n) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on compress find paths and attach smaller trees beneath larger roots.."
+    "transferChallenge": "Change the visible input `n=5 unions=(0,1),(1,2),(3,4)` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Disjoint Set Union survives, which state must be updated, and whether the Almost O(1) amortised · O(n) space bound still holds. Choose it only when simpler scans or prefix arrays cannot satisfy both update and query limits."
   },
   "exerciseKind": "planned",
   "id": "algorithm.disjoint-set-union.model",
-  "minutes": 11,
+  "minutes": 12,
   "order": 3,
   "parentID": "algorithms-advanced-structures",
   "title": "Disjoint Set Union: Mental Model",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Rust sketch · target Almost O(1) amortised · O(n) space",
     "exampleCode": "// Advanced structures start from the same discipline:\n// define the query monoid, update semantics, and the invariant that\n// makes each decomposition smaller than the original problem.",
-    "explanation": "Disjoint Set Union belongs to Advanced Data Structures. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include dynamic connectivity, Kruskal, grouping.",
+    "explanation": "Begin with the concrete question: Apply the listed unions and return the final component count. For the visible input `n=5 unions=(0,1),(1,2),(3,4)`, the stated result is `2`. Before reading code, name the smallest piece of information that must survive from one step to the next. An advanced structure or offline query order packages an invariant across operations. Name what each node, block, or reordered query state stores. That is the mental model for Disjoint Set Union; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Compress find paths and attach smaller trees beneath larger roots. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is an invariant note rather than a complete program. Turn it into explicit state and transitions before coding. Keep representation and operations separate in Rust. Verify a tiny instance against a straightforward reference implementation before optimizing. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, Almost O(1) amortised · O(n) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test empty ranges, repeated updates, undo operations where supported, and the exact boundary between adjacent blocks. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
     "feedback": "The invariant explains both correctness and which state may change.",
     "practiceCode": "// Advanced structures start from the same discipline:\n// define the query monoid, update semantics, and the invariant that\n// makes each decomposition smaller than the original problem.",
     "question": "What should you identify before translating this pattern into Rust?",

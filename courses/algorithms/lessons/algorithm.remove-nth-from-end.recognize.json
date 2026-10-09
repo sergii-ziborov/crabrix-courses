@@ -14,7 +14,7 @@
     "visibleInput": "1->2->3->4->5"
   },
   "concept": "nth from end without a length pass",
-  "contentDigest": "204660285a073f7d55acc93eeadca854555641de22a31e7a60e1af66f93b3a22",
+  "contentDigest": "06e4043bcdd0deb40bbab2b93e48ad2ee9d2625312f8f34c7455bebc55b3205e",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `1->2->3->4->5`, write the state before the first update. Explain how it represents this claim: Keep a fixed gap so the leading pointer reaching the end positions the trailing pointer before the target. A list algorithm changes relationships between nodes, not just values. Draw the next pointers before and after each mutation."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `1,2,3,5`. Rust ownership makes linked structures explicit: use the provided node type, take links carefully, and preserve access to the remaining chain."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Check an empty list, one node, a head or tail change, and cycles when the problem allows them. Defend the O(n) time · O(1) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on nth from end without a length pass."
+    "transferChallenge": "Change the visible input `1->2->3->4->5` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Gap Pointer Removal survives, which state must be updated, and whether the O(n) time · O(1) space bound still holds. Look for tasks where node identity or one-way traversal matters. An indexed vector solution can hide the pointer constraint rather than solve it."
   },
   "exerciseKind": "planned",
   "id": "algorithm.remove-nth-from-end.recognize",
-  "minutes": 11,
+  "minutes": 12,
   "order": 13,
   "parentID": "algorithms-linked-lists",
   "title": "Gap Pointer Removal: When to Use It",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Gap Pointer Removal",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Gap Pointer Removal",
-    "explanation": "Reach for this pattern when the prompt contains nth from end without a length pass. Confirm that its assumptions actually hold, then compare O(n) time · O(1) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for Gap Pointer Removal when it asks for nth from end without a length pass. Here the concrete task is: Remove the second node from the end and return remaining values. The visible input `1->2->3->4->5` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for tasks where node identity or one-way traversal matters. An indexed vector solution can hide the pointer constraint rather than solve it. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Keep a fixed gap so the leading pointer reaching the end positions the trailing pointer before the target. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A list algorithm changes relationships between nodes, not just values. Draw the next pointers before and after each mutation. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(1) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `1,2,3,5` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check an empty list, one node, a head or tail change, and cycles when the problem allows them. Rust ownership makes linked structures explicit: use the provided node type, take links carefully, and preserve access to the remaining chain. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: nth from end without a length pass.",
     "practiceCode": "// Conceptual ownership-safe reversal:\n// while let Some(mut node) = head.take() {\n//     head = node.next.take();\n//     node.next = reversed;\n//     reversed = Some(node);\n// }",
     "question": "Which group is the strongest signal for this pattern?",

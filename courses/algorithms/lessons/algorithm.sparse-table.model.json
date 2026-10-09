@@ -14,7 +14,7 @@
     "visibleInput": "[7,2,3,0,5,10,3,12,18]"
   },
   "concept": "Precompute answers for power-of-two blocks and combine two blocks for idempotent queries.",
-  "contentDigest": "793a8597ab241d5793abdfb96ef911f0cbc2fcaed435532864a7df19a7bbb176",
+  "contentDigest": "0405ddc70a25c0db96a4cf55cfe9ef5821cf99a6f86a4056d49f3caa46ed5763",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“The shortest variable names”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `[7,2,3,0,5,10,3,12,18]`, write the state before the first update. Explain how it represents this claim: Precompute answers for power-of-two blocks and combine two blocks for idempotent queries. An advanced structure or offline query order packages an invariant across operations. Name what each node, block, or reordered query state stores."
       },
       {
-        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `0,0,3`. Keep representation and operations separate in Rust. Verify a tiny instance against a straightforward reference implementation before optimizing."
       },
       {
-        "detail": "You can explain the invariant, termination condition, and O(n log n) build · O(1) query · O(n log n) space bound without looking at the code.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test empty ranges, repeated updates, undo operations where supported, and the exact boundary between adjacent blocks. Defend the O(n log n) build · O(1) query · O(n log n) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on precompute answers for power-of-two blocks and combine two blocks for idempotent queries.."
+    "transferChallenge": "Change the visible input `[7,2,3,0,5,10,3,12,18]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Sparse Table survives, which state must be updated, and whether the O(n log n) build · O(1) query · O(n log n) space bound still holds. Choose it only when simpler scans or prefix arrays cannot satisfy both update and query limits."
   },
   "exerciseKind": "planned",
   "id": "algorithm.sparse-table.model",
-  "minutes": 11,
+  "minutes": 12,
   "order": 0,
   "parentID": "algorithms-advanced-structures",
   "title": "Sparse Table: Mental Model",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Rust sketch · target O(n log n) build · O(1) query · O(n log n) space",
     "exampleCode": "// Advanced structures start from the same discipline:\n// define the query monoid, update semantics, and the invariant that\n// makes each decomposition smaller than the original problem.",
-    "explanation": "Sparse Table belongs to Advanced Data Structures. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include immutable range minimum, maximum, gcd.",
+    "explanation": "Begin with the concrete question: Return minimums for ranges [0,3], [2,5], and [4,6]. For the visible input `[7,2,3,0,5,10,3,12,18]`, the stated result is `0,0,3`. Before reading code, name the smallest piece of information that must survive from one step to the next. An advanced structure or offline query order packages an invariant across operations. Name what each node, block, or reordered query state stores. That is the mental model for Sparse Table; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Precompute answers for power-of-two blocks and combine two blocks for idempotent queries. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is an invariant note rather than a complete program. Turn it into explicit state and transitions before coding. Keep representation and operations separate in Rust. Verify a tiny instance against a straightforward reference implementation before optimizing. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n log n) build · O(1) query · O(n log n) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test empty ranges, repeated updates, undo operations where supported, and the exact boundary between adjacent blocks. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
     "feedback": "The invariant explains both correctness and which state may change.",
     "practiceCode": "// Advanced structures start from the same discipline:\n// define the query monoid, update semantics, and the invariant that\n// makes each decomposition smaller than the original problem.",
     "question": "What should you identify before translating this pattern into Rust?",

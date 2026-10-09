@@ -14,7 +14,7 @@
     "visibleInput": "[1,2,3]"
   },
   "concept": "Advance the start index so order does not create duplicate selections.",
-  "contentDigest": "5fca09db3c4cd50a744dc91a55096becd81bc8ab6a6f0df44dfc7e189360da4f",
+  "contentDigest": "07f78d30c4f9a84a5bfc40a4d20fb49499e3363224fba1c37d58cd45d38e32c5",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“The shortest variable names”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `[1,2,3]`, write the state before the first update. Explain how it represents this claim: Advance the start index so order does not create duplicate selections. Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains."
       },
       {
-        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `1,2;1,3;2,3`. For recursive search, push a choice, recurse, then undo it; for meet-in-the-middle, collect each half before matching them. In Rust, clone a path only when storing a completed answer."
       },
       {
-        "detail": "You can explain the invariant, termination condition, and O(C(n,k)*k) output-sensitive bound without looking at the code.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. Defend the O(C(n,k)*k) output-sensitive bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on advance the start index so order does not create duplicate selections.."
+    "transferChallenge": "Change the visible input `[1,2,3]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Combination Backtracking survives, which state must be updated, and whether the O(C(n,k)*k) output-sensitive bound still holds. Use it when constraints prune combinations early and the task asks for one or all valid constructions."
   },
   "exerciseKind": "planned",
   "id": "algorithm.combinations.model",
-  "minutes": 8,
+  "minutes": 12,
   "order": 6,
   "parentID": "algorithms-backtracking",
   "title": "Combination Backtracking: Mental Model",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Rust sketch · target O(C(n,k)*k) output-sensitive",
     "exampleCode": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
-    "explanation": "Combination Backtracking belongs to Backtracking & Exhaustive Search. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include choose-k sets and teams.",
+    "explanation": "Begin with the concrete question: Return all size-two combinations in lexicographic order. For the visible input `[1,2,3]`, the stated result is `1,2;1,3;2,3`. Before reading code, name the smallest piece of information that must survive from one step to the next. Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains. That is the mental model for Combination Backtracking; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Advance the start index so order does not create duplicate selections. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. For recursive search, push a choice, recurse, then undo it; for meet-in-the-middle, collect each half before matching them. In Rust, clone a path only when storing a completed answer. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(C(n,k)*k) output-sensitive. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
     "feedback": "The invariant explains both correctness and which state may change.",
     "practiceCode": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
     "question": "What should you identify before translating this pattern into Rust?",

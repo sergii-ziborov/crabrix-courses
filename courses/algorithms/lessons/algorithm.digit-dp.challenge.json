@@ -14,7 +14,7 @@
     "visibleInput": "bound=25 sum=5"
   },
   "concept": "Count integers from 0 through 25 whose digit sum is 5.",
-  "contentDigest": "435473f1c638764530b93a3385ae0b6b4ff9b389be70412fa9c73e82123ab0fe",
+  "contentDigest": "bc6911775567c3c91e7645647a5f32c63a3087348f6b4862bbc742c4f3762006",
   "depth": {
     "connections": [
       {
@@ -32,19 +32,19 @@
     "misconception": "“No complexity bound is needed”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `bound=25 sum=5`, write the state before the first update. Explain how it represents this claim: Process digits with position, tight-bound, leading-zero, and property state. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit."
       },
       {
-        "detail": "Count integers from 0 through 25 whose digit sum is 5.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `3`. Index tables consistently where the state is tabular. Compress dimensions only after the full recurrence and its dependency order are clear."
       },
       {
-        "detail": "The harness prints PASS digit-dp, and your explanation still meets O(digits * states * base) time.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Defend the O(digits * states * base) time bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on count integers from 0 through 25 whose digit sum is 5.."
+    "transferChallenge": "Change the visible input `bound=25 sum=5` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Digit DP survives, which state must be updated, and whether the O(digits * states * base) time bound still holds. Write the dependency arrows before choosing loop order; a recurrence that reads the future cannot be filled left to right without adjustment."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.digit-dp.challenge",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Editable solution · verification data stays outside the project",
     "exampleCode": "pub fn solve(input: &str) -> String {\n    // Count integers from 0 through 25 whose digit sum is 5.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Digit DP\")\n}",
-    "explanation": "This is an original Crabrix exercise in the same problem family as common interview-platform questions. Visible input: bound=25 sum=5. Expected answer: 3. Implement solve instead of printing the expected value directly; Crabrix supplies several verification cases privately when you Run. The input grammar matches the visible example, and whitespace surrounding the complete input is insignificant.",
+    "explanation": "Solve the exact task, not just the visible example: Count integers from 0 through 25 whose digit sum is 5. On input `bound=25 sum=5`, the expected answer is `3`. That output gives you a test oracle for one case, while the private checks also exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Process digits with position, tight-bound, leading-zero, and property state. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot explain `3`, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Index tables consistently where the state is tabular. Compress dimensions only after the full recurrence and its dependency order are clear. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(digits * states * base) time; explain which operation dominates it and how many times the input can trigger that operation. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
     "feedback": "The intended target is O(digits * states * base) time; defend any different tradeoff explicitly.",
     "practiceCode": "pub fn solve(input: &str) -> String {\n    // Count integers from 0 through 25 whose digit sum is 5.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Digit DP\")\n}",
     "question": "Which performance target should guide this solution?",

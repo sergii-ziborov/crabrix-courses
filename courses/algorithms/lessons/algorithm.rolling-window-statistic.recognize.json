@@ -14,7 +14,7 @@
     "visibleInput": "[2,4,6,8,10]"
   },
   "concept": "telemetry, anomaly windows, streaming statistics",
-  "contentDigest": "3cee24f6af5cf9856c88a4cdc71004e22666dabb46fbf4274bb85c45e6c0f489",
+  "contentDigest": "1e47f43b624885c2c6f737d390cfddaa4e479318aa462239f948b54f7ecbb352",
   "depth": {
     "connections": [
       {
@@ -32,19 +32,19 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `[2,4,6,8,10]`, write the state before the first update. Explain how it represents this claim: Update sufficient statistics as samples enter and leave rather than retaining every computation. A window is a contiguous interval with a maintained summary. Describe what entering the right edge adds and what leaving the left edge removes."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `4,6,8`. Represent bounds as a half-open range when possible. Keep counts and the window length in sync when shrinking it."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test an empty window, a window spanning the whole input, and a case where the left edge must advance several times. Defend the O(n) time · O(k) storage for eviction bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on telemetry, anomaly windows, streaming statistics."
+    "transferChallenge": "Change the visible input `[2,4,6,8,10]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Rolling Mean and Variance survives, which state must be updated, and whether the O(n) time · O(k) storage for eviction bound still holds. Choose this family when a valid window can be repaired by moving one boundary; non-monotone constraints may need a different method."
   },
   "exerciseKind": "planned",
   "id": "algorithm.rolling-window-statistic.recognize",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Rolling Mean and Variance",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Rolling Mean and Variance",
-    "explanation": "Reach for this pattern when the prompt contains telemetry, anomaly windows, streaming statistics. Confirm that its assumptions actually hold, then compare O(n) time · O(k) storage for eviction with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for Rolling Mean and Variance when it asks for telemetry, anomaly windows, streaming statistics. Here the concrete task is: Return integer means for windows of length three. The visible input `[2,4,6,8,10]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Choose this family when a valid window can be repaired by moving one boundary; non-monotone constraints may need a different method. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Update sufficient statistics as samples enter and leave rather than retaining every computation. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A window is a contiguous interval with a maintained summary. Describe what entering the right edge adds and what leaving the left edge removes. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(k) storage for eviction; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `4,6,8` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test an empty window, a window spanning the whole input, and a case where the left edge must advance several times. Represent bounds as a half-open range when possible. Keep counts and the window length in sync when shrinking it. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: telemetry, anomaly windows, streaming statistics.",
     "practiceCode": "fn best_k(values: &[i32], k: usize) -> i32 {\n    let mut sum: i32 = values[..k].iter().sum();\n    let mut best = sum;\n    for right in k..values.len() {\n        sum += values[right] - values[right - k];\n        best = best.max(sum);\n    }\n    best\n}",
     "question": "Which group is the strongest signal for this pattern?",

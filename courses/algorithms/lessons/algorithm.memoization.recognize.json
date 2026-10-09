@@ -14,7 +14,7 @@
     "visibleInput": "n=12"
   },
   "concept": "recursive recurrences with repeated states",
-  "contentDigest": "dce1678a1725884be76a0c4318c0ac3727e78cc789e1cbae9dae090d8fad7f4e",
+  "contentDigest": "f8251b579207c894c5df56247995cb4a4b819b652de80b458d78d5478ed92d53",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `n=12`, write the state before the first update. Explain how it represents this claim: Cache a recursive state the first time it is solved so overlapping subproblems run once. A one-dimensional DP state summarizes a prefix or a single parameter. Define its meaning before writing a recurrence."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `144`. Use Option or a safe sentinel for unreachable states, and choose an iteration direction that matches the recurrence's dependencies."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test the base state, the first transition, impossible states, and whether an in-place update accidentally reuses an item twice. Defend the O(states * transition) time · O(states) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on recursive recurrences with repeated states."
+    "transferChallenge": "Change the visible input `n=12` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Top-Down Memoization survives, which state must be updated, and whether the O(states * transition) time · O(states) space bound still holds. Choose DP when subproblems overlap and an optimal answer can be composed from smaller answers; a greedy guess needs its own proof."
   },
   "exerciseKind": "planned",
   "id": "algorithm.memoization.recognize",
-  "minutes": 8,
+  "minutes": 12,
   "order": 1,
   "parentID": "algorithms-dynamic-1d",
   "title": "Top-Down Memoization: When to Use It",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Top-Down Memoization",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Top-Down Memoization",
-    "explanation": "Reach for this pattern when the prompt contains recursive recurrences with repeated states. Confirm that its assumptions actually hold, then compare O(states * transition) time · O(states) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for Top-Down Memoization when it asks for recursive recurrences with repeated states. Here the concrete task is: Return Fibonacci number F(12) with F(0)=0 and F(1)=1. The visible input `n=12` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Choose DP when subproblems overlap and an optimal answer can be composed from smaller answers; a greedy guess needs its own proof. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Cache a recursive state the first time it is solved so overlapping subproblems run once. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A one-dimensional DP state summarizes a prefix or a single parameter. Define its meaning before writing a recurrence. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(states * transition) time · O(states) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `144` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test the base state, the first transition, impossible states, and whether an in-place update accidentally reuses an item twice. Use Option or a safe sentinel for unreachable states, and choose an iteration direction that matches the recurrence's dependencies. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: recursive recurrences with repeated states.",
     "practiceCode": "fn ways(n: usize) -> usize {\n    let (mut previous, mut current) = (1, 1);\n    for _ in 0..n {\n        (previous, current) = (current, previous + current);\n    }\n    previous\n}",
     "question": "Which group is the strongest signal for this pattern?",

@@ -14,7 +14,7 @@
     "visibleInput": "cost=[10,15,20]"
   },
   "concept": "constant-space Fibonacci-like recurrences",
-  "contentDigest": "3f8c4bda6542995fa4837a857ad78421e7134a6a107cbe3ac53e8e9510c8db26",
+  "contentDigest": "c2d70b46c4561aa40bbc4a42c74c0be8e2ec3dac15ff54462452e95db592265e",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `cost=[10,15,20]`, write the state before the first update. Explain how it represents this claim: Discard table entries once no future transition can read them. A one-dimensional DP state summarizes a prefix or a single parameter. Define its meaning before writing a recurrence."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `15`. Use Option or a safe sentinel for unreachable states, and choose an iteration direction that matches the recurrence's dependencies."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test the base state, the first transition, impossible states, and whether an in-place update accidentally reuses an item twice. Defend the O(n) time · O(1) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on constant-space fibonacci-like recurrences."
+    "transferChallenge": "Change the visible input `cost=[10,15,20]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Rolling-State DP survives, which state must be updated, and whether the O(n) time · O(1) space bound still holds. Choose DP when subproblems overlap and an optimal answer can be composed from smaller answers; a greedy guess needs its own proof."
   },
   "exerciseKind": "planned",
   "id": "algorithm.rolling-dp.recognize",
-  "minutes": 8,
+  "minutes": 12,
   "order": 7,
   "parentID": "algorithms-dynamic-1d",
   "title": "Rolling-State DP: When to Use It",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Rolling-State DP",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Rolling-State DP",
-    "explanation": "Reach for this pattern when the prompt contains constant-space Fibonacci-like recurrences. Confirm that its assumptions actually hold, then compare O(n) time · O(1) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for Rolling-State DP when it asks for constant-space Fibonacci-like recurrences. Here the concrete task is: Return the minimum cost to move beyond the final stair. The visible input `cost=[10,15,20]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Choose DP when subproblems overlap and an optimal answer can be composed from smaller answers; a greedy guess needs its own proof. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Discard table entries once no future transition can read them. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A one-dimensional DP state summarizes a prefix or a single parameter. Define its meaning before writing a recurrence. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(1) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `15` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test the base state, the first transition, impossible states, and whether an in-place update accidentally reuses an item twice. Use Option or a safe sentinel for unreachable states, and choose an iteration direction that matches the recurrence's dependencies. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: constant-space Fibonacci-like recurrences.",
     "practiceCode": "fn ways(n: usize) -> usize {\n    let (mut previous, mut current) = (1, 1);\n    for _ in 0..n {\n        (previous, current) = (current, previous + current);\n    }\n    previous\n}",
     "question": "Which group is the strongest signal for this pattern?",

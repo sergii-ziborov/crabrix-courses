@@ -14,7 +14,7 @@
     "visibleInput": "insert5 insert2 insert8 insert1 delete2 inorder"
   },
   "concept": "Keep BST order by key and heap order by random priority; split and merge preserve both.",
-  "contentDigest": "139f643095b775a3ff76c223f91be082263edf357792f08c560b7f883e28c3b8",
+  "contentDigest": "dc448c5c64560684575e78d16b177aecbc620785e697bbcd19c0b37998ff2a66",
   "depth": {
     "connections": [
       {
@@ -32,19 +32,19 @@
     "misconception": "“The shortest variable names”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `insert5 insert2 insert8 insert1 delete2 inorder`, write the state before the first update. Explain how it represents this claim: Keep BST order by key and heap order by random priority; split and merge preserve both. An advanced structure or offline query order packages an invariant across operations. Name what each node, block, or reordered query state stores."
       },
       {
-        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `1,5,8`. Keep representation and operations separate in Rust. Verify a tiny instance against a straightforward reference implementation before optimizing."
       },
       {
-        "detail": "You can explain the invariant, termination condition, and O(log n) expected operation · O(n) space bound without looking at the code.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test empty ranges, repeated updates, undo operations where supported, and the exact boundary between adjacent blocks. Defend the O(log n) expected operation · O(n) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on keep bst order by key and heap order by random priority; split and merge preserve both.."
+    "transferChallenge": "Change the visible input `insert5 insert2 insert8 insert1 delete2 inorder` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Randomized Treap survives, which state must be updated, and whether the O(log n) expected operation · O(n) space bound still holds. Choose it only when simpler scans or prefix arrays cannot satisfy both update and query limits."
   },
   "exerciseKind": "planned",
   "id": "algorithm.treap.model",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Rust sketch · target O(log n) expected operation · O(n) space",
     "exampleCode": "// Advanced structures start from the same discipline:\n// define the query monoid, update semantics, and the invariant that\n// makes each decomposition smaller than the original problem.",
-    "explanation": "Randomized Treap belongs to Advanced Data Structures. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include ordered sets with expected logarithmic operations.",
+    "explanation": "Begin with the concrete question: Apply the insert/delete operations and return keys requested by inorder. For the visible input `insert5 insert2 insert8 insert1 delete2 inorder`, the stated result is `1,5,8`. Before reading code, name the smallest piece of information that must survive from one step to the next. An advanced structure or offline query order packages an invariant across operations. Name what each node, block, or reordered query state stores. That is the mental model for Randomized Treap; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Keep BST order by key and heap order by random priority; split and merge preserve both. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is an invariant note rather than a complete program. Turn it into explicit state and transitions before coding. Keep representation and operations separate in Rust. Verify a tiny instance against a straightforward reference implementation before optimizing. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(log n) expected operation · O(n) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test empty ranges, repeated updates, undo operations where supported, and the exact boundary between adjacent blocks. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
     "feedback": "The invariant explains both correctness and which state may change.",
     "practiceCode": "// Advanced structures start from the same discipline:\n// define the query monoid, update semantics, and the invariant that\n// makes each decomposition smaller than the original problem.",
     "question": "What should you identify before translating this pattern into Rust?",

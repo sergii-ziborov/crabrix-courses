@@ -14,7 +14,7 @@
     "visibleInput": "tree=[1,2,3,null,null,4,5]"
   },
   "concept": "persistence, transport, tree cloning",
-  "contentDigest": "c13f0d867c0aa9a82c79a47cde969d67fc78b496d33ce817586f103074badd79",
+  "contentDigest": "ae8179916ecb4e34e1320ff5ca987dc01ac8846587619c5887c25b142bc2ae74",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `tree=[1,2,3,null,null,4,5]`, write the state before the first update. Explain how it represents this claim: Emit null markers as well as values so structure is reconstructible, not only traversal order. A tree result is built from a node and its children. Decide whether information flows downward, upward, or in level order."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `1,2,#,#,3,4,#,#,5,#,#`. Use references for read-only traversals and make the stack or queue explicit when recursion depth might be large."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test a missing root, a leaf, a skewed tree, and equal or duplicate values when ordering rules depend on them. Defend the O(n) time · O(n) output bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on persistence, transport, tree cloning."
+    "transferChallenge": "Change the visible input `tree=[1,2,3,null,null,4,5]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Tree Serialize/Deserialize survives, which state must be updated, and whether the O(n) time · O(n) output bound still holds. Look for hierarchy and parent-child structure; a plain sequence algorithm loses the branching relationships."
   },
   "exerciseKind": "planned",
   "id": "algorithm.tree-serialize.recognize",
-  "minutes": 11,
+  "minutes": 12,
   "order": 22,
   "parentID": "algorithms-trees",
   "title": "Tree Serialize/Deserialize: When to Use It",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Tree Serialize/Deserialize",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Tree Serialize/Deserialize",
-    "explanation": "Reach for this pattern when the prompt contains persistence, transport, tree cloning. Confirm that its assumptions actually hold, then compare O(n) time · O(n) output with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for Tree Serialize/Deserialize when it asks for persistence, transport, tree cloning. Here the concrete task is: Serialize preorder using # for nulls. The visible input `tree=[1,2,3,null,null,4,5]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for hierarchy and parent-child structure; a plain sequence algorithm loses the branching relationships. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Emit null markers as well as values so structure is reconstructible, not only traversal order. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A tree result is built from a node and its children. Decide whether information flows downward, upward, or in level order. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(n) output; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `1,2,#,#,3,4,#,#,5,#,#` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test a missing root, a leaf, a skewed tree, and equal or duplicate values when ordering rules depend on them. Use references for read-only traversals and make the stack or queue explicit when recursion depth might be large. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: persistence, transport, tree cloning.",
     "practiceCode": "fn height(node: Option<&Node>) -> usize {\n    match node {\n        None => 0,\n        Some(node) => 1 + height(node.left.as_deref()).max(height(node.right.as_deref())),\n    }\n}",
     "question": "Which group is the strongest signal for this pattern?",

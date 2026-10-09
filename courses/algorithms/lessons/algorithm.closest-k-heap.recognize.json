@@ -14,7 +14,7 @@
     "visibleInput": "[(1,3),(-2,2),(2,-2),(5,1)]"
   },
   "concept": "nearest points, closest values, approximate neighbors",
-  "contentDigest": "188f585836bc1244eda562b822255197df0917ff1eff27aa3182d4a24612c0ab",
+  "contentDigest": "1145d702c48da387e118585bc42d844f0dc3af7fbf100f212e5d0b50250fdf99",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `[(1,3),(-2,2),(2,-2),(5,1)]`, write the state before the first update. Explain how it represents this claim: Keep the worst current winner at the root so a better candidate replaces it. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `-2:2,2:-2`. Rust BinaryHeap is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Defend the O(n log k) time · O(k) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on nearest points, closest values, approximate neighbors."
+    "transferChallenge": "Change the visible input `[(1,3),(-2,2),(2,-2),(5,1)]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Bounded Heap for K Closest survives, which state must be updated, and whether the O(n log k) time · O(k) space bound still holds. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work."
   },
   "exerciseKind": "planned",
   "id": "algorithm.closest-k-heap.recognize",
-  "minutes": 11,
+  "minutes": 12,
   "order": 13,
   "parentID": "algorithms-heaps-streaming",
   "title": "Bounded Heap for K Closest: When to Use It",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Bounded Heap for K Closest",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Bounded Heap for K Closest",
-    "explanation": "Reach for this pattern when the prompt contains nearest points, closest values, approximate neighbors. Confirm that its assumptions actually hold, then compare O(n log k) time · O(k) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for Bounded Heap for K Closest when it asks for nearest points, closest values, approximate neighbors. Here the concrete task is: Return the two points closest to the origin, ordered by distance then coordinates. The visible input `[(1,3),(-2,2),(2,-2),(5,1)]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Keep the worst current winner at the root so a better candidate replaces it. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n log k) time · O(k) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `-2:2,2:-2` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Rust BinaryHeap is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: nearest points, closest values, approximate neighbors.",
     "practiceCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
     "question": "Which group is the strongest signal for this pattern?",

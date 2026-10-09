@@ -14,7 +14,7 @@
     "visibleInput": "[7,3,2,9,5,11]"
   },
   "concept": "Enumerate two half-spaces and combine their summaries instead of exploring the full product directly.",
-  "contentDigest": "c875d5f8fc8fa7a619ccecb331844b532aa28cb4ed8b3c9b64b6678c04af3468",
+  "contentDigest": "189f17b2119ac4a103ab914fc38ec2414a77d1fb0107a65d4aea6111836e1cd0",
   "depth": {
     "connections": [
       {
@@ -32,19 +32,19 @@
     "misconception": "“The shortest variable names”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `[7,3,2,9,5,11]`, write the state before the first update. Explain how it represents this claim: Enumerate two half-spaces and combine their summaries instead of exploring the full product directly. Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains."
       },
       {
-        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `true`. For recursive search, push a choice, recurse, then undo it; for meet-in-the-middle, collect each half before matching them. In Rust, clone a path only when storing a completed answer."
       },
       {
-        "detail": "You can explain the invariant, termination condition, and O(2^(n/2) log 2^(n/2)) time · O(2^(n/2)) space bound without looking at the code.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. Defend the O(2^(n/2) log 2^(n/2)) time · O(2^(n/2)) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on enumerate two half-spaces and combine their summaries instead of exploring the full product directly.."
+    "transferChallenge": "Change the visible input `[7,3,2,9,5,11]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Meet in the Middle survives, which state must be updated, and whether the O(2^(n/2) log 2^(n/2)) time · O(2^(n/2)) space bound still holds. Use it when constraints prune combinations early and the task asks for one or all valid constructions."
   },
   "exerciseKind": "planned",
   "id": "algorithm.meet-in-middle.model",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Rust sketch · target O(2^(n/2) log 2^(n/2)) time · O(2^(n/2)) space",
     "exampleCode": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
-    "explanation": "Meet in the Middle belongs to Backtracking & Exhaustive Search. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include subset sum around 40 items and split exhaustive search.",
+    "explanation": "Begin with the concrete question: Return true if a subset sums to 15. For the visible input `[7,3,2,9,5,11]`, the stated result is `true`. Before reading code, name the smallest piece of information that must survive from one step to the next. Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains. That is the mental model for Meet in the Middle; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Enumerate two half-spaces and combine their summaries instead of exploring the full product directly. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. For recursive search, push a choice, recurse, then undo it; for meet-in-the-middle, collect each half before matching them. In Rust, clone a path only when storing a completed answer. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(2^(n/2) log 2^(n/2)) time · O(2^(n/2)) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
     "feedback": "The invariant explains both correctness and which state may change.",
     "practiceCode": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
     "question": "What should you identify before translating this pattern into Rust?",

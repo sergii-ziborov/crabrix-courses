@@ -14,7 +14,7 @@
     "visibleInput": "hit -> cog via [hot,dot,dog,lot,log,cog]"
   },
   "concept": "unweighted shortest paths with one source and one target",
-  "contentDigest": "9408fea6c797621dd540b78b8e8700aea541d75eab29e650e6d7128100c61399",
+  "contentDigest": "1aa18a465c3d3dfd7ef180e511fef7a62524cbc26d8c16e8440942e10135c9fb",
   "depth": {
     "connections": [
       {
@@ -32,19 +32,19 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `hit -> cog via [hot,dot,dog,lot,log,cog]`, write the state before the first update. Explain how it represents this claim: Expand the smaller frontier from each endpoint until the visited sets meet. Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `5`. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Defend the O(b^(d/2)) frontier typical · O(V) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on unweighted shortest paths with one source and one target."
+    "transferChallenge": "Change the visible input `hit -> cog via [hot,dot,dog,lot,log,cog]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Bidirectional BFS survives, which state must be updated, and whether the O(b^(d/2)) frontier typical · O(V) space bound still holds. Inspect weight signs and graph direction: non-negative shortest paths, negative edges, and zero-one weights support different algorithms."
   },
   "exerciseKind": "planned",
   "id": "algorithm.bidirectional-bfs.recognize",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Bidirectional BFS",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Bidirectional BFS",
-    "explanation": "Reach for this pattern when the prompt contains unweighted shortest paths with one source and one target. Confirm that its assumptions actually hold, then compare O(b^(d/2)) frontier typical · O(V) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for Bidirectional BFS when it asks for unweighted shortest paths with one source and one target. Here the concrete task is: Return word-ladder length changing one letter at a time. The visible input `hit -> cog via [hot,dot,dog,lot,log,cog]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Inspect weight signs and graph direction: non-negative shortest paths, negative edges, and zero-one weights support different algorithms. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Expand the smaller frontier from each endpoint until the visited sets meet. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(b^(d/2)) frontier typical · O(V) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `5` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: unweighted shortest paths with one source and one target.",
     "practiceCode": "// Dijkstra invariant:\n// when the smallest tentative distance is popped and is current,\n// no later non-negative path can improve that node.",
     "question": "Which group is the strongest signal for this pattern?",

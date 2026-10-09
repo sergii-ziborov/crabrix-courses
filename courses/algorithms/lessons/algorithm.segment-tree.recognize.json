@@ -14,7 +14,7 @@
     "visibleInput": "values=[5,4,7,2] update=(2,0) query=1..3"
   },
   "concept": "dynamic range min/max/sum and interval aggregation",
-  "contentDigest": "5fab3338fbcc566274661f952530742a8ae346ce438099adcd0402950fef4ded",
+  "contentDigest": "4b80f08e7b384b5a22acc01c5b9c6cf814ddd1fa387f3c2f345cf26ab99c9a50",
   "depth": {
     "connections": [
       {
@@ -32,19 +32,19 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `values=[5,4,7,2] update=(2,0) query=1..3`, write the state before the first update. Explain how it represents this claim: Represent intervals as a binary tree so a query visits only canonical covering nodes. A range method summarizes intervals so the same information is not recomputed. A static prefix table and an updateable tree make different tradeoffs; define endpoint conventions first."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `0`. Allocate an extra prefix slot when a zero-length prefix simplifies indexing, and use a numeric type large enough for accumulated values."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test the first and last position, an empty range where permitted, and the boundary immediately after an update. Defend the O(log n) update/query · O(n) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on dynamic range min/max/sum and interval aggregation."
+    "transferChallenge": "Change the visible input `values=[5,4,7,2] update=(2,0) query=1..3` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Segment Tree survives, which state must be updated, and whether the O(log n) update/query · O(n) space bound still holds. Precomputation pays when many ranges are queried. If values change between queries, an updateable structure may be needed; for one small query, a direct walk is simpler."
   },
   "exerciseKind": "planned",
   "id": "algorithm.segment-tree.recognize",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Segment Tree",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Segment Tree",
-    "explanation": "Reach for this pattern when the prompt contains dynamic range min/max/sum and interval aggregation. Confirm that its assumptions actually hold, then compare O(log n) update/query · O(n) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for Segment Tree when it asks for dynamic range min/max/sum and interval aggregation. Here the concrete task is: Build range minimum, apply the point update, then query the inclusive range. The visible input `values=[5,4,7,2] update=(2,0) query=1..3` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Precomputation pays when many ranges are queried. If values change between queries, an updateable structure may be needed; for one small query, a direct walk is simpler. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Represent intervals as a binary tree so a query visits only canonical covering nodes. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A range method summarizes intervals so the same information is not recomputed. A static prefix table and an updateable tree make different tradeoffs; define endpoint conventions first. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(log n) update/query · O(n) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `0` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test the first and last position, an empty range where permitted, and the boundary immediately after an update. Allocate an extra prefix slot when a zero-length prefix simplifies indexing, and use a numeric type large enough for accumulated values. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: dynamic range min/max/sum and interval aggregation.",
     "practiceCode": "fn prefix(values: &[i64]) -> Vec<i64> {\n    let mut sums = vec![0; values.len() + 1];\n    for i in 0..values.len() { sums[i + 1] = sums[i] + values[i]; }\n    sums\n}",
     "question": "Which group is the strongest signal for this pattern?",

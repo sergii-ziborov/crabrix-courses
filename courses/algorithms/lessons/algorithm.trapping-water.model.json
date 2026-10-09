@@ -14,7 +14,7 @@
     "visibleInput": "[0,1,0,2,1,0,1,3,2,1,2,1]"
   },
   "concept": "The smaller side has a settled bound; accumulate its deficit before moving inward.",
-  "contentDigest": "ac18abcb760edf3d3ee07587f32ee467e8347e066f93c78b6940bd6e63225e05",
+  "contentDigest": "1ee0ddfc9ce0dcb11a8fec48a1ce731daa38a6f8568a426a3b577c05baad10e7",
   "depth": {
     "connections": [
       {
@@ -32,19 +32,19 @@
     "misconception": "“The shortest variable names”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `[0,1,0,2,1,0,1,3,2,1,2,1]`, write the state before the first update. Explain how it represents this claim: The smaller side has a settled bound; accumulate its deficit before moving inward. Two positions move according to a monotone fact: after one comparison, some candidates can be ruled out permanently. Name that fact."
       },
       {
-        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `6`. Use explicit bounds for both indices. If the algorithm mutates a vector, separate read and write positions so ownership stays clear."
       },
       {
-        "detail": "You can explain the invariant, termination condition, and O(n) time · O(1) space bound without looking at the code.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test pointers meeting, crossing, duplicate values, and the smallest valid input; many off-by-one errors hide there. Defend the O(n) time · O(1) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on the smaller side has a settled bound; accumulate its deficit before moving inward.."
+    "transferChallenge": "Change the visible input `[0,1,0,2,1,0,1,3,2,1,2,1]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Two-Pointer Rainwater survives, which state must be updated, and whether the O(n) time · O(1) space bound still holds. Check whether the input is sorted, whether you may reorder it, and whether moving a pointer preserves the answer you seek."
   },
   "exerciseKind": "planned",
   "id": "algorithm.trapping-water.model",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Rust sketch · target O(n) time · O(1) space",
     "exampleCode": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
-    "explanation": "Two-Pointer Rainwater belongs to Two Pointers. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include water trapping and dual-boundary accumulation.",
+    "explanation": "Begin with the concrete question: Return total trapped units between bars. For the visible input `[0,1,0,2,1,0,1,3,2,1,2,1]`, the stated result is `6`. Before reading code, name the smallest piece of information that must survive from one step to the next. Two positions move according to a monotone fact: after one comparison, some candidates can be ruled out permanently. Name that fact. That is the mental model for Two-Pointer Rainwater; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: The smaller side has a settled bound; accumulate its deficit before moving inward. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use explicit bounds for both indices. If the algorithm mutates a vector, separate read and write positions so ownership stays clear. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test pointers meeting, crossing, duplicate values, and the smallest valid input; many off-by-one errors hide there. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
     "feedback": "The invariant explains both correctness and which state may change.",
     "practiceCode": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
     "question": "What should you identify before translating this pattern into Rust?",

@@ -14,7 +14,7 @@
     "visibleInput": "[1,2,3,4]"
   },
   "concept": "orderings and assignment sequences",
-  "contentDigest": "a65369c2aabdc02869d8f5b028c8bd93f6df9ea7d242fe65c806770e6309b764",
+  "contentDigest": "1299528d12fd7259ef8331f682928a7dc6be07ed251ad9af278db3354ad42b04",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `[1,2,3,4]`, write the state before the first update. Explain how it represents this claim: Choose one unused item for the next position, recurse, then mark it unused again. Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `24`. For recursive search, push a choice, recurse, then undo it; for meet-in-the-middle, collect each half before matching them. In Rust, clone a path only when storing a completed answer."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. Defend the O(n*n!) time · O(n) state excluding output bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on orderings and assignment sequences."
+    "transferChallenge": "Change the visible input `[1,2,3,4]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Permutation Backtracking survives, which state must be updated, and whether the O(n*n!) time · O(n) state excluding output bound still holds. Use it when constraints prune combinations early and the task asks for one or all valid constructions."
   },
   "exerciseKind": "planned",
   "id": "algorithm.permutations.recognize",
-  "minutes": 8,
+  "minutes": 12,
   "order": 4,
   "parentID": "algorithms-backtracking",
   "title": "Permutation Backtracking: When to Use It",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Permutation Backtracking",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Permutation Backtracking",
-    "explanation": "Reach for this pattern when the prompt contains orderings and assignment sequences. Confirm that its assumptions actually hold, then compare O(n*n!) time · O(n) state excluding output with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for Permutation Backtracking when it asks for orderings and assignment sequences. Here the concrete task is: Return the number of permutations of four distinct items. The visible input `[1,2,3,4]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Use it when constraints prune combinations early and the task asks for one or all valid constructions. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Choose one unused item for the next position, recurse, then mark it unused again. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n*n!) time · O(n) state excluding output; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `24` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. For recursive search, push a choice, recurse, then undo it; for meet-in-the-middle, collect each half before matching them. In Rust, clone a path only when storing a completed answer. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: orderings and assignment sequences.",
     "practiceCode": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
     "question": "Which group is the strongest signal for this pattern?",

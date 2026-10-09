@@ -14,7 +14,7 @@
     "visibleInput": "[100,80,60,70,60,75,85]"
   },
   "concept": "stock span, next greater, visibility",
-  "contentDigest": "23df81115c35145f118768d186a54471618261fea985ac9120caa2c5689c9c10",
+  "contentDigest": "bf9495cef27a9610a29be56f8bb80130c81c0da70f717ccef4d997ee614f45ee",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `[100,80,60,70,60,75,85]`, write the state before the first update. Explain how it represents this claim: Pop smaller candidates so unresolved values remain in decreasing order. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `1,1,1,2,1,4,6`. Vec works as a stack; VecDeque supplies efficient operations at both ends. Avoid removing from the front of a Vec in a long loop."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Defend the O(n) time · O(n) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on stock span, next greater, visibility."
+    "transferChallenge": "Change the visible input `[100,80,60,70,60,75,85]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Monotonic Decreasing Stack survives, which state must be updated, and whether the O(n) time · O(n) space bound still holds. Look for nested structure, next-greater relationships, or ordered processing. A plain scan is enough when no unresolved state must be retained."
   },
   "exerciseKind": "planned",
   "id": "algorithm.monotonic-decreasing-stack.recognize",
-  "minutes": 11,
+  "minutes": 12,
   "order": 19,
   "parentID": "algorithms-stacks-queues",
   "title": "Monotonic Decreasing Stack: When to Use It",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Monotonic Decreasing Stack",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Monotonic Decreasing Stack",
-    "explanation": "Reach for this pattern when the prompt contains stock span, next greater, visibility. Confirm that its assumptions actually hold, then compare O(n) time · O(n) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for Monotonic Decreasing Stack when it asks for stock span, next greater, visibility. Here the concrete task is: Return the number of consecutive earlier days with price less than or equal to today. The visible input `[100,80,60,70,60,75,85]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for nested structure, next-greater relationships, or ordered processing. A plain scan is enough when no unresolved state must be retained. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Pop smaller candidates so unresolved values remain in decreasing order. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(n) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `1,1,1,2,1,4,6` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Vec works as a stack; VecDeque supplies efficient operations at both ends. Avoid removing from the front of a Vec in a long loop. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: stock span, next greater, visibility.",
     "practiceCode": "fn balanced(text: &str) -> bool {\n    let mut stack = Vec::new();\n    for ch in text.chars() {\n        match ch {\n            '(' | '[' | '{' => stack.push(ch),\n            ')' => if stack.pop() != Some('(') { return false; },\n            ']' => if stack.pop() != Some('[') { return false; },\n            '}' => if stack.pop() != Some('{') { return false; },\n            _ => {}\n        }\n    }\n    stack.is_empty()\n}",
     "question": "Which group is the strongest signal for this pattern?",

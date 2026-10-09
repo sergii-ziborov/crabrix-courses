@@ -14,7 +14,7 @@
     "visibleInput": "values=[3,2,0,-4] tail->1"
   },
   "concept": "Different pointer speeds meet inside a cycle but never in a finite acyclic list.",
-  "contentDigest": "cbebdc6909784e619a9eec5a236210324e17e3f9958bcd9809d44980133dd87f",
+  "contentDigest": "f574580e0dd6f6429964a7be9a4e0bb397f7437321c819434778612065a0660d",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“The shortest variable names”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `values=[3,2,0,-4] tail->1`, write the state before the first update. Explain how it represents this claim: Different pointer speeds meet inside a cycle but never in a finite acyclic list. A list algorithm changes relationships between nodes, not just values. Draw the next pointers before and after each mutation."
       },
       {
-        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `true`. Rust ownership makes linked structures explicit: use the provided node type, take links carefully, and preserve access to the remaining chain."
       },
       {
-        "detail": "You can explain the invariant, termination condition, and O(n) time · O(1) space bound without looking at the code.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Check an empty list, one node, a head or tail change, and cycles when the problem allows them. Defend the O(n) time · O(1) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on different pointer speeds meet inside a cycle but never in a finite acyclic list.."
+    "transferChallenge": "Change the visible input `values=[3,2,0,-4] tail->1` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Linked Cycle Detection survives, which state must be updated, and whether the O(n) time · O(1) space bound still holds. Look for tasks where node identity or one-way traversal matters. An indexed vector solution can hide the pointer constraint rather than solve it."
   },
   "exerciseKind": "planned",
   "id": "algorithm.list-cycle.model",
-  "minutes": 8,
+  "minutes": 12,
   "order": 6,
   "parentID": "algorithms-linked-lists",
   "title": "Linked Cycle Detection: Mental Model",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Rust sketch · target O(n) time · O(1) space",
     "exampleCode": "// Conceptual ownership-safe reversal:\n// while let Some(mut node) = head.take() {\n//     head = node.next.take();\n//     node.next = reversed;\n//     reversed = Some(node);\n// }",
-    "explanation": "Linked Cycle Detection belongs to Linked List Techniques. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include cycle existence in pointer chains.",
+    "explanation": "Begin with the concrete question: Return true when the tail links back to node index 1. For the visible input `values=[3,2,0,-4] tail->1`, the stated result is `true`. Before reading code, name the smallest piece of information that must survive from one step to the next. A list algorithm changes relationships between nodes, not just values. Draw the next pointers before and after each mutation. That is the mental model for Linked Cycle Detection; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Different pointer speeds meet inside a cycle but never in a finite acyclic list. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is an invariant note rather than a complete program. Turn it into explicit state and transitions before coding. Rust ownership makes linked structures explicit: use the provided node type, take links carefully, and preserve access to the remaining chain. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check an empty list, one node, a head or tail change, and cycles when the problem allows them. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
     "feedback": "The invariant explains both correctness and which state may change.",
     "practiceCode": "// Conceptual ownership-safe reversal:\n// while let Some(mut node) = head.take() {\n//     head = node.next.take();\n//     node.next = reversed;\n//     reversed = Some(node);\n// }",
     "question": "What should you identify before translating this pattern into Rust?",

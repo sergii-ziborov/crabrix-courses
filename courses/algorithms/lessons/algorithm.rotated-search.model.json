@@ -14,7 +14,7 @@
     "visibleInput": "[4,5,6,7,0,1,2]"
   },
   "concept": "At least one half remains sorted; use that fact to choose the viable side.",
-  "contentDigest": "07622725b01bf1f730a95c27d6c223d8a1856a35a610f3b56528b9673a621036",
+  "contentDigest": "70863e99f0828401d0e9668aca1a9f9df14cb66e5ec032f7dba6f2ddb2ba1bcb",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“The shortest variable names”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `[4,5,6,7,0,1,2]`, write the state before the first update. Explain how it represents this claim: At least one half remains sorted; use that fact to choose the viable side. Binary search maintains an interval that is still capable of containing the answer. State precisely why the discarded half cannot contain it."
       },
       {
-        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `4`. Use half-open bounds consistently and compute the midpoint without overflowing large integer indices."
       },
       {
-        "detail": "You can explain the invariant, termination condition, and O(log n) time · O(1) space bound without looking at the code.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Check no match, duplicate matches, the first and last valid positions, and an answer at the boundary of the search domain. Defend the O(log n) time · O(1) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on at least one half remains sorted; use that fact to choose the viable side.."
+    "transferChallenge": "Change the visible input `[4,5,6,7,0,1,2]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Rotated Sorted Search survives, which state must be updated, and whether the O(log n) time · O(1) space bound still holds. It needs ordering, a monotone predicate, or another proved structure that lets one half be discarded; merely containing numbers is not enough."
   },
   "exerciseKind": "planned",
   "id": "algorithm.rotated-search.model",
-  "minutes": 11,
+  "minutes": 12,
   "order": 12,
   "parentID": "algorithms-binary-search",
   "title": "Rotated Sorted Search: Mental Model",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Rust sketch · target O(log n) time · O(1) space",
     "exampleCode": "fn lower_bound(values: &[i32], target: i32) -> usize {\n    let (mut low, mut high) = (0, values.len());\n    while low < high {\n        let mid = low + (high - low) / 2;\n        if values[mid] < target { low = mid + 1; } else { high = mid; }\n    }\n    low\n}",
-    "explanation": "Rotated Sorted Search belongs to Binary Search. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include lookup in a rotated distinct sorted array.",
+    "explanation": "Begin with the concrete question: Return the index of 0. For the visible input `[4,5,6,7,0,1,2]`, the stated result is `4`. Before reading code, name the smallest piece of information that must survive from one step to the next. Binary search maintains an interval that is still capable of containing the answer. State precisely why the discarded half cannot contain it. That is the mental model for Rotated Sorted Search; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: At least one half remains sorted; use that fact to choose the viable side. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use half-open bounds consistently and compute the midpoint without overflowing large integer indices. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(log n) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check no match, duplicate matches, the first and last valid positions, and an answer at the boundary of the search domain. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
     "feedback": "The invariant explains both correctness and which state may change.",
     "practiceCode": "fn lower_bound(values: &[i32], target: i32) -> usize {\n    let (mut low, mut high) = (0, values.len());\n    while low < high {\n        let mid = low + (high - low) / 2;\n        if values[mid] < target { low = mid + 1; } else { high = mid; }\n    }\n    low\n}",
     "question": "What should you identify before translating this pattern into Rust?",

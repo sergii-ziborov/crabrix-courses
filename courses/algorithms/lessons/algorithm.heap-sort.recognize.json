@@ -14,7 +14,7 @@
     "visibleInput": "[4,10,3,5,1]"
   },
   "concept": "bounded-memory worst-case sorting",
-  "contentDigest": "7e5547033592dd46c0165729dfd97415ec0866846a92cbd0e9e452c28439d9e3",
+  "contentDigest": "d18788ad11ee65ac31a2f311c501b386013741f7cdcf1fd6185745cca1806a27",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `[4,10,3,5,1]`, write the state before the first update. Explain how it represents this claim: Build a max heap and repeatedly move the maximum into its final suffix position. Sorting establishes global order; selection asks only for a rank or partition. Explain which comparisons make progress toward that goal."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `1,3,4,5,10`. Rust slice sorting is available, but an exercise asking for the algorithm requires the actual invariant and mutation steps, not a library shortcut."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test all-equal keys, already ordered input, reverse order, and extreme pivot or bucket distributions. Defend the O(n log n) time · O(1) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on bounded-memory worst-case sorting."
+    "transferChallenge": "Change the visible input `[4,10,3,5,1]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Heap Sort survives, which state must be updated, and whether the O(n log n) time · O(1) space bound still holds. Before sorting everything, ask whether a single statistic is enough and whether stable order among equal keys matters."
   },
   "exerciseKind": "planned",
   "id": "algorithm.heap-sort.recognize",
-  "minutes": 11,
+  "minutes": 12,
   "order": 13,
   "parentID": "algorithms-sorting-selection",
   "title": "Heap Sort: When to Use It",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Heap Sort",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Heap Sort",
-    "explanation": "Reach for this pattern when the prompt contains bounded-memory worst-case sorting. Confirm that its assumptions actually hold, then compare O(n log n) time · O(1) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for Heap Sort when it asks for bounded-memory worst-case sorting. Here the concrete task is: Return the ascending ordering produced by an in-place max heap. The visible input `[4,10,3,5,1]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Before sorting everything, ask whether a single statistic is enough and whether stable order among equal keys matters. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Build a max heap and repeatedly move the maximum into its final suffix position. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Sorting establishes global order; selection asks only for a rank or partition. Explain which comparisons make progress toward that goal. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n log n) time · O(1) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `1,3,4,5,10` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test all-equal keys, already ordered input, reverse order, and extreme pivot or bucket distributions. Rust slice sorting is available, but an exercise asking for the algorithm requires the actual invariant and mutation steps, not a library shortcut. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: bounded-memory worst-case sorting.",
     "practiceCode": "fn insertion_sort(values: &mut [i32]) {\n    for i in 1..values.len() {\n        let mut j = i;\n        while j > 0 && values[j] < values[j - 1] {\n            values.swap(j, j - 1);\n            j -= 1;\n        }\n    }\n}",
     "question": "Which group is the strongest signal for this pattern?",

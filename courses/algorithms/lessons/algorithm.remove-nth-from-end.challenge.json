@@ -14,7 +14,7 @@
     "visibleInput": "1->2->3->4->5"
   },
   "concept": "Remove the second node from the end and return remaining values.",
-  "contentDigest": "94e694cd821a0ec22012e57cfd3780112aedc74f6f3825ff18e968c4ce246844",
+  "contentDigest": "5546287e9f0bef0188fc45c671b09ef485831550f6b9512ed6e1dc1dce4932cf",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“No complexity bound is needed”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `1->2->3->4->5`, write the state before the first update. Explain how it represents this claim: Keep a fixed gap so the leading pointer reaching the end positions the trailing pointer before the target. A list algorithm changes relationships between nodes, not just values. Draw the next pointers before and after each mutation."
       },
       {
-        "detail": "Remove the second node from the end and return remaining values.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `1,2,3,5`. Rust ownership makes linked structures explicit: use the provided node type, take links carefully, and preserve access to the remaining chain."
       },
       {
-        "detail": "The harness prints PASS remove-nth-from-end, and your explanation still meets O(n) time · O(1) space.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Check an empty list, one node, a head or tail change, and cycles when the problem allows them. Defend the O(n) time · O(1) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on remove the second node from the end and return remaining values.."
+    "transferChallenge": "Change the visible input `1->2->3->4->5` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Gap Pointer Removal survives, which state must be updated, and whether the O(n) time · O(1) space bound still holds. Look for tasks where node identity or one-way traversal matters. An indexed vector solution can hide the pointer constraint rather than solve it."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.remove-nth-from-end.challenge",
-  "minutes": 11,
+  "minutes": 15,
   "order": 14,
   "parentID": "algorithms-linked-lists",
   "title": "Challenge: Gap Pointer Removal",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Editable solution · verification data stays outside the project",
     "exampleCode": "pub fn solve(input: &str) -> String {\n    // Remove the second node from the end and return remaining values.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Gap Pointer Removal\")\n}",
-    "explanation": "This is an original Crabrix exercise in the same problem family as common interview-platform questions. Visible input: 1->2->3->4->5. Expected answer: 1,2,3,5. Implement solve instead of printing the expected value directly; Crabrix supplies several verification cases privately when you Run. The input grammar matches the visible example, and whitespace surrounding the complete input is insignificant.",
+    "explanation": "Solve the exact task, not just the visible example: Remove the second node from the end and return remaining values. On input `1->2->3->4->5`, the expected answer is `1,2,3,5`. That output gives you a test oracle for one case, while the private checks also exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Keep a fixed gap so the leading pointer reaching the end positions the trailing pointer before the target. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A list algorithm changes relationships between nodes, not just values. Draw the next pointers before and after each mutation. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot explain `1,2,3,5`, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is an invariant note rather than a complete program. Turn it into explicit state and transitions before coding. Rust ownership makes linked structures explicit: use the provided node type, take links carefully, and preserve access to the remaining chain. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(1) space; explain which operation dominates it and how many times the input can trigger that operation. Check an empty list, one node, a head or tail change, and cycles when the problem allows them. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
     "feedback": "The intended target is O(n) time · O(1) space; defend any different tradeoff explicitly.",
     "practiceCode": "pub fn solve(input: &str) -> String {\n    // Remove the second node from the end and return remaining values.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Gap Pointer Removal\")\n}",
     "question": "Which performance target should guide this solution?",

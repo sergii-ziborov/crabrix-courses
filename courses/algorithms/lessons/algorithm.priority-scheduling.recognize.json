@@ -14,7 +14,7 @@
     "visibleInput": "(id0,t0,d3),(id1,t1,d1),(id2,t1,d2)"
   },
   "concept": "task scheduling, CPU queues, simulation",
-  "contentDigest": "630c1a3e2b0ad0bf8a6140ed500d332fc9dbdcd73b4cfe6b05f51607b358c8cd",
+  "contentDigest": "394492f6505414e230fd32139fe234595165d44e51fe2493cb9cb362b6b90ec6",
   "depth": {
     "connections": [
       {
@@ -32,19 +32,19 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `(id0,t0,d3),(id1,t1,d1),(id2,t1,d2)`, write the state before the first update. Explain how it represents this claim: Order available work by the decision criterion while time controls when work becomes eligible. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `0,1,2`. Rust BinaryHeap is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Defend the O(n log n) time · O(n) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on task scheduling, cpu queues, simulation."
+    "transferChallenge": "Change the visible input `(id0,t0,d3),(id1,t1,d1),(id2,t1,d2)` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Priority Scheduling survives, which state must be updated, and whether the O(n log n) time · O(n) space bound still holds. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work."
   },
   "exerciseKind": "planned",
   "id": "algorithm.priority-scheduling.recognize",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Priority Scheduling",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Priority Scheduling",
-    "explanation": "Reach for this pattern when the prompt contains task scheduling, CPU queues, simulation. Confirm that its assumptions actually hold, then compare O(n log n) time · O(n) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for Priority Scheduling when it asks for task scheduling, CPU queues, simulation. Here the concrete task is: Run shortest available job first and return completion order by job ID. The visible input `(id0,t0,d3),(id1,t1,d1),(id2,t1,d2)` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Order available work by the decision criterion while time controls when work becomes eligible. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n log n) time · O(n) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `0,1,2` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Rust BinaryHeap is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: task scheduling, CPU queues, simulation.",
     "practiceCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
     "question": "Which group is the strongest signal for this pattern?",

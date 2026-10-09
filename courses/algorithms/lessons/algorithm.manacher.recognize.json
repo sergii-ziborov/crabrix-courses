@@ -14,7 +14,7 @@
     "visibleInput": "babad"
   },
   "concept": "all palindromic centers and longest palindrome in linear time",
-  "contentDigest": "909e374a11f4cae903c3a044ea73348511bf45069516384cd09ccbf629dd4a9a",
+  "contentDigest": "9198d14da060119fb06cc7598419aa471ea63dfa5a46906fcb439d288dd879d4",
   "depth": {
     "connections": [
       {
@@ -32,19 +32,19 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `babad`, write the state before the first update. Explain how it represents this claim: Mirror known radii inside the rightmost palindrome and expand only beyond its boundary. String algorithms compare symbols or prefixes, but a Rust String is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `bab`. Use bytes only when the input contract permits byte-wise matching. Never index a String as though every character occupied one byte."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Defend the O(n) time · O(n) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on all palindromic centers and longest palindrome in linear time."
+    "transferChallenge": "Change the visible input `babad` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Manacher Palindrome Radii survives, which state must be updated, and whether the O(n) time · O(n) space bound still holds. Look for repeated prefix queries or pattern matching before choosing a trie or preprocessing; a one-off short search may not need either."
   },
   "exerciseKind": "planned",
   "id": "algorithm.manacher.recognize",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Manacher Palindrome Radii",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Manacher Palindrome Radii",
-    "explanation": "Reach for this pattern when the prompt contains all palindromic centers and longest palindrome in linear time. Confirm that its assumptions actually hold, then compare O(n) time · O(n) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for Manacher Palindrome Radii when it asks for all palindromic centers and longest palindrome in linear time. Here the concrete task is: Return the longest palindromic substring; choose the earliest on ties. The visible input `babad` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for repeated prefix queries or pattern matching before choosing a trie or preprocessing; a one-off short search may not need either. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Mirror known radii inside the rightmost palindrome and expand only beyond its boundary. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? String algorithms compare symbols or prefixes, but a Rust String is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(n) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `bab` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Use bytes only when the input contract permits byte-wise matching. Never index a String as though every character occupied one byte. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: all palindromic centers and longest palindrome in linear time.",
     "practiceCode": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
     "question": "Which group is the strongest signal for this pattern?",

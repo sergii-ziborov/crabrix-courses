@@ -14,7 +14,7 @@
     "visibleInput": "[170,45,75,90,802,24,2,66]"
   },
   "concept": "fixed-width nonnegative integers and identifiers",
-  "contentDigest": "51e3b811e33d37f4f8e1ff6358214e90a6b3236a6f94b7aaea28081da526a163",
+  "contentDigest": "9a794cdc87ff3d47cb48117057f67a0a6a7f5e8c79030d4d890750350b46ad95",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `[170,45,75,90,802,24,2,66]`, write the state before the first update. Explain how it represents this claim: Apply a stable bucket pass from the least significant digit toward the most significant. Sorting establishes global order; selection asks only for a rank or partition. Explain which comparisons make progress toward that goal."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `2,24,45,66,75,90,170,802`. Rust slice sorting is available, but an exercise asking for the algorithm requires the actual invariant and mutation steps, not a library shortcut."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test all-equal keys, already ordered input, reverse order, and extreme pivot or bucket distributions. Defend the O(d*(n+b)) time · O(n+b) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on fixed-width nonnegative integers and identifiers."
+    "transferChallenge": "Change the visible input `[170,45,75,90,802,24,2,66]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from LSD Radix Sort survives, which state must be updated, and whether the O(d*(n+b)) time · O(n+b) space bound still holds. Before sorting everything, ask whether a single statistic is enough and whether stable order among equal keys matters."
   },
   "exerciseKind": "planned",
   "id": "algorithm.radix-sort.recognize",
-  "minutes": 11,
+  "minutes": 12,
   "order": 19,
   "parentID": "algorithms-sorting-selection",
   "title": "LSD Radix Sort: When to Use It",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for LSD Radix Sort",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: LSD Radix Sort",
-    "explanation": "Reach for this pattern when the prompt contains fixed-width nonnegative integers and identifiers. Confirm that its assumptions actually hold, then compare O(d*(n+b)) time · O(n+b) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for LSD Radix Sort when it asks for fixed-width nonnegative integers and identifiers. Here the concrete task is: Sort the base-10 nonnegative integers. The visible input `[170,45,75,90,802,24,2,66]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Before sorting everything, ask whether a single statistic is enough and whether stable order among equal keys matters. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Apply a stable bucket pass from the least significant digit toward the most significant. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Sorting establishes global order; selection asks only for a rank or partition. Explain which comparisons make progress toward that goal. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(d*(n+b)) time · O(n+b) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `2,24,45,66,75,90,170,802` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test all-equal keys, already ordered input, reverse order, and extreme pivot or bucket distributions. Rust slice sorting is available, but an exercise asking for the algorithm requires the actual invariant and mutation steps, not a library shortcut. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: fixed-width nonnegative integers and identifiers.",
     "practiceCode": "fn insertion_sort(values: &mut [i32]) {\n    for i in 1..values.len() {\n        let mut j = i;\n        while j > 0 && values[j] < values[j - 1] {\n            values.swap(j, j - 1);\n            j -= 1;\n        }\n    }\n}",
     "question": "Which group is the strongest signal for this pattern?",

@@ -14,7 +14,7 @@
     "visibleInput": "[1,2,1,2,3]"
   },
   "concept": "Count windows with at most k and subtract those with at most k-1.",
-  "contentDigest": "41fac20228aad15e47995bc79abf0e25390e3903e2af705eca7835571ff174b5",
+  "contentDigest": "6ef13c71a6729545b405694c2f17e17222971b259f1262a9f131ad95dd6b47c5",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“The shortest variable names”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `[1,2,1,2,3]`, write the state before the first update. Explain how it represents this claim: Count windows with at most k and subtract those with at most k-1. A window is a contiguous interval with a maintained summary. Describe what entering the right edge adds and what leaving the left edge removes."
       },
       {
-        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `7`. Represent bounds as a half-open range when possible. Keep counts and the window length in sync when shrinking it."
       },
       {
-        "detail": "You can explain the invariant, termination condition, and O(n) expected time · O(k) space bound without looking at the code.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test an empty window, a window spanning the whole input, and a case where the left edge must advance several times. Defend the O(n) expected time · O(k) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on count windows with at most k and subtract those with at most k-1.."
+    "transferChallenge": "Change the visible input `[1,2,1,2,3]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Exactly-K by Difference survives, which state must be updated, and whether the O(n) expected time · O(k) space bound still holds. Choose this family when a valid window can be repaired by moving one boundary; non-monotone constraints may need a different method."
   },
   "exerciseKind": "planned",
   "id": "algorithm.exactly-k-difference.model",
-  "minutes": 11,
+  "minutes": 12,
   "order": 12,
   "parentID": "algorithms-sliding-window",
   "title": "Exactly-K by Difference: Mental Model",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Rust sketch · target O(n) expected time · O(k) space",
     "exampleCode": "fn best_k(values: &[i32], k: usize) -> i32 {\n    let mut sum: i32 = values[..k].iter().sum();\n    let mut best = sum;\n    for right in k..values.len() {\n        sum += values[right] - values[right - k];\n        best = best.max(sum);\n    }\n    best\n}",
-    "explanation": "Exactly-K by Difference belongs to Sliding Window. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include exact distinct counts and exact bounded properties.",
+    "explanation": "Begin with the concrete question: Return the number of subarrays with exactly two distinct values. For the visible input `[1,2,1,2,3]`, the stated result is `7`. Before reading code, name the smallest piece of information that must survive from one step to the next. A window is a contiguous interval with a maintained summary. Describe what entering the right edge adds and what leaving the left edge removes. That is the mental model for Exactly-K by Difference; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Count windows with at most k and subtract those with at most k-1. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Represent bounds as a half-open range when possible. Keep counts and the window length in sync when shrinking it. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n) expected time · O(k) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test an empty window, a window spanning the whole input, and a case where the left edge must advance several times. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
     "feedback": "The invariant explains both correctness and which state may change.",
     "practiceCode": "fn best_k(values: &[i32], k: usize) -> i32 {\n    let mut sum: i32 = values[..k].iter().sum();\n    let mut best = sum;\n    for right in k..values.len() {\n        sum += values[right] - values[right - k];\n        best = best.max(sum);\n    }\n    best\n}",
     "question": "What should you identify before translating this pattern into Rust?",

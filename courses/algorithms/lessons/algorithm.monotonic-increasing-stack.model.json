@@ -14,7 +14,7 @@
     "visibleInput": "[4,5,2,10,8]"
   },
   "concept": "Pop larger candidates so the stack represents the nearest smaller boundary.",
-  "contentDigest": "0ff08582db3fcb89d0a979db0110600e71f415d7653c7ae40e9de6e4b7726595",
+  "contentDigest": "661b073fe24325ab052f1688d85c6852ad186e3fab4f7c48ed9b270364dae155",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“The shortest variable names”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `[4,5,2,10,8]`, write the state before the first update. Explain how it represents this claim: Pop larger candidates so the stack represents the nearest smaller boundary. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs."
       },
       {
-        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `-1,4,-1,2,2`. Vec works as a stack; VecDeque supplies efficient operations at both ends. Avoid removing from the front of a Vec in a long loop."
       },
       {
-        "detail": "You can explain the invariant, termination condition, and O(n) time · O(n) space bound without looking at the code.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Defend the O(n) time · O(n) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on pop larger candidates so the stack represents the nearest smaller boundary.."
+    "transferChallenge": "Change the visible input `[4,5,2,10,8]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Monotonic Increasing Stack survives, which state must be updated, and whether the O(n) time · O(n) space bound still holds. Look for nested structure, next-greater relationships, or ordered processing. A plain scan is enough when no unresolved state must be retained."
   },
   "exerciseKind": "planned",
   "id": "algorithm.monotonic-increasing-stack.model",
-  "minutes": 11,
+  "minutes": 12,
   "order": 15,
   "parentID": "algorithms-stacks-queues",
   "title": "Monotonic Increasing Stack: Mental Model",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Rust sketch · target O(n) time · O(n) space",
     "exampleCode": "fn balanced(text: &str) -> bool {\n    let mut stack = Vec::new();\n    for ch in text.chars() {\n        match ch {\n            '(' | '[' | '{' => stack.push(ch),\n            ')' => if stack.pop() != Some('(') { return false; },\n            ']' => if stack.pop() != Some('[') { return false; },\n            '}' => if stack.pop() != Some('{') { return false; },\n            _ => {}\n        }\n    }\n    stack.is_empty()\n}",
-    "explanation": "Monotonic Increasing Stack belongs to Stack, Queue & Monotonic Patterns. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include nearest smaller values, histogram bounds, contribution counting.",
+    "explanation": "Begin with the concrete question: Return the previous strictly smaller value for each item, or -1. For the visible input `[4,5,2,10,8]`, the stated result is `-1,4,-1,2,2`. Before reading code, name the smallest piece of information that must survive from one step to the next. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs. That is the mental model for Monotonic Increasing Stack; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Pop larger candidates so the stack represents the nearest smaller boundary. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Vec works as a stack; VecDeque supplies efficient operations at both ends. Avoid removing from the front of a Vec in a long loop. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n) time · O(n) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
     "feedback": "The invariant explains both correctness and which state may change.",
     "practiceCode": "fn balanced(text: &str) -> bool {\n    let mut stack = Vec::new();\n    for ch in text.chars() {\n        match ch {\n            '(' | '[' | '{' => stack.push(ch),\n            ')' => if stack.pop() != Some('(') { return false; },\n            ']' => if stack.pop() != Some('[') { return false; },\n            '}' => if stack.pop() != Some('{') { return false; },\n            _ => {}\n        }\n    }\n    stack.is_empty()\n}",
     "question": "What should you identify before translating this pattern into Rust?",

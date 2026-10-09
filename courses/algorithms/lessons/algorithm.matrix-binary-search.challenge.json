@@ -14,7 +14,7 @@
     "visibleInput": "[[1,3,5,7],[10,11,16,20],[23,30,34,60]]"
   },
   "concept": "Return true when 16 is present.",
-  "contentDigest": "b87bd6315e85d280b8e3064351daaef4e857736885efd7091ae05d783823c85f",
+  "contentDigest": "f0e03e5e5a88f46b91d11ea71e7d94dcf44fa640bed51c3605d3b1c08dbd7af7",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“No complexity bound is needed”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `[[1,3,5,7],[10,11,16,20],[23,30,34,60]]`, write the state before the first update. Explain how it represents this claim: Map a flat midpoint back to row and column when rows form one global sorted order. Binary search maintains an interval that is still capable of containing the answer. State precisely why the discarded half cannot contain it."
       },
       {
-        "detail": "Return true when 16 is present.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `true`. Use half-open bounds consistently and compute the midpoint without overflowing large integer indices."
       },
       {
-        "detail": "The harness prints PASS matrix-binary-search, and your explanation still meets O(log(rows*cols)) time · O(1) space.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Check no match, duplicate matches, the first and last valid positions, and an answer at the boundary of the search domain. Defend the O(log(rows*cols)) time · O(1) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on return true when 16 is present.."
+    "transferChallenge": "Change the visible input `[[1,3,5,7],[10,11,16,20],[23,30,34,60]]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Flattened Matrix Search survives, which state must be updated, and whether the O(log(rows*cols)) time · O(1) space bound still holds. It needs ordering, a monotone predicate, or another proved structure that lets one half be discarded; merely containing numbers is not enough."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.matrix-binary-search.challenge",
-  "minutes": 11,
+  "minutes": 15,
   "order": 20,
   "parentID": "algorithms-binary-search",
   "title": "Challenge: Flattened Matrix Search",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Editable solution · verification data stays outside the project",
     "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return true when 16 is present.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Flattened Matrix Search\")\n}",
-    "explanation": "This is an original Crabrix exercise in the same problem family as common interview-platform questions. Visible input: [[1,3,5,7],[10,11,16,20],[23,30,34,60]]. Expected answer: true. Implement solve instead of printing the expected value directly; Crabrix supplies several verification cases privately when you Run. The input grammar matches the visible example, and whitespace surrounding the complete input is insignificant.",
+    "explanation": "Solve the exact task, not just the visible example: Return true when 16 is present. On input `[[1,3,5,7],[10,11,16,20],[23,30,34,60]]`, the expected answer is `true`. That output gives you a test oracle for one case, while the private checks also exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Map a flat midpoint back to row and column when rows form one global sorted order. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. Binary search maintains an interval that is still capable of containing the answer. State precisely why the discarded half cannot contain it. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot explain `true`, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use half-open bounds consistently and compute the midpoint without overflowing large integer indices. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(log(rows*cols)) time · O(1) space; explain which operation dominates it and how many times the input can trigger that operation. Check no match, duplicate matches, the first and last valid positions, and an answer at the boundary of the search domain. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
     "feedback": "The intended target is O(log(rows*cols)) time · O(1) space; defend any different tradeoff explicitly.",
     "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return true when 16 is present.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Flattened Matrix Search\")\n}",
     "question": "Which performance target should guide this solution?",

@@ -14,7 +14,7 @@
     "visibleInput": "[4,5,6,7,0,1,2]"
   },
   "concept": "lookup in a rotated distinct sorted array",
-  "contentDigest": "66946beab2ed1697ad5d5201fedf7762d7b813982af9756cfe6830cbd3445baa",
+  "contentDigest": "c748f89898849265c7b1a6fe201828ed43d3b418603bd4c226f9a0c15673d138",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `[4,5,6,7,0,1,2]`, write the state before the first update. Explain how it represents this claim: At least one half remains sorted; use that fact to choose the viable side. Binary search maintains an interval that is still capable of containing the answer. State precisely why the discarded half cannot contain it."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `4`. Use half-open bounds consistently and compute the midpoint without overflowing large integer indices."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Check no match, duplicate matches, the first and last valid positions, and an answer at the boundary of the search domain. Defend the O(log n) time · O(1) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on lookup in a rotated distinct sorted array."
+    "transferChallenge": "Change the visible input `[4,5,6,7,0,1,2]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Rotated Sorted Search survives, which state must be updated, and whether the O(log n) time · O(1) space bound still holds. It needs ordering, a monotone predicate, or another proved structure that lets one half be discarded; merely containing numbers is not enough."
   },
   "exerciseKind": "planned",
   "id": "algorithm.rotated-search.recognize",
-  "minutes": 11,
+  "minutes": 12,
   "order": 13,
   "parentID": "algorithms-binary-search",
   "title": "Rotated Sorted Search: When to Use It",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Rotated Sorted Search",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Rotated Sorted Search",
-    "explanation": "Reach for this pattern when the prompt contains lookup in a rotated distinct sorted array. Confirm that its assumptions actually hold, then compare O(log n) time · O(1) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for Rotated Sorted Search when it asks for lookup in a rotated distinct sorted array. Here the concrete task is: Return the index of 0. The visible input `[4,5,6,7,0,1,2]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. It needs ordering, a monotone predicate, or another proved structure that lets one half be discarded; merely containing numbers is not enough. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: At least one half remains sorted; use that fact to choose the viable side. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Binary search maintains an interval that is still capable of containing the answer. State precisely why the discarded half cannot contain it. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(log n) time · O(1) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `4` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check no match, duplicate matches, the first and last valid positions, and an answer at the boundary of the search domain. Use half-open bounds consistently and compute the midpoint without overflowing large integer indices. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: lookup in a rotated distinct sorted array.",
     "practiceCode": "fn lower_bound(values: &[i32], target: i32) -> usize {\n    let (mut low, mut high) = (0, values.len());\n    while low < high {\n        let mid = low + (high - low) / 2;\n        if values[mid] < target { low = mid + 1; } else { high = mid; }\n    }\n    low\n}",
     "question": "Which group is the strongest signal for this pattern?",

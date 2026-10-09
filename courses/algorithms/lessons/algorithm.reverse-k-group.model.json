@@ -14,7 +14,7 @@
     "visibleInput": "1->2->3->4->5->6->7"
   },
   "concept": "Verify a complete group exists, reverse exactly that range, then reconnect both boundaries.",
-  "contentDigest": "3b7dbf5146a367718accef53591b71653d7f74acc3e7b4ceb4be7b2a24497292",
+  "contentDigest": "c92decfc028a2e674bd9d2eb668fe136addda70ddb2cb873c78fecc7ebc43ca7",
   "depth": {
     "connections": [
       {
@@ -32,19 +32,19 @@
     "misconception": "“The shortest variable names”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `1->2->3->4->5->6->7`, write the state before the first update. Explain how it represents this claim: Verify a complete group exists, reverse exactly that range, then reconnect both boundaries. A list algorithm changes relationships between nodes, not just values. Draw the next pointers before and after each mutation."
       },
       {
-        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `3,2,1,6,5,4,7`. Rust ownership makes linked structures explicit: use the provided node type, take links carefully, and preserve access to the remaining chain."
       },
       {
-        "detail": "You can explain the invariant, termination condition, and O(n) time · O(1) links bound without looking at the code.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Check an empty list, one node, a head or tail change, and cycles when the problem allows them. Defend the O(n) time · O(1) links bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on verify a complete group exists, reverse exactly that range, then reconnect both boundaries.."
+    "transferChallenge": "Change the visible input `1->2->3->4->5->6->7` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Reverse Nodes in K-Groups survives, which state must be updated, and whether the O(n) time · O(1) links bound still holds. Look for tasks where node identity or one-way traversal matters. An indexed vector solution can hide the pointer constraint rather than solve it."
   },
   "exerciseKind": "planned",
   "id": "algorithm.reverse-k-group.model",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Rust sketch · target O(n) time · O(1) links",
     "exampleCode": "// Conceptual ownership-safe reversal:\n// while let Some(mut node) = head.take() {\n//     head = node.next.take();\n//     node.next = reversed;\n//     reversed = Some(node);\n// }",
-    "explanation": "Reverse Nodes in K-Groups belongs to Linked List Techniques. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include block-wise list transformations.",
+    "explanation": "Begin with the concrete question: Reverse nodes in groups of three; leave a short suffix unchanged. For the visible input `1->2->3->4->5->6->7`, the stated result is `3,2,1,6,5,4,7`. Before reading code, name the smallest piece of information that must survive from one step to the next. A list algorithm changes relationships between nodes, not just values. Draw the next pointers before and after each mutation. That is the mental model for Reverse Nodes in K-Groups; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Verify a complete group exists, reverse exactly that range, then reconnect both boundaries. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is an invariant note rather than a complete program. Turn it into explicit state and transitions before coding. Rust ownership makes linked structures explicit: use the provided node type, take links carefully, and preserve access to the remaining chain. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n) time · O(1) links. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check an empty list, one node, a head or tail change, and cycles when the problem allows them. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
     "feedback": "The invariant explains both correctness and which state may change.",
     "practiceCode": "// Conceptual ownership-safe reversal:\n// while let Some(mut node) = head.take() {\n//     head = node.next.take();\n//     node.next = reversed;\n//     reversed = Some(node);\n// }",
     "question": "What should you identify before translating this pattern into Rust?",

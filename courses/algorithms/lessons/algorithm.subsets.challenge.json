@@ -14,7 +14,7 @@
     "visibleInput": "[1,2]"
   },
   "concept": "Return subsets in bitmask order.",
-  "contentDigest": "762418873863fadc695245e2f7a85a536fdee4d706488c93ea48ba351679f444",
+  "contentDigest": "15cf99b58a9a789a4e0572734a421a6b3f9daa1ca7a9c112eb9064fd585f3342",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“No complexity bound is needed”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `[1,2]`, write the state before the first update. Explain how it represents this claim: At each item branch on exclude or include, or extend every current subset. Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains."
       },
       {
-        "detail": "Return subsets in bitmask order.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `;1;2;1,2`. For recursive search, push a choice, recurse, then undo it; for meet-in-the-middle, collect each half before matching them. In Rust, clone a path only when storing a completed answer."
       },
       {
-        "detail": "The harness prints PASS subsets, and your explanation still meets O(n*2^n) time · O(n) recursion excluding output.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. Defend the O(n*2^n) time · O(n) recursion excluding output bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on return subsets in bitmask order.."
+    "transferChallenge": "Change the visible input `[1,2]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Subset Generation survives, which state must be updated, and whether the O(n*2^n) time · O(n) recursion excluding output bound still holds. Use it when constraints prune combinations early and the task asks for one or all valid constructions."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.subsets.challenge",
-  "minutes": 8,
+  "minutes": 15,
   "order": 2,
   "parentID": "algorithms-backtracking",
   "title": "Challenge: Subset Generation",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Editable solution · verification data stays outside the project",
     "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return subsets in bitmask order.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Subset Generation\")\n}",
-    "explanation": "This is an original Crabrix exercise in the same problem family as common interview-platform questions. Visible input: [1,2]. Expected answer: ;1;2;1,2. Implement solve instead of printing the expected value directly; Crabrix supplies several verification cases privately when you Run. The input grammar matches the visible example, and whitespace surrounding the complete input is insignificant.",
+    "explanation": "Solve the exact task, not just the visible example: Return subsets in bitmask order. On input `[1,2]`, the expected answer is `;1;2;1,2`. That output gives you a test oracle for one case, while the private checks also exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: At each item branch on exclude or include, or extend every current subset. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot explain `;1;2;1,2`, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. For recursive search, push a choice, recurse, then undo it; for meet-in-the-middle, collect each half before matching them. In Rust, clone a path only when storing a completed answer. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n*2^n) time · O(n) recursion excluding output; explain which operation dominates it and how many times the input can trigger that operation. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
     "feedback": "The intended target is O(n*2^n) time · O(n) recursion excluding output; defend any different tradeoff explicitly.",
     "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return subsets in bitmask order.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Subset Generation\")\n}",
     "question": "Which performance target should guide this solution?",

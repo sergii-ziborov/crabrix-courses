@@ -14,7 +14,7 @@
     "visibleInput": "[2,0,2,1,1,0]"
   },
   "concept": "Maintain less-than, unknown, and greater-than regions with three boundaries.",
-  "contentDigest": "b76058cf65fcfcfdd45c76fc2ba0a7c51b8501af5f246c2b021f72098535a30e",
+  "contentDigest": "95681dbc2180a4ee6f2ca0019d09e40e874b7d60e9def6066306cf13ac75d0f7",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“The shortest variable names”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `[2,0,2,1,1,0]`, write the state before the first update. Explain how it represents this claim: Maintain less-than, unknown, and greater-than regions with three boundaries. Two positions move according to a monotone fact: after one comparison, some candidates can be ruled out permanently. Name that fact."
       },
       {
-        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `0,0,1,1,2,2`. Use explicit bounds for both indices. If the algorithm mutates a vector, separate read and write positions so ownership stays clear."
       },
       {
-        "detail": "You can explain the invariant, termination condition, and O(n) time · O(1) space bound without looking at the code.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test pointers meeting, crossing, duplicate values, and the smallest valid input; many off-by-one errors hide there. Defend the O(n) time · O(1) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on maintain less-than, unknown, and greater-than regions with three boundaries.."
+    "transferChallenge": "Change the visible input `[2,0,2,1,1,0]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Dutch National Flag survives, which state must be updated, and whether the O(n) time · O(1) space bound still holds. Check whether the input is sorted, whether you may reorder it, and whether moving a pointer preserves the answer you seek."
   },
   "exerciseKind": "planned",
   "id": "algorithm.dutch-flag.model",
-  "minutes": 11,
+  "minutes": 12,
   "order": 18,
   "parentID": "algorithms-two-pointers",
   "title": "Dutch National Flag: Mental Model",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Rust sketch · target O(n) time · O(1) space",
     "exampleCode": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
-    "explanation": "Dutch National Flag belongs to Two Pointers. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include three-way partitioning and duplicate-heavy quicksort.",
+    "explanation": "Begin with the concrete question: Sort values containing only 0, 1, and 2 in place. For the visible input `[2,0,2,1,1,0]`, the stated result is `0,0,1,1,2,2`. Before reading code, name the smallest piece of information that must survive from one step to the next. Two positions move according to a monotone fact: after one comparison, some candidates can be ruled out permanently. Name that fact. That is the mental model for Dutch National Flag; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Maintain less-than, unknown, and greater-than regions with three boundaries. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use explicit bounds for both indices. If the algorithm mutates a vector, separate read and write positions so ownership stays clear. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test pointers meeting, crossing, duplicate values, and the smallest valid input; many off-by-one errors hide there. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
     "feedback": "The invariant explains both correctness and which state may change.",
     "practiceCode": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
     "question": "What should you identify before translating this pattern into Rust?",

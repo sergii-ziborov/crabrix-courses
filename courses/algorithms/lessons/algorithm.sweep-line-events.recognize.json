@@ -14,7 +14,7 @@
     "visibleInput": "[(1,4),(2,5),(4,6)]"
   },
   "concept": "overlap counts, skyline changes, resource demand",
-  "contentDigest": "d28bd8b07e13b666bd365371d0e2247ecab617307e61baafc919abb5dc78d198",
+  "contentDigest": "a05740dd0c8cfd7df5558295abeb361a588be8879bfa3684f687e5ba39226fb5",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `[(1,4),(2,5),(4,6)]`, write the state before the first update. Explain how it represents this claim: Sort starts and ends as signed events and integrate active state across coordinates. A greedy step commits to a local choice. Give the exchange or dominance reason that an optimal solution can still include that choice."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `2`. Keep interval endpoint conventions explicit where they apply. If sorting is part of the method, its Rust comparator must encode the proof's exact tie break."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test touching intervals, equal endpoints, empty input, and a locally attractive choice that blocks a better future choice. Defend the O(n log n) time · O(n) events bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on overlap counts, skyline changes, resource demand."
+    "transferChallenge": "Change the visible input `[(1,4),(2,5),(4,6)]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Sweep-Line Events survives, which state must be updated, and whether the O(n log n) time · O(n) events bound still holds. When the method sorts intervals or events, use the coordinate and tie break required by its proof. Other greedy walks keep an invariant without sorting."
   },
   "exerciseKind": "planned",
   "id": "algorithm.sweep-line-events.recognize",
-  "minutes": 11,
+  "minutes": 12,
   "order": 10,
   "parentID": "algorithms-greedy-intervals",
   "title": "Sweep-Line Events: When to Use It",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Sweep-Line Events",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Sweep-Line Events",
-    "explanation": "Reach for this pattern when the prompt contains overlap counts, skyline changes, resource demand. Confirm that its assumptions actually hold, then compare O(n log n) time · O(n) events with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for Sweep-Line Events when it asks for overlap counts, skyline changes, resource demand. Here the concrete task is: Return maximum simultaneous sessions; process ends before starts at equal time. The visible input `[(1,4),(2,5),(4,6)]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. When the method sorts intervals or events, use the coordinate and tie break required by its proof. Other greedy walks keep an invariant without sorting. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Sort starts and ends as signed events and integrate active state across coordinates. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A greedy step commits to a local choice. Give the exchange or dominance reason that an optimal solution can still include that choice. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n log n) time · O(n) events; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `2` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test touching intervals, equal endpoints, empty input, and a locally attractive choice that blocks a better future choice. Keep interval endpoint conventions explicit where they apply. If sorting is part of the method, its Rust comparator must encode the proof's exact tie break. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: overlap counts, skyline changes, resource demand.",
     "practiceCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
     "question": "Which group is the strongest signal for this pattern?",

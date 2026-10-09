@@ -14,7 +14,7 @@
     "visibleInput": "A=4->1->8->4->5; B=5->6->1->8->4->5"
   },
   "concept": "shared-tail intersection without lengths",
-  "contentDigest": "56799ec987dd72d4345d3c2721ec2cde332fa695820c8e724634ee9eec9197f2",
+  "contentDigest": "141884687d44e28b09ec6275ea2e7fd308b9461ed3a8929061c6ec041b0a5925",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `A=4->1->8->4->5; B=5->6->1->8->4->5`, write the state before the first update. Explain how it represents this claim: Switch each pointer to the other head so both traverse equal combined distance. A list algorithm changes relationships between nodes, not just values. Draw the next pointers before and after each mutation."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `8`. Rust ownership makes linked structures explicit: use the provided node type, take links carefully, and preserve access to the remaining chain."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Check an empty list, one node, a head or tail change, and cycles when the problem allows them. Defend the O(n+m) time · O(1) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on shared-tail intersection without lengths."
+    "transferChallenge": "Change the visible input `A=4->1->8->4->5; B=5->6->1->8->4->5` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Pointer-Switch Intersection survives, which state must be updated, and whether the O(n+m) time · O(1) space bound still holds. Look for tasks where node identity or one-way traversal matters. An indexed vector solution can hide the pointer constraint rather than solve it."
   },
   "exerciseKind": "planned",
   "id": "algorithm.list-intersection.recognize",
-  "minutes": 11,
+  "minutes": 12,
   "order": 16,
   "parentID": "algorithms-linked-lists",
   "title": "Pointer-Switch Intersection: When to Use It",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Pointer-Switch Intersection",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Pointer-Switch Intersection",
-    "explanation": "Reach for this pattern when the prompt contains shared-tail intersection without lengths. Confirm that its assumptions actually hold, then compare O(n+m) time · O(1) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for Pointer-Switch Intersection when it asks for shared-tail intersection without lengths. Here the concrete task is: Return the first shared node value. The visible input `A=4->1->8->4->5; B=5->6->1->8->4->5` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for tasks where node identity or one-way traversal matters. An indexed vector solution can hide the pointer constraint rather than solve it. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Switch each pointer to the other head so both traverse equal combined distance. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A list algorithm changes relationships between nodes, not just values. Draw the next pointers before and after each mutation. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n+m) time · O(1) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `8` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check an empty list, one node, a head or tail change, and cycles when the problem allows them. Rust ownership makes linked structures explicit: use the provided node type, take links carefully, and preserve access to the remaining chain. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: shared-tail intersection without lengths.",
     "practiceCode": "// Conceptual ownership-safe reversal:\n// while let Some(mut node) = head.take() {\n//     head = node.next.take();\n//     node.next = reversed;\n//     reversed = Some(node);\n// }",
     "question": "Which group is the strongest signal for this pattern?",

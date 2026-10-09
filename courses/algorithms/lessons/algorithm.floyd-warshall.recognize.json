@@ -14,7 +14,7 @@
     "visibleInput": "matrix=[[0,3,10],[inf,0,2],[inf,inf,0]]"
   },
   "concept": "all-pairs shortest paths on small dense graphs",
-  "contentDigest": "2f069f94eec88db3b96d2d9ad228173b7afbfe0d640bc9ab95b33aa903e73661",
+  "contentDigest": "9ab0d01926a45c51a2d3f4874da883aed49551a19f48de14fd0c22a3ac7f9644",
   "depth": {
     "connections": [
       {
@@ -32,19 +32,19 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `matrix=[[0,3,10],[inf,0,2],[inf,inf,0]]`, write the state before the first update. Explain how it represents this claim: Allow intermediate vertices one by one and combine paths through the newly allowed vertex. Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `5`. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Defend the O(V^3) time · O(V^2) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on all-pairs shortest paths on small dense graphs."
+    "transferChallenge": "Change the visible input `matrix=[[0,3,10],[inf,0,2],[inf,inf,0]]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Floyd–Warshall survives, which state must be updated, and whether the O(V^3) time · O(V^2) space bound still holds. Inspect weight signs and graph direction: non-negative shortest paths, negative edges, and zero-one weights support different algorithms."
   },
   "exerciseKind": "planned",
   "id": "algorithm.floyd-warshall.recognize",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Floyd–Warshall",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Floyd–Warshall",
-    "explanation": "Reach for this pattern when the prompt contains all-pairs shortest paths on small dense graphs. Confirm that its assumptions actually hold, then compare O(V^3) time · O(V^2) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for Floyd–Warshall when it asks for all-pairs shortest paths on small dense graphs. Here the concrete task is: Return shortest distance from 0 to 2. The visible input `matrix=[[0,3,10],[inf,0,2],[inf,inf,0]]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Inspect weight signs and graph direction: non-negative shortest paths, negative edges, and zero-one weights support different algorithms. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Allow intermediate vertices one by one and combine paths through the newly allowed vertex. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(V^3) time · O(V^2) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `5` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: all-pairs shortest paths on small dense graphs.",
     "practiceCode": "// Dijkstra invariant:\n// when the smallest tentative distance is popped and is current,\n// no later non-negative path can improve that node.",
     "question": "Which group is the strongest signal for this pattern?",

@@ -14,7 +14,7 @@
     "visibleInput": "gas=[1,2,3,4,5] cost=[3,4,5,1,2]"
   },
   "concept": "circular feasibility with cumulative gain",
-  "contentDigest": "c8f618a99f9029e6f324f61cc0214fa44aa7abeae62482cf7b08dfd3ea40d599",
+  "contentDigest": "95af38eb67b36cd717a1ddb854b2b9d826269eb47d7ac7fd8bc23e21110231fb",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `gas=[1,2,3,4,5] cost=[3,4,5,1,2]`, write the state before the first update. Explain how it represents this claim: When running fuel becomes negative, no station in that failed segment can be a valid start. A greedy step commits to a local choice. Give the exchange or dominance reason that an optimal solution can still include that choice."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `3`. Keep interval endpoint conventions explicit where they apply. If sorting is part of the method, its Rust comparator must encode the proof's exact tie break."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test touching intervals, equal endpoints, empty input, and a locally attractive choice that blocks a better future choice. Defend the O(n) time · O(1) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on circular feasibility with cumulative gain."
+    "transferChallenge": "Change the visible input `gas=[1,2,3,4,5] cost=[3,4,5,1,2]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Gas Station Reset survives, which state must be updated, and whether the O(n) time · O(1) space bound still holds. When the method sorts intervals or events, use the coordinate and tie break required by its proof. Other greedy walks keep an invariant without sorting."
   },
   "exerciseKind": "planned",
   "id": "algorithm.gas-station.recognize",
-  "minutes": 11,
+  "minutes": 12,
   "order": 19,
   "parentID": "algorithms-greedy-intervals",
   "title": "Gas Station Reset: When to Use It",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Gas Station Reset",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Gas Station Reset",
-    "explanation": "Reach for this pattern when the prompt contains circular feasibility with cumulative gain. Confirm that its assumptions actually hold, then compare O(n) time · O(1) space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for Gas Station Reset when it asks for circular feasibility with cumulative gain. Here the concrete task is: Return a valid starting station, or -1. The visible input `gas=[1,2,3,4,5] cost=[3,4,5,1,2]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. When the method sorts intervals or events, use the coordinate and tie break required by its proof. Other greedy walks keep an invariant without sorting. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: When running fuel becomes negative, no station in that failed segment can be a valid start. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A greedy step commits to a local choice. Give the exchange or dominance reason that an optimal solution can still include that choice. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(1) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `3` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test touching intervals, equal endpoints, empty input, and a locally attractive choice that blocks a better future choice. Keep interval endpoint conventions explicit where they apply. If sorting is part of the method, its Rust comparator must encode the proof's exact tie break. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: circular feasibility with cumulative gain.",
     "practiceCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
     "question": "Which group is the strongest signal for this pattern?",

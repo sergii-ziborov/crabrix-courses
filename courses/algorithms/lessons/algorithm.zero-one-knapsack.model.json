@@ -14,7 +14,7 @@
     "visibleInput": "weights=[1,3,4,5] values=[1,4,5,7]"
   },
   "concept": "Update capacities backward so each item contributes at most once.",
-  "contentDigest": "d6da0a54dcb0d1bbecdc06e5348872a395d7cb653ccd6a692e76d5a9697be516",
+  "contentDigest": "bcae48c0a80a56620a7d011b927d58c8f7dc0e111a5d6cd4234540bf3c639242",
   "depth": {
     "connections": [
       {
@@ -32,19 +32,19 @@
     "misconception": "“The shortest variable names”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `weights=[1,3,4,5] values=[1,4,5,7]`, write the state before the first update. Explain how it represents this claim: Update capacities backward so each item contributes at most once. A one-dimensional DP state summarizes a prefix or a single parameter. Define its meaning before writing a recurrence."
       },
       {
-        "detail": "Trace the sketch by hand and name the state that changes after each iteration.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `9`. Use Option or a safe sentinel for unreachable states, and choose an iteration direction that matches the recurrence's dependencies."
       },
       {
-        "detail": "You can explain the invariant, termination condition, and O(items*capacity) time · O(capacity) space bound without looking at the code.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Test the base state, the first transition, impossible states, and whether an in-place update accidentally reuses an item twice. Defend the O(items*capacity) time · O(capacity) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on update capacities backward so each item contributes at most once.."
+    "transferChallenge": "Change the visible input `weights=[1,3,4,5] values=[1,4,5,7]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from 0/1 Knapsack survives, which state must be updated, and whether the O(items*capacity) time · O(capacity) space bound still holds. Choose DP when subproblems overlap and an optimal answer can be composed from smaller answers; a greedy guess needs its own proof."
   },
   "exerciseKind": "planned",
   "id": "algorithm.zero-one-knapsack.model",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Rust sketch · target O(items*capacity) time · O(capacity) space",
     "exampleCode": "fn ways(n: usize) -> usize {\n    let (mut previous, mut current) = (1, 1);\n    for _ in 0..n {\n        (previous, current) = (current, previous + current);\n    }\n    previous\n}",
-    "explanation": "0/1 Knapsack belongs to 1D Dynamic Programming. Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include bounded selection under one capacity.",
+    "explanation": "Begin with the concrete question: Return maximum value at capacity 7. For the visible input `weights=[1,3,4,5] values=[1,4,5,7]`, the stated result is `9`. Before reading code, name the smallest piece of information that must survive from one step to the next. A one-dimensional DP state summarizes a prefix or a single parameter. Define its meaning before writing a recurrence. That is the mental model for 0/1 Knapsack; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Update capacities backward so each item contributes at most once. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use Option or a safe sentinel for unreachable states, and choose an iteration direction that matches the recurrence's dependencies. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(items*capacity) time · O(capacity) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test the base state, the first transition, impossible states, and whether an in-place update accidentally reuses an item twice. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
     "feedback": "The invariant explains both correctness and which state may change.",
     "practiceCode": "fn ways(n: usize) -> usize {\n    let (mut previous, mut current) = (1, 1);\n    for _ in 0..n {\n        (previous, current) = (current, previous + current);\n    }\n    previous\n}",
     "question": "What should you identify before translating this pattern into Rust?",

@@ -14,7 +14,7 @@
     "visibleInput": "[0, 4, 0, 2, 7, 0]"
   },
   "concept": "remove-in-place, filtering buffers, zero compaction",
-  "contentDigest": "dca709bf29acee8008c1ae9227dfb84fdc98bf8fef3362d8fe438998d52656bb",
+  "contentDigest": "24234ad7dfd0303f843b127a90ad4b930b92eb49f292616f01b9985c44efd38e",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“Any problem that contains a Vec”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `[0, 4, 0, 2, 7, 0]`, write the state before the first update. Explain how it represents this claim: Write kept elements forward so their relative order survives removal. A scan turns a sequence into a small piece of state. Say what the state means after the first i elements, before you describe a loop body."
       },
       {
-        "detail": "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `4,2,7`. A borrowed slice and a for loop usually express the traversal clearly; distinguish an index you need to return from a value you merely read."
       },
       {
-        "detail": "You can justify the choice from constraints rather than from a remembered problem title.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Use an empty slice and a one-element slice as checks. Initial values must not silently assume that at least one item exists. Defend the O(n) time · O(1) extra space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on remove-in-place, filtering buffers, zero compaction."
+    "transferChallenge": "Change the visible input `[0, 4, 0, 2, 7, 0]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Stable Compaction survives, which state must be updated, and whether the O(n) time · O(1) extra space bound still holds. Ask whether one pass is enough, whether order matters, and whether a later query will need information you already discarded."
   },
   "exerciseKind": "planned",
   "id": "algorithm.stable-compaction.recognize",
-  "minutes": 11,
+  "minutes": 12,
   "order": 16,
   "parentID": "algorithms-scans",
   "title": "Stable Compaction: When to Use It",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Stable Compaction",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Stable Compaction",
-    "explanation": "Reach for this pattern when the prompt contains remove-in-place, filtering buffers, zero compaction. Confirm that its assumptions actually hold, then compare O(n) time · O(1) extra space with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+    "explanation": "A problem is a good match for Stable Compaction when it asks for remove-in-place, filtering buffers, zero compaction. Here the concrete task is: Remove zeros stably and return the kept prefix as comma-separated values. The visible input `[0, 4, 0, 2, 7, 0]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Ask whether one pass is enough, whether order matters, and whether a later query will need information you already discarded. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Write kept elements forward so their relative order survives removal. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A scan turns a sequence into a small piece of state. Say what the state means after the first i elements, before you describe a loop body. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(1) extra space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `4,2,7` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Use an empty slice and a one-element slice as checks. Initial values must not silently assume that at least one item exists. A borrowed slice and a for loop usually express the traversal clearly; distinguish an index you need to return from a value you merely read. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: remove-in-place, filtering buffers, zero compaction.",
     "practiceCode": "fn scan(values: &[i32]) -> Option<usize> {\n    for (index, value) in values.iter().enumerate() {\n        if *value < 0 { return Some(index); }\n    }\n    None\n}",
     "question": "Which group is the strongest signal for this pattern?",

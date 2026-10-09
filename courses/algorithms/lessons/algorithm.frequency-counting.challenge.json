@@ -14,7 +14,7 @@
     "visibleInput": "[4, 2, 4, 3, 2, 4]"
   },
   "concept": "Return the value that occurs most often; break ties by the smaller value.",
-  "contentDigest": "6e4f2151f26f85146796d04e9ec92a27d2b5b529034e548e3a290c8250e7bdb4",
+  "contentDigest": "02927e18cb94e99ee9ce026bb853f1e61dcee9f1741d2326be3f1b10a87d1297",
   "depth": {
     "connections": [
       {
@@ -32,23 +32,23 @@
     "misconception": "“No complexity bound is needed”",
     "traceSteps": [
       {
-        "detail": "Write down the state carried between steps, what remains true after every update, and the condition that guarantees termination.",
-        "title": "Name the invariant"
+        "title": "Define the state",
+        "detail": "For `[4, 2, 4, 3, 2, 4]`, write the state before the first update. Explain how it represents this claim: Turn repeated observations into counts keyed by the observed value. A scan turns a sequence into a small piece of state. Say what the state means after the first i elements, before you describe a loop body."
       },
       {
-        "detail": "Return the value that occurs most often; break ties by the smaller value.",
-        "title": "Predict before checking"
+        "title": "Trace a transition",
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `4`. A borrowed slice and a for loop usually express the traversal clearly; distinguish an index you need to return from a value you merely read."
       },
       {
-        "detail": "The harness prints PASS frequency-counting, and your explanation still meets O(n) expected time · O(k) space.",
-        "title": "Compare with evidence"
+        "title": "Probe the boundary",
+        "detail": "Check a smallest input and a case that challenges the assumption. Use an empty slice and a one-element slice as checks. Initial values must not silently assume that at least one item exists. Defend the O(n) expected time · O(k) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input to an empty, duplicate-heavy, boundary, or adversarial case. Preserve the invariant and defend the promised complexity before running it. Keep the focus on return the value that occurs most often; break ties by the smaller value.."
+    "transferChallenge": "Change the visible input `[4, 2, 4, 3, 2, 4]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Frequency Counting survives, which state must be updated, and whether the O(n) expected time · O(k) space bound still holds. Ask whether one pass is enough, whether order matters, and whether a later query will need information you already discarded."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.frequency-counting.challenge",
-  "minutes": 8,
+  "minutes": 15,
   "order": 8,
   "parentID": "algorithms-scans",
   "title": "Challenge: Frequency Counting",
@@ -61,7 +61,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Editable solution · verification data stays outside the project",
     "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return the value that occurs most often; break ties by the smaller value.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Frequency Counting\")\n}",
-    "explanation": "This is an original Crabrix exercise in the same problem family as common interview-platform questions. Visible input: [4, 2, 4, 3, 2, 4]. Expected answer: 4. Implement solve instead of printing the expected value directly; Crabrix supplies several verification cases privately when you Run. The input grammar matches the visible example, and whitespace surrounding the complete input is insignificant.",
+    "explanation": "Solve the exact task, not just the visible example: Return the value that occurs most often; break ties by the smaller value. On input `[4, 2, 4, 3, 2, 4]`, the expected answer is `4`. That output gives you a test oracle for one case, while the private checks also exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Turn repeated observations into counts keyed by the observed value. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A scan turns a sequence into a small piece of state. Say what the state means after the first i elements, before you describe a loop body. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot explain `4`, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. A borrowed slice and a for loop usually express the traversal clearly; distinguish an index you need to return from a value you merely read. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n) expected time · O(k) space; explain which operation dominates it and how many times the input can trigger that operation. Use an empty slice and a one-element slice as checks. Initial values must not silently assume that at least one item exists. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
     "feedback": "The intended target is O(n) expected time · O(k) space; defend any different tradeoff explicitly.",
     "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return the value that occurs most often; break ties by the smaller value.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Frequency Counting\")\n}",
     "question": "Which performance target should guide this solution?",
