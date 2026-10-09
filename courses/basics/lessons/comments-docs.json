@@ -1,6 +1,6 @@
 {
   "concept": "/// doc comments and examples",
-  "contentDigest": "6a8d1512744f7d194c2c41795b5c4bd51b7b41cace06e8a30ea6fc2b628bb503",
+  "contentDigest": "8260fa9665943c1349653bf34d43b8f6665a1fd9638ce6fe8b63fa16117d53f5",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "comments-docs",
-  "minutes": 5,
+  "minutes": 8,
   "order": 6,
   "parentID": "small-programs",
   "title": "Comments & Docs",
@@ -45,9 +45,9 @@
       "It prints a warning but the test suite still passes"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "This example is real: `cargo test` compiles and runs it.",
-    "exampleCode": "/// Returns the larger of two values.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(larger(2, 7), 7);\n/// ```\npub fn larger(a: i32, b: i32) -> i32 {\n    if a > b { a } else { b }\n}",
-    "explanation": "/// documents the item that follows and //! documents the enclosing module or crate. Code blocks inside doc comments are compiled and executed by `cargo test`, so an example that drifts out of date fails the build instead of quietly misleading the next reader.",
+    "exampleCaption": "In a library crate named lesson_docs, cargo test compiles and runs this example.",
+    "exampleCode": "/// Returns the larger of two values.\n///\n/// # Examples\n///\n/// ```\n/// use lesson_docs::larger;\n/// assert_eq!(larger(2, 7), 7);\n/// ```\npub fn larger(a: i32, b: i32) -> i32 {\n    if a > b { a } else { b }\n}",
+    "explanation": "/// documents the item that follows and //! documents the enclosing module or crate. Code blocks inside doc comments are compiled and executed by `cargo test`, so an example that drifts out of date fails the build instead of quietly misleading the next reader.\n\nComments are most useful when they preserve a reason the code alone cannot show. `//` is suitable for a local decision, such as why a limit exists or why a case is skipped. Repeating the next expression in English makes the reader maintain two copies of the same fact. If the code needs a long explanation of what it does, first see whether clearer names or a smaller function would help.\n\nDocumentation comments have a different audience. Place `///` immediately before an item to explain its purpose, parameters, return value, and conditions that matter to callers. Use `//!` for an overview of the containing module or crate. A short example makes the contract concrete: it should demonstrate a representative call and assert the expected result. In a Cargo project, `cargo test` runs valid Rust code blocks in documentation as doctests. A doctest is compiled separately, so it must import the documented public item through the crate's actual name or otherwise define everything it uses. A bare call to a library function without an import can fail even when the function itself is correct.\n\nFor the practice snippet, the assertion expects five while the function returns four. Predict the failure before running it, then fix the expectation and add an edge case such as zero. Keep an example short enough that a reader can verify the claim at a glance. If an example needs setup, hide only incidental setup lines with rustdoc's `#` marker; do not hide the behaviour being taught. Treat doc failures as feedback that either code or its promised behaviour changed.\n\nIn a published crate, write the actual crate import in the example so the doctest exercises the public function instead of a copy of its logic. Run the test after renaming an API as well as after changing its result.",
     "feedback": "Doc examples are compiled and asserted, so a wrong example is a failing test.",
     "practiceCode": "/// Adds two numbers.\n///\n/// ```\n/// assert_eq!(add(2, 2), 5);\n/// ```\npub fn add(a: i32, b: i32) -> i32 { a + b }",
     "question": "What happens when you run cargo test on that?",
@@ -55,5 +55,10 @@
     "success": "The example states the behaviour and would fail if the code changed.",
     "summary": "Doc comments are compiled, and their examples are run as tests.",
     "task": "Document a public function and include one example."
+  },
+  "illustration": {
+    "path": "media/comments-docs.png",
+    "alt": "Item documentation uses three slashes, module documentation uses slash-slash-bang, and an example can become a doctest.",
+    "caption": "Documentation comments attach to code, and checked examples can serve as executable documentation."
   }
 }

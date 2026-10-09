@@ -1,6 +1,6 @@
 {
   "concept": "Debug, Clone, PartialEq, and Default",
-  "contentDigest": "06cab9b3e040abc263c567d551f5f0982199ec3772cb98b9d133fc466522468d",
+  "contentDigest": "b7d853472668462179cc13ad53e9f3c7592c81632994f8bab64342c94d9a86c0",
   "depth": {
     "connections": [
       {
@@ -29,7 +29,7 @@
   },
   "exerciseKind": "planned",
   "id": "derive",
-  "minutes": 8,
+  "minutes": 12,
   "order": 6,
   "parentID": "modeling",
   "title": "Derive Macros",
@@ -42,7 +42,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Four traits, no hand-written code, all checked by the compiler.",
     "exampleCode": "#[derive(Debug, Clone, PartialEq, Default)]\nstruct Config {\n    host: String,\n    port: u16,\n}\n\nlet a = Config::default();\nlet b = a.clone();\nprintln!(\"{a:?} equal={}\", a == b);",
-    "explanation": "#[derive(Debug, Clone, PartialEq)] generates the mechanical implementation for each field. It only works when every field also implements the trait, which turns a missing capability deep in a struct into a clear compile error naming the field.",
+    "explanation": "#[derive(Debug, Clone, PartialEq)] generates the mechanical implementation for each field. It only works when every field also implements the trait, which turns a missing capability deep in a struct into a clear compile error naming the field.\n\nA trait describes a capability. `Debug` supports development formatting with `{:?}`; `Clone` makes an explicit copy; `PartialEq` enables equality comparisons; `Default` provides a conventional initial value. `#[derive(...)]` asks the compiler to generate straightforward implementations for a struct or enum. The generated code follows the fields: if a field cannot be cloned or printed, the containing type cannot derive that capability automatically.\n\nDerive only the traits a type needs. Cloning a large structure can be expensive and may hide a design that should borrow instead. A default value is useful when it is meaningful, but `Config::default()` is a poor substitute for required settings that must be supplied by the caller. For an enum, deriving `Default` needs one designated default variant. Generated `PartialEq` compares corresponding fields, which might be wrong for a domain concept whose identity is based only on an ID. In that case, write the behavior deliberately rather than assuming the mechanical result is right.\n\nTry the sample with `println!(\"{a:?}\")`, `a == b`, and `a.clone()`. Then add a field whose type lacks `Debug` and inspect the compiler error; derive or implement `Debug` for that field if printing it is appropriate. This shows how trait bounds propagate through a model. Treat a derive list as part of the public promises of a type, and keep those promises intentional.\n\nA derived `Debug` formatter can reveal sensitive fields. Before printing a configuration or token-bearing struct in diagnostics, decide whether to implement a redacted formatter instead. Compiler-generated convenience still deserves a review of what it exposes.",
     "feedback": "A derived impl is only as available as the traits of its fields.",
     "practiceCode": "#[derive(Debug)]\nstruct Wrapper {\n    inner: NoDebug,\n}",
     "question": "Why can that struct not be printed?",

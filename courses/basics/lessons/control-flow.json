@@ -1,6 +1,6 @@
 {
   "concept": "if and match as expressions",
-  "contentDigest": "c0782b239e4bd5f07e8cc65cbaa831b257b4afda2f9641737bcf196c161c87e2",
+  "contentDigest": "2b27a691749d2f5c3e2969e770de68a98f629dfc29998158de242dc057ebd2bb",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "control-flow",
-  "minutes": 8,
+  "minutes": 13,
   "order": 5,
   "parentID": "expressions-flow",
   "title": "Control Flow",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "if is an expression, so both arms must agree on a type.",
     "exampleCode": "let label = if value % 2 == 0 {\n    \"even\"\n} else {\n    \"odd\"\n};\nfor index in 0..3 {\n    println!(\"{index}: {label}\");\n}",
-    "explanation": "Because if is an expression, both branches must produce the same type — there is no silent conversion to paper over a mismatch. loop, while, and for then express three different repetition rules: forever, until a condition fails, and over an iterator.",
+    "explanation": "Because if is an expression, both branches must produce the same type — there is no silent conversion to paper over a mismatch. loop, while, and for then express three different repetition rules: forever, until a condition fails, and over an iterator.\n\nIn the example, value % 2 == 0 evaluates to bool. Both if branches produce a &str, so the entire if expression can initialize label. If one branch returned a number instead, rustc would reject the assignment because a single expression cannot have two unrelated result types. This is a useful discipline: deciding what label means happens in one place, and the loop can simply print it.\n\nThe range 0..3 supplies 0, 1, and 2 to for. Each iteration binds index to the next value and prints one line. The loop does not need a separate counter mutation or a manual exit condition. Later you will see while for a condition that changes over time and loop for cases where break itself decides when to stop. Here, for expresses the finite sequence directly.\n\nA match expression can provide the same kind of value selection when there are more than two cases. Every arm must be covered, and all arms used as one expression must agree on a result type. Predict the three output lines before running, including their order. Then change one branch from \"even\" to 0 and explain the diagnostic in terms of the type of label, rather than treating it as an arbitrary compiler restriction.\n\nOne subtlety is that `if let` is attractive for a single interesting shape, while `match` makes every alternative explicit. If a branch is used as a value, confirm that all paths produce the same type before deciding where the semicolon belongs. Test the boundary condition itself, not only values comfortably on either side.",
     "feedback": "An if expression has one type, so every branch has to match.",
     "practiceCode": "let value = if flag { 1 } else { \"two\" };",
     "question": "Why do those two branches not type-check?",
@@ -55,5 +55,10 @@
     "success": "Each number prints once with the right classification.",
     "summary": "Expressions and loops model decisions without hidden coercion.",
     "task": "Use if to classify a number and for to visit a range."
+  },
+  "illustration": {
+    "path": "media/control-flow.png",
+    "alt": "Both if and else branches yield the same type; match branches cover every represented case.",
+    "caption": "Rust treats branches as expressions and requires their results to agree on a type."
   }
 }

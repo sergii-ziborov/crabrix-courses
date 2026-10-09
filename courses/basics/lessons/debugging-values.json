@@ -1,6 +1,6 @@
 {
   "concept": "Debug, dbg!, and stderr",
-  "contentDigest": "763024fa6ac534fcb331bce0e00aada4e8d64bdf2d03b3f4dc9b3e6b5bad47c0",
+  "contentDigest": "e377d061f3044cfc30d006b1b10e1fc66808a17f3097cf7e69b8f17b2fd9da31",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "debugging-values",
-  "minutes": 6,
+  "minutes": 9,
   "order": 5,
   "parentID": "small-programs",
   "title": "Inspecting Values",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Borrowing lets dbg! inspect the Vec without consuming it.",
     "exampleCode": "let items = vec![\"crab\", \"rust\"];\ndbg!(&items);\nprintln!(\"{} items\", items.len());",
-    "explanation": "The {:?} formatter uses the Debug trait. dbg! prints the expression, source location, and value to stderr, then returns the value unchanged. Borrow with dbg!(&value) when you want to inspect an owned value without moving it. Remove noisy probes or replace them with deliberate logging before shipping.",
+    "explanation": "The {:?} formatter uses the Debug trait. dbg! prints the expression, source location, and value to stderr, then returns the value unchanged. Borrow with dbg!(&value) when you want to inspect an owned value without moving it. Remove noisy probes or replace them with deliberate logging before shipping.\n\nA useful debug probe answers a specific question. Before running the program, predict the value at a boundary: after parsing, before a branch, or after a collection update. Put `dbg!` there, run the smallest input that exposes the issue, and compare the printed value with the prediction. If the value is already wrong, move the probe earlier; if it is right, move it later. This narrows the search instead of filling the terminal with unrelated output.\n\n`println!` writes to standard output, which users or another program may be reading as the result. `dbg!` writes to standard error and includes the source expression and location, so it is better suited to a temporary inspection. The macro returns the value it receives. For an owned `String` or `Vec`, passing the value can move it into the macro; pass `&value` to inspect without giving it away. `{:?}` requires `Debug`, and a struct can usually obtain that trait with `#[derive(Debug)]`.\n\nTry the lesson's `name` example twice: first observe the move error, then change the probe to `dbg!(&name)` and run it again. Record what appeared on stderr and what remained on stdout. After finding the cause, remove the probe or replace it with intentional diagnostics that have a stable purpose. A good debugging habit includes a final clean run, because experimental output should not become an accidental part of the program's interface.",
     "feedback": "Pass a shared reference so the debug probe does not take ownership.",
     "practiceCode": "let name = String::from(\"Ferris\");\ndbg!(name);\nprintln!(\"{name}\");",
     "question": "Which edit keeps name usable?",

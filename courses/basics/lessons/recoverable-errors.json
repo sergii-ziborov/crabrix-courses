@@ -1,6 +1,6 @@
 {
   "concept": "Result without panic",
-  "contentDigest": "2803cca94ca9b741ac4eb2dd374fc41aba2dbafa19f1f0ba2295818e11ee8fd3",
+  "contentDigest": "e96835b5671f6a46e1eefc2662d77d3cb6c8de6f2d6427cb1bb3409b558834fc",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "recoverable-errors",
-  "minutes": 8,
+  "minutes": 12,
   "order": 4,
   "parentID": "small-programs",
   "title": "Handling Failure",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "The caller chooses what an invalid number means for this program.",
     "exampleCode": "fn half(raw: &str) -> Result<i32, String> {\n    let value = raw.parse::<i32>()\n        .map_err(|_| \"not a number\".to_string())?;\n    Ok(value / 2)\n}",
-    "explanation": "A function returning Result<T, E> makes callers handle both success and failure. match is the clearest first tool because both branches stay visible. The ? operator becomes useful once a surrounding function also returns a compatible Result. panic and expect are better reserved for broken invariants or controlled examples, not routine bad input.",
+    "explanation": "A function returning Result<T, E> makes callers handle both success and failure. match is the clearest first tool because both branches stay visible. The ? operator becomes useful once a surrounding function also returns a compatible Result. panic and expect are better reserved for broken invariants or controlled examples, not routine bad input.\n\nImagine a command that reads a port number. The user typing letters is not a broken program; it is an expected input that deserves a useful message and another attempt. `Result<T, E>` makes that distinction part of the function contract. `Ok(value)` contains the value to continue with, while `Err(error)` contains the reason to show, log, or transform. The caller gets to decide whether to retry, choose a default, or stop that operation.\n\nIn the example, `parse::<i32>()` returns a `Result`. `map_err` converts the parsing error into a message the API promises to return. The `?` operator takes the number from `Ok`, but returns early from `half` on `Err`. It is not a general shortcut for ignoring a failure: the enclosing function must be able to return a compatible error type. Write a `match` first if the two paths are unfamiliar; once both branches are clear, `?` keeps the successful path readable.\n\nAvoid `unwrap()` on input you do not control. A panic reports a programming defect or a deliberately impossible state; it is a poor response to ordinary bad text. As a small exercise, call `half(\"12\")` and `half(\"twelve\")`, printing the successful answer and an actionable error. Then decide whether dividing an odd integer by two should truncate or be rejected. That is a product rule, and the function signature and tests should make the choice visible.\n\nAn error message should be useful at the boundary where it is displayed. Deep inside a reusable parser, preserve a structured error when possible; at the UI boundary, add the input context and a concrete suggestion for correction.",
     "feedback": "Let the caller decide how to recover instead of forcing a panic.",
     "practiceCode": "fn read(raw: &str) -> i32 {\n    raw.parse().unwrap()\n}",
     "question": "Why is Result a better return type here?",
@@ -55,5 +55,10 @@
     "success": "Bad text produces a normal error value, not a panic.",
     "summary": "Result keeps expected failure in the function's type instead of turning it into a crash.",
     "task": "Return a descriptive Result for invalid input and handle it at the caller."
+  },
+  "illustration": {
+    "path": "media/recoverable-errors.png",
+    "alt": "A Result branches into Ok and Err paths; match handles each branch and question-mark can propagate an error.",
+    "caption": "Result makes success and failure explicit. match handles both; ? can return an error to the caller."
   }
 }

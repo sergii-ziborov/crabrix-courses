@@ -1,6 +1,6 @@
 {
   "concept": "Named data and methods",
-  "contentDigest": "c47f8c7bde52eba065c922aaa16fb5548b93353ef12e1704b5527cd2a6500794",
+  "contentDigest": "96793658743547afeae17376abce3a73cff525a5b5c20f77c06e222abe9aa6f1",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "structs",
-  "minutes": 8,
+  "minutes": 12,
   "order": 0,
   "parentID": "modeling",
   "title": "Structs",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "&self borrows, so the caller keeps ownership.",
     "exampleCode": "struct Rectangle {\n    width: u32,\n    height: u32,\n}\n\nimpl Rectangle {\n    fn area(&self) -> u32 {\n        self.width * self.height\n    }\n}",
-    "explanation": "impl blocks attach constructors and methods to the type. The receiver spells out the ownership contract: self consumes the value, &self borrows it for reading, and &mut self borrows it for modification — so a method signature tells you what it will do before you read the body.",
+    "explanation": "impl blocks attach constructors and methods to the type. The receiver spells out the ownership contract: self consumes the value, &self borrows it for reading, and &mut self borrows it for modification — so a method signature tells you what it will do before you read the body.\n\nA struct groups values that belong to one concept. `Rectangle { width, height }` gives those numbers names, so the caller cannot silently confuse the two positions in a tuple. Choose field types that express the valid domain; unsigned dimensions reject negative values at the type level, though you still need to think about multiplication overflow for very large inputs. Construct one value, print its area, then change only its width to see how the named fields clarify the operation.\n\nAn `impl` block puts operations next to the type they describe. An associated function such as `Rectangle::new(width, height)` has no `self` receiver and can validate input during construction. A method such as `area(&self)` borrows an existing rectangle. This means several read-only calls can share the same value. A mutating method uses `&mut self` and requires a mutable receiver; a consuming method uses `self` and leaves the old binding unavailable afterward. The signature is a compact ownership contract for callers.\n\nIn the counter practice snippet, `bump(self)` consumes the counter and returns only a number. That could be deliberate for a one-shot conversion, but it is surprising for an operation named \"bump.\" If the goal is to retain and update the counter, use `fn bump(&mut self)` and increment its field; if the goal is to produce a modified copy, return a new `Counter` and name the method accordingly. Decide the desired post-call state first, then choose the receiver. This habit prevents ownership errors from turning into unnecessary clones.",
     "feedback": "&self or &mut self keeps the value usable after the call.",
     "practiceCode": "impl Counter {\n    fn bump(self) -> u32 { self.value + 1 }\n}",
     "question": "What is wrong with that receiver?",

@@ -1,6 +1,6 @@
 {
   "concept": "Borrowing for read-only access",
-  "contentDigest": "cd71d83b9b00617dbea6ea970c9033b87e4b2701698ac7cde683d03690e08841",
+  "contentDigest": "510178b2a2dd36d329414adc2780b130b1214e11cf34409f8a6fb4713b1af9b7",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "references-intro",
-  "minutes": 7,
+  "minutes": 11,
   "order": 2,
   "parentID": "small-programs",
   "title": "First References",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "length borrows text, so main can print it again.",
     "exampleCode": "fn length(text: &str) -> usize {\n    text.len()\n}\n\nlet name = String::from(\"Crabrix\");\nprintln!(\"{} {name}\", length(&name));",
-    "explanation": "The & symbol creates a borrow. A shared reference such as &str permits reading but not mutation, and it does not own the value it points to. Passing a reference avoids a move, so the original binding remains usable after the call. Later ownership lessons add the precise aliasing rules and mutable references.",
+    "explanation": "The & symbol creates a borrow. A shared reference such as &str permits reading but not mutation, and it does not own the value it points to. Passing a reference avoids a move, so the original binding remains usable after the call. Later ownership lessons add the precise aliasing rules and mutable references.\n\nIn the example, name owns a String. Passing &name to length creates a shared borrow, and the parameter text: &str lets the function read the bytes through that borrow. length returns a usize, not the text itself. After the call ends, main still owns name and can print it. No second owned String had to be made for this read-only question.\n\nA reference is valid only while the value it refers to is available. Rust checks that relationship so code cannot keep a pointer into a value that has already gone away. Shared references permit reading; mutation through a shared reference is not allowed. That is why a function that only needs to inspect text should often accept &str instead of taking String ownership. It can then work with both owned strings and borrowed string slices supplied by callers.\n\nBorrowing is not a promise that the data will never change anywhere. It is a controlled access rule for a particular period and reference. Later lessons introduce mutable borrows and the rule that prevents conflicting simultaneous access. For now, change length to take String by value and see why the owner is unavailable after the call. Restore &str and explain what the ampersand changed about the function's contract.\n\nReferences also have lifetimes, although the compiler often infers them in simple cases. A reference cannot outlive the value it points to. Return owned data or borrow from an input that lives long enough; do not try to return a reference to a local temporary.",
     "feedback": "Borrowing &str lets show read the text without taking its String owner.",
     "practiceCode": "fn show(text: String) {\n    println!(\"{text}\");\n}\nlet name = String::from(\"Ferris\");\nshow(name);\nprintln!(\"{name}\");",
     "question": "What signature keeps name usable?",
@@ -55,5 +55,10 @@
     "success": "The caller retains ownership and no clone is needed.",
     "summary": "A shared reference lets a function read a value while the caller keeps ownership.",
     "task": "Pass text to a function by reference and use the owner afterward."
+  },
+  "illustration": {
+    "path": "media/references-intro.png",
+    "alt": "A String owner lends an &str view to a reader, then remains available after the borrow.",
+    "caption": "A shared borrow lets a function read owned text without taking ownership from its caller."
   }
 }

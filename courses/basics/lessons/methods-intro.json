@@ -1,6 +1,6 @@
 {
   "concept": "Dot syntax and chained transformations",
-  "contentDigest": "f573ce02c219cd6425dad8ae84144cae68c97a61710a40a460e6a6b3dbe17e78",
+  "contentDigest": "c6a163579d1254723c016cab257ecefc03fcca589cb8c8513dd911a4df5fc13f",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "methods-intro",
-  "minutes": 6,
+  "minutes": 9,
   "order": 3,
   "parentID": "small-programs",
   "title": "Using Methods",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "trim borrows; to_uppercase creates a new owned String.",
     "exampleCode": "let name = String::from(\" crab \");\nlet clean = name.trim().to_uppercase();\nprintln!(\"{clean}\");",
-    "explanation": "A method call uses dot syntax, and Rust automatically borrows or dereferences the receiver when the signature makes that unambiguous. Chaining is readable when each step produces the value the next step expects. Watch ownership: some methods borrow the receiver, while others consume it and return a new value.",
+    "explanation": "A method call uses dot syntax, and Rust automatically borrows or dereferences the receiver when the signature makes that unambiguous. Chaining is readable when each step produces the value the next step expects. Watch ownership: some methods borrow the receiver, while others consume it and return a new value.\n\nStart at the receiver, the value to the left of the dot. In `name.trim()`, `trim` borrows the string and returns a slice (`&str`) of its contents; it does not edit `name`. The next call, `to_uppercase()`, reads that slice and creates a new `String`. You can still print the original value after both calls. A chain is easiest to reason about when you can name the type after each step: `String` → `&str` → `String`.\n\nMethod syntax is a convenient way to pass the receiver as the first argument. `text.len()` and `str::len(text)` express closely related calls; the dot form also lets Rust apply an unambiguous borrow or dereference. It does not erase ownership rules. A method declared with `self` takes the receiver by value; one with `&self` only reads it; one with `&mut self` may modify it. When a value seems to disappear after a method call, inspect that signature before inserting a clone.\n\nFor practice, write the chain as separate bindings: `let trimmed = name.trim(); let upper = trimmed.to_uppercase();`. Print all three values and predict which ones own their bytes. Then change a mutable string with `push_str` and compare that in-place edit with making a new uppercase string. Prefer a short chain when each conversion is obvious; use named intermediate values when you need to inspect a failure, annotate a type, or explain the transformation to a teammate.",
     "feedback": "The receiver is &self, so the method reads through a temporary borrow.",
     "practiceCode": "let text = String::from(\"rust\");\nlet size = text.len();\nprintln!(\"{text} {size}\");",
     "question": "Why is text still usable after len()?",

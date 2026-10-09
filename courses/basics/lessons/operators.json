@@ -1,6 +1,6 @@
 {
   "concept": "Arithmetic, overflow, and as",
-  "contentDigest": "cc28edf4a8e5b501d6436b75338eeb9aaabfb4864361bc520572701d6f417620",
+  "contentDigest": "ec54b2060f33f25f2fcb594c7b56614cc50122b10b5e2bdc4af54d90426735e5",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "operators",
-  "minutes": 7,
+  "minutes": 11,
   "order": 1,
   "parentID": "expressions-flow",
   "title": "Operators & Casting",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Say what should happen at the boundary instead of hoping.",
     "exampleCode": "let a: u8 = 250;\nprintln!(\"{:?}\", a.checked_add(10)); // None\nprintln!(\"{}\", a.wrapping_add(10));  // 4\nprintln!(\"{}\", a.saturating_add(10));// 255\n\nlet big = 300_i32;\nlet narrowed = big as u8; // truncates on purpose\nprintln!(\"{narrowed}\");",
-    "explanation": "There is no implicit numeric promotion: adding a u8 to a u32 is a compile error until you convert. In a debug build an overflowing add panics rather than silently wrapping, and in release it wraps — which is why the standard library gives you checked_, wrapping_, and saturating_ variants to say which one you meant.",
+    "explanation": "There is no implicit numeric promotion: adding a u8 to a u32 is a compile error until you convert. In a debug build an overflowing add panics rather than silently wrapping, and in release it wraps — which is why the standard library gives you checked_, wrapping_, and saturating_ variants to say which one you meant.\n\nThe example shows why an overflow policy must be explicit. A u8 can hold values from 0 through 255, so 250 + 10 does not fit. checked_add returns None rather than a number; wrapping_add cycles around to 4; saturating_add clamps at 255. These are three different product decisions. A count of completed tasks probably should not wrap from 255 to 4, while a circular sequence number may intentionally do so. Pick the behavior from the domain before choosing the method.\n\nThe later as cast illustrates another boundary. Converting 300_i32 to u8 with as keeps only the low eight bits, yielding 44. This is not a harmless way to make two types agree. If narrowing should fail when a value does not fit, use a checked conversion such as u8::try_from(big) and handle its Result. If the source is known to fit, record why that invariant holds. Rust's refusal to silently promote mixed numeric operands gives you a chance to make that reasoning visible.\n\nOverflow checking can be configured, so avoid depending on a debug-versus-release difference as part of program logic. The named arithmetic methods communicate behavior reliably in either build. As an exercise, write the expected output for all three additions before running the example, then explain which one would be appropriate for a byte-sized inventory counter that must report an error when it exceeds its limit.\n\nDo not assume all numeric conversions happen automatically. Rust requires deliberate casts where types differ, and a cast can truncate or change meaning. Start with concrete types, then inspect the compiler diagnostic before changing them to make an expression compile.",
     "feedback": "checked_* returns Option, so the caller decides what an overflow means.",
     "practiceCode": "let total: u8 = 200;\nlet bonus: u8 = 100;\nlet result = total.???_add(bonus);",
     "question": "Which call returns None instead of panicking or wrapping?",
@@ -55,5 +55,10 @@
     "success": "The program compiles and the boundary case is handled explicitly.",
     "summary": "Arithmetic in Rust is checked, and conversions are always written down.",
     "task": "Pick the right overflow strategy for a counter that must never wrap."
+  },
+  "illustration": {
+    "path": "media/operators.png",
+    "alt": "A u8 value crosses an explicit conversion into u32 before addition, with an overflow boundary marked.",
+    "caption": "Rust asks you to convert numeric types deliberately before combining them."
   }
 }

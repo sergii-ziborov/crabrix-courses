@@ -1,6 +1,6 @@
 {
   "concept": "Turning text into typed data",
-  "contentDigest": "89b09fdce759134d9b10768ff7bda3eca809f01b8389892a9b9a7e60966fa33d",
+  "contentDigest": "296fff4504f9d32a63f0759e3b02c056cb0af87986359ee7d94924e6e0f50ca2",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "parsing",
-  "minutes": 7,
+  "minutes": 11,
   "order": 1,
   "parentID": "small-programs",
   "title": "Parsing Values",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "The annotation tells parse which numeric type to produce.",
     "exampleCode": "let parsed: Result<i32, _> = \"42\".parse();\nmatch parsed {\n    Ok(value) => println!(\"{value}\"),\n    Err(error) => println!(\"{error}\"),\n}",
-    "explanation": "parse is generic: the destination type tells it what grammar to use. Because arbitrary text may be invalid, the result is Result rather than a bare value. A type annotation or turbofish such as parse::<i32>() resolves the target type, after which match, ?, or another deliberate policy handles failure.",
+    "explanation": "parse is generic: the destination type tells it what grammar to use. Because arbitrary text may be invalid, the result is Result rather than a bare value. A type annotation or turbofish such as parse::<i32>() resolves the target type, after which match, ?, or another deliberate policy handles failure.\n\nText arrives as bytes and characters, not as a trusted number. The call \"42\".parse::<i32>() asks Rust to interpret it using i32's parsing rules. That operation can fail, so it returns Result<i32, ParseIntError>. The annotation Result<i32, _> in the example gives rustc enough information to infer the error type; the underscore does not mean the error disappears. A successful parse produces Ok(42), while invalid text such as \"forty-two\" produces Err with diagnostic information.\n\nThe match in the example deliberately handles both outcomes. It prints the number on success and the error on failure. In a larger function, ? can propagate an error when the surrounding return type supports it, but that still represents a failure path the caller must consider. unwrap would panic instead, so use it only when a violated invariant truly means the program cannot continue, not for routine user input.\n\nBefore choosing a parser, decide the target type and valid range. Parsing \"300\" as u8 fails even though the text is made of digits, because 300 is outside that type's range. Try valid, malformed, and out-of-range strings, then record which branch runs for each. A good parser does not just extract a value; it makes invalid input visible at the boundary.\n\nSeparate syntax errors from domain errors. The text `-3` may parse successfully as an integer but still be invalid for a positive count. Validate both steps, and return a message that tells the caller which rule was violated.",
     "feedback": "Annotate the binding or call parse::<i32>() so inference has a target.",
     "practiceCode": "let value = \"42\".parse();",
     "question": "What information is missing?",

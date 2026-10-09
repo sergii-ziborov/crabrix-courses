@@ -1,6 +1,6 @@
 {
   "concept": "Vec, String, and HashMap",
-  "contentDigest": "c4a13c13c87adf6e1c644d69599529ab0a169e1cc6cd9f7f889e89dda9049d5d",
+  "contentDigest": "185650ac7c638107c08a1e955b295a6e9e712d9f8c02b4445b6084f99248c901",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "collections",
-  "minutes": 9,
+  "minutes": 14,
   "order": 3,
   "parentID": "modeling",
   "title": "Collections",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "entry inserts a default only when the key is missing.",
     "exampleCode": "use std::collections::HashMap;\n\nlet mut counts: HashMap<&str, u32> =\n    HashMap::new();\nfor word in text.split_whitespace() {\n    *counts.entry(word).or_insert(0) += 1;\n}",
-    "explanation": "Choosing a collection is part of the model, not an afterthought: order, uniqueness, and key access all change what your code can promise. Each of these owns its data, so passing one around follows exactly the same ownership rules as any other value.",
+    "explanation": "Choosing a collection is part of the model, not an afterthought: order, uniqueness, and key access all change what your code can promise. Each of these owns its data, so passing one around follows exactly the same ownership rules as any other value.\n\nChoose a collection by the operations the program promises. `Vec<T>` preserves an ordered sequence and supports indexed access; appending is a natural operation. `HashMap<K, V>` associates keys with values and is useful for lookup or counting, but its iteration order is not a stable presentation order. A `String` owns UTF-8 text rather than an arbitrary sequence of characters. Naming the data structure early keeps later code from relying on an accidental property, such as hash iteration looking sorted in one run.\n\nThe `entry` API handles the common \"insert if missing, then update\" operation in one lookup. `counts.entry(word).or_insert(0)` returns a mutable reference to the existing count or to a newly inserted zero. Dereferencing it lets the code increment the stored value. In contrast, trying to call `get` while inserting into the same map often runs into borrowing conflicts, and doing separate lookup and insert work can be more verbose. Read the type of the returned reference to see why `*count += 1` is needed.\n\nFor practice, count words in a short sentence with one repeated word. Print the count for a known key and use `get` to handle an unknown key safely. Then sort the keys before displaying all counts if predictable output matters. Consider ownership as well: keys borrowed from a longer-lived input can be `&str`; keys assembled while parsing may need owned `String` values. The collection's shape, lookup behavior, and ownership together define the data model.",
     "feedback": "entry avoids a second lookup and the borrow conflict that comes with it.",
     "practiceCode": "let mut map = HashMap::new();\nmap.insert(\"a\", map.get(\"a\").unwrap_or(&0) + 1);",
     "question": "Why is entry() better here?",
@@ -55,5 +55,10 @@
     "success": "The map holds the correct count for every word.",
     "summary": "Vec, String, and HashMap own growable data with different trade-offs.",
     "task": "Count repeated words with a HashMap entry."
+  },
+  "illustration": {
+    "path": "media/collections.png",
+    "alt": "An ordered growing Vec, key-value HashMap, and text String have distinct storage shapes.",
+    "caption": "Pick a collection by the operations and guarantees you need: order, key lookup, or UTF-8 text."
   }
 }

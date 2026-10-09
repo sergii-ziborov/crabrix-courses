@@ -1,6 +1,6 @@
 {
   "concept": "Returns and expression bodies",
-  "contentDigest": "df356920d3b42cb5337e5b948c392fbf72e24e487405234c3aad6b4b3b81cd33",
+  "contentDigest": "27f0afb895470d33db9f201d2df8bad8e9ff6b6145ee3d6ad94a017c5cbe2d70",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "functions",
-  "minutes": 7,
+  "minutes": 11,
   "order": 3,
   "parentID": "expressions-flow",
   "title": "Functions",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "The final expression is the result — no `return` keyword needed.",
     "exampleCode": "fn area(width: u32, height: u32) -> u32 {\n    width * height // no semicolon: the result\n}\n\nfn shout(text: &str) -> String {\n    let mut out = text.to_uppercase();\n    out.push('!');\n    out\n}",
-    "explanation": "Parameter types and the return type are always written out, never inferred across a function boundary. The last expression is the return value when you leave the semicolon off, which is why an accidental semicolon turns a function into one that returns the unit type and produces a type error.",
+    "explanation": "Parameter types and the return type are always written out, never inferred across a function boundary. The last expression is the return value when you leave the semicolon off, which is why an accidental semicolon turns a function into one that returns the unit type and produces a type error.\n\nThe area function declares its contract before its body: two u32 parameters go in and one u32 comes out. That boundary lets rustc check a call without reading every line of the implementation. Inside the body, width * height is the tail expression. Its value becomes the return value because there is no semicolon after it. Adding one would change that final statement to unit, and rustc would point out the mismatch with -> u32.\n\nThe shout function shows that a body can have several steps before its tail value. text is borrowed as &str, to_uppercase creates an owned String, and push modifies that owned buffer. The final out expression moves the completed String to the caller. The function does not return a reference to its local buffer, which would be invalid after the call. A signature is therefore also a useful hint about ownership: &str is borrowed input, String is an owned result.\n\nWhen writing a new function, start with the inputs and result you want a caller to see. Then use a small example call to test that contract. If two branches can return different kinds of value, resolve that design rather than hoping inference will cross the function boundary. Predict the type of each tail expression, and compare it with the declared return type before compiling.\n\nA function name should describe the guarantee it gives, while the signature makes the input and output types checkable. Keep the body focused enough that a reader can predict its result before scrolling. Test a normal value and an edge case; if the latter is ambiguous, specify the behavior in the contract.",
     "feedback": "A trailing semicolon turns an expression into a statement, and the function then returns ().",
     "practiceCode": "fn double(value: i32) -> i32 {\n    value * 2;\n}",
     "question": "Why does that function fail to compile?",
@@ -55,5 +55,10 @@
     "success": "It compiles with no `return` keyword and the type matches the signature.",
     "summary": "A function signature is a contract the compiler enforces at every call site.",
     "task": "Write a function that takes two values and returns a computed one."
+  },
+  "illustration": {
+    "path": "media/functions.png",
+    "alt": "Two typed inputs enter a function; a tail expression returns a value, while adding a semicolon yields unit.",
+    "caption": "A function returns its final expression when that expression has no trailing semicolon."
   }
 }

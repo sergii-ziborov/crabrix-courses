@@ -1,6 +1,6 @@
 {
   "concept": "Destructuring, guards, and bindings",
-  "contentDigest": "ebf3af79e88fa4eef2457268a13da41c6fdb04619fd87ced9ed29530b91563d9",
+  "contentDigest": "5fdaf0219b65a3ca312845e34c3585a49b2f6bd96b5e90049df69092aa438042",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "pattern-matching",
-  "minutes": 11,
+  "minutes": 17,
   "order": 5,
   "parentID": "modeling",
   "title": "Pattern Matching",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "One arm can test, bind, and destructure at the same time.",
     "exampleCode": "let point = (3, -7);\n\nmatch point {\n    (0, 0) => println!(\"origin\"),\n    (x, 0) | (0, x) => println!(\"axis at {x}\"),\n    (x, y) if y < 0 => println!(\"below: {x},{y}\"),\n    (x, y) => println!(\"somewhere: {x},{y}\"),\n}",
-    "explanation": "Patterns work in match, if let, while let, function parameters, and plain let. Guards add a condition, @ binds a value while testing it, and | matches several shapes at once. The compiler checks exhaustiveness, so a pattern set that misses a case is an error rather than a surprise at runtime.",
+    "explanation": "Patterns work in match, if let, while let, function parameters, and plain let. Guards add a condition, @ binds a value while testing it, and | matches several shapes at once. The compiler checks exhaustiveness, so a pattern set that misses a case is an error rather than a surprise at runtime.\n\nA pattern describes the shape of a value and may bind its parts. In the tuple example, `(0, 0)` recognizes one exact point, `(x, 0) | (0, x)` recognizes either axis, and `(x, y) if y < 0` adds a guard. Arms run top to bottom: the first matching arm wins. That order matters because a broad arm placed early can make a later, more specific arm unreachable. Read a match as a decision table, then test one input per row and one input at a boundary.\n\nPatterns also appear outside `match`. `let (width, height) = size;` destructures a tuple directly when the shape always fits. `if let Some(value) = maybe_value` handles a single interesting enum case and lets the rest continue. `while let Some(item) = stack.pop()` repeats until the pattern no longer fits. Use a full `match` when every case deserves an explicit policy or when you want the compiler to point out a newly added variant.\n\nA guard is checked after the pattern binds names. It narrows an arm, but it does not generally count as covering every possible value of that shape. In the practice example, an even `Some(n)` goes to the guarded arm, an odd one to the next `Some(n)` arm, and `None` to its own arm. Remove the second `Some` arm and observe the exhaustiveness error. That exercise shows why patterns are more than compact syntax: they make the cases you have and have not considered visible.\n\nUse a small table of example inputs when a pattern has alternatives and guards. That makes overlap visible: an axis point that also satisfies a negative-coordinate guard reaches the earlier axis arm. Reorder only when the intended priority is clear.",
     "feedback": "A guard is an extra condition; exhaustiveness is still checked across the arms.",
     "practiceCode": "let value = Some(4);\nmatch value {\n    Some(n) if n % 2 == 0 => println!(\"even {n}\"),\n    Some(n) => println!(\"odd {n}\"),\n    None => println!(\"none\"),\n}",
     "question": "What does the `if n % 2 == 0` part do?",
@@ -55,5 +55,10 @@
     "success": "Every input is covered without a catch-all hiding a real case.",
     "summary": "Patterns destructure data and bind its parts in one step.",
     "task": "Match a tuple with a guard and a multi-pattern arm."
+  },
+  "illustration": {
+    "path": "media/pattern-matching.png",
+    "alt": "A nested value is destructured by a pattern, filtered by a guard, and backed by a fallback arm.",
+    "caption": "A pattern binds useful pieces of a value; a guard checks an extra condition, and _ covers the rest."
   }
 }

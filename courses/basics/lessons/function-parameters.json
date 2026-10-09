@@ -1,6 +1,6 @@
 {
   "concept": "Typed inputs and arguments",
-  "contentDigest": "a268b053d157080f5a2fa61a6aeed0ce3736c53ca743a827ee6ee643fce9c017",
+  "contentDigest": "04f27a51fde3bfd06e9ab752fc756e6f1886fc4065836e13021e32c2ca4f3da2",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "function-parameters",
-  "minutes": 6,
+  "minutes": 10,
   "order": 4,
   "parentID": "expressions-flow",
   "title": "Parameters",
@@ -47,7 +47,7 @@
     "correctAnswer": 0,
     "exampleCaption": "Both inputs and the output are visible before reading the body.",
     "exampleCode": "fn area(width: u32, height: u32) -> u32 {\n    width * height\n}\n\nlet result = area(4, 3);",
-    "explanation": "Rust requires every parameter type to be written, which lets the body and every call be checked independently. Arguments are the concrete values passed at a call site; parameters are the named inputs in the definition. Passing an owned type may move it, while a reference lets the function borrow it — a distinction later lessons develop in depth.",
+    "explanation": "Rust requires every parameter type to be written, which lets the body and every call be checked independently. Arguments are the concrete values passed at a call site; parameters are the named inputs in the definition. Passing an owned type may move it, while a reference lets the function borrow it — a distinction later lessons develop in depth.\n\nIn fn area(width: u32, height: u32), width and height are parameters: names the function uses inside its body. In area(4, 3), 4 and 3 are arguments: values supplied by one call. Rust checks that each argument can be used as the corresponding declared type. A literal often gains its type from this context, so you do not have to bind 4 to a separate u32 variable before calling area.\n\nOrder matters even when types match. area(4, 3) and area(3, 4) happen to return the same number, but a function such as subtract(left, right) would not. Choose parameter names that tell the reader which role each value plays, and use a struct when a call would otherwise contain many similar-looking arguments. The body can then focus on computation, while the signature communicates the input contract to every caller.\n\nThe ownership aspect becomes more important with non-Copy values. Passing a String by value normally transfers ownership to the function; passing &str lets it borrow text for reading. At this stage, inspect the parameter type rather than assuming a call always copies. Add a third argument to area and read the arity diagnostic, then pass text where a u32 is expected and compare that type diagnostic. Each points to a different part of the same contract.\n\nTry calling the function twice with the same `String`. If the first call owns its parameter, the second call exposes the move clearly. Change the parameter to `&str` when reading is enough, then pass both a string literal and a borrowed `String` to verify the flexible interface.",
     "feedback": "The call site must provide the u32 promised by the parameter type.",
     "practiceCode": "fn double(value: u32) -> u32 {\n    value * 2\n}\nlet answer = double(\"4\");",
     "question": "Why is the call rejected?",

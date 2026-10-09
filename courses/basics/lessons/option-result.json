@@ -1,6 +1,6 @@
 {
   "concept": "Explicit absence and failure",
-  "contentDigest": "49186b8e86ff484518b9aa8b66c1b4e78ffd1d1edbaa247d05884c88a0dadc89",
+  "contentDigest": "a8dbfb12ed79e0389979b8f574ae0d4cd42ed8cd389075983d483188f9d7e7d2",
   "depth": {
     "connections": [
       {
@@ -34,7 +34,7 @@
   },
   "exerciseKind": "planned",
   "id": "option-result",
-  "minutes": 10,
+  "minutes": 16,
   "order": 2,
   "parentID": "modeling",
   "title": "Option & Result",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "? returns early on the error case, keeping the happy path flat.",
     "exampleCode": "use std::num::ParseIntError;\n\nfn parse_port(\n    raw: &str,\n) -> Result<u16, ParseIntError> {\n    let port: u16 = raw.parse()?;\n    Ok(port)\n}",
-    "explanation": "Pattern matching and the ? operator keep both cases explicit without null, sentinel values, or exceptions. Reach for Option when absence is normal and expected, and Result when the caller needs to know why something did not work.",
+    "explanation": "Pattern matching and the ? operator keep both cases explicit without null, sentinel values, or exceptions. Reach for Option when absence is normal and expected, and Result when the caller needs to know why something did not work.\n\nAsk what the caller needs to know when there is no value. If a search simply finds nothing, `Option<T>` describes the two normal outcomes: `Some(item)` or `None`. If a parser fails, `Result<T, E>` describes success plus a reason for failure. Neither type is a disguised boolean. They carry the successful value, and `Result` preserves information needed to explain or recover from the error.\n\nUse `match` when both outcomes deserve visible behavior. `if let Some(item) = lookup()` is compact when you only care about the present case. `map` transforms a value inside `Some` or `Ok` without inventing a value for the other case. `unwrap_or` supplies a deliberate default; use it only when the default is genuinely correct. `?` can return early for an absent `Option` or an error `Result` when the surrounding function has the appropriate return type. A function returning `Result` cannot use `?` on an `Option` without explicitly choosing what error absence means.\n\nFor the exercise, make `find(id)` return `Option<Item>` because missing data is expected. Make `parse_id(raw)` return `Result<u32, ParseIntError>` because malformed input has a reason. Combine them in a caller: parse first, then look up, and show distinct messages for malformed and unknown IDs. Avoid `unwrap()` on both paths; it collapses two normal situations into a panic. Good types help the caller write a useful interface.",
     "feedback": "There is no error to report — absence is the expected outcome.",
     "practiceCode": "fn find(id: u32) -> ??? {\n    // nothing found is normal here\n}",
     "question": "Which fits 'the item may simply not exist'?",
