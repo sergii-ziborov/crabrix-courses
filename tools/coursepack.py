@@ -320,13 +320,16 @@ def build(args) -> None:
         files["manifest.json"] = pretty(manifest)
         archive = args.out / f"{course['id']}-{course['contentVersion']}.zip"
         make_zip(files, archive)
+        capabilities = (["coursepack-v1", "examples-gallery-v1"]
+                        if course["id"] == "examples" else ["coursepack-v1"])
+        if any(name.startswith("lessons/") and name.endswith(".json")
+               and b'"illustration"' in data for name, data in files.items()):
+            capabilities.append("lesson-illustrations-v1")
         descriptor = {"schemaVersion": 1, "courseID": course["id"],
                       "language": course["language"], "contentVersion": course["contentVersion"],
                       "archiveName": archive.name, "archiveBytes": archive.stat().st_size,
                       "archiveSHA256": sha(archive.read_bytes()), "courseDigest": course["contentDigest"],
-                      "minimumAppVersion": "1.1", "requiredCapabilities":
-                      ["coursepack-v1", "examples-gallery-v1"] if course["id"] == "examples"
-                      else ["coursepack-v1"]}
+                      "minimumAppVersion": "1.1", "requiredCapabilities": capabilities}
         save(args.out / f"{course['id']}.descriptor.payload.json", descriptor)
         print(f"Built {archive.name} {descriptor['archiveSHA256']}")
 
