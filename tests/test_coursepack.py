@@ -52,10 +52,11 @@ class CoursePackTests(unittest.TestCase):
     def test_catalog_rollback(self):
         catalog = ROOT / "catalog.v1.json"
         keys = ROOT / "keys/production-keyring.json"
+        sequence = json.loads((ROOT / "catalog.v1.payload.json").read_text())["sequence"]
         self.command("verify-catalog", "--catalog", catalog, "--keys", keys,
-                     "--last-sequence", "4")
+                     "--last-sequence", str(sequence - 1))
         self.command("verify-catalog", "--catalog", catalog, "--keys", keys,
-                     "--last-sequence", "5", ok=False)
+                     "--last-sequence", str(sequence), ok=False)
 
     def test_examples_are_separate_and_each_has_a_readme(self):
         with zipfile.ZipFile(ROOT / "dist/examples-1.0.2.zip") as archive:

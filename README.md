@@ -29,6 +29,12 @@ python3 -m unittest discover -s tests
 
 The signed descriptors in the release are bound to the exact archive bytes. If local authoring content changes, sign a new version; an old descriptor must fail verification. The `verify` command rejects bad signatures, mismatched ZIP digests, path traversal, links, duplicate names, extra files, and size-limit violations before installation. The app installer adds the atomic staging and progress-preservation gates.
 
+## Correct an existing lesson
+
+Edit `courses/<courseID>/lessons/<lessonID>.json` (and its check or media if needed). Keep the lesson `id` when the topic is the same: the app uses that ID to retain completion and answer history. Increment only that course's `contentVersion` in `course.json` and `provenance.json`, then run `python3 tools/recompute_digests.py <courseID>`, `validate`, and the deterministic `build` command above. Sign the new descriptor with `tools/sign_release.py`; the private seed stays outside this repository.
+
+For an incremental release, put only the new course's signed descriptor and archive in a fresh release staging directory. `tools/make_catalog.py --previous-catalog catalog.v1.json --keys keys/production-keyring.json --dist <staging> --base-url <new-release-asset-URL> --sequence <next-sequence> --release-notes <notes> --out <new-payload>` verifies the previous catalog, carries forward untouched course URLs, and requires a higher version for the changed course. Sign and verify the new catalog, publish the new archive and descriptor first, then replace `catalog.v1.json`. This avoids rebuilding or uploading the other seven courses. The app checks the signed catalog in Learn and My Courses, displays an **Update** button, and activates the verified course while keeping the learner's progress and projects. The previous lesson remains visible until an already open lesson is closed.
+
 ## Rebuild from the legacy source
 
 In the Crabrix app repository, `bash migration/export_legacy.sh` executes the curriculum models and writes the fixture. This is a migration tool, not a second production content engine. For a new empty authoring tree:
