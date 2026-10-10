@@ -1,6 +1,6 @@
 {
   "concept": "Heap allocation and recursive types",
-  "contentDigest": "b20bfcadb0d787d1a1aaa9d276f582b53c1c2f8f6e0b4ace974a61f3469d533d",
+  "contentDigest": "6e171c6645487da4103e603a10fde29aebf0094d30e7c798fae2110ed425136a",
   "depth": {
     "connections": [
       {
@@ -14,7 +14,7 @@
         "title": "Rc & RefCell"
       }
     ],
-    "correction": "Box gives a recursive or unsized value a known, pointer-sized home.",
+    "correction": "`Box` gives a recursive or unsized value a known, pointer-sized home.",
     "misconception": "“An enum can never refer to itself, boxed or not”",
     "traceSteps": [
       {
@@ -26,7 +26,7 @@
         "title": "Predict before checking"
       },
       {
-        "detail": "It compiles, and you can explain why Box is required.",
+        "detail": "It compiles, and you can explain why `Box` is required.",
         "title": "Compare with evidence"
       }
     ],
@@ -45,15 +45,15 @@
       "An i32 payload is not allowed inside an enum"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Without Box, this enum would need infinite size.",
+    "exampleCaption": "Without `Box`, this enum would need infinite size.",
     "exampleCode": "enum Tree {\n    Leaf(i32),\n    Node(Box<Tree>, Box<Tree>),\n}\n\nfn sum(tree: &Tree) -> i32 {\n    match tree {\n        Tree::Leaf(value) => *value,\n        Tree::Node(l, r) => sum(l) + sum(r),\n    }\n}",
-    "explanation": "A recursive type has no fixed size, because each level would contain another whole level. Box has a known pointer size, so putting the recursive part behind one makes the type representable. Box also lets a function return a trait object whose concrete size is not known at the call site.\n\nA recursive enum needs a known size at compile time. If `Tree::Node` directly contained two more `Tree` values, each of those nodes would contain more nodes with no finite size the compiler could lay out. `Box<Tree>` replaces each child with a pointer whose size is known. The actual child values live in separate heap allocations, and the boxes own them. Dropping the root recursively drops the owned children.\n\nThe sample's `sum` function borrows `&Tree`, matches on its variants, and reads through the boxes. It does not take ownership of the tree just to traverse it. Trace a root with two leaves and predict the sum before running the code. Then add one nested node and observe how the recursive call follows a box. This exercise shows the separation between the size of the enum variant and the depth of the runtime tree.\n\nA box is also a way to own a value whose concrete type is hidden behind a trait object, `Box<dyn Trait>`. The box does not make every operation faster: following pointers and allocating each node can cost more than a compact flat representation. Use it when indirection expresses a real need, such as recursion or owned dynamic dispatch. For a simple fixed set of values, a `Vec<T>` or plain struct may be clearer. Choose the data shape first, then the pointer type that makes it representable.\n\nThe box is an owning pointer, so moving the box moves ownership of the child allocation without copying the entire tree. That makes recursive construction manageable while preserving deterministic cleanup.",
-    "feedback": "Box<List> makes the recursive field pointer-sized and the type finite.",
+    "explanation": "A recursive type has no fixed size, because each level would contain another whole level. `Box` has a known pointer size, so putting the recursive part behind one makes the type representable. `Box` also lets a function return a trait object whose concrete size is not known at the call site.\n\nA recursive enum needs a known size at compile time. If `Tree::Node` directly contained two more `Tree` values, each of those nodes would contain more nodes with no finite size the compiler could lay out. `Box<Tree>` replaces each child with a pointer whose size is known. The actual child values live in separate heap allocations, and the boxes own them. Dropping the root recursively drops the owned children.\n\nThe sample's `sum` function borrows `&Tree`, matches on its variants, and reads through the boxes. It does not take ownership of the tree just to traverse it. Trace a root with two leaves and predict the sum before running the code. Then add one nested node and observe how the recursive call follows a box. This exercise shows the separation between the size of the enum variant and the depth of the runtime tree.\n\nA box is also a way to own a value whose concrete type is hidden behind a trait object, `Box<dyn Trait>`. The box does not make every operation faster: following pointers and allocating each node can cost more than a compact flat representation. Use it when indirection expresses a real need, such as recursion or owned dynamic dispatch. For a simple fixed set of values, a `Vec<T>` or plain struct may be clearer. Choose the data shape first, then the pointer type that makes it representable.\n\nThe box is an owning pointer, so moving the box moves ownership of the child allocation without copying the entire tree. That makes recursive construction manageable while preserving deterministic cleanup.",
+    "feedback": "`Box`<List> makes the recursive field pointer-sized and the type finite.",
     "practiceCode": "enum List {\n    Cons(i32, List),\n    Nil,\n}",
     "question": "Why does that recursive enum fail to compile?",
-    "rule": "Box gives a recursive or unsized value a known, pointer-sized home.",
-    "success": "It compiles, and you can explain why Box is required.",
-    "summary": "Box moves a value to the heap behind a single owner.",
+    "rule": "`Box` gives a recursive or unsized value a known, pointer-sized home.",
+    "success": "It compiles, and you can explain why `Box` is required.",
+    "summary": "`Box` moves a value to the heap behind a single owner.",
     "task": "Define a recursive type and total its values."
   },
   "illustration": {

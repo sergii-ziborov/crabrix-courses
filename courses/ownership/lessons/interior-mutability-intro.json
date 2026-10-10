@@ -1,6 +1,6 @@
 {
   "concept": "Move a checked borrow rule to runtime",
-  "contentDigest": "341e257de5dda1bedb12698e1cec35ff40370a40ec4e3d1e4b84f2180d8a1513",
+  "contentDigest": "011970111748f0ec43a25e72ade5f8cdeebaf38dcfdbcdba8f86df7d85a206b5",
   "depth": {
     "connections": [
       {
@@ -14,7 +14,7 @@
         "title": "Lifetime Elision"
       }
     ],
-    "correction": "Cell and RefCell allow mutation behind an immutable outer binding.",
+    "correction": "`Cell` and `RefCell` allow mutation behind an immutable outer binding.",
     "misconception": "“In Cargo.lock”",
     "traceSteps": [
       {
@@ -30,7 +30,7 @@
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on move a checked borrow rule to runtime."
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &`mut` T. Before compiling, list which bindings remain usable after each call. Keep the focus on move a checked borrow rule to runtime."
   },
   "exerciseKind": "planned",
   "id": "interior-mutability-intro",
@@ -47,11 +47,11 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "use std::cell::RefCell;\nlet notes = RefCell::new(Vec::new());\nnotes.borrow_mut().push(\"ready\");\nprintln!(\"{}\", notes.borrow().len());",
-    "explanation": "Cell and RefCell allow mutation behind an immutable outer binding. RefCell enforces the same shared-or-exclusive rule at runtime and panics if code violates it.\n\nNormal Rust borrowing checks shared readers and exclusive writers at compile time. `RefCell<T>` moves that particular check to runtime for single-threaded code. An immutable binding can contain a `RefCell<Vec<_>>`, and calling `borrow_mut()` can still modify the vector inside. The outer reference is immutable; the cell enforces the inner access rule with a runtime borrow counter. It does not turn conflicting access into something safe to ignore.\n\nIn the sample, the temporary mutable guard from `borrow_mut()` ends after `push`, so a later `borrow()` is allowed. Keep a `RefMut` guard in a variable and try calling `borrow()` before dropping that guard: the program panics because a writer and reader would overlap. The fallible `try_borrow()` and `try_borrow_mut()` variants return an error instead of panicking, which can be useful when a conflict is a normal possibility. Hold guards for as short a period as practical.\n\n`RefCell<T>` is not the tool for sharing mutable data across threads; types such as `Mutex<T>` address synchronization there. Use interior mutability when the surrounding API legitimately needs a shared outer reference while an inner value changes, such as a test spy or a local cache. Do not use it to escape a confusing borrow error before understanding the original ownership model. Runtime checks trade earlier compiler feedback for a more flexible access pattern, so that trade should be intentional.",
+    "explanation": "`Cell` and `RefCell` allow mutation behind an immutable outer binding. `RefCell` enforces the same shared-or-exclusive rule at runtime and panics if code violates it.\n\nNormal Rust borrowing checks shared readers and exclusive writers at compile time. `RefCell<T>` moves that particular check to runtime for single-threaded code. An immutable binding can contain a `RefCell<Vec<_>>`, and calling `borrow_mut()` can still modify the vector inside. The outer reference is immutable; the cell enforces the inner access rule with a runtime borrow counter. It does not turn conflicting access into something safe to ignore.\n\nIn the sample, the temporary mutable guard from `borrow_mut()` ends after `push`, so a later `borrow()` is allowed. Keep a `RefMut` guard in a variable and try calling `borrow()` before dropping that guard: the program panics because a writer and reader would overlap. The fallible `try_borrow()` and `try_borrow_mut()` variants return an error instead of panicking, which can be useful when a conflict is a normal possibility. Hold guards for as short a period as practical.\n\n`RefCell<T>` is not the tool for sharing mutable data across threads; types such as `Mutex<T>` address synchronization there. Use interior mutability when the surrounding API legitimately needs a shared outer reference while an inner value changes, such as a test spy or a local cache. Do not use it to escape a confusing borrow error before understanding the original ownership model. Runtime checks trade earlier compiler feedback for a more flexible access pattern, so that trade should be intentional.",
     "feedback": "Correct: At runtime.",
     "practiceCode": "use std::cell::RefCell;\nlet notes = RefCell::new(Vec::new());\nnotes.borrow_mut().push(\"ready\");\nprintln!(\"{}\", notes.borrow().len());",
-    "question": "Where does RefCell check borrowing?",
-    "rule": "Cell and RefCell allow mutation behind an immutable outer binding.",
+    "question": "Where does `RefCell` check borrowing?",
+    "rule": "`Cell` and `RefCell` allow mutation behind an immutable outer binding.",
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Move a checked borrow rule to runtime.",
     "task": "Trace the example, name the guarantee, and identify where it ends."

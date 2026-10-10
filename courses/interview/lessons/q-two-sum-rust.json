@@ -1,6 +1,6 @@
 {
   "concept": "Clarify duplicates, indices, and complexity first",
-  "contentDigest": "3ba36131b23432801792e7c67d9569f625d39948faa5875f2d2c490fa650fdf1",
+  "contentDigest": "9853246b40fc0f49d4caeaab1c644fe51998382c88734b2d76cfb4d65bc22a9b",
   "depth": {
     "connections": [
       {
@@ -14,8 +14,8 @@
         "title": "Design an LRU Cache"
       }
     ],
-    "correction": "State the contract before reaching for HashMap: may one index be reused, can values repeat, and what should happen when no pair exists? Then explain the O(n) time and O(n) space tradeoff.",
-    "misconception": "“bool only”",
+    "correction": "State the contract before reaching for `HashMap`: may one index be reused, can values repeat, and what should happen when no pair exists? Then explain the O(n) time and O(n) space tradeoff.",
+    "misconception": "“`bool` only”",
     "traceSteps": [
       {
         "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
@@ -47,11 +47,11 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "fn two_sum(values: &[i32], target: i32)\n    -> Option<(usize, usize)> {\n    // Track value -> earlier index.\n    todo!()\n}",
-    "explanation": "State the contract before reaching for HashMap: may one index be reused, can values repeat, and what should happen when no pair exists? Then explain the O(n) time and O(n) space tradeoff.\n\nBefore coding, clarify whether the function returns values or indices, whether the same index may be used twice, whether duplicate values are allowed, and what 'no solution' means. A Rust signature such as `fn two_sum(nums: &[i32], target: i32) -> Option<(usize, usize)>` states that the input is borrowed and absence is normal. If arithmetic might overflow, decide whether the input range guarantees safety or whether checked subtraction is needed. This contract prevents an elegant implementation from solving the wrong problem.\n\nFor an O(n) expected-time approach, scan the slice once while storing previously seen values and their indices in a HashMap. For each current value, compute its complement and look it up before inserting the current value. That order prevents using the same index twice. Duplicates still work: when the second equal value appears, the first may be found. The map uses O(n) extra space. Hash lookup is expected constant time under normal assumptions, not an absolute worst-case guarantee.\n\nTrace a small input by hand, including duplicates and a missing pair. State what happens when several pairs exist; the first found by this scan may depend on the chosen order. In an interview, test one element, two equal elements, negative numbers, and an overflow boundary if relevant. A nested-loop O(n²) version can be easier to verify and may be acceptable for tiny inputs. State the scale that justifies the map rather than treating O(n) as a ritual.\n\nFor deterministic results when multiple pairs exist, specify whether the earliest second index wins. The one-pass scan has a natural order, but changing the insertion or lookup order can change which valid pair is returned. A test should encode whichever rule the contract chooses.",
-    "feedback": "Correct: Option.",
+    "explanation": "State the contract before reaching for `HashMap`: may one index be reused, can values repeat, and what should happen when no pair exists? Then explain the O(n) time and O(n) space tradeoff.\n\nBefore coding, clarify whether the function returns values or indices, whether the same index may be used twice, whether duplicate values are allowed, and what 'no solution' means. A Rust signature such as `fn two_sum(nums: &[i32], target: i32) -> Option<(usize, usize)>` states that the input is borrowed and absence is normal. If arithmetic might overflow, decide whether the input range guarantees safety or whether checked subtraction is needed. This contract prevents an elegant implementation from solving the wrong problem.\n\nFor an O(n) expected-time approach, scan the slice once while storing previously seen values and their indices in a `HashMap`. For each current value, compute its complement and look it up before inserting the current value. That order prevents using the same index twice. Duplicates still work: when the second equal value appears, the first may be found. The map uses O(n) extra space. Hash lookup is expected constant time under normal assumptions, not an absolute worst-case guarantee.\n\nTrace a small input by hand, including duplicates and a missing pair. State what happens when several pairs exist; the first found by this scan may depend on the chosen order. In an interview, test one element, two equal elements, negative numbers, and an overflow boundary if relevant. A nested-loop O(n²) version can be easier to verify and may be acceptable for tiny inputs. State the scale that justifies the map rather than treating O(n) as a ritual.\n\nFor deterministic results when multiple pairs exist, specify whether the earliest second index wins. The one-pass scan has a natural order, but changing the insertion or lookup order can change which valid pair is returned. A test should encode whichever rule the contract chooses.",
+    "feedback": "Correct: `Option`.",
     "practiceCode": "fn two_sum(values: &[i32], target: i32)\n    -> Option<(usize, usize)> {\n    // Track value -> earlier index.\n    todo!()\n}",
     "question": "What return type models no matching pair?",
-    "rule": "State the contract before reaching for HashMap: may one index be reused, can values repeat, and what should happen when no pair exists? Then explain the O(n) time and O(n) space tradeoff.",
+    "rule": "State the contract before reaching for `HashMap`: may one index be reused, can values repeat, and what should happen when no pair exists? Then explain the O(n) time and O(n) space tradeoff.",
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Clarify duplicates, indices, and complexity first.",
     "task": "Trace the example, name the guarantee, and identify where it ends."

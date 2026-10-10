@@ -1,6 +1,6 @@
 {
   "concept": "When a value duplicates instead of moving",
-  "contentDigest": "80077007ea6b135eae62536ce6b011079fac7e7df07798e3c94ec94a869e92a0",
+  "contentDigest": "c464702883adea7f0397cc97c287c9af077dc7161dc46b24c7632b2ca32a8159",
   "depth": {
     "connections": [
       {
@@ -15,7 +15,7 @@
       }
     ],
     "correction": "If a type owns a heap allocation it is not Copy, and duplication must be written down.",
-    "misconception": "“Add mut to name”",
+    "misconception": "“Add `mut` to name”",
     "traceSteps": [
       {
         "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
@@ -30,7 +30,7 @@
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on when a value duplicates instead of moving."
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &`mut` T. Before compiling, list which bindings remain usable after each call. Keep the focus on when a value duplicates instead of moving."
   },
   "exerciseKind": "planned",
   "id": "copy-clone",
@@ -45,10 +45,10 @@
       "Wrap it in a Box"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "The integer copies; the String would have moved without .clone().",
+    "exampleCaption": "The integer copies; the `String` would have moved without .`clone()`.",
     "exampleCode": "let a = 5;          // i32 is Copy\nlet b = a;\nprintln!(\"{a} {b}\"); // both still usable\n\nlet s = String::from(\"crab\");\nlet t = s.clone();  // explicit deep copy\nprintln!(\"{s} {t}\");",
-    "explanation": "Types that are cheap and have no destructor can be Copy, so assigning them leaves the original usable. Everything that owns a heap allocation is not Copy, and duplicating it means calling .clone() explicitly — the cost is visible in the source rather than hidden in an assignment.\n\n`Copy` means a value can be duplicated by copying its bits, with no visible method call. Primitive integers and many small plain-data structs qualify. A type with a destructor cannot be `Copy`, because two implicit copies would both try to perform cleanup. `String` owns a heap allocation and therefore moves on ordinary assignment. `Clone` is different: it is an explicit operation, and its cost depends on the type. Cloning a `String` duplicates its bytes into a new buffer.\n\nIn the sample, `a` and `b` are separate integers after `let b = a`, so both print. The string expression uses `s.clone()` to create `t`; after that, both own their own text. If you change the line to `let t = s`, only `t` remains usable. The output may look identical when you do clone, but the memory and performance behavior are not. That is why Rust makes the expensive path visible.\n\nDo not add `.clone()` automatically whenever the compiler reports a move. Ask whether the next operation only needs `&T`, whether ownership can be transferred to the right place, or whether two independent values are genuinely required. Try deriving `Copy` for a struct containing only `u32` fields, then add a `String` field and read the new error. This reveals the trait requirement through a concrete type. Use cloning when independent ownership is part of the design, and borrowing when the other code only needs temporary access.\n\nAn `Arc<T>` clone illustrates another nuance: it usually increments a reference count rather than duplicating all the data inside. The method name means an explicit duplicate of the value’s ownership handle, not necessarily a deep copy of every reachable byte.",
-    "feedback": "Cloning creates a second owned String, so the original binding stays valid.",
+    "explanation": "Types that are cheap and have no destructor can be Copy, so assigning them leaves the original usable. Everything that owns a heap allocation is not Copy, and duplicating it means calling .`clone()` explicitly — the cost is visible in the source rather than hidden in an assignment.\n\n`Copy` means a value can be duplicated by copying its bits, with no visible method call. Primitive integers and many small plain-data structs qualify. A type with a destructor cannot be `Copy`, because two implicit copies would both try to perform cleanup. `String` owns a heap allocation and therefore moves on ordinary assignment. `Clone` is different: it is an explicit operation, and its cost depends on the type. Cloning a `String` duplicates its bytes into a new buffer.\n\nIn the sample, `a` and `b` are separate integers after `let b = a`, so both print. The string expression uses `s.clone()` to create `t`; after that, both own their own text. If you change the line to `let t = s`, only `t` remains usable. The output may look identical when you do clone, but the memory and performance behavior are not. That is why Rust makes the expensive path visible.\n\nDo not add `.clone()` automatically whenever the compiler reports a move. Ask whether the next operation only needs `&T`, whether ownership can be transferred to the right place, or whether two independent values are genuinely required. Try deriving `Copy` for a struct containing only `u32` fields, then add a `String` field and read the new error. This reveals the trait requirement through a concrete type. Use cloning when independent ownership is part of the design, and borrowing when the other code only needs temporary access.\n\nAn `Arc<T>` clone illustrates another nuance: it usually increments a reference count rather than duplicating all the data inside. The method name means an explicit duplicate of the value’s ownership handle, not necessarily a deep copy of every reachable byte.",
+    "feedback": "Cloning creates a second owned `String`, so the original binding stays valid.",
     "practiceCode": "let name = String::from(\"ada\");\nlet alias = name;\nprintln!(\"{name}\");",
     "question": "How do you make that compile without changing the println?",
     "rule": "If a type owns a heap allocation it is not Copy, and duplication must be written down.",

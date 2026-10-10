@@ -1,6 +1,6 @@
 {
   "concept": "Map Cargo targets to predictable source paths",
-  "contentDigest": "f459fa4c231c45ea7b98d45adf6a8527813974048cbf3d7587a85a8e29b4ff57",
+  "contentDigest": "bbb23f0f892606b165a7e7cdcf208ae4036917fb7b3c55c1515ec81b3cc6a323",
   "depth": {
     "connections": [
       {
@@ -15,7 +15,7 @@
       }
     ],
     "correction": "src/main.",
-    "misconception": "“src/main.rs”",
+    "misconception": "“src/`main.rs`”",
     "traceSteps": [
       {
         "detail": "Separate source modules, public API, manifest data, dependency graph, and build evidence before changing any one of them.",
@@ -47,8 +47,8 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "// src/lib.rs\npub fn answer() -> u32 { 42 }\n\n// src/main.rs\nfn main() {\n    println!(\"{}\", demo::answer());\n}",
-    "explanation": "src/main.rs defines the default binary and src/lib.rs defines the library target. Additional binaries and integration tests have conventional directories that keep tooling automatic.\n\nCargo recognizes conventional paths, which lets a small project grow without custom build configuration. `src/main.rs` is the default binary entry point. `src/lib.rs` defines a library target that other crates and integration tests can import. Additional binaries can live under `src/bin/`, while external tests live under `tests/`. These paths describe targets, not just folders for tidiness.\n\nIn the sample, `demo::answer()` calls the library from the binary. The name before the double colon is the library crate name, normally derived from the package name unless configured otherwise. A binary in the same package still uses the library through its public interface. This is useful discipline: the CLI can remain a thin layer around reusable logic, and integration tests can exercise the same API that a user imports.\n\nTry moving a function from `main.rs` into `lib.rs`, marking it public, and calling it from both the binary and a test in `tests/`. Confirm which imports compile and which private helpers remain inaccessible. Keep module files inside the appropriate target; creating a file by itself does not make Rust compile it unless it is a recognized target or declared from the module tree. A conventional layout reduces configuration surprises, but choose a new crate only when the code deserves its own package boundary.",
-    "feedback": "Correct: src/lib.rs.",
+    "explanation": "src/`main.rs` defines the default binary and src/`lib.rs` defines the library target. Additional binaries and integration tests have conventional directories that keep tooling automatic.\n\nCargo recognizes conventional paths, which lets a small project grow without custom build configuration. `src/main.rs` is the default binary entry point. `src/lib.rs` defines a library target that other crates and integration tests can import. Additional binaries can live under `src/bin/`, while external tests live under `tests/`. These paths describe targets, not just folders for tidiness.\n\nIn the sample, `demo::answer()` calls the library from the binary. The name before the double colon is the library crate name, normally derived from the package name unless configured otherwise. A binary in the same package still uses the library through its public interface. This is useful discipline: the CLI can remain a thin layer around reusable logic, and integration tests can exercise the same API that a user imports.\n\nTry moving a function from `main.rs` into `lib.rs`, marking it public, and calling it from both the binary and a test in `tests/`. Confirm which imports compile and which private helpers remain inaccessible. Keep module files inside the appropriate target; creating a file by itself does not make Rust compile it unless it is a recognized target or declared from the module tree. A conventional layout reduces configuration surprises, but choose a new crate only when the code deserves its own package boundary.",
+    "feedback": "Correct: src/`lib.rs`.",
     "practiceCode": "// src/lib.rs\npub fn answer() -> u32 { 42 }\n\n// src/main.rs\nfn main() {\n    println!(\"{}\", demo::answer());\n}",
     "question": "Which file defines the library target?",
     "rule": "src/main.",

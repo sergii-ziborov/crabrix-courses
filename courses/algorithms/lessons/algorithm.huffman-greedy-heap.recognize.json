@@ -14,7 +14,7 @@
     "visibleInput": "weights=[5,9,12,13,16,45]"
   },
   "concept": "prefix coding and minimum merge cost",
-  "contentDigest": "7eff2517a13c62cd70e4095083cf2b6ecab0aa7556da45c5aaa10a50b59c79b2",
+  "contentDigest": "2e4417f691fbf839e90852ecb50b58fa55c925625cf31ebb43aa25fb78ec623b",
   "depth": {
     "connections": [
       {
@@ -29,7 +29,7 @@
       }
     ],
     "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a Vec”",
+    "misconception": "“Any problem that contains a `Vec`”",
     "traceSteps": [
       {
         "title": "Define the state",
@@ -37,7 +37,7 @@
       },
       {
         "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `224`. Rust BinaryHeap is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data."
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `224`. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data."
       },
       {
         "title": "Probe the boundary",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Huffman Merge Heap",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Huffman Merge Heap",
-    "explanation": "A problem is a good match for Huffman Merge Heap when it asks for prefix coding and minimum merge cost. Here the concrete task is: Return the minimum total merge cost. The visible input `weights=[5,9,12,13,16,45]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Repeatedly merge the two lightest items; the accumulated merge cost is optimal. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n log n) time · O(n) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `224` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Rust BinaryHeap is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "explanation": "A problem is a good match for Huffman Merge Heap when it asks for prefix coding and minimum merge cost. Here the concrete task is: Return the minimum total merge cost. The visible input `weights=[5,9,12,13,16,45]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Repeatedly merge the two lightest items; the accumulated merge cost is optimal. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n log n) time · O(n) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `224` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: prefix coding and minimum merge cost.",
     "practiceCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
     "question": "Which group is the strongest signal for this pattern?",

@@ -1,6 +1,6 @@
 {
   "concept": "Borrow local data while threads are guaranteed to join",
-  "contentDigest": "7485d1198ed7fb917edf042ead2e08406a9645d1c3422ab0d579fc4b2d2d219c",
+  "contentDigest": "256b50bd0e910d549ee874b5e5626e24553b8e8cf934652458828c0e3198f17a",
   "depth": {
     "connections": [
       {
@@ -14,7 +14,7 @@
         "title": "Mutex Poisoning"
       }
     ],
-    "correction": "thread::scope proves every spawned thread finishes before borrowed stack data disappears.",
+    "correction": "`thread::scope` proves every spawned thread finishes before borrowed stack data disappears.",
     "misconception": "“Arrays are static”",
     "traceSteps": [
       {
@@ -47,11 +47,11 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "let values = [2, 4, 6];\nstd::thread::scope(|scope| {\n    scope.spawn(|| {\n        println!(\"{}\", values.len());\n    });\n});",
-    "explanation": "thread::scope proves every spawned thread finishes before borrowed stack data disappears. It avoids unnecessary Arc or cloning when concurrency stays inside one lexical operation.\n\nOrdinary `thread::spawn` may outlive the function that created it, so its closure generally needs owned, thread-safe data. `thread::scope` sets a tighter boundary: every scoped thread finishes before the scope returns. Within that boundary, a worker can borrow local values that remain alive until all workers join. This is useful for parallel processing of disjoint parts of a collection without cloning the entire collection into `Arc`.\n\nThe safety promise is about lifetime, not completion without failure. A scoped worker can still panic; the scope joins all its workers and can propagate an unhandled panic. Write the error policy explicitly if a worker result matters. Also avoid making the borrow invalid yourself: if one worker reads a value, the usual borrowing rules still prevent an overlapping mutable borrow of that same value. A scope is no shortcut around aliasing or synchronization.\n\nTry dividing a slice into two non-overlapping mutable halves with `split_at_mut`, then process one half in each scoped worker. Predict why the compiler accepts those two borrows. Change the code so both workers try to mutate the entire slice and read the rejection. Finally compare the scoped form with an owned `Vec` moved into an ordinary spawned thread. Use the scope when the work naturally ends inside the current operation; use detached or longer-lived tasks only when you have an explicit ownership and shutdown plan.",
+    "explanation": "`thread::scope` proves every spawned thread finishes before borrowed stack data disappears. It avoids unnecessary `Arc` or cloning when concurrency stays inside one lexical operation.\n\nOrdinary `thread::spawn` may outlive the function that created it, so its closure generally needs owned, thread-safe data. `thread::scope` sets a tighter boundary: every scoped thread finishes before the scope returns. Within that boundary, a worker can borrow local values that remain alive until all workers join. This is useful for parallel processing of disjoint parts of a collection without cloning the entire collection into `Arc`.\n\nThe safety promise is about lifetime, not completion without failure. A scoped worker can still panic; the scope joins all its workers and can propagate an unhandled panic. Write the error policy explicitly if a worker result matters. Also avoid making the borrow invalid yourself: if one worker reads a value, the usual borrowing rules still prevent an overlapping mutable borrow of that same value. A scope is no shortcut around aliasing or synchronization.\n\nTry dividing a slice into two non-overlapping mutable halves with `split_at_mut`, then process one half in each scoped worker. Predict why the compiler accepts those two borrows. Change the code so both workers try to mutate the entire slice and read the rejection. Finally compare the scoped form with an owned `Vec` moved into an ordinary spawned thread. Use the scope when the work naturally ends inside the current operation; use detached or longer-lived tasks only when you have an explicit ownership and shutdown plan.",
     "feedback": "Correct: The scope joins it.",
     "practiceCode": "let values = [2, 4, 6];\nstd::thread::scope(|scope| {\n    scope.spawn(|| {\n        println!(\"{}\", values.len());\n    });\n});",
     "question": "Why may the thread borrow values?",
-    "rule": "thread::scope proves every spawned thread finishes before borrowed stack data disappears.",
+    "rule": "`thread::scope` proves every spawned thread finishes before borrowed stack data disappears.",
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Borrow local data while threads are guaranteed to join.",
     "task": "Trace the example, name the guarantee, and identify where it ends."

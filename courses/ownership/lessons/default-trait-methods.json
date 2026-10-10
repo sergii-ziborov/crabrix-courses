@@ -1,6 +1,6 @@
 {
   "concept": "Share behavior while allowing an override",
-  "contentDigest": "6814fb10c0330d5a0540daa86c9690c42aa5a9f7a7c957ae5582d099af64861b",
+  "contentDigest": "115b65fc2553a7631e1a678227fdf5625e254f8eacf11d57e29d7ec5533973b0",
   "depth": {
     "connections": [
       {
@@ -30,7 +30,7 @@
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on share behavior while allowing an override."
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &`mut` T. Before compiling, list which bindings remain usable after each call. Keep the focus on share behavior while allowing an override."
   },
   "exerciseKind": "planned",
   "id": "default-trait-methods",
@@ -50,7 +50,7 @@
     "explanation": "A trait may provide a method body that implementations inherit. Defaults reduce repetition, while required methods still define the minimum contract each type must supply.\n\nA default method supplies behavior that implementers may inherit. In `Summary`, each type must provide `title()`, while `summary()` can be built from that required method. A new type gets a useful summary immediately after implementing the minimal contract. It may override the default when its presentation needs more context, but callers can still rely on the trait method existing.\n\nThis is a way to centralize a policy that is genuinely shared. If the default silently makes assumptions that are false for some types, it can produce misleading output. Keep required methods small and explicit, and make the default's dependency on them visible. For example, `summary()` calls `self.title()` so the implementation's title is always reflected. If the trait grows a new required method, every implementer must update; if it grows a default method, existing implementers usually continue to compile.\n\nCreate two structs implementing `Summary`: one inherits `summary()`, and the other overrides it. Call both through a generic function constrained by `Summary` and compare output. Then imagine a third type with no meaningful title. That is a sign the trait may be the wrong abstraction for that type, even if a placeholder string would make it compile. Good defaults reduce repetition while preserving an honest contract for every implementation.",
     "feedback": "Correct: title.",
     "practiceCode": "trait Summary {\n    fn title(&self) -> &str;\n    fn summary(&self) -> String {\n        format!(\"Title: {}\", self.title())\n    }\n}",
-    "question": "Which method must an impl provide?",
+    "question": "Which method must an `impl` provide?",
     "rule": "A trait may provide a method body that implementations inherit.",
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Share behavior while allowing an override.",

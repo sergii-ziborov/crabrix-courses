@@ -1,6 +1,6 @@
 {
   "concept": "Reusable types and functions",
-  "contentDigest": "7148d510b86307bf4c3e2eeabd89089f166b63d6460ca92df78eac40ea6cb8f3",
+  "contentDigest": "f8fdad32e6de5fd8d2351ceb13e95bcae0c4a8328dbabe18bee962659539f794",
   "depth": {
     "connections": [
       {
@@ -30,7 +30,7 @@
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on reusable types and functions."
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &`mut` T. Before compiling, list which bindings remain usable after each call. Keep the focus on reusable types and functions."
   },
   "exerciseKind": "planned",
   "id": "generics",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "The bound names only what the body actually needs.",
     "exampleCode": "fn largest<T: PartialOrd>(\n    items: &[T],\n) -> &T {\n    let mut best = &items[0];\n    for item in items {\n        if item > best { best = item; }\n    }\n    best\n}",
-    "explanation": "Trait bounds state exactly the capabilities the generic body needs, and the compiler generates a specialised copy per concrete type. That means generics cost nothing at runtime — but a bound wider than necessary narrows who can call you.\n\nGenerics let one implementation describe several concrete types without erasing what those types are. In the `largest` example, `T` is a placeholder chosen by the caller. The function does not need to know how to print or clone `T`; it only compares references, so `PartialOrd` is the capability that matters. A bound is a promise to the compiler about which operations the body may use, and it is a constraint on every caller. Adding `Clone` because it seems convenient would exclude useful types for no reason.\n\nRead the signature from outside in: the input is a borrowed slice of `T`, and the output is a borrowed `T` from that slice. The function does not allocate or return a new owned value. It starts with the first item, walks the rest, and updates the best reference. This also reveals a precondition: indexing `items[0]` panics for an empty slice. A production API should state that precondition or return `Option<&T>` so emptiness is handled explicitly. Generic code still needs careful edge-case design.\n\nAt compilation, calls with concrete types can be specialized, so no runtime type switch is needed for a normal generic function. Try the function with integers and then with a comparable custom type. Make an empty input test and redesign the return type if that case should be safe. Finally, ask whether the chosen bound expresses precisely the behavior used. The aim is reusable code with an honest contract, not the longest possible list of trait bounds.",
+    "explanation": "Trait bounds state exactly the capabilities the generic body needs, and the compiler generates a specialised copy per concrete type. That means generics cost nothing at runtime — but a bound wider than necessary narrows who can call you.\n\nGenerics `let` one implementation describe several concrete types without erasing what those types are. In the `largest` example, `T` is a placeholder chosen by the caller. The function does not need to know how to print or clone `T`; it only compares references, so `PartialOrd` is the capability that matters. A bound is a promise to the compiler about which operations the body may use, and it is a constraint on every caller. Adding `Clone` because it seems convenient would exclude useful types for no reason.\n\nRead the signature from outside in: the input is a borrowed slice of `T`, and the output is a borrowed `T` from that slice. The function does not allocate or return a new owned value. It starts with the first item, walks the rest, and updates the best reference. This also reveals a precondition: indexing `items[0]` panics for an empty slice. A production API should state that precondition or return `Option<&T>` so emptiness is handled explicitly. Generic code still needs careful edge-case design.\n\nAt compilation, calls with concrete types can be specialized, so no runtime type switch is needed for a normal generic function. Try the function with integers and then with a comparable custom type. Make an empty input test and redesign the return type if that case should be safe. Finally, ask whether the chosen bound expresses precisely the behavior used. The aim is reusable code with an honest contract, not the longest possible list of trait bounds.",
     "feedback": "Every unnecessary bound is a caller you turned away.",
     "practiceCode": "fn show<T: Clone + PartialOrd + Debug>(v: &T) {\n    println!(\"{v:?}\");\n}",
     "question": "What is wrong with those bounds?",

@@ -1,6 +1,6 @@
 {
   "concept": "Choose the cheapest command that proves the next fact",
-  "contentDigest": "4ed797bf243fd2791f7c0b678f04c8d6288a501721a230c6e3d9167d9b478f73",
+  "contentDigest": "1dfb234fcf9537fab47ceafcf88996362ec8a73858372ba96d87244ce447d0bb",
   "depth": {
     "connections": [
       {
@@ -14,8 +14,8 @@
         "title": "Dependency Kinds"
       }
     ],
-    "correction": "cargo check proves type correctness without final code generation, build creates artifacts, and run executes a binary after building it.",
-    "misconception": "“cargo build”",
+    "correction": "`cargo check` proves type correctness without final code generation, build creates artifacts, and run executes a binary after building it.",
+    "misconception": "“`cargo build`”",
     "traceSteps": [
       {
         "detail": "Separate source modules, public API, manifest data, dependency graph, and build evidence before changing any one of them.",
@@ -47,11 +47,11 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "// Fast type feedback:\n// cargo check\n// Produce an executable:\n// cargo build\n// Build and execute:\n// cargo run",
-    "explanation": "cargo check proves type correctness without final code generation, build creates artifacts, and run executes a binary after building it. Fast feedback comes from asking only for the evidence you need.\n\nThe fastest useful command depends on the question you are asking. After an edit, `cargo check` verifies parsing, types, borrowing, and many other compiler rules without producing a final executable. `cargo test` compiles the test harness and runs tests. `cargo run` builds a binary if needed and executes it. `cargo build` produces an artifact without executing it. These commands share incremental compilation work, but they provide different evidence.\n\nA productive loop is edit, check, test the changed behavior, then run the whole program when interaction matters. A successful `cargo check` does not prove a function returns the right answer; a passing unit test does not prove the CLI arguments are wired correctly. `cargo build --release` uses the release profile and is appropriate when validating a shippable artifact or measuring optimized performance. It is usually slower than a quick debug check during a small edit.\n\nTry introducing a type mismatch and observe which command catches it first. Fix that, then introduce a logic bug that compiles but fails an assertion. Finally run the application with a representative input. Record what each stage established and what it left untested. This distinction prevents “it compiled” from becoming an overconfident claim. Keep the loop short while developing, and use broader checks at meaningful checkpoints rather than waiting until the end of the project.\n\nFor a library-only package, `cargo run` has no default binary to execute; choose an example or add a binary target. In a workspace, a command may need `-p package_name` to identify which member you mean. These small command choices keep feedback focused.",
-    "feedback": "Correct: cargo check.",
+    "explanation": "`cargo check` proves type correctness without final code generation, build creates artifacts, and run executes a binary after building it. Fast feedback comes from asking only for the evidence you need.\n\nThe fastest useful command depends on the question you are asking. After an edit, `cargo check` verifies parsing, types, borrowing, and many other compiler rules without producing a final executable. `cargo test` compiles the test harness and runs tests. `cargo run` builds a binary if needed and executes it. `cargo build` produces an artifact without executing it. These commands share incremental compilation work, but they provide different evidence.\n\nA productive loop is edit, check, test the changed behavior, then run the whole program when interaction matters. A successful `cargo check` does not prove a function returns the right answer; a passing unit test does not prove the CLI arguments are wired correctly. `cargo build --release` uses the release profile and is appropriate when validating a shippable artifact or measuring optimized performance. It is usually slower than a quick debug check during a small edit.\n\nTry introducing a type mismatch and observe which command catches it first. Fix that, then introduce a logic bug that compiles but fails an assertion. Finally run the application with a representative input. Record what each stage established and what it left untested. This distinction prevents “it compiled” from becoming an overconfident claim. Keep the loop short while developing, and use broader checks at meaningful checkpoints rather than waiting until the end of the project.\n\nFor a library-only package, `cargo run` has no default binary to execute; choose an example or add a binary target. In a workspace, a command may need `-p package_name` to identify which member you mean. These small command choices keep feedback focused.",
+    "feedback": "Correct: `cargo check`.",
     "practiceCode": "// Fast type feedback:\n// cargo check\n// Produce an executable:\n// cargo build\n// Build and execute:\n// cargo run",
     "question": "Which command skips final code generation?",
-    "rule": "cargo check proves type correctness without final code generation, build creates artifacts, and run executes a binary after building it.",
+    "rule": "`cargo check` proves type correctness without final code generation, build creates artifacts, and run executes a binary after building it.",
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Choose the cheapest command that proves the next fact.",
     "task": "Trace the example, name the guarantee, and identify where it ends."

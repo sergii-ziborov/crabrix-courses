@@ -1,6 +1,6 @@
 {
   "concept": "Mutex, RwLock, and Arc",
-  "contentDigest": "22231e616fbad8c217c7424e2e75248013eb4d3931b11ef9907f8240c5d7407a",
+  "contentDigest": "dddd66556e2828a256a342991496ad014d848ed1cb11398b18d91b725e2a7d8c",
   "depth": {
     "connections": [
       {
@@ -15,7 +15,7 @@
       }
     ],
     "correction": "The lock guard unlocks on drop, so there is no unlock to forget.",
-    "misconception": "“A Mutex cannot hold a plain integer counter”",
+    "misconception": "“A `Mutex` cannot hold a plain integer counter”",
     "traceSteps": [
       {
         "detail": "Name each task or thread, the state it can reach, and every point where work can wait, race, block, or be cancelled.",
@@ -47,13 +47,13 @@
     "correctAnswer": 1,
     "exampleCaption": "The data lives inside the lock, so unlocked access is unrepresentable.",
     "exampleCode": "use std::sync::{Arc, Mutex};\nuse std::thread;\n\nlet counter = Arc::new(Mutex::new(0));\nlet mut handles = vec![];\n\nfor _ in 0..8 {\n    let counter = Arc::clone(&counter);\n    handles.push(thread::spawn(move || {\n        *counter.lock().unwrap() += 1;\n    }));\n}\nfor handle in handles { handle.join().unwrap(); }\nprintln!(\"{}\", *counter.lock().unwrap());",
-    "explanation": "Arc<T> is Rc with an atomic count so it can cross threads. Mutex<T> holds the data itself rather than guarding it by convention, so the only way to reach the value is to lock — and the guard unlocks when it drops, which means a forgotten unlock is not a bug you can write.\n\n`Arc<T>` is an atomically reference-counted owner that can be cloned across threads when the contained type permits it. `Mutex<T>` protects mutable data with a lock. Together, `Arc<Mutex<T>>` lets workers own handles to one allocation while only one guard at a time accesses the protected value. Cloning an `Arc` clones a handle, not the inner data. The guard from `lock()` releases the lock when it leaves scope.\n\nIn a counter example, each worker clones the `Arc`, locks the mutex, increments the count, and drops the guard. If a worker holds the guard while doing slow I/O, every other worker waits unnecessarily. Keep the critical section small and do unrelated work before or after it. Treat `lock()` as fallible because a panic while holding the lock can poison a standard mutex; decide how the application handles that state.\n\nTry writing the counter first without synchronization and read the compiler error rather than fighting it. Add `Arc<Mutex<_>>`, start several workers, join them, and compare the final count with the predicted sum. Then move a long sleep inside the lock and measure the slowdown. The type system prevents an unsynchronized data race, but the lock still has performance and deadlock costs. Use a channel when workers can hand off owned messages instead of editing shared state; use a mutex when a shared invariant must be updated atomically.\n\nBeware of hidden lock retention: a guard stored in a local variable stays live until it is dropped or leaves scope. Explicitly shorten its scope before calling another function that may need the same lock. This is both a responsiveness issue and a common path to self-deadlock.",
-    "feedback": "Rc uses a non-atomic count; Arc is the thread-safe version.",
+    "explanation": "`Arc`<T> is `Rc` with an atomic count so it can cross threads. `Mutex`<T> holds the data itself rather than guarding it by convention, so the only way to reach the value is to lock — and the guard unlocks when it drops, which means a forgotten unlock is not a bug you can write.\n\n`Arc<T>` is an atomically reference-counted owner that can be cloned across threads when the contained type permits it. `Mutex<T>` protects mutable data with a lock. Together, `Arc<Mutex<T>>` lets workers own handles to one allocation while only one guard at a time accesses the protected value. Cloning an `Arc` clones a handle, not the inner data. The guard from `lock()` releases the lock when it leaves scope.\n\nIn a counter example, each worker clones the `Arc`, locks the mutex, increments the count, and drops the guard. If a worker holds the guard while doing slow I/O, every other worker waits unnecessarily. Keep the critical section small and do unrelated work before or after it. Treat `lock()` as fallible because a panic while holding the lock can poison a standard mutex; decide how the application handles that state.\n\nTry writing the counter first without synchronization and read the compiler error rather than fighting it. Add `Arc<Mutex<_>>`, start several workers, join them, and compare the final count with the predicted sum. Then move a long sleep inside the lock and measure the slowdown. The type system prevents an unsynchronized data race, but the lock still has performance and deadlock costs. Use a channel when workers can hand off owned messages instead of editing shared state; use a mutex when a shared invariant must be updated atomically.\n\nBeware of hidden lock retention: a guard stored in a local variable stays live until it is dropped or leaves scope. Explicitly shorten its scope before calling another function that may need the same lock. This is both a responsiveness issue and a common path to self-deadlock.",
+    "feedback": "`Rc` uses a non-atomic count; `Arc` is the thread-safe version.",
     "practiceCode": "let counter = Rc::new(Mutex::new(0));\nthread::spawn(move || {\n    *counter.lock().unwrap() += 1;\n});",
-    "question": "Why can that Rc not cross the thread boundary?",
+    "question": "Why can that `Rc` not cross the thread boundary?",
     "rule": "The lock guard unlocks on drop, so there is no unlock to forget.",
     "success": "The final total equals the number of increments, every run.",
-    "summary": "Arc shares the value; Mutex makes mutation through it safe.",
+    "summary": "`Arc` shares the value; `Mutex` makes mutation through it safe.",
     "task": "Increment one counter from several threads."
   },
   "illustration": {

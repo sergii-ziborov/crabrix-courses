@@ -1,6 +1,6 @@
 {
   "concept": "Dot syntax and chained transformations",
-  "contentDigest": "0b2497318420247ff1ce49d30aad45f83af1f691163683eb7ea27aed2d9ea767",
+  "contentDigest": "a8952dfb68100a1fe5020e15b20355c708e9b08756ee1534dca7dab039d0e96e",
   "depth": {
     "connections": [
       {
@@ -15,14 +15,14 @@
       }
     ],
     "correction": "Read a method's self parameter to learn its ownership effect.",
-    "misconception": "“usize restores the String”",
+    "misconception": "“`usize` restores the `String`”",
     "traceSteps": [
       {
         "detail": "Name each value's type and starting value, then mark the expression that produces the lesson's result.",
         "title": "Inventory the values"
       },
       {
-        "detail": "Chain two text methods and identify which step allocates a new String.",
+        "detail": "Chain two text methods and identify which step allocates a new `String`.",
         "title": "Predict before checking"
       },
       {
@@ -45,16 +45,16 @@
       "All methods copy their receiver"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "trim borrows; to_uppercase creates a new owned String.",
+    "exampleCaption": "trim borrows; to_uppercase creates a new owned `String`.",
     "exampleCode": "let name = String::from(\" crab \");\nlet clean = name.trim().to_uppercase();\nprintln!(\"{clean}\");",
     "explanation": "A method call uses dot syntax, and Rust automatically borrows or dereferences the receiver when the signature makes that unambiguous. Chaining is readable when each step produces the value the next step expects. Watch ownership: some methods borrow the receiver, while others consume it and return a new value.\n\nStart at the receiver, the value to the left of the dot. In `name.trim()`, `trim` borrows the string and returns a slice (`&str`) of its contents; it does not edit `name`. The next call, `to_uppercase()`, reads that slice and creates a new `String`. You can still print the original value after both calls. A chain is easiest to reason about when you can name the type after each step: `String` → `&str` → `String`.\n\nMethod syntax is a convenient way to pass the receiver as the first argument. `text.len()` and `str::len(text)` express closely related calls; the dot form also lets Rust apply an unambiguous borrow or dereference. It does not erase ownership rules. A method declared with `self` takes the receiver by value; one with `&self` only reads it; one with `&mut self` may modify it. When a value seems to disappear after a method call, inspect that signature before inserting a clone.\n\nFor practice, write the chain as separate bindings: `let trimmed = name.trim(); let upper = trimmed.to_uppercase();`. Print all three values and predict which ones own their bytes. Then change a mutable string with `push_str` and compare that in-place edit with making a new uppercase string. Prefer a short chain when each conversion is obvious; use named intermediate values when you need to inspect a failure, annotate a type, or explain the transformation to a teammate.\n\nA method call is still a function call with an explicit receiver. `value.len()` reads as an operation associated with `value`; in an `impl` block, the receiver is commonly written `&self`, `&mut self`, or `self`. These forms mean borrow for reading, borrow for mutation, or take ownership. The receiver choice determines what the caller may do with the value afterward, so read it as part of the method's contract.\n\nCall one read-only method twice on the same value and predict why both calls work. Then write or inspect a method that takes `self` and try to reuse the old binding afterward. A compiler error here is about ownership, not about the dot syntax. Methods can return values, mutate state, or do I/O; the dot alone does not tell you which. Look at the signature and name together. Prefer short methods that preserve a clear invariant over a large chain whose intermediate effects are hard to see.",
     "feedback": "The receiver is &self, so the method reads through a temporary borrow.",
     "practiceCode": "let text = String::from(\"rust\");\nlet size = text.len();\nprintln!(\"{text} {size}\");",
-    "question": "Why is text still usable after len()?",
+    "question": "Why is text still usable after `len()`?",
     "rule": "Read a method's self parameter to learn its ownership effect.",
     "success": "You can tell whether each receiver is borrowed or consumed.",
     "summary": "Method syntax puts an operation beside the value it acts on.",
-    "task": "Chain two text methods and identify which step allocates a new String."
+    "task": "Chain two text methods and identify which step allocates a new `String`."
   },
   "illustration": {
     "path": "media/methods-intro.png",

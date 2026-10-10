@@ -1,6 +1,6 @@
 {
   "concept": "Implement behavior for every matching type",
-  "contentDigest": "06f060995555384efa6048bace90fbaf48cb00d802700e782dbe8737d3344cef",
+  "contentDigest": "d97ee979c442bf687bff12961b7f6ed8022573bde6dc1cdc78d49d4926a07b48",
   "depth": {
     "connections": [
       {
@@ -14,8 +14,8 @@
         "title": "Default Trait Methods"
       }
     ],
-    "correction": "A generic impl can grant a trait to all types satisfying a bound.",
-    "misconception": "“Only String”",
+    "correction": "A generic `impl` can grant a trait to all types satisfying a bound.",
+    "misconception": "“Only `String`”",
     "traceSteps": [
       {
         "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
@@ -30,7 +30,7 @@
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on implement behavior for every matching type."
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &`mut` T. Before compiling, list which bindings remain usable after each call. Keep the focus on implement behavior for every matching type."
   },
   "exerciseKind": "planned",
   "id": "blanket-impls",
@@ -47,11 +47,11 @@
     "correctAnswer": 1,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "trait Named { fn name(&self) -> String; }\nimpl<T: std::fmt::Display> Named for T {\n    fn name(&self) -> String {\n        self.to_string()\n    }\n}",
-    "explanation": "A generic impl can grant a trait to all types satisfying a bound. Blanket implementations are powerful because they shape which future implementations remain legal under coherence rules.\n\nA blanket implementation defines one rule for every type satisfying a bound. In the example, any `T` that implements `Display` also receives `Named`, whose `name()` delegates to `to_string()`. This avoids writing essentially the same implementation for each printable type. The benefit is broad, but so is the commitment: every current and future `Display` type covered by the rule gets that behavior.\n\nTrace a call on an integer and one on a custom struct with `Display`. Both resolve to the same generic implementation, specialized for their concrete type. A type without `Display` has no `Named` implementation from this blanket rule, so a caller demanding `Named` cannot use it. This is a compile-time capability relationship, not a runtime registry. The code does not inspect the type's name or perform a dynamic check.\n\nBlanket implementations interact with coherence. If your crate already grants `Named` to all `Display` types, a more specific `Named` implementation for one overlapping `Display` type conflicts on stable Rust. Also, the orphan rules limit which trait/type combinations your crate may implement. Before publishing a broad blanket impl, ask whether future special cases should behave differently. Try adding an overlapping implementation and read the compiler error. Sometimes a newtype wrapper or a narrower bound gives users more room to customize behavior later.\n\nAs a design exercise, imagine a type whose Display format changes over time. Would the generated name remain appropriate? A blanket rule is strongest when the mapping from the bound to the new behavior is stable for all covered types.",
-    "feedback": "Correct: Every Display type.",
+    "explanation": "A generic `impl` can grant a trait to all types satisfying a bound. Blanket implementations are powerful because they shape which future implementations remain legal under coherence rules.\n\nA blanket implementation defines one rule for every type satisfying a bound. In the example, any `T` that implements `Display` also receives `Named`, whose `name()` delegates to `to_string()`. This avoids writing essentially the same implementation for each printable type. The benefit is broad, but so is the commitment: every current and future `Display` type covered by the rule gets that behavior.\n\nTrace a call on an integer and one on a custom struct with `Display`. Both resolve to the same generic implementation, specialized for their concrete type. A type without `Display` has no `Named` implementation from this blanket rule, so a caller demanding `Named` cannot use it. This is a compile-time capability relationship, not a runtime registry. The code does not inspect the type's name or perform a dynamic check.\n\nBlanket implementations interact with coherence. If your crate already grants `Named` to all `Display` types, a more specific `Named` implementation for one overlapping `Display` type conflicts on stable Rust. Also, the orphan rules limit which trait/type combinations your crate may implement. Before publishing a broad blanket `impl`, ask whether future special cases should behave differently. Try adding an overlapping implementation and read the compiler error. Sometimes a newtype wrapper or a narrower bound gives users more room to customize behavior later.\n\nAs a design exercise, imagine a type whose `Display` format changes over time. Would the generated name remain appropriate? A blanket rule is strongest when the mapping from the bound to the new behavior is stable for all covered types.",
+    "feedback": "Correct: Every `Display` type.",
     "practiceCode": "trait Named { fn name(&self) -> String; }\nimpl<T: std::fmt::Display> Named for T {\n    fn name(&self) -> String {\n        self.to_string()\n    }\n}",
-    "question": "Who receives Named in this impl?",
-    "rule": "A generic impl can grant a trait to all types satisfying a bound.",
+    "question": "Who receives Named in this `impl`?",
+    "rule": "A generic `impl` can grant a trait to all types satisfying a bound.",
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Implement behavior for every matching type.",
     "task": "Trace the example, name the guarantee, and identify where it ends."

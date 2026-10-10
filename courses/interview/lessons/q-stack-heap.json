@@ -1,6 +1,6 @@
 {
   "concept": "Where values live and what a move copies",
-  "contentDigest": "4a51b05c1f7a00cd32975ca8d812be5727a2c22ce041e130fe1fac724e73ddee",
+  "contentDigest": "826fa20dc732f0ba5fa574ef6c0e5b60ad66929ff90b57024224de6ac292a93e",
   "depth": {
     "connections": [
       {
@@ -22,11 +22,11 @@
         "title": "Frame the answer"
       },
       {
-        "detail": "Say where each part of a Vec<String> lives and what a move copies.",
+        "detail": "Say where each part of a `Vec`<`String`> lives and what a move copies.",
         "title": "Predict before checking"
       },
       {
-        "detail": "You can explain why moving a String is cheap but cloning it is not.",
+        "detail": "You can explain why moving a `String` is cheap but cloning it is not.",
         "title": "Compare with evidence"
       }
     ],
@@ -47,14 +47,14 @@
     "correctAnswer": 1,
     "exampleCaption": "Three words on the stack; the bytes are on the heap.",
     "exampleCode": "let n = 42u64;             // 8 bytes, stack\nlet s = String::from(\"x\"); // ptr+len+cap\n                           // stack,\n                           // bytes heap",
-    "explanation": "A stack frame commonly holds fixed-size local values or handles. Heap allocations support storage whose size or lifetime needs more flexibility and require an owner to release them. Box, Vec, and String are heap values with a small stack handle, which is exactly why moving one is cheap and cloning one is not.\n\nA function call commonly creates a stack frame containing local values or handles whose sizes are known to the compiler. Heap allocation supports values whose storage needs to live independently of a particular stack frame or whose size is chosen at runtime. But ownership and physical location are separate questions. A `Vec<T>` value holds a pointer, length, and capacity as a small handle; its elements usually live in a heap allocation. Moving the Vec handle transfers ownership of that allocation without copying every element.\n\nCloning a Vec is different: it creates another allocation and copies or clones elements. A `Box<T>` puts a T allocation on the heap but has one owner. A `String` is a growable UTF-8 buffer with a small handle. A fixed array can live inside a stack frame, inside a heap allocation, or inside another struct depending on where its owner is stored. Do not claim that every dynamically sized value automatically goes to the heap or that stack memory is always faster for every use.\n\nIn an interview, draw the stack handle and heap allocation, then trace a move, a borrow, and a clone. Explain when Drop releases the allocation. Mention recursion and stack-size limits if relevant, but keep the answer tied to the code at hand. If asked about performance, say that allocation patterns, cache locality, and copying cost matter more than a slogan about stack versus heap. Measure a realistic workload before changing representation.\n\nA borrow does not move the allocation at all; it creates temporary access to the existing value. Use this contrast with move and clone in the diagram. Also mention that stack overflow is possible with deep recursion or large local arrays, even though stack allocation itself is cheap in the common case.",
+    "explanation": "A stack frame commonly holds fixed-size local values or handles. Heap allocations support storage whose size or lifetime needs more flexibility and require an owner to release them. `Box`, `Vec`, and `String` are heap values with a small stack handle, which is exactly why moving one is cheap and cloning one is not.\n\nA function call commonly creates a stack frame containing local values or handles whose sizes are known to the compiler. Heap allocation supports values whose storage needs to live independently of a particular stack frame or whose size is chosen at runtime. But ownership and physical location are separate questions. A `Vec<T>` value holds a pointer, length, and capacity as a small handle; its elements usually live in a heap allocation. Moving the `Vec` handle transfers ownership of that allocation without copying every element.\n\nCloning a `Vec` is different: it creates another allocation and copies or clones elements. A `Box<T>` puts a T allocation on the heap but has one owner. A `String` is a growable UTF-8 buffer with a small handle. A fixed array can live inside a stack frame, inside a heap allocation, or inside another struct depending on where its owner is stored. Do not claim that every dynamically sized value automatically goes to the heap or that stack memory is always faster for every use.\n\nIn an interview, draw the stack handle and heap allocation, then trace a move, a borrow, and a clone. Explain when Drop releases the allocation. Mention recursion and stack-size limits if relevant, but keep the answer tied to the code at hand. If asked about performance, say that allocation patterns, cache locality, and copying cost matter more than a slogan about stack versus heap. Measure a realistic workload before changing representation.\n\nA borrow does not move the allocation at all; it creates temporary access to the existing value. Use this contrast with move and clone in the diagram. Also mention that stack overflow is possible with deep recursion or large local arrays, even though stack allocation itself is cheap in the common case.",
     "feedback": "A move copies the handle; the heap allocation never moves.",
     "practiceCode": "let a = vec![1u8; 1_000_000];\nlet b = a;",
     "question": "How many bytes does that move copy?",
     "rule": "The stack holds the handle; the heap holds the data the handle points at.",
-    "success": "You can explain why moving a String is cheap but cloning it is not.",
+    "success": "You can explain why moving a `String` is cheap but cloning it is not.",
     "summary": "Where a value lives explains most of what Rust makes you write.",
-    "task": "Say where each part of a Vec<String> lives and what a move copies."
+    "task": "Say where each part of a `Vec`<`String`> lives and what a move copies."
   },
   "illustration": {
     "path": "media/q-stack-heap.png",

@@ -14,7 +14,7 @@
     "visibleInput": "coins=[1,2,5]"
   },
   "concept": "minimum unbounded composition and denomination planning",
-  "contentDigest": "99d923102d107aab43ea16ed1a85f9b927e7a40d1b16cbe6b9dc3e1c91c68d6a",
+  "contentDigest": "fa1da2778d925725a4cdc5213589d2ccf1ea958c7b7681be96efc236a3fe45ed",
   "depth": {
     "connections": [
       {
@@ -29,7 +29,7 @@
       }
     ],
     "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a Vec”",
+    "misconception": "“Any problem that contains a `Vec`”",
     "traceSteps": [
       {
         "title": "Define the state",
@@ -37,14 +37,14 @@
       },
       {
         "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `3`. Use Option or a safe sentinel for unreachable states, and choose an iteration direction that matches the recurrence's dependencies."
+        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `3`. Use `Option` or a safe sentinel for unreachable states, and choose an iteration direction that matches the recurrence's dependencies."
       },
       {
         "title": "Probe the boundary",
         "detail": "Check a smallest input and a case that challenges the assumption. Test the base state, the first transition, impossible states, and whether an in-place update accidentally reuses an item twice. Defend the O(amount * coins) time · O(amount) space bound by counting actual work."
       }
     ],
-    "transferChallenge": "Change the visible input `coins=[1,2,5]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Coin Change Minimum survives, which state must be updated, and whether the O(amount * coins) time · O(amount) space bound still holds. Choose a recurrence when subproblems overlap. Some patterns summarize a frontier instead of a full DP table; either representation needs an invariant, and any greedy shortcut needs proof."
+    "transferChallenge": "Change the visible input `coins=[1,2,5]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Coin Change Minimum survives, which state must be updated, and whether the O(amount * coins) time · O(amount) space bound still holds. Choose a recurrence when subproblems overlap. `Some` patterns summarize a frontier instead of a full DP table; either representation needs an invariant, and any greedy shortcut needs proof."
   },
   "exerciseKind": "planned",
   "id": "algorithm.coin-change-min.recognize",
@@ -61,7 +61,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Classification checklist for Coin Change Minimum",
     "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Coin Change Minimum",
-    "explanation": "A problem is a good match for Coin Change Minimum when it asks for minimum unbounded composition and denomination planning. Here the concrete task is: Return the fewest coins needed for amount 11. The visible input `coins=[1,2,5]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Choose a recurrence when subproblems overlap. Some patterns summarize a frontier instead of a full DP table; either representation needs an invariant, and any greedy shortcut needs proof. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Let each amount state choose one coin plus the best smaller reachable amount. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A one-dimensional DP state summarizes a prefix or a single parameter. Define its meaning before writing a recurrence. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(amount * coins) time · O(amount) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `3` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test the base state, the first transition, impossible states, and whether an in-place update accidentally reuses an item twice. Use Option or a safe sentinel for unreachable states, and choose an iteration direction that matches the recurrence's dependencies. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "explanation": "A problem is a good match for Coin Change Minimum when it asks for minimum unbounded composition and denomination planning. Here the concrete task is: Return the fewest coins needed for amount 11. The visible input `coins=[1,2,5]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Choose a recurrence when subproblems overlap. `Some` patterns summarize a frontier instead of a full DP table; either representation needs an invariant, and any greedy shortcut needs proof. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Let each amount state choose one coin plus the best smaller reachable amount. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A one-dimensional DP state summarizes a prefix or a single parameter. Define its meaning before writing a recurrence. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(amount * coins) time · O(amount) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `3` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test the base state, the first transition, impossible states, and whether an in-place update accidentally reuses an item twice. Use `Option` or a safe sentinel for unreachable states, and choose an iteration direction that matches the recurrence's dependencies. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
     "feedback": "The useful signal is the operation and guarantee: minimum unbounded composition and denomination planning.",
     "practiceCode": "fn ways(n: usize) -> usize {\n    let (mut previous, mut current) = (1, 1);\n    for _ in 0..n {\n        (previous, current) = (current, previous + current);\n    }\n    previous\n}",
     "question": "Which group is the strongest signal for this pattern?",

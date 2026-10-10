@@ -1,6 +1,6 @@
 {
   "concept": "Propagation and custom errors",
-  "contentDigest": "65bc7afe7fb5ea969e3c9081d6c9114e7fc11ac6140636628d34f500046b5f05",
+  "contentDigest": "6ba81c4e443dda26de0e9925384f7bbf5cab83c264e342191b55ada55bffdd01",
   "depth": {
     "connections": [
       {
@@ -14,7 +14,7 @@
         "title": "Dependencies"
       }
     ],
-    "correction": "Panic for a bug; Result for a situation the caller can act on.",
+    "correction": "Panic for a bug; `Result` for a situation the caller can act on.",
     "misconception": "“Returns an empty string on failure”",
     "traceSteps": [
       {
@@ -22,7 +22,7 @@
         "title": "Map the project boundary"
       },
       {
-        "detail": "Replace a panic with a Result and propagate it through one caller.",
+        "detail": "Replace a panic with a `Result` and propagate it through one caller.",
         "title": "Predict before checking"
       },
       {
@@ -47,14 +47,14 @@
     "correctAnswer": 1,
     "exampleCaption": "? propagates the failure instead of ending the process.",
     "exampleCode": "fn load(\n    path: &str,\n) -> Result<String, std::io::Error> {\n    let text = std::fs::read_to_string(path)?;\n    Ok(text)\n}",
-    "explanation": "Result, custom error types, and ? separate expected failure from programmer mistakes. A panic says this should never happen; a Result says the caller has a decision to make — and conflating the two is what makes error handling painful later.\n\nExpected failures should travel through a function's type. Reading a file may fail because it does not exist or cannot be accessed; returning `Result<String, std::io::Error>` tells the caller that a successful string and a recoverable error are both possible. In the sample, `?` returns the I/O error early while leaving the successful path uncluttered. It does not hide the error: the caller must still handle or propagate it.\n\nAt the command-line or UI boundary, turn the error into a message with context. “Could not load configuration from settings.toml” is more useful than “file error” because it identifies the attempted operation. Keep the original cause available for diagnostics when possible. A reusable library should avoid panicking for ordinary missing files or invalid input. Reserve panic for violated internal assumptions where the program cannot reasonably continue.\n\nTry calling `load` with an existing file and a missing one. In the caller, match on `Ok(text)` and `Err(error)`, print a helpful message, and decide whether to retry or exit. Then introduce a custom error enum for a workflow that can fail in two different ways, such as I/O and parsing. The type should distinguish those cases without forcing every helper to know about the final presentation. Error handling becomes manageable when each layer adds the context it owns and lets the caller make the next decision.\n\nA caller may attach more context with `map_err` or a custom error type without changing the original low-level fact. That separation keeps errors useful to both programs and people.",
-    "feedback": "Returning Result hands the decision to whoever knows what to do.",
+    "explanation": "`Result`, custom error types, and ? separate expected failure from programmer mistakes. A panic says this should never happen; a `Result` says the caller has a decision to make — and conflating the two is what makes error handling painful later.\n\nExpected failures should travel through a function's type. Reading a file may fail because it does not exist or cannot be accessed; returning `Result<String, std::io::Error>` tells the caller that a successful string and a recoverable error are both possible. In the sample, `?` returns the I/O error early while leaving the successful path uncluttered. It does not hide the error: the caller must still handle or propagate it.\n\nAt the command-line or UI boundary, turn the error into a message with context. “Could not load configuration from settings.toml” is more useful than “file error” because it identifies the attempted operation. Keep the original cause available for diagnostics when possible. A reusable library should avoid panicking for ordinary missing files or invalid input. Reserve panic for violated internal assumptions where the program cannot reasonably continue.\n\nTry calling `load` with an existing file and a missing one. In the caller, match on `Ok(text)` and `Err(error)`, print a helpful message, and decide whether to retry or exit. Then introduce a custom error enum for a workflow that can fail in two different ways, such as I/O and parsing. The type should distinguish those cases without forcing every helper to know about the final presentation. Error handling becomes manageable when each layer adds the context it owns and lets the caller make the next decision.\n\nA caller may attach more context with `map_err` or a custom error type without changing the original low-level fact. That separation keeps errors useful to both programs and people.",
+    "feedback": "Returning `Result` hands the decision to whoever knows what to do.",
     "practiceCode": "fn read(path: &str) -> String {\n    std::fs::read_to_string(path).unwrap()\n}",
     "question": "What does unwrap do to a caller here?",
-    "rule": "Panic for a bug; Result for a situation the caller can act on.",
+    "rule": "Panic for a bug; `Result` for a situation the caller can act on.",
     "success": "The caller handles the failure without losing its cause.",
     "summary": "Good errors preserve context and keep recovery near the caller.",
-    "task": "Replace a panic with a Result and propagate it through one caller."
+    "task": "Replace a panic with a `Result` and propagate it through one caller."
   },
   "illustration": {
     "path": "media/errors.png",

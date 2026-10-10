@@ -1,6 +1,6 @@
 {
   "concept": "Borrowed views into data",
-  "contentDigest": "5952d2f376ddbf19cb3d82bec526262f1a8efd99e84aed53d6728920639bf3ab",
+  "contentDigest": "a7dfe129bb1845284ea2dac0613626f56414a35e7b7630c02655f619f439c5a6",
   "depth": {
     "connections": [
       {
@@ -15,14 +15,14 @@
       }
     ],
     "correction": "A slice borrows a range; it allocates nothing.",
-    "misconception": "“A newly allocated String the caller owns”",
+    "misconception": "“A newly allocated `String` the caller owns”",
     "traceSteps": [
       {
         "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
         "title": "Map ownership first"
       },
       {
-        "detail": "Return the first word as &str without allocating.",
+        "detail": "Return the first word as `&str` without allocating.",
         "title": "Predict before checking"
       },
       {
@@ -30,7 +30,7 @@
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on borrowed views into data."
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &`mut` T. Before compiling, list which bindings remain usable after each call. Keep the focus on borrowed views into data."
   },
   "exerciseKind": "planned",
   "id": "slices",
@@ -47,14 +47,14 @@
     "correctAnswer": 1,
     "exampleCaption": "No allocation, and the result cannot outlive its input.",
     "exampleCode": "fn first_word(text: &str) -> &str {\n    match text.find(' ') {\n        Some(i) => &text[..i],\n        None => text,\n    }\n}",
-    "explanation": "A slice stores a pointer and a length but owns nothing, so creating one allocates no memory. Because it borrows, the compiler will not let it outlive the String or array it points into, which rules out a dangling view.\n\nA slice is a view into existing contiguous data. `&str` views UTF-8 text, while `&[T]` views elements such as integers in an array or vector. A slice carries a starting address and a length; it does not allocate a new buffer or become a second owner. That makes slice parameters useful for read-only APIs: a function accepting `&str` can read both a string literal and a portion of an owned `String`.\n\nThe `first_word` example finds a byte offset for a space, then returns either the prefix or the whole input. The returned `&str` refers to the caller's data. The function cannot safely return a slice of a local `String` created inside it, because that local owner would be dropped on return. The borrow checker ties the view's validity to the source data. The same reasoning applies to `&items[1..3]`: changing the vector's storage while the slice remains in use would invalidate the view.\n\nTry calling `first_word` with \"crab rust\" and with \"crab\". Check both results, then pass a substring of a larger string. To make an independent copy, call `.to_owned()` or `.to_string()` deliberately and compare the ownership behavior. For Unicode text, slice indices are byte offsets and must fall on UTF-8 boundaries; arbitrary numeric character positions are not safe byte positions. Decide whether an API needs a borrowed view or an owned copy based on how long the result must survive.",
-    "feedback": "The returned &str borrows from text, so it cannot outlive it.",
+    "explanation": "A slice stores a pointer and a length but owns nothing, so creating one allocates no memory. Because it borrows, the compiler will not `let` it outlive the `String` or array it points into, which rules out a dangling view.\n\nA slice is a view into existing contiguous data. `&str` views UTF-8 text, while `&[T]` views elements such as integers in an array or vector. A slice carries a starting address and a length; it does not allocate a new buffer or become a second owner. That makes slice parameters useful for read-only APIs: a function accepting `&str` can read both a string literal and a portion of an owned `String`.\n\nThe `first_word` example finds a byte offset for a space, then returns either the prefix or the whole input. The returned `&str` refers to the caller's data. The function cannot safely return a slice of a local `String` created inside it, because that local owner would be dropped on return. The borrow checker ties the view's validity to the source data. The same reasoning applies to `&items[1..3]`: changing the vector's storage while the slice remains in use would invalidate the view.\n\nTry calling `first_word` with \"crab rust\" and with \"crab\". Check both results, then pass a substring of a larger string. To make an independent copy, call `.to_owned()` or `.to_string()` deliberately and compare the ownership behavior. For Unicode text, slice indices are byte offsets and must fall on UTF-8 boundaries; arbitrary numeric character positions are not safe byte positions. Decide whether an API needs a borrowed view or an owned copy based on how long the result must survive.",
+    "feedback": "The returned `&str` borrows from text, so it cannot outlive it.",
     "practiceCode": "fn first(text: &str) -> &str {\n    &text[..3]\n}",
     "question": "What does that return type mean?",
     "rule": "A slice borrows a range; it allocates nothing.",
     "success": "The slice ends before the first space and stays tied to its input.",
     "summary": "Slices are borrowed views into contiguous data.",
-    "task": "Return the first word as &str without allocating."
+    "task": "Return the first word as `&str` without allocating."
   },
   "illustration": {
     "path": "media/slices.png",

@@ -1,6 +1,6 @@
 {
   "concept": "Constants, cache, and amortised cost",
-  "contentDigest": "0f5efa81361298419b8cbcc0c8c9259cbcb488337983bbe754190f2e1be9e742",
+  "contentDigest": "e8e7b4fe4fbb08d8c55038fe0244fd0081e4d061ff87ded5a078cf9ed50af173",
   "depth": {
     "connections": [
       {
@@ -22,7 +22,7 @@
         "title": "Frame the answer"
       },
       {
-        "detail": "Estimate the input size at which a HashMap beats a linear scan here.",
+        "detail": "Estimate the input size at which a `HashMap` beats a linear scan here.",
         "title": "Predict before checking"
       },
       {
@@ -47,14 +47,14 @@
     "correctAnswer": 1,
     "exampleCaption": "Same complexity class, very different constants.",
     "exampleCode": "// O(n), one cache line at a time\nitems.iter().find(|item| item.id == id)\n\n// O(log n), a pointer chase per level\ntree.get(&id)",
-    "explanation": "A linear scan of a contiguous Vec often beats a logarithmic tree for small inputs because the constant factor is cache locality. The useful answer names the input size where the asymptotic term takes over, and mentions amortised cost: push on a Vec is O(1) amortised, but the reallocation that makes it so is O(n) and happens at the worst moment.\n\nBig-O describes growth with input size, not wall-clock speed for one input. An O(n) scan over a small contiguous vector can beat an O(log n) tree search because of locality and simpler control flow. For large inputs, the growth rates can reverse that result. Explain the data size and operation mix before choosing. Also distinguish worst-case, average-case, and amortized analysis. `Vec::push` is amortized O(1), yet a particular push may reallocate and copy many elements.\n\nConsider a service that looks up one item once in a list of 20. Building a hash map first may cost more than scanning. If it performs millions of lookups on 100,000 items, an index or map is more plausible. The break-even point depends on key size, hash cost, memory, cache behavior, and update frequency. Measure representative cases instead of inventing a universal threshold.\n\nIn an interview, state the dominant input dimension and count the operation that repeats. A nested loop is not always O(n²) if the inner pointer advances monotonically across the whole input. A recursive call can use additional stack space even when its time is linear. If you optimize an algorithm, mention memory and implementation complexity too. A useful answer gives both the asymptotic bound and a practical reason the chosen approach fits the stated constraints.\n\nA complexity claim needs a model of the input. If you say O(n), specify whether n is items, bytes, vertices, or operations. For hash-based approaches, separate expected and worst-case behavior. For a recursive algorithm, count maximum call depth as space. These details let someone challenge the bound with a concrete counterexample.",
+    "explanation": "A linear scan of a contiguous `Vec` often beats a logarithmic tree for small inputs because the constant factor is cache locality. The useful answer names the input size where the asymptotic term takes over, and mentions amortised cost: push on a `Vec` is O(1) amortised, but the reallocation that makes it so is O(n) and happens at the worst moment.\n\nBig-O describes growth with input size, not wall-clock speed for one input. An O(n) scan over a small contiguous vector can beat an O(log n) tree search because of locality and simpler control flow. For large inputs, the growth rates can reverse that result. Explain the data size and operation mix before choosing. Also distinguish worst-case, average-case, and amortized analysis. `Vec::push` is amortized O(1), yet a particular push may reallocate and copy many elements.\n\nConsider a service that looks up one item once in a list of 20. Building a hash map first may cost more than scanning. If it performs millions of lookups on 100,000 items, an index or map is more plausible. The break-even point depends on key size, hash cost, memory, cache behavior, and update frequency. Measure representative cases instead of inventing a universal threshold.\n\nIn an interview, state the dominant input dimension and count the operation that repeats. A nested loop is not always O(n²) if the inner pointer advances monotonically across the whole input. A recursive call can use additional stack space even when its time is linear. If you optimize an algorithm, mention memory and implementation complexity too. A useful answer gives both the asymptotic bound and a practical reason the chosen approach fits the stated constraints.\n\nA complexity claim needs a model of the input. If you say O(n), specify whether n is items, bytes, vertices, or operations. For hash-based approaches, separate expected and worst-case behavior. For a recursive algorithm, count maximum call depth as space. These details `let` someone challenge the bound with a concrete counterexample.",
     "feedback": "with_capacity removes the reallocation when the size is known.",
     "practiceCode": "let mut v = Vec::new();\nfor item in stream { v.push(item); }",
     "question": "What is the cost of one push?",
     "rule": "Complexity predicts growth; constants decide which one is faster today.",
     "success": "Your answer mentions constants and cache behaviour, not only the exponent.",
     "summary": "Big-O tells you how something scales, not how fast it is.",
-    "task": "Estimate the input size at which a HashMap beats a linear scan here."
+    "task": "Estimate the input size at which a `HashMap` beats a linear scan here."
   },
   "illustration": {
     "path": "media/q-complexity.png",

@@ -1,6 +1,6 @@
 {
   "concept": "One output type per implementation",
-  "contentDigest": "610626e781a4bbd8825ee3cf4e6b7d2a62099493caec30a7e8f39dd24f68da98",
+  "contentDigest": "7b08bd8fbb29fb74c75004dabe03ef65e841f6301ccb224a46871dd8db5e8241",
   "depth": {
     "connections": [
       {
@@ -14,7 +14,7 @@
         "title": "Operator Traits"
       }
     ],
-    "correction": "Associated type: one impl per type. Generic parameter: many impls per type.",
+    "correction": "Associated type: one `impl` per type. Generic parameter: many impls per type.",
     "misconception": "“Never, associated types are always better”",
     "traceSteps": [
       {
@@ -30,7 +30,7 @@
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &mut T. Before compiling, list which bindings remain usable after each call. Keep the focus on one output type per implementation."
+    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &`mut` T. Before compiling, list which bindings remain usable after each call. Keep the focus on one output type per implementation."
   },
   "exerciseKind": "planned",
   "id": "associated-types",
@@ -47,11 +47,11 @@
     "correctAnswer": 1,
     "exampleCaption": "One implementation per type, so the output never has to be annotated.",
     "exampleCode": "trait Container {\n    type Item;\n    fn get(&self, i: usize) -> Option<&Self::Item>;\n}\n\nstruct Bag { values: Vec<String> }\n\nimpl Container for Bag {\n    type Item = String;\n    fn get(&self, index: usize) -> Option<&String> {\n        self.values.get(index)\n    }\n}",
-    "explanation": "A generic parameter lets a type implement a trait many times; an associated type lets it implement it once with a chosen output. Iterator uses Item this way, which is why you write Iterator<Item = u32> rather than passing the element type at every call site.\n\nAn associated type is a type chosen by a particular implementation of a trait. `Iterator::Item` is the classic example: once a type implements `Iterator`, its `Item` is fixed for that implementation. A caller can write a bound such as `I: Iterator<Item = u32>` to say exactly which stream it accepts. This is different from giving the trait a type parameter that might allow the same implementer to implement several versions.\n\nIn the `Container` example, `Bag` chooses `String` for `Item`. The `get` method then returns `Option<&String>`, borrowing an element from the bag rather than copying it. Read `Option<&Self::Item>` from the inside out: there may be no element, and when there is one, it is a reference to the implementer's chosen item type. Try changing the bag to hold `u32`; the associated type declaration and implementation return type must change together.\n\nAssociated types make caller signatures shorter and communicate that there is one natural output type for a given implementation. They do not make a value dynamic at runtime. Compare a trait with `type Item` to a generic trait parameter in a toy design and ask whether a single implementer should reasonably have multiple item types. Choose the form that matches the relationship in your model. The compiler will enforce the choice wherever the trait is used.\n\nAn associated type also helps documentation: the implementation can name its element once, and every method uses that same choice. This is useful for parsers, streams, and containers where one implementer has a natural output. If an API really needs several output types for the same implementer, a generic trait parameter may describe the contract better.",
+    "explanation": "A generic parameter lets a type implement a trait many times; an associated type lets it implement it once with a chosen output. `Iterator` uses Item this way, which is why you write `Iterator`<Item = `u32`> rather than passing the element type at every call site.\n\nAn associated type is a type chosen by a particular implementation of a trait. `Iterator::Item` is the classic example: once a type implements `Iterator`, its `Item` is fixed for that implementation. A caller can write a bound such as `I: Iterator<Item = u32>` to say exactly which stream it accepts. This is different from giving the trait a type parameter that might allow the same implementer to implement several versions.\n\nIn the `Container` example, `Bag` chooses `String` for `Item`. The `get` method then returns `Option<&String>`, borrowing an element from the bag rather than copying it. Read `Option<&Self::Item>` from the inside out: there may be no element, and when there is one, it is a reference to the implementer's chosen item type. Try changing the bag to hold `u32`; the associated type declaration and implementation return type must change together.\n\nAssociated types make caller signatures shorter and communicate that there is one natural output type for a given implementation. They do not make a value dynamic at runtime. Compare a trait with `type Item` to a generic trait parameter in a toy design and ask whether a single implementer should reasonably have multiple item types. Choose the form that matches the relationship in your model. The compiler will enforce the choice wherever the trait is used.\n\nAn associated type also helps documentation: the implementation can name its element once, and every method uses that same choice. This is useful for parsers, streams, and containers where one implementer has a natural output. If an API really needs several output types for the same implementer, a generic trait parameter may describe the contract better.",
     "feedback": "From<T> is generic precisely because a type converts from many others.",
     "practiceCode": "trait Parser {\n    type Output;\n    fn parse(&self, input: &str) -> Self::Output;\n}",
     "question": "When should you prefer a generic parameter instead?",
-    "rule": "Associated type: one impl per type. Generic parameter: many impls per type.",
+    "rule": "Associated type: one `impl` per type. Generic parameter: many impls per type.",
     "success": "Callers use the trait without naming the output type.",
     "summary": "An associated type fixes one output type per implementation.",
     "task": "Give a trait an associated type and implement it once."

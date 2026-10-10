@@ -1,6 +1,6 @@
 {
   "concept": "Cargo.toml and sibling files",
-  "contentDigest": "da94889622cbf346ef95132be2b1dad1119dace3ae07344a0f992841b5262187",
+  "contentDigest": "c73ca45f0e157a1c3194acd7e282907800cac35c095109cd289c5adce19c04a3",
   "depth": {
     "connections": [
       {
@@ -21,7 +21,7 @@
         "title": "Predict before checking"
       },
       {
-        "detail": "It compiles from src/main.rs and prints the edited output.",
+        "detail": "It compiles from src/`main.rs` and prints the edited output.",
         "title": "Compare with evidence"
       }
     ],
@@ -42,12 +42,12 @@
     "correctAnswer": 1,
     "exampleCaption": "mod declares it; pub decides what leaves it.",
     "exampleCode": "// src/main.rs\nmod greeter;\n\nfn main() {\n    println!(\"{}\", greeter::message());\n}\n\n// src/greeter.rs\npub fn message() -> &'static str {\n    \"hello from a module\"\n}",
-    "explanation": "mod declares a module and use brings a path into scope, while pub decides what actually escapes. Cargo.toml describes the package around them — the same file the package manager reads to resolve your dependencies.\n\nA module gives names and boundaries to related code. In the example, `mod greeter;` tells Rust to compile the module from `src/greeter.rs`; `greeter::message()` follows a path to an item inside it. The `use` keyword can shorten a path in the current scope, but it does not change whether an item is visible. Visibility starts private. `pub` opens an item to callers permitted by the module hierarchy, and a public function exposed from a library crate becomes part of the interface other crates may rely on.\n\nStart a tiny project with `src/main.rs` and `src/greeter.rs`. First call the function by its full path. Then import it with `use` and compare the call site. Remove `pub` and read the compiler diagnostic. This sequence separates three ideas that are easy to blur: file layout determines where code is found, module paths determine how it is named, and visibility determines who may call it. A file is a convenient module boundary, not a permission switch by itself.\n\nAs a project grows, prefer modules named for responsibilities rather than for arbitrary technical layers. Keep small helpers private and expose the minimum stable API. If callers need to write a long, surprising path, consider a deliberate `pub use` re-export at the crate root. That keeps internal files free to move without forcing every caller to change. Cargo.toml describes the package and dependencies; it is related to the project but does not replace Rust's module tree.",
-    "feedback": "Privacy is the default; pub fn helper makes it reachable.",
+    "explanation": "mod declares a module and use brings a path into scope, while pub decides what actually escapes. `Cargo.toml` describes the package around them — the same file the package manager reads to resolve your dependencies.\n\nA module gives names and boundaries to related code. In the example, `mod greeter;` tells Rust to compile the module from `src/greeter.rs`; `greeter::message()` follows a path to an item inside it. The `use` keyword can shorten a path in the current scope, but it does not change whether an item is visible. Visibility starts private. `pub` opens an item to callers permitted by the module hierarchy, and a public function exposed from a library crate becomes part of the interface other crates may rely on.\n\nStart a tiny project with `src/main.rs` and `src/greeter.rs`. First call the function by its full path. Then import it with `use` and compare the call site. Remove `pub` and read the compiler diagnostic. This sequence separates three ideas that are easy to blur: file layout determines where code is found, module paths determine how it is named, and visibility determines who may call it. A file is a convenient module boundary, not a permission switch by itself.\n\nAs a project grows, prefer modules named for responsibilities rather than for arbitrary technical layers. Keep small helpers private and expose the minimum stable API. If callers need to write a long, surprising path, consider a deliberate `pub use` re-export at the crate root. That keeps internal files free to move without forcing every caller to change. `Cargo.toml` describes the package and dependencies; it is related to the project but does not replace Rust's module tree.",
+    "feedback": "Privacy is the default; pub `fn` helper makes it reachable.",
     "practiceCode": "mod util {\n    fn helper() -> u32 { 1 }\n}\nlet value = util::helper();",
     "question": "Why can't main call helper?",
     "rule": "Items are private by default; pub is what exposes them.",
-    "success": "It compiles from src/main.rs and prints the edited output.",
+    "success": "It compiles from src/`main.rs` and prints the edited output.",
     "summary": "Modules split a crate into files, and privacy shapes the surface.",
     "task": "Open the multi-file project, trace mod greeter, and change its public function."
   },

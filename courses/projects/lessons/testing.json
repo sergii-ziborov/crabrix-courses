@@ -1,6 +1,6 @@
 {
   "concept": "Unit and integration tests",
-  "contentDigest": "408665e13e7a4e73b51a670b962a3e422be7c1f72edb7d91cb6fc92f2048b502",
+  "contentDigest": "05570eeeaeccc048818d2512b58568b53807e96eb2a452337d657bb0c3e626ff",
   "depth": {
     "connections": [
       {
@@ -14,7 +14,7 @@
         "title": "Error Design"
       }
     ],
-    "correction": "#[cfg(test)] keeps test code out of the release build entirely.",
+    "correction": "`#[cfg(test)]` keeps test code out of the release build entirely.",
     "misconception": "“A return type so the harness can read the result”",
     "traceSteps": [
       {
@@ -47,11 +47,11 @@
     "correctAnswer": 1,
     "exampleCaption": "Tests live beside the code and can see its private parts.",
     "exampleCode": "#[cfg(test)]\nmod tests {\n    use super::*;\n\n    #[test]\n    fn adds_two_numbers() {\n        assert_eq!(add(2, 2), 4);\n    }\n}",
-    "explanation": "#[test] functions are compiled only for the test harness, so they cost nothing in a release build. Unit tests sit beside the code and can reach its private details; integration tests live in tests/ and see only the public API, which is a useful check on your own interface.\n\nA test records an observable promise. `#[test]` marks a function that the test harness runs under `cargo test`; an assertion compares the actual value with a prediction. The sample puts tests beside the implementation in a `#[cfg(test)]` module, which is a good place for small unit tests of edge cases and private helpers. The module is only compiled when testing, so it does not become a normal production code path.\n\nStart with a function that adds two numbers. Test a typical case, zero, and a boundary that might reveal overflow or an incorrect sign. Name tests for the behavior they protect rather than the implementation line they execute. If a test fails, its assertion should tell you what input produced the mismatch. A test that merely repeats the function's code is weak: it can share the same mistake. Prefer a simple expected result you can justify independently.\n\nIntegration tests under `tests/` compile as separate crates and call the public library API. They are useful when you want evidence that an external consumer can use the package as intended. A practical suite usually combines focused unit tests with a few end-to-end cases. Tests do not prove an implementation correct for every input, but they make intended behavior executable and guard against later changes. Run the narrowest relevant test while editing and the full suite before shipping; both speeds of feedback matter.",
+    "explanation": "`#[test]` functions are compiled only for the test harness, so they cost nothing in a release build. Unit tests sit beside the code and can reach its private details; integration tests live in tests/ and see only the public API, which is a useful check on your own interface.\n\nA test records an observable promise. `#[test]` marks a function that the test harness runs under `cargo test`; an assertion compares the actual value with a prediction. The sample puts tests beside the implementation in a `#[cfg(test)]` module, which is a good place for small unit tests of edge cases and private helpers. The module is only compiled when testing, so it does not become a normal production code path.\n\nStart with a function that adds two numbers. Test a typical case, zero, and a boundary that might reveal overflow or an incorrect sign. Name tests for the behavior they protect rather than the implementation line they execute. If a test fails, its assertion should tell you what input produced the mismatch. A test that merely repeats the function's code is weak: it can share the same mistake. Prefer a simple expected result you can justify independently.\n\nIntegration tests under `tests/` compile as separate crates and call the public library API. They are useful when you want evidence that an external consumer can use the package as intended. A practical suite usually combines focused unit tests with a few end-to-end cases. Tests do not prove an implementation correct for every input, but they make intended behavior executable and guard against later changes. Run the narrowest relevant test while editing and the full suite before shipping; both speeds of feedback matter.",
     "feedback": "A test with no assertion only proves the code did not panic.",
     "practiceCode": "#[test]\nfn works() {\n    let result = compute();\n}",
     "question": "What is missing from that test?",
-    "rule": "#[cfg(test)] keeps test code out of the release build entirely.",
+    "rule": "`#[cfg(test)]` keeps test code out of the release build entirely.",
     "success": "Both are deterministic and fail for a deliberately broken implementation.",
     "summary": "Tests turn behaviour into executable evidence.",
     "task": "Add one success case and one boundary case for a pure function."

@@ -1,6 +1,6 @@
 {
   "concept": "String, &str, chars, and bytes",
-  "contentDigest": "b987c5874786e0fa8cf0f84b7d2ebcd61b12cbaed0929442c828b5b07666dfb9",
+  "contentDigest": "16ef0d238139a5645e32b37fc17c81831d7dd02e2977a8858dd112a3de0b258f",
   "depth": {
     "connections": [
       {
@@ -14,8 +14,8 @@
         "title": "Pattern Matching"
       }
     ],
-    "correction": "len() is bytes; use .chars() when you mean characters.",
-    "misconception": "“word.len()”",
+    "correction": "`len()` is bytes; use .`chars()` when you mean characters.",
+    "misconception": "“`word.len()`”",
     "traceSteps": [
       {
         "detail": "Name each value's type and starting value, then mark the expression that produces the lesson's result.",
@@ -30,7 +30,7 @@
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change one value, type, or boundary in the sample. Write the exact stdout or diagnostic you expect before asking rustc. Keep the focus on string, &str, chars, and bytes."
+    "transferChallenge": "Change one value, type, or boundary in the sample. Write the exact stdout or diagnostic you expect before asking rustc. Keep the focus on string, `&str`, chars, and bytes."
   },
   "exerciseKind": "planned",
   "id": "strings",
@@ -47,11 +47,11 @@
     "correctAnswer": 1,
     "exampleCaption": "Bytes and characters are different counts, and Rust makes you pick.",
     "exampleCode": "let text = String::from(\"café\");\nprintln!(\"bytes {}\", text.len());          // 5\nprintln!(\"chars {}\", text.chars().count()); // 4\n\nfor (index, ch) in text.char_indices() {\n    println!(\"{index} {ch}\");\n}",
-    "explanation": "String owns a growable UTF-8 buffer and &str borrows one. Because a character can be several bytes, s[0] is not allowed at all: you choose .bytes(), .chars(), or a byte range you know lands on a boundary. That refusal is the point — it makes an entire class of encoding bug impossible.\n\nUTF-8 stores text as bytes, and a visible character may require more than one byte. In `café`, `len()` is five bytes, while `chars().count()` yields four Unicode scalar values. Neither number necessarily counts what a person sees as a grapheme: a letter plus a combining accent can be two scalar values displayed as one. Rust deliberately makes the unit explicit, so you cannot assume that the fifth byte begins a character.\n\nA `String` owns and can grow its buffer. A `&str` borrows a valid slice of UTF-8 text, whether the source is a string literal or part of a `String`. Slicing by byte ranges is allowed only at character boundaries; a range ending in the middle of a multibyte character fails. Use `.chars()` for scalar-value iteration, `.bytes()` for protocol or encoding work, and `.char_indices()` when you need both a character and its starting byte offset. Avoid repeatedly using `.chars().nth(n)` as if it were constant-time indexing: it walks from the start each time.\n\nTry printing the bytes, characters, and byte offsets of `café` and `naïve`. Predict which offsets jump by more than one. If your UI needs user-perceived character counts or cursor movement, use a Unicode grapheme library and state that requirement explicitly. For many programs, the safest first step is to ask whether the problem is about bytes, scalar values, or displayed clusters before choosing an operation.\n\nIf you must slice text, use a checked operation such as `get(range)` when a range may come from external input. It returns `Option<&str>` instead of panicking at an invalid UTF-8 boundary.\n\n`String` owns growable UTF-8 bytes; `&str` borrows a view of UTF-8 text. A string literal has type `&'static str`, but a function accepting `&str` can also receive a borrowed view of a `String`. This is why read-only parameters commonly use `&str`: callers need not give away ownership. Appending to a `String` may reallocate its storage, so a reference into it cannot remain live while a mutation would invalidate that reference.\n\nTry passing both a string literal and a borrowed `String` to the same read-only function. Then change the function to take `String` and observe the move at the call site. Use `.as_str()` or `&value` when you need a view. For slicing, remember that offsets are UTF-8 byte positions and must fall on valid character boundaries. If your task is to count or split what a human sees as characters, specify whether you mean bytes, Unicode scalar values, or grapheme clusters before writing the algorithm.",
-    "feedback": "len() reports UTF-8 bytes, which is larger than the character count here.",
+    "explanation": "`String` owns a growable UTF-8 buffer and `&str` borrows one. Because a character can be several bytes, `s[0]` is not allowed at all: you choose .`bytes()`, .`chars()`, or a byte range you know lands on a boundary. That refusal is the point — it makes an entire class of encoding bug impossible.\n\nUTF-8 stores text as bytes, and a visible character may require more than one byte. In `café`, `len()` is five bytes, while `chars().count()` yields four Unicode scalar values. Neither number necessarily counts what a person sees as a grapheme: a letter plus a combining accent can be two scalar values displayed as one. Rust deliberately makes the unit explicit, so you cannot assume that the fifth byte begins a character.\n\nA `String` owns and can grow its buffer. A `&str` borrows a valid slice of UTF-8 text, whether the source is a string literal or part of a `String`. Slicing by byte ranges is allowed only at character boundaries; a range ending in the middle of a multibyte character fails. Use `.chars()` for scalar-value iteration, `.bytes()` for protocol or encoding work, and `.char_indices()` when you need both a character and its starting byte offset. Avoid repeatedly using `.chars().nth(n)` as if it were constant-time indexing: it walks from the start each time.\n\nTry printing the bytes, characters, and byte offsets of `café` and `naïve`. Predict which offsets jump by more than one. If your UI needs user-perceived character counts or cursor movement, use a Unicode grapheme library and state that requirement explicitly. For many programs, the safest first step is to ask whether the problem is about bytes, scalar values, or displayed clusters before choosing an operation.\n\nIf you must slice text, use a checked operation such as `get(range)` when a range may come from external input. It returns `Option<&str>` instead of panicking at an invalid UTF-8 boundary.\n\n`String` owns growable UTF-8 bytes; `&str` borrows a view of UTF-8 text. A string literal has type `&'static str`, but a function accepting `&str` can also receive a borrowed view of a `String`. This is why read-only parameters commonly use `&str`: callers need not give away ownership. Appending to a `String` may reallocate its storage, so a reference into it cannot remain live while a mutation would invalidate that reference.\n\nTry passing both a string literal and a borrowed `String` to the same read-only function. Then change the function to take `String` and observe the move at the call site. Use `.as_str()` or `&value` when you need a view. For slicing, remember that offsets are UTF-8 byte positions and must fall on valid character boundaries. If your task is to count or split what a human sees as characters, specify whether you mean bytes, Unicode scalar values, or grapheme clusters before writing the algorithm.",
+    "feedback": "`len()` reports UTF-8 bytes, which is larger than the character count here.",
     "practiceCode": "let word = \"naïve\";\nlet length = word.???;",
     "question": "Which gives the number of characters?",
-    "rule": "len() is bytes; use .chars() when you mean characters.",
+    "rule": "`len()` is bytes; use .`chars()` when you mean characters.",
     "success": "The count matches what a reader would say out loud.",
     "summary": "Rust strings are UTF-8, so there is no cheap index by character.",
     "task": "Count characters rather than bytes in a string with an accent."

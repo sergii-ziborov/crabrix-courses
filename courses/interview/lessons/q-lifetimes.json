@@ -1,6 +1,6 @@
 {
   "concept": "Relationships, not object duration",
-  "contentDigest": "9a19f1ba929b8d2c178e2cd3ee8623e80632d7eee41a74f1ca1c16bdfa68bb65",
+  "contentDigest": "e80f99d0c6ad5cb9b805711e1e4c79c48f4170ecb64c6dacb0d6a2ac4bd0701d",
   "depth": {
     "connections": [
       {
@@ -48,7 +48,7 @@
     "exampleCaption": "The annotation relates the inputs to the output.",
     "exampleCode": "fn pick<'a>(\n    a: &'a str,\n    b: &'a str,\n) -> &'a str {\n    if a.len() > b.len() { a } else { b }\n}",
     "explanation": "The common misconception is that a lifetime controls how long a value lives. It does not: it is a compile-time claim about which borrows outlive which. Annotations appear only where inference cannot decide, which is why most code has none.\n\nA lifetime annotation relates references; it does not keep a value alive by itself. Consider a function returning one of two borrowed strings. The output reference must not outlive the input it came from. When the compiler cannot infer which input supplies the result, an annotation such as `'a` names their relationship. At the call site, the borrow remains valid only while the underlying owner lives. No annotation can turn a reference to a local temporary into a valid long-lived return value.\n\nExplain this with a failed example: create a `String` inside a function and return `&str` pointing into it. The string is dropped when the function ends, so the reference would dangle. Return the owned `String` instead, or have the caller provide storage that lives long enough. This makes the reason visible without treating lifetimes as magical syntax.\n\nIn an interview, start with who owns each value, which reference is returned, and how long each owner is available. Only then write the annotation. Most functions need no explicit lifetime syntax because the compiler can infer the relationship from simple signatures and uses. If two inputs have different lifetimes, do not force them to share a name unless the return contract truly depends on both. A good explanation says what guarantee the signature gives to callers and what it cannot guarantee.\n\nIf the interviewer asks for the longest lifetime, resist assigning a duration in seconds or scopes by guesswork. Show the returned reference depends on the shortest relevant input borrow. The caller can use it only while the chosen owner remains alive. That is the contract annotations communicate.",
-    "feedback": "Return the String itself; a borrow of a dead local can never be sound.",
+    "feedback": "Return the `String` itself; a borrow of a dead local can never be sound.",
     "practiceCode": "fn dangle() -> &String {\n    let s = String::from(\"x\");\n    &s\n}",
     "question": "Why can no annotation fix that?",
     "rule": "A lifetime constrains borrows; it never keeps anything alive.",

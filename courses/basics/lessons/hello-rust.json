@@ -1,6 +1,6 @@
 {
   "concept": "Functions and stdout",
-  "contentDigest": "bffcefdfb170c2f1891e6e450c198544588d75004265c96415354b05abe6100a",
+  "contentDigest": "a3464160688884908750e7fd783218cdf904a6bf30d6a4ec6a7c040af766aa2c",
   "depth": {
     "connections": [
       {
@@ -9,16 +9,16 @@
         "title": "Variables"
       }
     ],
-    "correction": "main is the entry point, but it does not return the printed line to a caller. println! sends text to stdout while the program is running; a successful process can finish with exit code 0.",
-    "misconception": "“It returns a Result the caller has to handle”",
+    "correction": "main is the entry point, but it does not return the printed line to a caller. `println!` sends text to stdout while the program is running; a successful process can finish with exit code 0.",
+    "misconception": "“It returns a `Result` the caller has to handle”",
     "traceSteps": [
       {
         "title": "Locate the entry point",
-        "detail": "Find fn main() and trace its body in order. Identify name as the value that will be inserted into the greeting; the braces delimit the work this program will execute."
+        "detail": "Find `fn` main() and trace its body in order. Identify name as the value that will be inserted into the greeting; the braces delimit the work this program will execute."
       },
       {
         "title": "Predict the check and output",
-        "detail": "Read the println! format string. Match {name} to the captured binding, then write the exact line you expect on stdout before compiling. A missing binding would be caught by rustc first."
+        "detail": "Read the `println!` format string. Match {name} to the captured binding, then write the exact line you expect on stdout before compiling. A missing binding would be caught by rustc first."
       },
       {
         "title": "Compare with evidence",
@@ -42,13 +42,13 @@
     "correctAnswer": 1,
     "exampleCaption": "The captured name fills the {name} placeholder. Rust checks that formatting expression during compilation; the resulting line appears on stdout when the program runs.",
     "exampleCode": "fn main() {\n    let name = \"Crabrix\";\n    println!(\"Hello, {name}!\");\n}",
-    "explanation": "A Rust executable begins in fn main(). The braces enclose the statements that run when the program starts. In the example, name is a string slice, and println!(\"Hello, {name}!\") uses it to build a line of text. The exclamation mark matters: println! is a macro, not an ordinary function call. It expands while the program is compiled, so the compiler can check the format string and its arguments before anything runs. If a placeholder is missing an argument, you see a diagnostic instead of a half-working program.\n\nFollow the diagram from left to right: source code, a successful compile-time check, then terminal output. The compiler’s messages are not the same as your program’s stdout. A clean build can still produce no output if there is no print call; a failed build cannot run this new version at all. When you change the greeting, predict the exact line you expect before tapping Run. Then compare that prediction with the actual output, including punctuation and spaces. This edit–compile–run–observe cycle is the habit you will use throughout the course.\n\nStart with the three places where text can appear. Your source file contains instructions; the compiler may report an error while checking those instructions; the running program may print a line to standard output. These are separate events. For this example, a successful compile produces a program, and running that program prints exactly `Hello, Crabrix!` followed by a newline. The code does not display a window or return that greeting as the function's value. `println!` writes it to the output stream.\n\nRead the punctuation slowly. `fn` begins a function declaration, `main` is the entry point, `()` says it takes no parameters, and `{ ... }` surrounds its body. `let name = \"Crabrix\";` creates a binding. The semicolon ends that statement. Inside the quoted format string, `{name}` asks formatting to read the binding. Removing the exclamation mark changes the syntax into a call to a function named `println`, which this program has not defined. Removing the argument or misspelling the captured name causes a compile error. Neither mistake means that a previous successful run printed something new.\n\nTry one change at a time so the cause stays visible. First change only `Crabrix` to your name and predict the line. Then change `Hello` to `Welcome` and predict again. Finally make the format string refer to an unknown binding and read the compiler's primary diagnostic. Restore the code after that experiment. If the output surprises you, check which source version you actually built, whether compilation succeeded, and whether you are reading compiler messages or program output.",
-    "feedback": "The exclamation mark marks a macro invocation. println! expands at compile time, allowing Rust to check its format string and supplied values before execution.",
+    "explanation": "A Rust executable begins in `fn` main(). The braces enclose the statements that run when the program starts. In the example, name is a string slice, and `println!`(\"Hello, {name}!\") uses it to build a line of text. The exclamation mark matters: `println!` is a macro, not an ordinary function call. It expands while the program is compiled, so the compiler can check the format string and its arguments before anything runs. If a placeholder is missing an argument, you see a diagnostic instead of a half-working program.\n\nFollow the diagram from left to right: source code, a successful compile-time check, then terminal output. The compiler’s messages are not the same as your program’s stdout. A clean build can still produce no output if there is no print call; a failed build cannot run this new version at all. When you change the greeting, predict the exact line you expect before tapping Run. Then compare that prediction with the actual output, including punctuation and spaces. This edit–compile–run–observe cycle is the habit you will use throughout the course.\n\nStart with the three places where text can appear. Your source file contains instructions; the compiler may report an error while checking those instructions; the running program may print a line to standard output. These are separate events. For this example, a successful compile produces a program, and running that program prints exactly `Hello, Crabrix!` followed by a newline. The code does not display a window or return that greeting as the function's value. `println!` writes it to the output stream.\n\nRead the punctuation slowly. `fn` begins a function declaration, `main` is the entry point, `()` says it takes no parameters, and `{ ... }` surrounds its body. `let name = \"Crabrix\";` creates a binding. The semicolon ends that statement. Inside the quoted format string, `{name}` asks formatting to read the binding. Removing the exclamation mark changes the syntax into a call to a function named `println`, which this program has not defined. Removing the argument or misspelling the captured name causes a compile error. Neither mistake means that a previous successful run printed something new.\n\nTry one change at a time so the cause stays visible. First change only `Crabrix` to your name and predict the line. Then change `Hello` to `Welcome` and predict again. Finally make the format string refer to an unknown binding and read the compiler's primary diagnostic. Restore the code after that experiment. If the output surprises you, check which source version you actually built, whether compilation succeeded, and whether you are reading compiler messages or program output.",
+    "feedback": "The exclamation mark marks a macro invocation. `println!` expands at compile time, allowing Rust to check its format string and supplied values before execution.",
     "practiceCode": "fn main() {\n    println!(\"{}\", \"Crabrix\");\n}",
-    "question": "Why does println! end with an exclamation mark?",
-    "rule": "Execution begins in fn main(). println! is a compile-time-checked macro that writes a formatted line to stdout when the program runs.",
+    "question": "Why does `println!` end with an exclamation mark?",
+    "rule": "Execution begins in `fn` main(). `println!` is a compile-time-checked macro that writes a formatted line to stdout when the program runs.",
     "success": "The program exits with code 0 and stdout contains the greeting you predicted. After the deliberately broken placeholder, the compiler identifies the formatting mistake instead of producing new stdout.",
-    "summary": "A small Rust program gives you the whole development loop: write a function, let the compiler check it, run it, and inspect what appeared on stdout.",
+    "summary": "A small Rust program gives you the whole development loop: write a function, `let` the compiler check it, run it, and inspect what appeared on stdout.",
     "task": "Change the greeting and the name, then write down the exact output you predict. Run the project and compare stdout with your prediction. Try a mismatched format placeholder and notice that compilation stops before a new program runs."
   },
   "illustration": {

@@ -152,7 +152,7 @@ def render_rust(lesson: dict, output: Path) -> None:
     d.polygon([(582, rule_top - 35), (618, rule_top - 35), (600, rule_top - 10)], fill=CORAL)
     d.rounded_rectangle((78, rule_top, 1122, rule_top + 230), radius=28, fill=CARD, outline=MINT, width=3)
     d.text((120, rule_top + 23), "02  THE RULE", font=font(BOLD, 31), fill=MINT)
-    rule = lesson["writing"]["rule"]
+    rule = lesson["writing"]["rule"].replace("`", "")
     rule_size = 43
     while len(fit_lines(d, rule, font(FONT, rule_size), 955, 99)) > 3:
         rule_size -= 2
@@ -162,7 +162,7 @@ def render_rust(lesson: dict, output: Path) -> None:
     d.polygon([(582, observation_top - 35), (618, observation_top - 35), (600, observation_top - 10)], fill=CORAL)
     d.rounded_rectangle((78, observation_top, 1122, observation_top + 225), radius=28, fill=CARD, outline=CORAL, width=3)
     d.text((120, observation_top + 23), "03  WHAT IT SHOWS", font=font(BOLD, 31), fill=CORAL)
-    evidence = lesson["writing"]["exampleCaption"]
+    evidence = lesson["writing"]["exampleCaption"].replace("`", "")
     if evidence.strip().casefold() == lesson["writing"]["rule"].strip().casefold():
         evidence = lesson["depth"]["traceSteps"][-1]["detail"]
     paragraph(d, evidence, 120, observation_top + 80, 955, 40, WHITE, 3, 7)

@@ -1,6 +1,6 @@
 {
   "concept": "Notice a panic that may leave state inconsistent",
-  "contentDigest": "4eaf338cdc8d6359c052016d152dab35df5d56db748b591ebfecfc987c8b391f",
+  "contentDigest": "e0b9e0b007dae6ac6d3f9ae4e87bd7cd0d47d789f890f7831c544f304b6998d2",
   "depth": {
     "connections": [
       {
@@ -14,7 +14,7 @@
         "title": "Atomic State"
       }
     ],
-    "correction": "A standard Mutex becomes poisoned when a holder panics.",
+    "correction": "A standard `Mutex` becomes poisoned when a holder panics.",
     "misconception": "“The lock is slow”",
     "traceSteps": [
       {
@@ -47,11 +47,11 @@
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "use std::sync::Mutex;\nlet value = Mutex::new(7);\nmatch value.lock() {\n    Ok(guard) => println!(\"{guard}\"),\n    Err(poisoned) => {\n        println!(\"{}\", *poisoned.into_inner());\n    }\n}",
-    "explanation": "A standard Mutex becomes poisoned when a holder panics. Recovery is possible, but code must decide whether the protected invariant is still trustworthy instead of blindly ignoring the signal.\n\nA standard-library `Mutex` becomes poisoned if a thread panics while holding its guard. A subsequent `lock()` returns a `PoisonError` rather than silently claiming the protected state is sound. The bytes are still there, and the error can give access to the guard, but the application must decide whether its invariant survived. Poisoning is a warning about a possible inconsistency, not proof that the data is corrupt.\n\nImagine a bank ledger with two fields updated under one lock. If a panic occurs after subtracting from one field but before adding to the other, a future reader must not pretend the transfer completed. Recover only after checking or rebuilding the invariant. A cache whose entries are independently replaceable might be safe to clear and rebuild. A process-wide critical invariant may justify failing the operation instead. The right choice comes from the meaning of the state, not from a universal `unwrap()` habit.\n\nWrite a test in which a worker acquires a mutex and deliberately panics. Join that worker, then inspect the result of the next `lock()`. Separate the panic returned by `join()` from the poison returned by `lock()`: they are two observable events. Add a recovery branch that validates the stored data before clearing poison or continuing. Avoid putting fallible, unrelated work inside a critical section so the chance of leaving a half-updated invariant is smaller. Different mutex implementations have different poison semantics, so verify the actual API you use.",
+    "explanation": "A standard `Mutex` becomes poisoned when a holder panics. Recovery is possible, but code must decide whether the protected invariant is still trustworthy instead of blindly ignoring the signal.\n\nA standard-library `Mutex` becomes poisoned if a thread panics while holding its guard. A subsequent `lock()` returns a `PoisonError` rather than silently claiming the protected state is sound. The bytes are still there, and the error can give access to the guard, but the application must decide whether its invariant survived. Poisoning is a warning about a possible inconsistency, not proof that the data is corrupt.\n\nImagine a bank ledger with two fields updated under one lock. If a panic occurs after subtracting from one field but before adding to the other, a future reader must not pretend the transfer completed. Recover only after checking or rebuilding the invariant. A cache whose entries are independently replaceable might be safe to clear and rebuild. A process-wide critical invariant may justify failing the operation instead. The right choice comes from the meaning of the state, not from a universal `unwrap()` habit.\n\nWrite a test in which a worker acquires a mutex and deliberately panics. Join that worker, then inspect the result of the next `lock()`. Separate the panic returned by `join()` from the poison returned by `lock()`: they are two observable events. Add a recovery branch that validates the stored data before clearing poison or continuing. Avoid putting fallible, unrelated work inside a critical section so the chance of leaving a half-updated invariant is smaller. Different mutex implementations have different poison semantics, so verify the actual API you use.",
     "feedback": "Correct: A holder panicked.",
     "practiceCode": "use std::sync::Mutex;\nlet value = Mutex::new(7);\nmatch value.lock() {\n    Ok(guard) => println!(\"{guard}\"),\n    Err(poisoned) => {\n        println!(\"{}\", *poisoned.into_inner());\n    }\n}",
     "question": "What does poisoning report?",
-    "rule": "A standard Mutex becomes poisoned when a holder panics.",
+    "rule": "A standard `Mutex` becomes poisoned when a holder panics.",
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Notice a panic that may leave state inconsistent.",
     "task": "Trace the example, name the guarantee, and identify where it ends."

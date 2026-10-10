@@ -1,6 +1,6 @@
 {
   "concept": "/// doc comments and examples",
-  "contentDigest": "a17009a0fb5f5e174ab02fee92656be9ebdf78557d10dcf19503668a555fe05f",
+  "contentDigest": "33a30338f8b9e02278ab14f2f4fe7469dcab844b208db8b96b083cf3ff6f5261",
   "depth": {
     "connections": [
       {
@@ -45,12 +45,12 @@
       "It prints a warning but the test suite still passes"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "In a library crate named lesson_docs, cargo test compiles and runs this example.",
+    "exampleCaption": "In a library crate named lesson_docs, `cargo test` compiles and runs this example.",
     "exampleCode": "/// Returns the larger of two values.\n///\n/// # Examples\n///\n/// ```\n/// use lesson_docs::larger;\n/// assert_eq!(larger(2, 7), 7);\n/// ```\npub fn larger(a: i32, b: i32) -> i32 {\n    if a > b { a } else { b }\n}",
     "explanation": "/// documents the item that follows and //! documents the enclosing module or crate. Code blocks inside doc comments are compiled and executed by `cargo test`, so an example that drifts out of date fails the build instead of quietly misleading the next reader.\n\nComments are most useful when they preserve a reason the code alone cannot show. `//` is suitable for a local decision, such as why a limit exists or why a case is skipped. Repeating the next expression in English makes the reader maintain two copies of the same fact. If the code needs a long explanation of what it does, first see whether clearer names or a smaller function would help.\n\nDocumentation comments have a different audience. Place `///` immediately before an item to explain its purpose, parameters, return value, and conditions that matter to callers. Use `//!` for an overview of the containing module or crate. A short example makes the contract concrete: it should demonstrate a representative call and assert the expected result. In a Cargo project, `cargo test` runs valid Rust code blocks in documentation as doctests. A doctest is compiled separately, so it must import the documented public item through the crate's actual name or otherwise define everything it uses. A bare call to a library function without an import can fail even when the function itself is correct.\n\nFor the practice snippet, the assertion expects five while the function returns four. Predict the failure before running it, then fix the expectation and add an edge case such as zero. Keep an example short enough that a reader can verify the claim at a glance. If an example needs setup, hide only incidental setup lines with rustdoc's `#` marker; do not hide the behaviour being taught. Treat doc failures as feedback that either code or its promised behaviour changed.\n\nIn a published crate, write the actual crate import in the example so the doctest exercises the public function instead of a copy of its logic. Run the test after renaming an API as well as after changing its result.\n\nA comment should explain a decision the code cannot show, such as why a boundary is excluded or why a particular failure is safe to retry. Restating `count += 1` as 'increment count' adds little. Rust doc comments beginning with `///` attach documentation to an item, and fenced Rust examples in documentation can be compiled and tested by `cargo test` in a suitable crate. That lets an API example fail visibly when the API changes.\n\nWrite one doc comment for a small public function: what it returns, what happens on invalid input, and a short example using the actual crate path. Run its documentation test. Then deliberately change the function signature and see the example fail until you update it. Use ordinary `//` comments for local reasoning and reserve `///` for the contract readers need at the API boundary. Keep examples small enough that someone can copy them without guessing missing imports.",
     "feedback": "Doc examples are compiled and asserted, so a wrong example is a failing test.",
     "practiceCode": "/// Adds two numbers.\n///\n/// ```\n/// assert_eq!(add(2, 2), 5);\n/// ```\npub fn add(a: i32, b: i32) -> i32 { a + b }",
-    "question": "What happens when you run cargo test on that?",
+    "question": "What happens when you run `cargo test` on that?",
     "rule": "A doc example is a test, so documentation cannot silently rot.",
     "success": "The example states the behaviour and would fail if the code changed.",
     "summary": "Doc comments are compiled, and their examples are run as tests.",

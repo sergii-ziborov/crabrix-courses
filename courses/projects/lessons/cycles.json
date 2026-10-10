@@ -1,6 +1,6 @@
 {
   "concept": "Weak<T> and leaks Rust cannot prevent",
-  "contentDigest": "e97aa0b50ffd77b3cfe7b1c5c0993474e89f771f1c752953b35a15cab39e18b0",
+  "contentDigest": "3ea32ec1c91eb4aa59b4e11f5670a68ca4aeaf4bc004c823ee65b0350ccf0953",
   "depth": {
     "connections": [
       {
@@ -14,15 +14,15 @@
         "title": "Package Layout"
       }
     ],
-    "correction": "Weak does not keep a value alive, so upgrade() may return None.",
-    "misconception": "“A Weak link is cheaper to clone than an Rc”",
+    "correction": "Weak does not keep a value alive, so upgrade() may return `None`.",
+    "misconception": "“A Weak link is cheaper to clone than an `Rc`”",
     "traceSteps": [
       {
         "detail": "Separate source modules, public API, manifest data, dependency graph, and build evidence before changing any one of them.",
         "title": "Map the project boundary"
       },
       {
-        "detail": "Explain where a parent pointer should be Weak rather than Rc.",
+        "detail": "Explain where a parent pointer should be Weak rather than `Rc`.",
         "title": "Predict before checking"
       },
       {
@@ -47,14 +47,14 @@
     "correctAnswer": 1,
     "exampleCaption": "The child points back with Weak, so the cycle never forms.",
     "exampleCode": "use std::cell::RefCell;\nuse std::rc::{Rc, Weak};\n\nstruct Node {\n    value: i32,\n    parent: RefCell<Weak<Node>>,\n    children: RefCell<Vec<Rc<Node>>>,\n}\n\nlet leaf = Rc::new(Node {\n    value: 3,\n    parent: RefCell::new(Weak::new()),\n    children: RefCell::new(vec![]),\n});\nlet parent = leaf.parent.borrow().upgrade();\nprintln!(\"has parent {:?}\", parent.is_some());",
-    "explanation": "Two Rc handles pointing at each other never reach a count of zero, so neither is freed. Weak<T> is the answer: it does not count towards ownership and must be upgraded before use, which turns a parent pointer into something that can legitimately be gone.\n\nReference counting releases an allocation only when its strong count reaches zero. If node A owns an `Rc` to B and B owns an `Rc` back to A, each keeps the other alive after all outside handles are dropped. Rust prevents memory unsafety here, but the allocations leak. A graph needs a deliberate ownership direction, not strong links in every direction.\n\nA common tree design lets a parent own children through strong `Rc` handles while each child keeps a `Weak` reference back to its parent. A weak reference does not keep the parent alive. `upgrade()` returns an `Option<Rc<T>>`, because the parent may have been dropped. That absence is a normal state to handle, not an exceptional failure. In the sample, use `Rc::downgrade` when storing the parent link and check the result before reading through it.\n\nDraw two nodes and label the strong links before writing code. Remove all external owners on paper: if every node still has an incoming strong link from within the cycle, cleanup cannot begin. Replace one direction with weak links and repeat the count. For practice, create a parent and child, then drop the parent and verify that upgrading the child's weak parent link returns `None` if the child is still held externally. The lesson is not to avoid shared ownership entirely, but to make the owning direction explicit.\n\nWeak references can also be used for caches that should not keep objects alive. The caller must accept that `upgrade()` may return `None`; a weak link is a question about whether the target still exists, not an ownership guarantee. Draw strong and weak edges with different arrows during review.",
+    "explanation": "Two `Rc` handles pointing at each other never reach a count of zero, so neither is freed. Weak<T> is the answer: it does not count towards ownership and must be upgraded before use, which turns a parent pointer into something that can legitimately be gone.\n\nReference counting releases an allocation only when its strong count reaches zero. If node A owns an `Rc` to B and B owns an `Rc` back to A, each keeps the other alive after all outside handles are dropped. Rust prevents memory unsafety here, but the allocations leak. A graph needs a deliberate ownership direction, not strong links in every direction.\n\nA common tree design lets a parent own children through strong `Rc` handles while each child keeps a `Weak` reference back to its parent. A weak reference does not keep the parent alive. `upgrade()` returns an `Option<Rc<T>>`, because the parent may have been dropped. That absence is a normal state to handle, not an exceptional failure. In the sample, use `Rc::downgrade` when storing the parent link and check the result before reading through it.\n\nDraw two nodes and label the strong links before writing code. Remove all external owners on paper: if every node still has an incoming strong link from within the cycle, cleanup cannot begin. Replace one direction with weak links and repeat the count. For practice, create a parent and child, then drop the parent and verify that upgrading the child's weak parent link returns `None` if the child is still held externally. The lesson is not to avoid shared ownership entirely, but to make the owning direction explicit.\n\nWeak references can also be used for caches that should not keep objects alive. The caller must accept that `upgrade()` may return `None`; a weak link is a question about whether the target still exists, not an ownership guarantee. Draw strong and weak edges with different arrows during review.",
     "feedback": "Ownership should flow one way; the back-reference observes without owning.",
     "practiceCode": "let parent = Rc::new(Node::new());\nlet child = Rc::new(Node::new());\n// child.parent = Rc::clone(&parent);",
     "question": "Why should the parent link be Weak?",
-    "rule": "Weak does not keep a value alive, so upgrade() may return None.",
+    "rule": "Weak does not keep a value alive, so upgrade() may return `None`.",
     "success": "You can name which direction owns and which merely observes.",
     "summary": "Rust prevents data races, not leaks — a cycle can still strand memory.",
-    "task": "Explain where a parent pointer should be Weak rather than Rc."
+    "task": "Explain where a parent pointer should be Weak rather than `Rc`."
   },
   "illustration": {
     "path": "media/cycles.png",

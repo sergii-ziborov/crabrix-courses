@@ -1,6 +1,6 @@
 {
   "concept": "Why async needs an executor",
-  "contentDigest": "62a52f61f95d5559828e2c3b2ddc68a690d9f95496a04aca0586d574215c5f39",
+  "contentDigest": "6053a7583111a746b91f8b9f665353ac6b08a83316f97ca4dee62a15964db64b",
   "depth": {
     "connections": [
       {
@@ -14,7 +14,7 @@
         "title": "Async Patterns"
       }
     ],
-    "correction": "std defines Future; the executor is a library decision.",
+    "correction": "std defines `Future`; the executor is a library decision.",
     "misconception": "“main is not allowed to print before awaiting”",
     "traceSteps": [
       {
@@ -30,7 +30,7 @@
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Add a second worker or cancellation point. Draw two possible event orders and state the invariant that both orders must preserve. Keep the focus on why async needs an executor."
+    "transferChallenge": "Add a second worker or cancellation point. Draw two possible event orders and state the invariant that both orders must preserve. Keep the focus on why `async` needs an executor."
   },
   "exerciseKind": "planned",
   "id": "async-runtime",
@@ -47,13 +47,13 @@
     "correctAnswer": 1,
     "exampleCaption": "The runtime attribute is what actually polls the future to completion.",
     "exampleCode": "// Cargo.toml\n// tokio = { version = \"1\", features = [\"full\"] }\n\n#[tokio::main]\nasync fn main() {\n    let value = compute().await;\n    println!(\"{value}\");\n}\n\nasync fn compute() -> u32 { 42 }",
-    "explanation": "The language defines Future and .await; polling, timers, and I/O readiness come from a runtime you choose, such as tokio or async-std. That keeps async usable on an embedded target with no allocator, at the cost of one decision you have to make per project.\n\nRust's language and standard library define `Future` and `.await`, but a program needs an executor to poll futures and often a runtime to provide timers, sockets, and task spawning. Tokio is a common choice, but an async function is not inherently tied to one runtime. A library should be clear about whether it uses runtime-specific I/O types or exposes runtime-neutral futures. The decision affects how easily callers can integrate it.\n\nThe runtime schedules ready tasks; it cannot make blocking code magically nonblocking. A synchronous file operation or long CPU loop inside an async task can occupy an executor worker and delay unrelated tasks. Use the runtime's dedicated blocking facility for genuinely blocking work, and measure when offloading is worthwhile. Also know who owns spawned tasks: dropping a join handle does not necessarily cancel the task, depending on the runtime API. Cancellation and shutdown behavior belong in the program's design.\n\nCreate a minimal program with an async entry point and an awaited timer. Then remove the runtime wrapper and inspect the compiler or execution setup needed to drive the future. Add a second task and observe that scheduling depends on await points. When choosing a runtime for a project, check required I/O, platform support, footprint, and shutdown semantics. For embedded or restricted targets, the executor can be much smaller than a server runtime, but you still need a concrete way to poll and wake futures.\n\nAn executor and an operating-system event source solve different problems: one chooses which ready future to poll, while the other reports that I/O is ready. A runtime often bundles both. This separation explains why creating a future is cheap but actually driving a network request requires runtime services.",
+    "explanation": "The language defines `Future` and .`await`; polling, timers, and I/O readiness come from a runtime you choose, such as tokio or `async`-std. That keeps `async` usable on an embedded target with no allocator, at the cost of one decision you have to make per project.\n\nRust's language and standard library define `Future` and `.await`, but a program needs an executor to poll futures and often a runtime to provide timers, sockets, and task spawning. Tokio is a common choice, but an `async` function is not inherently tied to one runtime. A library should be clear about whether it uses runtime-specific I/O types or exposes runtime-neutral futures. The decision affects how easily callers can integrate it.\n\nThe runtime schedules ready tasks; it cannot make blocking code magically nonblocking. A synchronous file operation or long CPU loop inside an `async` task can occupy an executor worker and delay unrelated tasks. Use the runtime's dedicated blocking facility for genuinely blocking work, and measure when offloading is worthwhile. Also know who owns spawned tasks: dropping a join handle does not necessarily cancel the task, depending on the runtime API. Cancellation and shutdown behavior belong in the program's design.\n\nCreate a minimal program with an `async` entry point and an awaited timer. Then remove the runtime wrapper and inspect the compiler or execution setup needed to drive the future. Add a second task and observe that scheduling depends on `await` points. When choosing a runtime for a project, check required I/O, platform support, footprint, and shutdown semantics. For embedded or restricted targets, the executor can be much smaller than a server runtime, but you still need a concrete way to poll and wake futures.\n\nAn executor and an operating-system event source solve different problems: one chooses which ready future to poll, while the other reports that I/O is ready. A runtime often bundles both. This separation explains why creating a future is cheap but actually driving a network request requires runtime services.",
     "feedback": "Something has to drive the future, and that something is the runtime.",
     "practiceCode": "async fn main() {\n    println!(\"hi\");\n}",
     "question": "Why is that not a valid program entry point?",
-    "rule": "std defines Future; the executor is a library decision.",
+    "rule": "std defines `Future`; the executor is a library decision.",
     "success": "You can name polling, waking, and I/O readiness as runtime concerns.",
-    "summary": "Rust ships the async syntax but not the engine that drives it.",
+    "summary": "Rust ships the `async` syntax but not the engine that drives it.",
     "task": "Describe what the runtime provides that the language does not."
   },
   "illustration": {
