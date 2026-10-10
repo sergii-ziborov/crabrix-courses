@@ -6,6 +6,8 @@ The baseline contains 48 units and 742 lessons, including the 200-pattern Algori
 
 All 742 lessons have expanded explanations and worked guidance: 142 Rust lessons and 600 Algorithm Atlas steps. Every other lesson has a generated infographic with alt text and a caption. Atlas uses two five-pattern diagrams per unit, so 40 images illustrate 300 steps without duplicating the same image in the downloadable pack. The [free Learn website](https://crabrix.com/learn/) presents the same authored curriculum. App downloads use production-signed CoursePacks; each changed course receives a new content version and descriptor.
 
+The corrected Printing Values graphic has an editable SVG source at `artwork/print-formatting.svg`; `courses/basics/media/print-formatting.png` is its packaged raster export.
+
 ## Format and delivery
 
 Each course is authored under `courses/<id>/` and packaged as one CoursePack v1 ZIP. `manifest.json` inventories every payload file by byte length and SHA-256; it never hashes itself. An external signed descriptor binds the archive digest, version, compatibility, and course identity. The separately signed catalog has a monotonic sequence. Ed25519 signs exact payload bytes with distinct descriptor and catalog prefixes.
@@ -21,9 +23,9 @@ python3 tools/coursepack.py inventory --baseline migration/baseline-inventory.js
 python3 tools/coursepack.py validate --courses courses/ --schema schemas/
 python3 tools/coursepack.py build --courses courses/ --out dist/ --deterministic
 python3 tools/coursepack.py parity --legacy migration/baseline-inventory.json --packages dist/ --out migration/parity-report-current.json
-python3 tools/coursepack.py verify --descriptor dist/basics.descriptor.json --archive dist/basics-1.0.2.zip --keys keys/production-keyring.json
+python3 tools/coursepack.py verify --descriptor dist/basics.descriptor.json --archive dist/basics-1.0.3.zip --keys keys/production-keyring.json
 python3 tools/coursepack.py verify --descriptor dist/examples.descriptor.json --archive dist/examples-1.0.2.zip --keys keys/production-keyring.json
-python3 tools/coursepack.py verify-catalog --catalog catalog.v1.json --keys keys/production-keyring.json --last-sequence 5
+python3 tools/coursepack.py verify-catalog --catalog catalog.v1.json --keys keys/production-keyring.json --last-sequence 6
 python3 -m unittest discover -s tests
 ```
 
