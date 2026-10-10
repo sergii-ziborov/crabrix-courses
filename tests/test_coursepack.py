@@ -20,6 +20,24 @@ class CoursePackTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0, result.stdout)
         return result
 
+    def test_every_academy_lesson_has_a_readable_infographic(self):
+        count = 0
+        for course in (ROOT / "courses").iterdir():
+            lesson_dir = course / "lessons"
+            if not lesson_dir.is_dir():
+                continue
+            for path in lesson_dir.glob("*.json"):
+                lesson = json.loads(path.read_text(encoding="utf-8"))
+                illustration = lesson.get("illustration")
+                self.assertIsNotNone(illustration, path.name)
+                self.assertTrue(illustration["alt"].strip(), path.name)
+                self.assertTrue(illustration["caption"].strip(), path.name)
+                image = course / illustration["path"]
+                self.assertTrue(image.is_file(), image)
+                self.assertEqual(image.read_bytes()[:8], b"\x89PNG\r\n\x1a\n", image)
+                count += 1
+        self.assertEqual(count, 742)
+
     def test_full_parity(self):
         with tempfile.TemporaryDirectory() as temporary:
             report = Path(temporary) / "parity.json"
@@ -52,7 +70,12 @@ class CoursePackTests(unittest.TestCase):
     def test_catalog_rollback(self):
         catalog = ROOT / "catalog.v1.json"
         keys = ROOT / "keys/production-keyring.json"
-        sequence = json.loads((ROOT / "catalog.v1.payload.json").read_text())["sequence"]
+        from sys import path as python_path
+        python_path.insert(0, str(ROOT / "tools"))
+        from coursepack import CATALOG_DOMAIN, verify_signature
+        signed = json.loads(catalog.read_text())
+        sequence = json.loads(verify_signature(signed, CATALOG_DOMAIN,
+                                               json.loads(keys.read_text())))["sequence"]
         self.command("verify-catalog", "--catalog", catalog, "--keys", keys,
                      "--last-sequence", str(sequence - 1))
         self.command("verify-catalog", "--catalog", catalog, "--keys", keys,
