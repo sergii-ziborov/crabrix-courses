@@ -55,3 +55,14 @@ The file layout and invariants are described in [MIGRATION.md](MIGRATION.md) and
 ## Rights
 
 The tools and schemas are MIT licensed under [LICENSE](LICENSE). Course texts, checks, projects, and assets remain author owned under [CONTENT-LICENSE.md](CONTENT-LICENSE.md); public access is not an MIT grant for the corpus. Contributions follow [CONTRIBUTING.md](CONTRIBUTING.md).
+
+The [website license library](https://crabrix.com/licenses/) and the native
+app’s Settings → About Crabrix show the same educational content rights.
+[CONTENT-LICENSE.md](CONTENT-LICENSE.md) permits copying, editing, compiling
+and running supplied examples and starters for private practice, including
+private backups. It reserves redistribution of the authored teaching corpus.
+The app and website code have a separate source-available license; runtime,
+compiler and third-party notices keep their original open-source terms.
+[Privacy](https://crabrix.com/privacy/) and [Terms](https://crabrix.com/terms/)
+distinguish the account-free native app from the free website Academy account.
+Public signed native CoursePacks remain available on GitHub by design.
