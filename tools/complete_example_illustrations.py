@@ -10,6 +10,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path("."))
     parser.add_argument("--version", required=True, help="New Examples content version")
+    parser.add_argument("--revision", help="Description of this content revision")
     args = parser.parse_args()
     root = args.root / "courses/examples"
     prompts = json.loads((args.root / "artwork/examples/imagegen-prompts.json").read_text())
@@ -35,8 +36,8 @@ def main():
         value = json.loads(path.read_text())
         value["contentVersion"] = args.version
         value["contentDigest" if name == "course.json" else "editorialDigest"] = digest
-        if name == "provenance.json":
-            value["editorialRevision"] = "All 46 examples have distinct infographics with accessible captions; 42 added through ImageGen. Corrected two guide descriptions against unchanged Rust sources."
+        if name == "provenance.json" and args.revision:
+            value["editorialRevision"] = args.revision
         path.write_text(json.dumps(value, ensure_ascii=False, sort_keys=True, indent=2) + "\n")
     print(f"Examples {args.version}: all 46 illustrations attached; editorial digest", digest)
 

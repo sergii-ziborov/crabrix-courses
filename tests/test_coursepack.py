@@ -38,13 +38,21 @@ class CoursePackTests(unittest.TestCase):
                 count += 1
         self.assertEqual(count, 742)
 
-    def test_full_parity(self):
+    def test_migration_parity_reports_only_authored_constellation_revision(self):
         with tempfile.TemporaryDirectory() as temporary:
             report = Path(temporary) / "parity.json"
             self.command("parity", "--legacy", "migration/baseline-inventory.json",
-                         "--packages", "dist", "--out", report)
+                         "--packages", "dist", "--out", report, ok=False)
             result = json.loads(report.read_text())
-            self.assertTrue(result["passed"])
+            # Keep the original migration baseline immutable. The requested new
+            # renderer must be visible as a source change, never silently waived.
+            self.assertFalse(result["passed"])
+            self.assertEqual(result["missing"], [])
+            self.assertEqual(result["unexpected"], [])
+            self.assertEqual(result["unapprovedChanges"], {"showcaseProjects": [
+                "$[2].concepts.length", "$[2].contentDigest", "$[2].detail",
+                "$[2].project.files.src/main.rs",
+            ]})
             self.assertEqual(result["totals"]["lessons"], 742)
 
     def test_build_is_byte_identical(self):
@@ -82,7 +90,10 @@ class CoursePackTests(unittest.TestCase):
                      "--last-sequence", str(sequence), ok=False)
 
     def test_examples_are_separate_and_each_has_a_readme(self):
-        with zipfile.ZipFile(ROOT / "dist/examples-1.0.2.zip") as archive:
+        envelope = json.loads((ROOT / "dist/examples.descriptor.json").read_text())
+        descriptor = json.loads(base64.b64decode(envelope["payloadBase64"]))
+        archive_path = ROOT / "dist" / descriptor["archiveName"]
+        with zipfile.ZipFile(archive_path) as archive:
             files = set(archive.namelist())
             ids = {path.split("/")[1] for path in files if path.startswith("library-projects/")}
             self.assertEqual(len(ids), 46)
@@ -94,15 +105,19 @@ class CoursePackTests(unittest.TestCase):
                 self.assertIn(b"## What to notice", archive.read(prefix + "README.md"))
                 self.assertIn(b"## How it works", archive.read(prefix + "README.md"))
                 self.assertGreaterEqual(len(archive.read(prefix + "README.md").split()), 140)
+                project = json.loads(archive.read(prefix + "project.json"))
+                illustration = project["illustration"]
+                self.assertEqual(illustration["path"], f"media/{example_id}.png")
+                self.assertTrue(illustration["alt"].strip())
+                self.assertTrue(illustration["caption"].strip())
             self.assertEqual(
                 {name for name in files if name.startswith("media/")},
-                {f"media/{name}.png" for name in (
-                    "ferris-pixel-art", "run-length-encoder", "maze-bfs", "mandelbrot-canvas")}
+                {f"media/{example_id}.png" for example_id in ids}
             )
         with zipfile.ZipFile(ROOT / "dist/projects-1.0.2.zip") as archive:
             self.assertFalse(any(name.startswith("library-projects/") for name in archive.namelist()))
         self.command("verify", "--descriptor", "dist/examples.descriptor.json",
-                     "--archive", "dist/examples-1.0.2.zip",
+                     "--archive", archive_path,
                      "--keys", "keys/production-keyring.json")
 
     def test_signature_domain_separation(self):
