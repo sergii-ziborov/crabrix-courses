@@ -8,6 +8,8 @@ All 742 lessons have expanded explanations, worked guidance, and an infographic 
 
 The sequence-10 catalog adds the complete illustrated Examples 1.0.3 gallery and retains the seven curriculum packs from sequence 9. Those packs include consistent inline Rust markup and corrected rustdoc guidance. Algorithm Atlas challenge explanations and trace steps keep their expected output behind the answer reveal. `tools/mark_inline_code.py --check` and `tests/test_editorial_quality.py` guard markup balance, illustration coverage, and challenge-answer visibility. These structural checks do not replace a full human review of all 742 explanations.
 
+The [native Examples delivery verification](https://github.com/sergii-ziborov/Crabrix/blob/main/docs/examples-infographics-2026-10-11.md) records manual Xcode Cloud run 55: three tests passed, none failed or skipped. The production 1.0.2 → 1.0.3 update decodes all 46 illustrations and preserves an edited My Projects copy and its original version provenance.
+
 The corrected Printing Values graphic has an editable SVG source at `artwork/print-formatting.svg`; `courses/basics/media/print-formatting.png` is its packaged raster export.
 
 ## Format and delivery
