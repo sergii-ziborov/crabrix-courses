@@ -1,6 +1,7 @@
 """Regression checks for lesson code markup and Atlas answer reveals."""
 
 import json
+import hashlib
 import unittest
 from pathlib import Path
 
@@ -9,6 +10,31 @@ COURSES = Path(__file__).resolve().parents[1] / "courses"
 
 
 class EditorialQualityTests(unittest.TestCase):
+    def test_every_example_has_its_own_packaged_infographic(self):
+        root = COURSES / "examples"
+        projects = sorted((root / "library-projects").glob("*/project.json"))
+        self.assertEqual(len(projects), 46)
+        paths, hashes = set(), set()
+        for metadata in projects:
+            project = json.loads(metadata.read_text(encoding="utf-8"))
+            with self.subTest(example=project["id"]):
+                illustration = project.get("illustration")
+                self.assertIsNotNone(illustration)
+                expected = f"media/{project['id']}.png"
+                self.assertEqual(illustration["path"], expected)
+                self.assertTrue(illustration["alt"].strip())
+                self.assertTrue(illustration["caption"].strip())
+                image = (root / expected).read_bytes()
+                self.assertEqual(image[:8], b"\x89PNG\r\n\x1a\n")
+                width = int.from_bytes(image[16:20], "big")
+                height = int.from_bytes(image[20:24], "big")
+                self.assertGreaterEqual(width, 800)
+                self.assertGreaterEqual(height, 500)
+                paths.add(expected)
+                hashes.add(hashlib.sha256(image).hexdigest())
+        self.assertEqual(len(hashes), 46, "Each example needs a distinct teaching image")
+        self.assertEqual(paths, {p.relative_to(root).as_posix() for p in (root / "media").glob("*")})
+
     def test_all_lessons_have_illustrations_and_balanced_prose_code(self):
         paths = sorted(COURSES.glob("*/lessons/*.json"))
         self.assertEqual(len(paths), 742)

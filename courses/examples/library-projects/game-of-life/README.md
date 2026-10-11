@@ -8,7 +8,7 @@ Each cell of a grid changes according to its neighbors. Find the neighbor count 
 
 ## How it works
 
-A fixed 32 by 16 boolean array holds the current generation. `step` creates a second array, counts eight neighbors for each cell, and applies survival or birth rules before swapping the next grid into place. The source starts with a glider and prints four generations. The neighbor arithmetic uses modulo to wrap at edges, although its horizontal negative-offset constant is based on `HEIGHT`; compare left-edge behavior carefully if you extend it. The separate output grid prevents one updated cell from influencing another during the same step.
+A fixed 32 by 16 boolean array holds the current generation. `step` creates a second array, counts eight neighbors for each cell, and applies survival or birth rules before swapping the next grid into place. The source starts with a glider and prints four generations. Neighbor arithmetic wraps rows modulo `HEIGHT` and columns modulo `WIDTH`; the grid therefore has no fixed outer boundary. The separate output grid prevents one updated cell from influencing another during the same step.
 
 ## Concepts
 
