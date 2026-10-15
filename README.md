@@ -14,6 +14,8 @@ The sequence-11 catalog includes Examples 1.0.4 with the improved Constellation 
 
 The [native Examples delivery verification](https://github.com/sergii-ziborov/Crabrix/blob/main/docs/examples-infographics-2026-10-11.md) records manual Xcode Cloud run 55: three tests passed, none failed or skipped. The production 1.0.2 → 1.0.3 update decodes all 46 illustrations and preserves an edited My Projects copy and its original version provenance.
 
+The [Constellation Generator 1.0.4 verification](https://github.com/sergii-ziborov/Crabrix/blob/f474985e179ecb6c63bd16fd54229903ae077287/docs/constellation-generator-2026-10-11.md) records manual Xcode Cloud run 56: four tests passed with no failures or skips. The app's bundled Rust compiler produced valid repeatable canvas output, a changed seed changed the pixels, and the production upgrade preserved an edited Constellation Generator copy.
+
 The corrected Printing Values graphic has an editable SVG source at `artwork/print-formatting.svg`; `courses/basics/media/print-formatting.png` is its packaged raster export.
 
 ## Format and delivery
