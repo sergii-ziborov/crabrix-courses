@@ -1,5 +1,12 @@
 # Changelog
 
+## 20 October 2026 — Interview 1.0.6 follow-up
+
+Correct buffering and dynamic-dispatch rules, questions and complete worked
+examples. Replace the one-syscall-per-buffer infographic with an accurate
+ImageGen diagram. Catalog sequence 13 changes only Interview, retaining the
+Basics 1.0.6 and Systems 1.0.5 assets from sequence 12.
+
 ## Catalog sequence 5 — 2026-10-03
 
 - Published Examples CoursePack 1.0.2 with a code-specific How it works section in every one of the 46 project guides. Each README now has at least 140 words.
