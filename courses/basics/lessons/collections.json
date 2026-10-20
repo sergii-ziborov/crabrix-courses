@@ -1,6 +1,6 @@
 {
   "concept": "Vec, String, and HashMap",
-  "contentDigest": "2c9ad8940a57655e255368f94763eaf32ce616235431cbc08583836b9e500d83",
+  "contentDigest": "4c3a7d6ed1a1a0885720a569a04fa04f9d47b78477387d01a121fb490ee37246",
   "depth": {
     "connections": [
       {
@@ -18,16 +18,16 @@
     "misconception": "“It is shorter to type than a match on get()”",
     "traceSteps": [
       {
-        "detail": "Name each value's type and starting value, then mark the expression that produces the lesson's result.",
-        "title": "Inventory the values"
+        "title": "Trace the input",
+        "detail": "Read rust, crab, rust. Predict rust twice, crab once, and two distinct keys."
       },
       {
-        "detail": "Count repeated words with a `HashMap` entry.",
-        "title": "Predict before checking"
+        "title": "Follow the slot",
+        "detail": "For each token, inspect the mutable count returned by `entry(word).or_insert(0)` and update that stored value."
       },
       {
-        "detail": "The map holds the correct count for every word.",
-        "title": "Compare with evidence"
+        "title": "Choose report order",
+        "detail": "Sort rows by key before printing. Verify crab: 1 followed by rust: 2; HashMap iteration itself has no stable order."
       }
     ],
     "transferChallenge": "Change one value, type, or boundary in the sample. Write the exact stdout or diagnostic you expect before asking rustc. Keep the focus on vec, string, and hashmap."
@@ -45,11 +45,11 @@
       "It keeps the map sorted by insertion order"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "entry inserts a default only when the key is missing.",
-    "exampleCode": "use std::collections::HashMap;\n\nlet mut counts: HashMap<&str, u32> =\n    HashMap::new();\nfor word in text.split_whitespace() {\n    *counts.entry(word).or_insert(0) += 1;\n}",
-    "explanation": "Choosing a collection is part of the model, not an afterthought: order, uniqueness, and key access all change what your code can promise. Each of these owns its data, so passing one around follows exactly the same ownership rules as any other value.\n\nChoose a collection by the operations the program promises. `Vec<T>` preserves an ordered sequence and supports indexed access; appending is a natural operation. `HashMap<K, V>` associates keys with values and is useful for lookup or counting, but its iteration order is not a stable presentation order. A `String` owns UTF-8 text rather than an arbitrary sequence of characters. Naming the data structure early keeps later code from relying on an accidental property, such as hash iteration looking sorted in one run.\n\nThe `entry` API handles the common \"insert if missing, then update\" operation in one lookup. `counts.entry(word).or_insert(0)` returns a mutable reference to the existing count or to a newly inserted zero. Dereferencing it lets the code increment the stored value. In contrast, trying to call `get` while inserting into the same map often runs into borrowing conflicts, and doing separate lookup and insert work can be more verbose. Read the type of the returned reference to see why `*count += 1` is needed.\n\nFor practice, count words in a short sentence with one repeated word. Print the count for a known key and use `get` to handle an unknown key safely. Then sort the keys before displaying all counts if predictable output matters. Consider ownership as well: keys borrowed from a longer-lived input can be `&str`; keys assembled while parsing may need owned `String` values. The collection's shape, lookup behavior, and ownership together define the data model.\n\nPick a collection from the operations you need. `Vec<T>` keeps an ordered, growable sequence and is good for iteration and indexing. `HashMap<K, V>` associates keys with values and supports expected fast lookup, with hashing and memory overhead. `String` owns UTF-8 text and can grow. They all own their elements or bytes, so borrowing an element is different from removing or moving it.\n\nStart with a list of names. If you need to preserve their order and print every name, use a vector. If you need to find one name by a unique ID repeatedly, consider a map. Add a duplicate key to a map and observe whether insertion replaces an earlier value. Then inspect the return type of `get`: it may be absent, and a returned reference remains tied to the collection. Choose the data structure after writing down required operations, expected input size, and whether order matters.",
-    "feedback": "entry avoids a second lookup and the borrow conflict that comes with it.",
-    "practiceCode": "let mut map = HashMap::new();\nmap.insert(\"a\", map.get(\"a\").unwrap_or(&0) + 1);",
+    "exampleCaption": "The complete program counts three tokens into two keys, then sorts rows for stable output: crab 1, rust 2.",
+    "exampleCode": "use std::collections::HashMap;\nlet text = \"rust crab rust\";\nlet mut counts: HashMap<&str, usize> = HashMap::new();\nfor word in text.split_whitespace() {\n    *counts.entry(word).or_insert(0) += 1;\n}\nassert_eq!(counts.get(\"rust\"), Some(&2));\nassert_eq!(counts.get(\"crab\"), Some(&1));\nlet mut rows: Vec<_> = counts.iter().collect();\nrows.sort_unstable_by_key(|(word, _)| **word);\nfor (word, count) in rows { println!(\"{word}: {count}\"); }",
+    "explanation": "Choosing a collection is part of the model, not an afterthought: order, uniqueness, and key access all change what your code can promise. Each of these owns its data, so passing one around follows exactly the same ownership rules as any other value.\n\nChoose a collection by the operations the program promises. `Vec<T>` preserves an ordered sequence and supports indexed access; appending is a natural operation. `HashMap<K, V>` associates keys with values and is useful for lookup or counting, but its iteration order is not a stable presentation order. A `String` owns UTF-8 text rather than an arbitrary sequence of characters. Naming the data structure early keeps later code from relying on an accidental property, such as hash iteration looking sorted in one run.\n\nThe `entry` API handles the common \"insert if missing, then update\" operation in one lookup. `counts.entry(word).or_insert(0)` returns a mutable reference to the existing count or to a newly inserted zero. Dereferencing it lets the code increment the stored value. Separate `get` and `insert` operations can repeat lookup work. Some nested method-call forms compile under modern Rust borrowing rules; do not assume they always cause a borrow error. The useful distinction is that `entry` directly expresses one keyed slot and returns mutable access to its stored value. Read the type of the returned reference to see why `*count += 1` is needed.\n\nFor practice, count words in a short sentence with one repeated word. Print the count for a known key and use `get` to handle an unknown key safely. Then sort the keys before displaying all counts if predictable output matters. Consider ownership as well: keys borrowed from a longer-lived input can be `&str`; keys assembled while parsing may need owned `String` values. The collection's shape, lookup behavior, and ownership together define the data model.\n\nPick a collection from the operations you need. `Vec<T>` keeps an ordered, growable sequence and is good for iteration and indexing. `HashMap<K, V>` associates keys with values and supports expected fast lookup, with hashing and memory overhead. `String` owns UTF-8 text and can grow. They all own their elements or bytes, so borrowing an element is different from removing or moving it.\n\nStart with a list of names. If you need to preserve their order and print every name, use a vector. If you need to find one name by a unique ID repeatedly, consider a map. Add a duplicate key to a map and observe whether insertion replaces an earlier value. Then inspect the return type of `get`: it may be absent, and a returned reference remains tied to the collection. Choose the data structure after writing down required operations, expected input size, and whether order matters.",
+    "feedback": "`entry` exposes the occupied or vacant slot and returns mutable access to its value. It does not sort the map, and separate lookup/insertion is not inherently a compiler error.",
+    "practiceCode": "use std::collections::HashMap;\nlet text = \"red blue red\";\nlet mut counts: HashMap<&str, usize> = HashMap::new();\nfor word in text.split_whitespace() {\n    // TODO: use entry(word).or_insert(0) and increment the stored value.\n    let _ = word;\n}\nprintln!(\"{:?}\", counts.get(\"red\"));",
     "question": "Why is entry() better here?",
     "rule": "`entry().or_insert()` gives you a mutable reference either way.",
     "success": "The map holds the correct count for every word.",

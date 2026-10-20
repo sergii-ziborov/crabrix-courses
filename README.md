@@ -18,6 +18,24 @@ The [Constellation Generator 1.0.4 verification](https://github.com/sergii-zibor
 
 The corrected Printing Values graphic has an editable SVG source at `artwork/print-formatting.svg`; `courses/basics/media/print-formatting.png` is its packaged raster export.
 
+## Editorial review — 20 October 2026
+
+Rust Basics 1.0.6 corrects six existing lessons without changing lesson IDs:
+Numbers distinguishes lossy casts from memory unsafety; Operators explains
+configurable overflow checks; Collections has a complete, deterministic example
+and an accurate explanation of entry versus separate lookup/insertion; Strings
+consistently distinguishes bytes, Unicode scalar values and graphemes; Control
+Flow and Enums now declare the inputs used by their examples. The Strings
+infographic was replaced with a checked ImageGen diagram showing the exact café
+byte sequence and the decomposed accented letter.
+
+Systems 1.0.5 and Interview 1.0.5 update FFI declarations for Rust 2024, clarify
+foreign linking requirements and correct the C abs safety precondition. The
+Interview FFI infographic now explains ABI, layout, pointer validity and lifetime
+contracts. [Exact image prompts](artwork/review-20261020/imagegen-prompts.json)
+record both replacements. These changes are shared with the website; existing
+progress and edited project copies retain their stable IDs and storage.
+
 ## Format and delivery
 
 Each course is authored under `courses/<id>/` and packaged as one CoursePack v1 ZIP. `manifest.json` inventories every payload file by byte length and SHA-256; it never hashes itself. An external signed descriptor binds the archive digest, version, compatibility, and course identity. The separately signed catalog has a monotonic sequence. Ed25519 signs exact payload bytes with distinct descriptor and catalog prefixes.
