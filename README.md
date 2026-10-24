@@ -100,3 +100,7 @@ compiler and third-party notices keep their original open-source terms.
 [Privacy](https://crabrix.com/privacy/) and [Terms](https://crabrix.com/terms/)
 distinguish the account-free native app from the free website Academy account.
 Public signed native CoursePacks remain available on GitHub by design.
+
+## Current application workflow
+
+The [screenshot user guide](https://crabrix.com/guide/) explains the native compiler, prepared offline packages, build stages, local HTML/CSS/JavaScript preview and iPhone/iPad/Duo layouts. The [main application compatibility report](https://github.com/sergii-ziborov/Crabrix/blob/codex/compiler-output-practice-review/docs/offline-web-compatibility-2026-10-24.md) separates exact fixture outcomes from unverified capabilities. Package acquisition needs a connection for new archives; compilation and program execution remain on-device. The web preview does not supply TCP servers, native C toolchains, procedural macros or CUDA hardware.
