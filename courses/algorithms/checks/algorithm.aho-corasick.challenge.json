@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS aho-corasick\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"4\".to_string()",
-      "String::from(\"4\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.aho-corasick.challenge",
     "patternID": "aho-corasick",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return matched pattern count including overlaps.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Aho–Corasick\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Parse lowercase ASCII text and nonempty lowercase ASCII patterns. Count every pattern occurrence, including overlaps and simultaneous suffix matches.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement aho-corasick\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "4",
+        "kind": "visible",
         "input": "text=ahishers patterns=[he,she,his,hers]",
-        "kind": "visible"
+        "expectedAnswer": "4"
       },
       {
-        "expectedAnswer": "7",
+        "kind": "boundary",
         "input": "text=aaaa patterns=[a,aa]",
-        "kind": "boundary"
+        "expectedAnswer": "7"
       },
       {
-        "expectedAnswer": "7",
-        "input": "\ntext=aaaa patterns=[a,aa]\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "text=abc patterns=[x,y]",
+        "expectedAnswer": "0"
       },
       {
-        "expectedAnswer": "4",
+        "kind": "adversarial",
+        "input": "text=ababa patterns=[aba,ba]",
+        "expectedAnswer": "4"
+      },
+      {
+        "kind": "adversarial",
+        "input": "text=she patterns=[s,he,she]",
+        "expectedAnswer": "3"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \ntext=ahishers patterns=[he,she,his,hers]\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "4"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\ntext=she patterns=[s,he,she]\n",
+        "expectedAnswer": "3"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"text=ahishers patterns=[he,she,his,hers]\"#, r#\"4\"#),\n    (r#\"text=aaaa patterns=[a,aa]\"#, r#\"7\"#),\n    (r#\"\ntext=aaaa patterns=[a,aa]\n\"#, r#\"7\"#),\n    (r#\"  \ntext=ahishers patterns=[he,she,his,hers]\n  \"#, r#\"4\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS aho-corasick\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"text=ahishers patterns=[he,she,his,hers]\",\"4\"),\n        (\"text=aaaa patterns=[a,aa]\",\"7\"),\n        (\"text=abc patterns=[x,y]\",\"0\"),\n        (\"text=ababa patterns=[aba,ba]\",\"4\"),\n        (\"text=she patterns=[s,he,she]\",\"3\"),\n        (\"  \\ntext=ahishers patterns=[he,she,his,hers]\\n  \",\"4\"),\n        (\"\\ntext=she patterns=[s,he,she]\\n\",\"3\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS aho-corasick\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS aho-corasick\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"4\".to_string()",
-      "String::from(\"4\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

@@ -7,44 +7,44 @@
     "expectedAnswer": "4",
     "idea": "Record invalidated values separately and discard stale roots only when they surface.",
     "patternID": "lazy-heap-deletion",
-    "rustSketch": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "rustSketch": "fn valid_min(ops:&[&str])->i32 {\n    let mut heap=std::collections::BinaryHeap::new(); let mut deleted=std::collections::HashMap::<i32,usize>::new();\n    for op in ops {\n        if let Some(raw)=op.strip_prefix(\"push\") { heap.push(std::cmp::Reverse(raw.parse::<i32>().unwrap())); }\n        if let Some(raw)=op.strip_prefix(\"delete\") { *deleted.entry(raw.parse().unwrap()).or_default()+=1; }\n        while let Some(&std::cmp::Reverse(x))=heap.peek() {\n            let count=deleted.entry(x).or_default(); if *count==0 { break; } *count-=1; heap.pop();\n        }\n    }\n    heap.peek().unwrap().0\n}\n\nfn main() {\n    let result = valid_min(&[\"push4\",\"push7\",\"push2\",\"delete2\",\"min\"]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Apply the push/delete operations, then return the valid minimum requested by min.",
     "useCases": "sliding heaps and priority updates without handles",
     "visibleInput": "push4 push7 push2 delete2 min"
   },
   "concept": "sliding heaps and priority updates without handles",
-  "contentDigest": "03afba64f3a53ad84719235bac07c1b22f4319f2f398383450ff63b47c2d2e2f",
+  "contentDigest": "504ab0d83eccfb1142240c7918681dff0351488a37061ad678e1ae149fe006bd",
   "depth": {
     "connections": [
       {
-        "concept": "Record invalidated values separately and discard stale roots only when they surface.",
         "direction": "previous",
-        "title": "Lazy Heap Deletion: Mental Model"
+        "title": "Lazy Heap Deletion: Mental Model",
+        "concept": "Record invalidated values separately and discard stale roots only when they surface."
       },
       {
-        "concept": "Apply the push/delete operations, then return the valid minimum requested by min.",
         "direction": "next",
-        "title": "Challenge: Lazy Heap Deletion"
+        "title": "Challenge: Lazy Heap Deletion",
+        "concept": "Apply the push/delete operations, then return the valid minimum requested by min."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "Heap access does not directly locate arbitrary values. Push 4,7,2, then delete 2. Mark one occurrence of 2 stale; when it reaches the top, prune it and expose 4. Duplicate values require deletion counts so deleting one 1 does not remove every stored 1.",
+    "misconception": "“Deleted values may still be returned by min”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `push4 push7 push2 delete2 min`, write the state before the first update. Explain how it represents this claim: Record invalidated values separately and discard stale roots only when they surface. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded."
+        "title": "Concrete transition",
+        "detail": "Push 4,7,2, then delete 2. Mark one occurrence of 2 stale; when it reaches the top, prune it and expose 4. Duplicate values require deletion counts so deleting one 1 does not remove every stored 1."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `4`. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data."
+        "title": "Independent second fixture",
+        "detail": "Input `push1 push1 delete1 min` produces `1`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Defend the O(log n) amortised operation · O(n) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `push4 push2 delete4 min` produces `2`. Heap access does not directly locate arbitrary values. The stated work bound is O(log n) amortised operation · O(n) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `push4 push7 push2 delete2 min` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Lazy Heap Deletion survives, which state must be updated, and whether the O(log n) amortised operation · O(n) space bound still holds. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work."
+    "transferChallenge": "Compare the visible input `push4 push7 push2 delete2 min` with `push9 push3 push5 delete3 min`. Predict why their results are `4` and `5`. Then change one legal value and explain whether the same invariant, heap access does not directly locate arbitrary values, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.lazy-heap-deletion.recognize",
@@ -54,21 +54,21 @@
   "title": "Lazy Heap Deletion: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "sliding heaps and priority updates without handles",
-      "Only problems with exactly one input value"
+      "`2`",
+      "`1`",
+      "`0`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Lazy Heap Deletion",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Lazy Heap Deletion",
-    "explanation": "A problem is a good match for Lazy Heap Deletion when it asks for sliding heaps and priority updates without handles. Here the concrete task is: Apply the push/delete operations, then return the valid minimum requested by min. The visible input `push4 push7 push2 delete2 min` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Record invalidated values separately and discard stale roots only when they surface. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(log n) amortised operation · O(n) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `4` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: sliding heaps and priority updates without handles.",
-    "practiceCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only lazy-heap-deletion program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn valid_min(ops:&[&str])->i32 {\n    let mut heap=std::collections::BinaryHeap::new(); let mut deleted=std::collections::HashMap::<i32,usize>::new();\n    for op in ops {\n        if let Some(raw)=op.strip_prefix(\"push\") { heap.push(std::cmp::Reverse(raw.parse::<i32>().unwrap())); }\n        if let Some(raw)=op.strip_prefix(\"delete\") { *deleted.entry(raw.parse().unwrap()).or_default()+=1; }\n        while let Some(&std::cmp::Reverse(x))=heap.peek() {\n            let count=deleted.entry(x).or_default(); if *count==0 { break; } *count-=1; heap.pop();\n        }\n    }\n    heap.peek().unwrap().0\n}\n\nfn main() {\n    let result = valid_min(&[\"push4\",\"push7\",\"push2\",\"delete2\",\"min\"]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "Push 4,7,2, then delete 2. Mark one occurrence of 2 stale; when it reaches the top, prune it and expose 4. Duplicate values require deletion counts so deleting one 1 does not remove every stored 1.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Apply the push/delete operations, then return the valid minimum requested by min. The visible fixture is `push4 push7 push2 delete2 min` and its example result is `4`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Lazy Heap Deletion when it asks for sliding heaps and priority updates without handles. Here the concrete task is: Apply the push/delete operations, then return the valid minimum requested by min. The visible input `push4 push7 push2 delete2 min` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Record invalidated values separately and discard stale roots only when they surface. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(log n) amortised operation · O(n) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `4` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `1`. Heap access does not directly locate arbitrary values. Compare this independent fixture with the worked trace: Push 4,7,2, then delete 2. Mark one occurrence of 2 stale; when it reaches the top, prune it and expose 4. Duplicate values require deletion counts so deleting one 1 does not remove every stored 1.",
+    "practiceCode": "fn valid_min(ops:&[&str])->i32 {\n    let mut heap=std::collections::BinaryHeap::new(); let mut deleted=std::collections::HashMap::<i32,usize>::new();\n    for op in ops {\n        if let Some(raw)=op.strip_prefix(\"push\") { heap.push(std::cmp::Reverse(raw.parse::<i32>().unwrap())); }\n        if let Some(raw)=op.strip_prefix(\"delete\") { *deleted.entry(raw.parse().unwrap()).or_default()+=1; }\n        while let Some(&std::cmp::Reverse(x))=heap.peek() {\n            let count=deleted.entry(x).or_default(); if *count==0 { break; } *count-=1; heap.pop();\n        }\n    }\n    heap.peek().unwrap().0\n}\n\nfn main() {\n    let result = valid_min(&[\"push4\",\"push7\",\"push2\",\"delete2\",\"min\"]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Lazy Heap Deletion on input `push1 push1 delete1 min`. Which result follows from the documented contract?",
+    "rule": "Heap access does not directly locate arbitrary values. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Lazy Heap Deletion.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-heaps-streaming-b.png",

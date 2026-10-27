@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS run-length-encoding\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"a3b2c1a4\".to_string()",
-      "String::from(\"a3b2c1a4\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.run-length-encoding.challenge",
     "patternID": "run-length-encoding",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Encode consecutive characters as character followed by count.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Run-Length Encoding\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Encode consecutive characters as character followed by count.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement run-length-encoding\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "a3b2c1a4",
+        "kind": "visible",
         "input": "aaabbcaaaa",
-        "kind": "visible"
+        "expectedAnswer": "a3b2c1a4"
       },
       {
-        "expectedAnswer": "a1b1",
+        "kind": "boundary",
         "input": "ab",
-        "kind": "boundary"
+        "expectedAnswer": "a1b1"
       },
       {
-        "expectedAnswer": "a1b1",
-        "input": "\nab\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "a",
+        "expectedAnswer": "a1"
       },
       {
-        "expectedAnswer": "a3b2c1a4",
+        "kind": "adversarial",
+        "input": "aaa",
+        "expectedAnswer": "a3"
+      },
+      {
+        "kind": "adversarial",
+        "input": "abbba",
+        "expectedAnswer": "a1b3a1"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \naaabbcaaaa\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "a3b2c1a4"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\nabbba\n",
+        "expectedAnswer": "a1b3a1"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"aaabbcaaaa\"#, r#\"a3b2c1a4\"#),\n    (r#\"ab\"#, r#\"a1b1\"#),\n    (r#\"\nab\n\"#, r#\"a1b1\"#),\n    (r#\"  \naaabbcaaaa\n  \"#, r#\"a3b2c1a4\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS run-length-encoding\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"aaabbcaaaa\",\"a3b2c1a4\"),\n        (\"ab\",\"a1b1\"),\n        (\"a\",\"a1\"),\n        (\"aaa\",\"a3\"),\n        (\"abbba\",\"a1b3a1\"),\n        (\"  \\naaabbcaaaa\\n  \",\"a3b2c1a4\"),\n        (\"\\nabbba\\n\",\"a1b3a1\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS run-length-encoding\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS run-length-encoding\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"a3b2c1a4\".to_string()",
-      "String::from(\"a3b2c1a4\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

@@ -7,44 +7,39 @@
     "expectedAnswer": "7",
     "idea": "Choose a guaranteed-good pivot from medians of small groups before selecting one side.",
     "patternID": "median-of-medians",
-    "rustSketch": "fn insertion_sort(values: &mut [i32]) {\n    for i in 1..values.len() {\n        let mut j = i;\n        while j > 0 && values[j] < values[j - 1] {\n            values.swap(j, j - 1);\n            j -= 1;\n        }\n    }\n}",
+    "rustSketch": "fn deterministic_select(a:&[i32],k:usize)->i32 {\n    assert!(k<a.len());\n    if a.len()<=5 { let mut small=a.to_vec(); small.sort_unstable(); return small[k]; }\n    let medians:Vec<_>=a.chunks(5).map(|group| { let mut g=group.to_vec(); g.sort_unstable(); g[g.len()/2] }).collect();\n    let pivot=deterministic_select(&medians,medians.len()/2);\n    let smaller:Vec<_>=a.iter().copied().filter(|&x|x<pivot).collect();\n    let equal=a.iter().filter(|&&x|x==pivot).count();\n    if k<smaller.len() { deterministic_select(&smaller,k) }\n    else if k<smaller.len()+equal { pivot }\n    else { let greater:Vec<_>=a.iter().copied().filter(|&x|x>pivot).collect(); deterministic_select(&greater,k-smaller.len()-equal) }\n}\n\nfn main() {\n    let result = deterministic_select(&[9,8,7,6,5],4).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Return the fifth smallest value using deterministic selection.",
     "useCases": "worst-case linear selection and adversarial inputs",
     "visibleInput": "[12,3,5,7,4,19,26,1,9]"
   },
   "concept": "Return the fifth smallest value using deterministic selection.",
-  "contentDigest": "154adccb8520bbeabf40c822c2a6d578eeab0523de7d10e7a3f06bbd4f49b5de",
+  "contentDigest": "2216ad6e3322db56868d89a4c8a42c92b63f48d83c85a4f063cef161c9765592",
   "depth": {
     "connections": [
       {
-        "concept": "worst-case linear selection and adversarial inputs",
         "direction": "previous",
-        "title": "Median of Medians: When to Use It"
-      },
-      {
-        "concept": "Discard the half that cannot contain the target after comparing the midpoint.",
-        "direction": "next",
-        "title": "Exact Binary Search: Mental Model"
+        "title": "Median of Medians: When to Use It",
+        "concept": "worst-case linear selection and adversarial inputs"
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "Median grouping guarantees a constant fraction can be discarded. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“The fifth input value is always the global median”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[12,3,5,7,4,19,26,1,9]`, write the state before the first update. Explain how it represents this claim: Choose a guaranteed-good pivot from medians of small groups before selecting one side. Sorting establishes global order; selection asks only for a rank or partition. Explain which comparisons make progress toward that goal."
+        "title": "Pattern-specific invariant",
+        "detail": "Median grouping guarantees a constant fraction can be discarded. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Rust slice sorting is available, but an exercise asking for the algorithm requires the actual invariant and mutation steps, not a library shortcut."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `[9,8,7,6,5]` and computes `9`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test all-equal keys, already ordered input, reverse order, and extreme pivot or bucket distributions. Defend the O(n) worst-case time · O(n) or in-place variants bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `[8,7,6,5,4,3,2]`, the independently calculated result is `6`. The complexity discussion uses O(n) worst-case time · O(n) or in-place variants. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `[12,3,5,7,4,19,26,1,9]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Median of Medians survives, which state must be updated, and whether the O(n) worst-case time · O(n) or in-place variants bound still holds. Before sorting everything, ask whether a single statistic is enough and whether stable order among equal keys matters."
+    "transferChallenge": "Change the independent fixture `[9,8,7,6,5]` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `[12,3,5,7,4,19,26,1,9]`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.median-of-medians.challenge",
@@ -54,19 +49,19 @@
   "title": "Challenge: Median of Medians",
   "writing": {
     "answers": [
-      "O(n) worst-case time · O(n) or in-place variants",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`6`",
+      "`7`",
+      "`5`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return the fifth smallest value using deterministic selection.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Median of Medians\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Return the fifth smallest value using deterministic selection. On input `[12,3,5,7,4,19,26,1,9]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Choose a guaranteed-good pivot from medians of small groups before selecting one side. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. Sorting establishes global order; selection asks only for a rank or partition. Explain which comparisons make progress toward that goal. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Rust slice sorting is available, but an exercise asking for the algorithm requires the actual invariant and mutation steps, not a library shortcut. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n) worst-case time · O(n) or in-place variants; explain which operation dominates it and how many times the input can trigger that operation. Test all-equal keys, already ordered input, reverse order, and extreme pivot or bucket distributions. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(n) worst-case time · O(n) or in-place variants; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return the fifth smallest value using deterministic selection.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Median of Medians\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS median-of-medians, and your explanation still meets O(n) worst-case time · O(n) or in-place variants.",
+    "exampleCaption": "Complete std-only median-of-medians program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn deterministic_select(a:&[i32],k:usize)->i32 {\n    assert!(k<a.len());\n    if a.len()<=5 { let mut small=a.to_vec(); small.sort_unstable(); return small[k]; }\n    let medians:Vec<_>=a.chunks(5).map(|group| { let mut g=group.to_vec(); g.sort_unstable(); g[g.len()/2] }).collect();\n    let pivot=deterministic_select(&medians,medians.len()/2);\n    let smaller:Vec<_>=a.iter().copied().filter(|&x|x<pivot).collect();\n    let equal=a.iter().filter(|&&x|x==pivot).count();\n    if k<smaller.len() { deterministic_select(&smaller,k) }\n    else if k<smaller.len()+equal { pivot }\n    else { let greater:Vec<_>=a.iter().copied().filter(|&x|x>pivot).collect(); deterministic_select(&greater,k-smaller.len()-equal) }\n}\n\nfn main() {\n    let result = deterministic_select(&[9,8,7,6,5],4).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "Median grouping guarantees a constant fraction can be discarded. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `[9,8,7,6,5]`, the worked program returns `9`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `[12,3,5,7,4,19,26,1,9]`; predict that result before opening the answer reveal. The precise contract is: Return the fifth smallest value using deterministic selection.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Return the fifth smallest value using deterministic selection. On input `[12,3,5,7,4,19,26,1,9]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Choose a guaranteed-good pivot from medians of small groups before selecting one side. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. Sorting establishes global order; selection asks only for a rank or partition. Explain which comparisons make progress toward that goal. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(n) worst-case time · O(n) or in-place variants; explain which operation dominates it and how many times the input can trigger that operation. Test all-equal keys, already ordered input, reverse order, and extreme pivot or bucket distributions. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `6`. Median grouping guarantees a constant fraction can be discarded. Compare this independent fixture with the worked trace: Groups of up to five are sorted locally. Recursively select a median of those group medians, then partition around it. For [12,3,5,7,4,19,26,1,9], the fifth smallest is 7; no full global sort is needed for selection.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return the fifth smallest value using deterministic selection.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement median-of-medians\")\n}\n",
+    "question": "Boundary check for median-of-medians: with input `[8,7,6,5,4,3,2]`, what result should solve return?",
+    "rule": "Median grouping guarantees a constant fraction can be discarded. Return the fifth smallest value using deterministic selection.",
+    "success": "The private harness prints PASS median-of-medians. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Return the fifth smallest value using deterministic selection.",
     "task": "Return the fifth smallest value using deterministic selection."
   },

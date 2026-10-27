@@ -7,44 +7,44 @@
     "expectedAnswer": "2,-1,2",
     "idea": "Traverse indexes twice while storing each unresolved position only once.",
     "patternID": "circular-monotonic-stack",
-    "rustSketch": "fn balanced(text: &str) -> bool {\n    let mut stack = Vec::new();\n    for ch in text.chars() {\n        match ch {\n            '(' | '[' | '{' => stack.push(ch),\n            ')' => if stack.pop() != Some('(') { return false; },\n            ']' => if stack.pop() != Some('[') { return false; },\n            '}' => if stack.pop() != Some('{') { return false; },\n            _ => {}\n        }\n    }\n    stack.is_empty()\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn circular_greater(values:&[i32])->Vec<i32> {\n    let n=values.len(); let mut out=vec![-1;n]; let mut stack=Vec::new();\n    for step in 0..2*n {\n        let i=step%n;\n        while stack.last().is_some_and(|&j|values[j]<values[i]) { out[stack.pop().unwrap()]=values[i]; }\n        if step<n { stack.push(i); }\n    }\n    out\n}\n\nfn main() {\n    let result = csv(circular_greater(&[3,1,2]));\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Return each value's next greater value in circular order.",
     "useCases": "next greater in circular arrays",
     "visibleInput": "[1,2,1]"
   },
   "concept": "Return each value's next greater value in circular order.",
-  "contentDigest": "b41012828a75fd6687c65717f62328db3c14b511986414f8a438becd4f24559e",
+  "contentDigest": "751de508846b1d891d6b71d7b74e07193b863ba897b74c514d1ab2ee5747f388",
   "depth": {
     "connections": [
       {
-        "concept": "next greater in circular arrays",
         "direction": "previous",
-        "title": "Circular Monotonic Stack: When to Use It"
+        "title": "Circular Monotonic Stack: When to Use It",
+        "concept": "next greater in circular arrays"
       },
       {
-        "concept": "Use an operator stack to emit operations only when precedence and associativity allow.",
         "direction": "next",
-        "title": "Shunting-Yard Parsing: Mental Model"
+        "title": "Shunting-Yard Parsing: Mental Model",
+        "concept": "Use an operator stack to emit operations only when precedence and associativity allow."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "The second pass resolves wraparound answers without duplicating candidates. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“Every value needs two separate output slots”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[1,2,1]`, write the state before the first update. Explain how it represents this claim: Traverse indexes twice while storing each unresolved position only once. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs."
+        "title": "Pattern-specific invariant",
+        "detail": "The second pass resolves wraparound answers without duplicating candidates. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. `Vec` works as a stack; `VecDeque` supplies efficient operations at both ends. Avoid removing from the front of a `Vec` in a long loop."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `[3,1,2]` and computes `-1,2,3`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Defend the O(n) time · O(n) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `[8,7,6,5,4,3,2]`, the independently calculated result is `-1,8,8,8,8,8,8`. The complexity discussion uses O(n) time · O(n) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `[1,2,1]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Circular Monotonic Stack survives, which state must be updated, and whether the O(n) time · O(n) space bound still holds. Look for nested structure, next-greater relationships, or ordered processing. A plain scan is enough when no unresolved state must be retained."
+    "transferChallenge": "Change the independent fixture `[3,1,2]` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `[1,2,1]`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.circular-monotonic-stack.challenge",
@@ -54,19 +54,19 @@
   "title": "Challenge: Circular Monotonic Stack",
   "writing": {
     "answers": [
-      "O(n) time · O(n) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`-1,8,8,8,8,8,8`",
+      "`8,8,8,8,8,8`",
+      "`0,8,8,8,8,8,8`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return each value's next greater value in circular order.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Circular Monotonic Stack\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Return each value's next greater value in circular order. On input `[1,2,1]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Traverse indexes twice while storing each unresolved position only once. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. `Vec` works as a stack; `VecDeque` supplies efficient operations at both ends. Avoid removing from the front of a `Vec` in a long loop. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(n) space; explain which operation dominates it and how many times the input can trigger that operation. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(n) time · O(n) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return each value's next greater value in circular order.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Circular Monotonic Stack\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS circular-monotonic-stack, and your explanation still meets O(n) time · O(n) space.",
+    "exampleCaption": "Complete std-only circular-monotonic-stack program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn circular_greater(values:&[i32])->Vec<i32> {\n    let n=values.len(); let mut out=vec![-1;n]; let mut stack=Vec::new();\n    for step in 0..2*n {\n        let i=step%n;\n        while stack.last().is_some_and(|&j|values[j]<values[i]) { out[stack.pop().unwrap()]=values[i]; }\n        if step<n { stack.push(i); }\n    }\n    out\n}\n\nfn main() {\n    let result = csv(circular_greater(&[3,1,2]));\n    println!(\"{result}\");\n}\n",
+    "explanation": "The second pass resolves wraparound answers without duplicating candidates. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `[3,1,2]`, the worked program returns `-1,2,3`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `[1,2,1]`; predict that result before opening the answer reveal. The precise contract is: Return each value's next greater value in circular order.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Return each value's next greater value in circular order. On input `[1,2,1]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Traverse indexes twice while storing each unresolved position only once. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(n) space; explain which operation dominates it and how many times the input can trigger that operation. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `-1,8,8,8,8,8,8`. The second pass resolves wraparound answers without duplicating candidates. Compare this independent fixture with the worked trace: For [1,2,1], the first pass resolves index 0 to 2. The second pass lets index 2 encounter the earlier 2 across the boundary. Value 2 has no greater value anywhere and retains -1.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return each value's next greater value in circular order.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement circular-monotonic-stack\")\n}\n",
+    "question": "Boundary check for circular-monotonic-stack: with input `[8,7,6,5,4,3,2]`, what result should solve return?",
+    "rule": "The second pass resolves wraparound answers without duplicating candidates. Return each value's next greater value in circular order.",
+    "success": "The private harness prints PASS circular-monotonic-stack. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Return each value's next greater value in circular order.",
     "task": "Return each value's next greater value in circular order."
   },

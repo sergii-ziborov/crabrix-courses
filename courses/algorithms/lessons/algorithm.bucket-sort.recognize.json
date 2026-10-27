@@ -7,44 +7,44 @@
     "expectedAnswer": "0.23,0.25,0.32,0.42,0.52",
     "idea": "Distribute values into range buckets, sort locally, and concatenate in bucket order.",
     "patternID": "bucket-sort",
-    "rustSketch": "fn insertion_sort(values: &mut [i32]) {\n    for i in 1..values.len() {\n        let mut j = i;\n        while j > 0 && values[j] < values[j - 1] {\n            values.swap(j, j - 1);\n            j -= 1;\n        }\n    }\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn bucket_sort(values:&[f64])->Vec<f64> {\n    if values.is_empty() { return Vec::new(); }\n    let n=values.len(); let mut buckets=vec![Vec::new();n];\n    for &x in values { assert!((0.0..1.0).contains(&x)); buckets[(x*n as f64) as usize].push(x); }\n    for bucket in &mut buckets {\n        for i in 1..bucket.len() {\n            let mut j=i;\n            while j>0 && bucket[j]<bucket[j-1] { bucket.swap(j,j-1); j-=1; }\n        }\n    }\n    buckets.into_iter().flatten().collect()\n}\n\nfn main() {\n    let result = csv(bucket_sort(&[0.42,0.32,0.23,0.52,0.25]));\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Bucket decimals by tenths and return ascending values.",
     "useCases": "roughly uniform numeric distributions",
     "visibleInput": "[0.42,0.32,0.23,0.52,0.25]"
   },
   "concept": "roughly uniform numeric distributions",
-  "contentDigest": "b0d0ad0110f104ae91f1e0d663a3f65310d912acad887e4b15a3d0a87bf46eb6",
+  "contentDigest": "05755680b41bdb8b3b078ab6cb6cd57f8b9842c4aa0cfe67e962dd56de455c83",
   "depth": {
     "connections": [
       {
-        "concept": "Distribute values into range buckets, sort locally, and concatenate in bucket order.",
         "direction": "previous",
-        "title": "Bucket Sort: Mental Model"
+        "title": "Bucket Sort: Mental Model",
+        "concept": "Distribute values into range buckets, sort locally, and concatenate in bucket order."
       },
       {
-        "concept": "Bucket decimals by tenths and return ascending values.",
         "direction": "next",
-        "title": "Challenge: Bucket Sort"
+        "title": "Challenge: Bucket Sort",
+        "concept": "Bucket decimals by tenths and return ascending values."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "Values are distributed across buckets without a large concentration in one bucket. Values 0.42,0.32,0.23,0.52,0.25 enter buckets determined by floor(n*x). Sorting within each bucket and concatenating them yields 0.23,0.25,0.32,0.42,0.52. Concentrating many values in one insertion-sorted bucket can cost quadratic time.",
+    "misconception": "“Every input distribution guarantees linear time”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[0.42,0.32,0.23,0.52,0.25]`, write the state before the first update. Explain how it represents this claim: Distribute values into range buckets, sort locally, and concatenate in bucket order. Sorting establishes global order; selection asks only for a rank or partition. Explain which comparisons make progress toward that goal."
+        "title": "Concrete transition",
+        "detail": "Values 0.42,0.32,0.23,0.52,0.25 enter buckets determined by floor(n*x). Sorting within each bucket and concatenating them yields 0.23,0.25,0.32,0.42,0.52. Concentrating many values in one insertion-sorted bucket can cost quadratic time."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `0.23,0.25,0.32,0.42,0.52`. Rust slice sorting is available, but an exercise asking for the algorithm requires the actual invariant and mutation steps, not a library shortcut."
+        "title": "Independent second fixture",
+        "detail": "Input `[0.9,0.1,0.5]` produces `0.1,0.5,0.9`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test all-equal keys, already ordered input, reverse order, and extreme pivot or bucket distributions. Defend the O(n+k) average · O(n^2) worst · O(n+k) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[0.01,0.99]` produces `0.01,0.99`. Values are distributed across buckets without a large concentration in one bucket. The stated work bound is O(n+k) average · O(n^2) worst · O(n+k) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[0.42,0.32,0.23,0.52,0.25]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Bucket Sort survives, which state must be updated, and whether the O(n+k) average · O(n^2) worst · O(n+k) space bound still holds. Before sorting everything, ask whether a single statistic is enough and whether stable order among equal keys matters."
+    "transferChallenge": "Compare the visible input `[0.42,0.32,0.23,0.52,0.25]` with `[0.2,0.2,0.1]`. Predict why their results are `0.23,0.25,0.32,0.42,0.52` and `0.1,0.2,0.2`. Then change one legal value and explain whether the same invariant, values are distributed across buckets without a large concentration in one bucket, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.bucket-sort.recognize",
@@ -54,21 +54,21 @@
   "title": "Bucket Sort: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "roughly uniform numeric distributions",
-      "Only problems with exactly one input value"
+      "`0.1,0.5,0.90`",
+      "`0.1,0.5,0.9`",
+      "`9.0,5.0,1.0`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Bucket Sort",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Bucket Sort",
-    "explanation": "A problem is a good match for Bucket Sort when it asks for roughly uniform numeric distributions. Here the concrete task is: Bucket decimals by tenths and return ascending values. The visible input `[0.42,0.32,0.23,0.52,0.25]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Before sorting everything, ask whether a single statistic is enough and whether stable order among equal keys matters. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Distribute values into range buckets, sort locally, and concatenate in bucket order. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Sorting establishes global order; selection asks only for a rank or partition. Explain which comparisons make progress toward that goal. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n+k) average · O(n^2) worst · O(n+k) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `0.23,0.25,0.32,0.42,0.52` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test all-equal keys, already ordered input, reverse order, and extreme pivot or bucket distributions. Rust slice sorting is available, but an exercise asking for the algorithm requires the actual invariant and mutation steps, not a library shortcut. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: roughly uniform numeric distributions.",
-    "practiceCode": "fn insertion_sort(values: &mut [i32]) {\n    for i in 1..values.len() {\n        let mut j = i;\n        while j > 0 && values[j] < values[j - 1] {\n            values.swap(j, j - 1);\n            j -= 1;\n        }\n    }\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only bucket-sort program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn bucket_sort(values:&[f64])->Vec<f64> {\n    if values.is_empty() { return Vec::new(); }\n    let n=values.len(); let mut buckets=vec![Vec::new();n];\n    for &x in values { assert!((0.0..1.0).contains(&x)); buckets[(x*n as f64) as usize].push(x); }\n    for bucket in &mut buckets {\n        for i in 1..bucket.len() {\n            let mut j=i;\n            while j>0 && bucket[j]<bucket[j-1] { bucket.swap(j,j-1); j-=1; }\n        }\n    }\n    buckets.into_iter().flatten().collect()\n}\n\nfn main() {\n    let result = csv(bucket_sort(&[0.42,0.32,0.23,0.52,0.25]));\n    println!(\"{result}\");\n}\n",
+    "explanation": "Values 0.42,0.32,0.23,0.52,0.25 enter buckets determined by floor(n*x). Sorting within each bucket and concatenating them yields 0.23,0.25,0.32,0.42,0.52. Concentrating many values in one insertion-sorted bucket can cost quadratic time.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Bucket decimals by tenths and return ascending values. The visible fixture is `[0.42,0.32,0.23,0.52,0.25]` and its example result is `0.23,0.25,0.32,0.42,0.52`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Bucket Sort when it asks for roughly uniform numeric distributions. Here the concrete task is: Bucket decimals by tenths and return ascending values. The visible input `[0.42,0.32,0.23,0.52,0.25]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Before sorting everything, ask whether a single statistic is enough and whether stable order among equal keys matters. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Distribute values into range buckets, sort locally, and concatenate in bucket order. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Sorting establishes global order; selection asks only for a rank or partition. Explain which comparisons make progress toward that goal. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n+k) average · O(n^2) worst · O(n+k) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `0.23,0.25,0.32,0.42,0.52` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test all-equal keys, already ordered input, reverse order, and extreme pivot or bucket distributions. Rust slice sorting is available, but an exercise asking for the algorithm requires the actual invariant and mutation steps, not a library shortcut. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `0.1,0.5,0.9`. Values are distributed across buckets without a large concentration in one bucket. Compare this independent fixture with the worked trace: Values 0.42,0.32,0.23,0.52,0.25 enter buckets determined by floor(n*x). Sorting within each bucket and concatenating them yields 0.23,0.25,0.32,0.42,0.52. Concentrating many values in one insertion-sorted bucket can cost quadratic time.",
+    "practiceCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn bucket_sort(values:&[f64])->Vec<f64> {\n    if values.is_empty() { return Vec::new(); }\n    let n=values.len(); let mut buckets=vec![Vec::new();n];\n    for &x in values { assert!((0.0..1.0).contains(&x)); buckets[(x*n as f64) as usize].push(x); }\n    for bucket in &mut buckets {\n        for i in 1..bucket.len() {\n            let mut j=i;\n            while j>0 && bucket[j]<bucket[j-1] { bucket.swap(j,j-1); j-=1; }\n        }\n    }\n    buckets.into_iter().flatten().collect()\n}\n\nfn main() {\n    let result = csv(bucket_sort(&[0.42,0.32,0.23,0.52,0.25]));\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Bucket Sort on input `[0.9,0.1,0.5]`. Which result follows from the documented contract?",
+    "rule": "Values are distributed across buckets without a large concentration in one bucket. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Bucket Sort.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-sorting-selection-b.png",

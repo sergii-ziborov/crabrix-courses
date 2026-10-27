@@ -7,44 +7,44 @@
     "expectedAnswer": "323",
     "idea": "Square the base and consume exponent bits so only logarithmically many multiplications occur.",
     "patternID": "fast-power",
-    "rustSketch": "fn gcd(mut a: u64, mut b: u64) -> u64 {\n    while b != 0 {\n        (a, b) = (b, a % b);\n    }\n    a\n}",
+    "rustSketch": "fn mod_power(mut base:u64,mut exponent:u64,modulus:u64)->u64 {\n    assert!(modulus>0); let mut result=1%modulus; base%=modulus;\n    while exponent>0 {\n        if exponent&1==1 { result=(result as u128*base as u128%modulus as u128) as u64; }\n        base=(base as u128*base as u128%modulus as u128) as u64; exponent>>=1;\n    } result\n}\n\nfn main() {\n    let result = mod_power(3,13,1000).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
-    "task": "Return 3^13 modulo 1000.",
+    "task": "Parse base, exp and a positive mod; return base^exp modulo mod, including exp=0.",
     "useCases": "large powers, modular arithmetic, repeated transforms",
     "visibleInput": "base=3 exp=13 mod=1000"
   },
   "concept": "large powers, modular arithmetic, repeated transforms",
-  "contentDigest": "0a42a92873626943f307562053deaa52131b8be7f64976a57406aba0801015b5",
+  "contentDigest": "83802c9930a764f3c12484d50641d8fe9e4763ce22256e8db33ab6352e846532",
   "depth": {
     "connections": [
       {
-        "concept": "Square the base and consume exponent bits so only logarithmically many multiplications occur.",
         "direction": "previous",
-        "title": "Binary Exponentiation: Mental Model"
+        "title": "Binary Exponentiation: Mental Model",
+        "concept": "Square the base and consume exponent bits so only logarithmically many multiplications occur."
       },
       {
-        "concept": "Return 3^13 modulo 1000.",
         "direction": "next",
-        "title": "Challenge: Binary Exponentiation"
+        "title": "Challenge: Binary Exponentiation",
+        "concept": "Parse base, exp and a positive mod; return base^exp modulo mod, including exp=0."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "It processes one binary exponent bit per iteration. For 3^13 mod 1000, exponent bits select powers 3,3^4 and 3^8. Multiplication and squaring are reduced modulo 1000; the final result is 323. u128 intermediates prevent overflow of two u64 factors before reduction.",
+    "misconception": "“It changes the desired exponent into a square root”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `base=3 exp=13 mod=1000`, write the state before the first update. Explain how it represents this claim: Square the base and consume exponent bits so only logarithmically many multiplications occur. An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds."
+        "title": "Concrete transition",
+        "detail": "For 3^13 mod 1000, exponent bits select powers 3,3^4 and 3^8. Multiplication and squaring are reduced modulo 1000; the final result is 323. u128 intermediates prevent overflow of two u64 factors before reduction."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `323`. Use explicit integer widths and checked arithmetic when input bounds require them. Distinguish bit positions from numeric values."
+        "title": "Independent second fixture",
+        "detail": "Input `base=7 exp=0 mod=11` produces `1`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Defend the O(log exponent) time · O(1) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `base=2 exp=10 mod=17` produces `4`. It processes one binary exponent bit per iteration. The stated work bound is O(log exponent) time · O(1) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `base=3 exp=13 mod=1000` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Binary Exponentiation survives, which state must be updated, and whether the O(log exponent) time · O(1) space bound still holds. Check number size, sign, and modulus assumptions before using a shortcut; not every inverse or division exists."
+    "transferChallenge": "Compare the visible input `base=3 exp=13 mod=1000` with `base=5 exp=3 mod=13`. Predict why their results are `323` and `8`. Then change one legal value and explain whether the same invariant, it processes one binary exponent bit per iteration, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.fast-power.recognize",
@@ -54,21 +54,21 @@
   "title": "Binary Exponentiation: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "large powers, modular arithmetic, repeated transforms",
-      "Only problems with exactly one input value"
+      "`2`",
+      "`1`",
+      "`0`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Binary Exponentiation",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Binary Exponentiation",
-    "explanation": "A problem is a good match for Binary Exponentiation when it asks for large powers, modular arithmetic, repeated transforms. Here the concrete task is: Return 3^13 modulo 1000. The visible input `base=3 exp=13 mod=1000` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Check number size, sign, and modulus assumptions before using a shortcut; not every inverse or division exists. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Square the base and consume exponent bits so only logarithmically many multiplications occur. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(log exponent) time · O(1) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `323` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Use explicit integer widths and checked arithmetic when input bounds require them. Distinguish bit positions from numeric values. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: large powers, modular arithmetic, repeated transforms.",
-    "practiceCode": "fn gcd(mut a: u64, mut b: u64) -> u64 {\n    while b != 0 {\n        (a, b) = (b, a % b);\n    }\n    a\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only fast-power program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn mod_power(mut base:u64,mut exponent:u64,modulus:u64)->u64 {\n    assert!(modulus>0); let mut result=1%modulus; base%=modulus;\n    while exponent>0 {\n        if exponent&1==1 { result=(result as u128*base as u128%modulus as u128) as u64; }\n        base=(base as u128*base as u128%modulus as u128) as u64; exponent>>=1;\n    } result\n}\n\nfn main() {\n    let result = mod_power(3,13,1000).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "For 3^13 mod 1000, exponent bits select powers 3,3^4 and 3^8. Multiplication and squaring are reduced modulo 1000; the final result is 323. u128 intermediates prevent overflow of two u64 factors before reduction.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Parse base, exp and a positive mod; return base^exp modulo mod, including exp=0. The visible fixture is `base=3 exp=13 mod=1000` and its example result is `323`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Binary Exponentiation when it asks for large powers, modular arithmetic, repeated transforms. Here the concrete task is: Parse base, exp and a positive mod; return base^exp modulo mod, including exp=0. The visible input `base=3 exp=13 mod=1000` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Check number size, sign, and modulus assumptions before using a shortcut; not every inverse or division exists. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Square the base and consume exponent bits so only logarithmically many multiplications occur. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(log exponent) time · O(1) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `323` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Use explicit integer widths and checked arithmetic when input bounds require them. Distinguish bit positions from numeric values. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `1`. It processes one binary exponent bit per iteration. Compare this independent fixture with the worked trace: For 3^13 mod 1000, exponent bits select powers 3,3^4 and 3^8. Multiplication and squaring are reduced modulo 1000; the final result is 323. u128 intermediates prevent overflow of two u64 factors before reduction.",
+    "practiceCode": "fn mod_power(mut base:u64,mut exponent:u64,modulus:u64)->u64 {\n    assert!(modulus>0); let mut result=1%modulus; base%=modulus;\n    while exponent>0 {\n        if exponent&1==1 { result=(result as u128*base as u128%modulus as u128) as u64; }\n        base=(base as u128*base as u128%modulus as u128) as u64; exponent>>=1;\n    } result\n}\n\nfn main() {\n    let result = mod_power(3,13,1000).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Binary Exponentiation on input `base=7 exp=0 mod=11`. Which result follows from the documented contract?",
+    "rule": "It processes one binary exponent bit per iteration. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Binary Exponentiation.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-math-bits-a.png",

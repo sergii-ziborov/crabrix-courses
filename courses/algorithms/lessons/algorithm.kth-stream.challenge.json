@@ -7,44 +7,44 @@
     "expectedAnswer": "4,4,5",
     "idea": "Keep k candidates so the heap root is the kth largest value after every insertion.",
     "patternID": "kth-stream",
-    "rustSketch": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn kth_largest_stream(values:&[i32],k:usize)->Vec<i32> {\n    assert!(k>0); let mut heap=std::collections::BinaryHeap::new(); let mut out=Vec::new();\n    for &x in values {\n        heap.push(std::cmp::Reverse(x)); if heap.len()>k { heap.pop(); }\n        if heap.len()==k { out.push(heap.peek().unwrap().0); }\n    }\n    out\n}\n\nfn main() {\n    let result = csv(kth_largest_stream(&[9,8,7,6],3));\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "With k=3, return the kth largest after adding 4, 5, 8, 2, 10.",
     "useCases": "live rank tracking and rolling thresholds",
     "visibleInput": "stream=[4,5,8,2,10]"
   },
   "concept": "With k=3, return the kth largest after adding 4, 5, 8, 2, 10.",
-  "contentDigest": "57e7c31ae12c8bacece611e56ba9248ca82cba87ad7cc0afab1b3c18a8cb077c",
+  "contentDigest": "4d9963c1eb45ca30a61948f4685dbf1a44a10e51bad176094c0c3cd209949903",
   "depth": {
     "connections": [
       {
-        "concept": "live rank tracking and rolling thresholds",
         "direction": "previous",
-        "title": "Kth Statistic in a Stream: When to Use It"
+        "title": "Kth Statistic in a Stream: When to Use It",
+        "concept": "live rank tracking and rolling thresholds"
       },
       {
-        "concept": "Push one frontier item per sorted source and advance only the source that wins.",
         "direction": "next",
-        "title": "K-Way Heap Merge: Mental Model"
+        "title": "K-Way Heap Merge: Mental Model",
+        "concept": "Push one frontier item per sorted source and advance only the source that wins."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "Fewer than k observations do not define a kth largest value. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“A partial heap's maximum is already the kth largest”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `stream=[4,5,8,2,10]`, write the state before the first update. Explain how it represents this claim: Keep k candidates so the heap root is the kth largest value after every insertion. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded."
+        "title": "Pattern-specific invariant",
+        "detail": "Fewer than k observations do not define a kth largest value. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `stream=[9,8,7,6]` and computes `7,7`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Defend the O(log k) per item · O(k) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `[8,7,6,5,4,3,2]`, the independently calculated result is `6,6,6,6,6`. The complexity discussion uses O(log k) per item · O(k) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `stream=[4,5,8,2,10]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Kth Statistic in a Stream survives, which state must be updated, and whether the O(log k) per item · O(k) space bound still holds. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work."
+    "transferChallenge": "Change the independent fixture `stream=[9,8,7,6]` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `stream=[4,5,8,2,10]`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.kth-stream.challenge",
@@ -54,19 +54,19 @@
   "title": "Challenge: Kth Statistic in a Stream",
   "writing": {
     "answers": [
-      "O(log k) per item · O(k) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`6,6,6,6,6`",
+      "`6,6,6,6`",
+      "`7,6,6,6,6`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // With k=3, return the kth largest after adding 4, 5, 8, 2, 10.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Kth Statistic in a Stream\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: With k=3, return the kth largest after adding 4, 5, 8, 2, 10. On input `stream=[4,5,8,2,10]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Keep k candidates so the heap root is the kth largest value after every insertion. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(log k) per item · O(k) space; explain which operation dominates it and how many times the input can trigger that operation. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(log k) per item · O(k) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // With k=3, return the kth largest after adding 4, 5, 8, 2, 10.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Kth Statistic in a Stream\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS kth-stream, and your explanation still meets O(log k) per item · O(k) space.",
+    "exampleCaption": "Complete std-only kth-stream program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn kth_largest_stream(values:&[i32],k:usize)->Vec<i32> {\n    assert!(k>0); let mut heap=std::collections::BinaryHeap::new(); let mut out=Vec::new();\n    for &x in values {\n        heap.push(std::cmp::Reverse(x)); if heap.len()>k { heap.pop(); }\n        if heap.len()==k { out.push(heap.peek().unwrap().0); }\n    }\n    out\n}\n\nfn main() {\n    let result = csv(kth_largest_stream(&[9,8,7,6],3));\n    println!(\"{result}\");\n}\n",
+    "explanation": "Fewer than k observations do not define a kth largest value. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `stream=[9,8,7,6]`, the worked program returns `7,7`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `stream=[4,5,8,2,10]`; predict that result before opening the answer reveal. The precise contract is: With k=3, return the kth largest after adding 4, 5, 8, 2, 10.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: With k=3, return the kth largest after adding 4, 5, 8, 2, 10. On input `stream=[4,5,8,2,10]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Keep k candidates so the heap root is the kth largest value after every insertion. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(log k) per item · O(k) space; explain which operation dominates it and how many times the input can trigger that operation. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `6,6,6,6,6`. Fewer than k observations do not define a kth largest value. Compare this independent fixture with the worked trace: With k=3 and stream [4,5,8,2,10], the first report occurs after 8 and is 4. Adding 2 retains 4,5,8 and still reports 4; adding 10 retains 5,8,10 and reports 5.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // With k=3, return the kth largest after adding 4, 5, 8, 2, 10.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement kth-stream\")\n}\n",
+    "question": "Boundary check for kth-stream: with input `[8,7,6,5,4,3,2]`, what result should solve return?",
+    "rule": "Fewer than k observations do not define a kth largest value. With k=3, return the kth largest after adding 4, 5, 8, 2, 10.",
+    "success": "The private harness prints PASS kth-stream. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "With k=3, return the kth largest after adding 4, 5, 8, 2, 10.",
     "task": "With k=3, return the kth largest after adding 4, 5, 8, 2, 10."
   },

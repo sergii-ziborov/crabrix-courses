@@ -7,7 +7,7 @@
     "expectedAnswer": "5,3.5,5,4.5",
     "idea": "Keep the lower half in a max-heap and upper half in a min-heap with sizes differing by at most one.",
     "patternID": "two-heap-median",
-    "rustSketch": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn stream_medians(values:&[i32])->Vec<f64> {\n    let mut low=std::collections::BinaryHeap::new(); let mut high=std::collections::BinaryHeap::new(); let mut out=Vec::new();\n    for &x in values {\n        if low.peek().is_none_or(|&m|x<=m) { low.push(x); } else { high.push(std::cmp::Reverse(x)); }\n        if low.len()>high.len()+1 { high.push(std::cmp::Reverse(low.pop().unwrap())); }\n        if high.len()>low.len() { low.push(high.pop().unwrap().0); }\n        out.push(if low.len()==high.len() { (*low.peek().unwrap() as f64+high.peek().unwrap().0 as f64)/2.0 } else { *low.peek().unwrap() as f64 });\n    }\n    out\n}\n\nfn main() {\n    let result = csv(stream_medians(&[5,2,10,4]));\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return medians after inserting 5, 2, 10, 4.",
     "useCases": "online medians and percentile pivots",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Keep the lower half in a max-heap and upper half in a min-heap with sizes differing by at most one.",
         "direction": "previous",
-        "title": "Median from Two Heaps: Mental Model"
+        "title": "Median from Two Heaps: Mental Model",
+        "concept": "Keep the lower half in a max-heap and upper half in a min-heap with sizes differing by at most one."
       },
       {
-        "concept": "Return medians after inserting 5, 2, 10, 4.",
         "direction": "next",
-        "title": "Challenge: Median from Two Heaps"
+        "title": "Challenge: Median from Two Heaps",
+        "concept": "Return medians after inserting 5, 2, 10, 4."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "The lower half has either the same size as the upper half or one extra item. For [5,2,10,4], medians are 5,3.5,5,4.5. Rebalance after each insertion so the lower maximum and upper minimum border the middle; promote to f64 before adding the two middle values.",
+    "misconception": "“Both heaps must contain every observation”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[5,2,10,4]`, write the state before the first update. Explain how it represents this claim: Keep the lower half in a max-heap and upper half in a min-heap with sizes differing by at most one. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded."
+        "title": "Concrete transition",
+        "detail": "For [5,2,10,4], medians are 5,3.5,5,4.5. Rebalance after each insertion so the lower maximum and upper minimum border the middle; promote to f64 before adding the two middle values."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `5,3.5,5,4.5`. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data."
+        "title": "Independent second fixture",
+        "detail": "Input `[1,2,3,4,5,6,7]` produces `1,1.5,2,2.5,3,3.5,4`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Defend the O(log n) insert · O(1) median · O(n) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[8,7,6,5,4,3,2]` produces `8,7.5,7,6.5,6,5.5,5`. The lower half has either the same size as the upper half or one extra item. The stated work bound is O(log n) insert · O(1) median · O(n) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[5,2,10,4]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Median from Two Heaps survives, which state must be updated, and whether the O(log n) insert · O(1) median · O(n) space bound still holds. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work."
+    "transferChallenge": "Compare the visible input `[5,2,10,4]` with `[3,3,3,3,3,3,3]`. Predict why their results are `5,3.5,5,4.5` and `3,3,3,3,3,3,3`. Then change one legal value and explain whether the same invariant, the lower half has either the same size as the upper half or one extra item, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.two-heap-median.recognize",
@@ -54,21 +54,21 @@
   "title": "Median from Two Heaps: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "online medians and percentile pivots",
-      "Only problems with exactly one input value"
+      "`1,1.5,2,2.5,3,3.5,40`",
+      "`1,1.5,2,2.5,3,3.5,4`",
+      "`4,5.3,3,5.2,2,5.1,1`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Median from Two Heaps",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Median from Two Heaps",
-    "explanation": "A problem is a good match for Median from Two Heaps when it asks for online medians and percentile pivots. Here the concrete task is: Return medians after inserting 5, 2, 10, 4. The visible input `[5,2,10,4]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Keep the lower half in a max-heap and upper half in a min-heap with sizes differing by at most one. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(log n) insert · O(1) median · O(n) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `5,3.5,5,4.5` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: online medians and percentile pivots.",
-    "practiceCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only two-heap-median program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn stream_medians(values:&[i32])->Vec<f64> {\n    let mut low=std::collections::BinaryHeap::new(); let mut high=std::collections::BinaryHeap::new(); let mut out=Vec::new();\n    for &x in values {\n        if low.peek().is_none_or(|&m|x<=m) { low.push(x); } else { high.push(std::cmp::Reverse(x)); }\n        if low.len()>high.len()+1 { high.push(std::cmp::Reverse(low.pop().unwrap())); }\n        if high.len()>low.len() { low.push(high.pop().unwrap().0); }\n        out.push(if low.len()==high.len() { (*low.peek().unwrap() as f64+high.peek().unwrap().0 as f64)/2.0 } else { *low.peek().unwrap() as f64 });\n    }\n    out\n}\n\nfn main() {\n    let result = csv(stream_medians(&[5,2,10,4]));\n    println!(\"{result}\");\n}\n",
+    "explanation": "For [5,2,10,4], medians are 5,3.5,5,4.5. Rebalance after each insertion so the lower maximum and upper minimum border the middle; promote to f64 before adding the two middle values.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return medians after inserting 5, 2, 10, 4. The visible fixture is `[5,2,10,4]` and its example result is `5,3.5,5,4.5`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Median from Two Heaps when it asks for online medians and percentile pivots. Here the concrete task is: Return medians after inserting 5, 2, 10, 4. The visible input `[5,2,10,4]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Keep the lower half in a max-heap and upper half in a min-heap with sizes differing by at most one. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(log n) insert · O(1) median · O(n) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `5,3.5,5,4.5` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `1,1.5,2,2.5,3,3.5,4`. The lower half has either the same size as the upper half or one extra item. Compare this independent fixture with the worked trace: For [5,2,10,4], medians are 5,3.5,5,4.5. Rebalance after each insertion so the lower maximum and upper minimum border the middle; promote to f64 before adding the two middle values.",
+    "practiceCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn stream_medians(values:&[i32])->Vec<f64> {\n    let mut low=std::collections::BinaryHeap::new(); let mut high=std::collections::BinaryHeap::new(); let mut out=Vec::new();\n    for &x in values {\n        if low.peek().is_none_or(|&m|x<=m) { low.push(x); } else { high.push(std::cmp::Reverse(x)); }\n        if low.len()>high.len()+1 { high.push(std::cmp::Reverse(low.pop().unwrap())); }\n        if high.len()>low.len() { low.push(high.pop().unwrap().0); }\n        out.push(if low.len()==high.len() { (*low.peek().unwrap() as f64+high.peek().unwrap().0 as f64)/2.0 } else { *low.peek().unwrap() as f64 });\n    }\n    out\n}\n\nfn main() {\n    let result = csv(stream_medians(&[5,2,10,4]));\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Median from Two Heaps on input `[1,2,3,4,5,6,7]`. Which result follows from the documented contract?",
+    "rule": "The lower half has either the same size as the upper half or one extra item. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Median from Two Heaps.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-heaps-streaming-b.png",

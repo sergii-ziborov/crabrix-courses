@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS peak-search\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"2\".to_string()",
-      "String::from(\"2\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.peak-search.challenge",
     "patternID": "peak-search",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return any peak index.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Peak Binary Search\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Parse a nonempty array with unequal adjacent values. Return any strict peak index, treating outside endpoint values as negative infinity.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement peak-search\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "2",
+        "kind": "visible",
         "input": "[1,2,3,1]",
-        "kind": "visible"
+        "expectedAnswer": "2"
       },
       {
-        "expectedAnswer": "0",
+        "kind": "boundary",
         "input": "[3,2,1]",
-        "kind": "boundary"
+        "expectedAnswer": "0"
       },
       {
-        "expectedAnswer": "0",
-        "input": "\n[3,2,1]\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "[1,4,2]",
+        "expectedAnswer": "1"
       },
       {
-        "expectedAnswer": "2",
+        "kind": "adversarial",
+        "input": "[1,2,3,4]",
+        "expectedAnswer": "3"
+      },
+      {
+        "kind": "adversarial",
+        "input": "[4,3,2,1]",
+        "expectedAnswer": "0"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \n[1,2,3,1]\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "2"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\n[4,3,2,1]\n",
+        "expectedAnswer": "0"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"[1,2,3,1]\"#, r#\"2\"#),\n    (r#\"[3,2,1]\"#, r#\"0\"#),\n    (r#\"\n[3,2,1]\n\"#, r#\"0\"#),\n    (r#\"  \n[1,2,3,1]\n  \"#, r#\"2\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS peak-search\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(input: &str, actual: &str, _expected: &str) -> bool {\n    let values: Vec<i64> = input.trim().trim_start_matches('[').trim_end_matches(']').split(',').map(|x|x.trim().parse().unwrap()).collect();\n    let Ok(i) = actual.parse::<usize>() else { return false; };\n    i < values.len() && (i == 0 || values[i] > values[i-1]) && (i+1 == values.len() || values[i] > values[i+1])\n}\n\nfn main() {\n    let cases = [\n        (\"[1,2,3,1]\",\"2\"),\n        (\"[3,2,1]\",\"0\"),\n        (\"[1,4,2]\",\"1\"),\n        (\"[1,2,3,4]\",\"3\"),\n        (\"[4,3,2,1]\",\"0\"),\n        (\"  \\n[1,2,3,1]\\n  \",\"2\"),\n        (\"\\n[4,3,2,1]\\n\",\"0\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS peak-search\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS peak-search\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"2\".to_string()",
-      "String::from(\"2\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

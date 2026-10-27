@@ -7,9 +7,9 @@
     "expectedAnswer": "w",
     "idea": "Count the text unit the problem defines: bytes, Unicode scalar values, or grapheme clusters.",
     "patternID": "string-frequency",
-    "rustSketch": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "rustSketch": "fn first_unique_ascii(text:&str)->Option<char> {\n    assert!(text.is_ascii()); let mut count=[0;256]; for c in text.bytes() { count[c as usize]+=1; }\n    text.bytes().find(|&c|count[c as usize]==1).map(char::from)\n}\n\nfn main() {\n    let result = first_unique_ascii(\"swiss\").map_or(\"none\".into(),|c|c.to_string());\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
-    "task": "Return the first non-repeated ASCII character.",
+    "task": "Return the first non-repeated ASCII character in source order, or none when no such character exists.",
     "useCases": "anagrams, inventory, first unique symbol",
     "visibleInput": "swiss"
   },
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Count the text unit the problem defines: bytes, Unicode scalar values, or grapheme clusters.",
         "direction": "previous",
-        "title": "Character Frequency: Mental Model"
+        "title": "Character Frequency: Mental Model",
+        "concept": "Count the text unit the problem defines: bytes, Unicode scalar values, or grapheme clusters."
       },
       {
-        "concept": "Return the first non-repeated ASCII character.",
         "direction": "next",
-        "title": "Challenge: Character Frequency"
+        "title": "Challenge: Character Frequency",
+        "concept": "Return the first non-repeated ASCII character in source order, or none when no such character exists."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "The answer must be the first unique character in source order. In swiss, s occurs three times while w and i occur once. A source-order pass reaches w before i, so returns w. Counting alone identifies uniqueness but does not choose the first source occurrence.",
+    "misconception": "“Hash-map iteration always preserves source order”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `swiss`, write the state before the first update. Explain how it represents this claim: Count the text unit the problem defines: bytes, Unicode scalar values, or grapheme clusters. `String` algorithms compare symbols or prefixes, but a Rust `String` is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters."
+        "title": "Concrete transition",
+        "detail": "In swiss, s occurs three times while w and i occur once. A source-order pass reaches w before i, so returns w. Counting alone identifies uniqueness but does not choose the first source occurrence."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `w`. Use bytes only when the input contract permits byte-wise matching. Never index a `String` as though every character occupied one byte."
+        "title": "Independent second fixture",
+        "detail": "Input `a` produces `a`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Defend the O(n) time · O(alphabet) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `aabbz` produces `z`. The answer must be the first unique character in source order. The stated work bound is O(n) time · O(alphabet) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `swiss` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Character Frequency survives, which state must be updated, and whether the O(n) time · O(alphabet) space bound still holds. Look for repeated prefix queries or pattern matching before choosing a trie or preprocessing; a one-off short search may not need either."
+    "transferChallenge": "Compare the visible input `swiss` with `abac`. Predict why their results are `w` and `b`. Then change one legal value and explain whether the same invariant, the answer must be the first unique character in source order, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.string-frequency.recognize",
@@ -54,21 +54,21 @@
   "title": "Character Frequency: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "anagrams, inventory, first unique symbol",
-      "Only problems with exactly one input value"
+      "`a0`",
+      "`a`",
+      "An empty output string"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Character Frequency",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Character Frequency",
-    "explanation": "A problem is a good match for Character Frequency when it asks for anagrams, inventory, first unique symbol. Here the concrete task is: Return the first non-repeated ASCII character. The visible input `swiss` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for repeated prefix queries or pattern matching before choosing a trie or preprocessing; a one-off short search may not need either. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Count the text unit the problem defines: bytes, Unicode scalar values, or grapheme clusters. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? `String` algorithms compare symbols or prefixes, but a Rust `String` is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(alphabet) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `w` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Use bytes only when the input contract permits byte-wise matching. Never index a `String` as though every character occupied one byte. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: anagrams, inventory, first unique symbol.",
-    "practiceCode": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only string-frequency program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn first_unique_ascii(text:&str)->Option<char> {\n    assert!(text.is_ascii()); let mut count=[0;256]; for c in text.bytes() { count[c as usize]+=1; }\n    text.bytes().find(|&c|count[c as usize]==1).map(char::from)\n}\n\nfn main() {\n    let result = first_unique_ascii(\"swiss\").map_or(\"none\".into(),|c|c.to_string());\n    println!(\"{result}\");\n}\n",
+    "explanation": "In swiss, s occurs three times while w and i occur once. A source-order pass reaches w before i, so returns w. Counting alone identifies uniqueness but does not choose the first source occurrence.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the first non-repeated ASCII character in source order, or none when no such character exists. The visible fixture is `swiss` and its example result is `w`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Character Frequency when it asks for anagrams, inventory, first unique symbol. Here the concrete task is: Return the first non-repeated ASCII character in source order, or none when no such character exists. The visible input `swiss` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for repeated prefix queries or pattern matching before choosing a trie or preprocessing; a one-off short search may not need either. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Count the text unit the problem defines: bytes, Unicode scalar values, or grapheme clusters. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? `String` algorithms compare symbols or prefixes, but a Rust `String` is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(alphabet) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `w` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Use bytes only when the input contract permits byte-wise matching. Never index a `String` as though every character occupied one byte. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `a`. The answer must be the first unique character in source order. Compare this independent fixture with the worked trace: In swiss, s occurs three times while w and i occur once. A source-order pass reaches w before i, so returns w. Counting alone identifies uniqueness but does not choose the first source occurrence.",
+    "practiceCode": "fn first_unique_ascii(text:&str)->Option<char> {\n    assert!(text.is_ascii()); let mut count=[0;256]; for c in text.bytes() { count[c as usize]+=1; }\n    text.bytes().find(|&c|count[c as usize]==1).map(char::from)\n}\n\nfn main() {\n    let result = first_unique_ascii(\"swiss\").map_or(\"none\".into(),|c|c.to_string());\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Character Frequency on input `a`. Which result follows from the documented contract?",
+    "rule": "The answer must be the first unique character in source order. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Character Frequency.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-strings-tries-a.png",

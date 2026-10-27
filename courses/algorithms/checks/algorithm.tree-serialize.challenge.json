@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS tree-serialize\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"1,2,#,#,3,4,#,#,5,#,#\".to_string()",
-      "String::from(\"1,2,#,#,3,4,#,#,5,#,#\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.tree-serialize.challenge",
     "patternID": "tree-serialize",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Serialize preorder using # for nulls.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Tree Serialize/Deserialize\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Parse a compact level-order tree. Serialize preorder using comma separators and # for every missing child.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement tree-serialize\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "1,2,#,#,3,4,#,#,5,#,#",
+        "kind": "visible",
         "input": "tree=[1,2,3,null,null,4,5]",
-        "kind": "visible"
+        "expectedAnswer": "1,2,#,#,3,4,#,#,5,#,#"
       },
       {
-        "expectedAnswer": "1,#,#",
+        "kind": "boundary",
         "input": "tree=[1]",
-        "kind": "boundary"
+        "expectedAnswer": "1,#,#"
       },
       {
-        "expectedAnswer": "1,#,#",
-        "input": "\ntree=[1]\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "tree=[1,2]",
+        "expectedAnswer": "1,2,#,#,#"
       },
       {
-        "expectedAnswer": "1,2,#,#,3,4,#,#,5,#,#",
+        "kind": "adversarial",
+        "input": "tree=[4,null,5]",
+        "expectedAnswer": "4,#,5,#,#"
+      },
+      {
+        "kind": "adversarial",
+        "input": "tree=[1,2,3]",
+        "expectedAnswer": "1,2,#,#,3,#,#"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \ntree=[1,2,3,null,null,4,5]\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "1,2,#,#,3,4,#,#,5,#,#"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\ntree=[1,2,3]\n",
+        "expectedAnswer": "1,2,#,#,3,#,#"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"tree=[1,2,3,null,null,4,5]\"#, r#\"1,2,#,#,3,4,#,#,5,#,#\"#),\n    (r#\"tree=[1]\"#, r#\"1,#,#\"#),\n    (r#\"\ntree=[1]\n\"#, r#\"1,#,#\"#),\n    (r#\"  \ntree=[1,2,3,null,null,4,5]\n  \"#, r#\"1,2,#,#,3,4,#,#,5,#,#\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS tree-serialize\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"tree=[1,2,3,null,null,4,5]\",\"1,2,#,#,3,4,#,#,5,#,#\"),\n        (\"tree=[1]\",\"1,#,#\"),\n        (\"tree=[1,2]\",\"1,2,#,#,#\"),\n        (\"tree=[4,null,5]\",\"4,#,5,#,#\"),\n        (\"tree=[1,2,3]\",\"1,2,#,#,3,#,#\"),\n        (\"  \\ntree=[1,2,3,null,null,4,5]\\n  \",\"1,2,#,#,3,4,#,#,5,#,#\"),\n        (\"\\ntree=[1,2,3]\\n\",\"1,2,#,#,3,#,#\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS tree-serialize\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS tree-serialize\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"1,2,#,#,3,4,#,#,5,#,#\".to_string()",
-      "String::from(\"1,2,#,#,3,4,#,#,5,#,#\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

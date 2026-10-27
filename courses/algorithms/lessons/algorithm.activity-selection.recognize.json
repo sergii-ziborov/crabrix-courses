@@ -2,49 +2,49 @@
   "algorithm": {
     "categoryID": "greedy-intervals",
     "categoryTitle": "Greedy & Interval Methods",
-    "complexity": "O(n log n) time · O(1) extra after sort",
+    "complexity": "O(n log n) time · O(n) owned sorted copy; O(1) greedy state",
     "difficulty": "easy",
     "expectedAnswer": "4",
     "idea": "Choose the compatible interval that finishes earliest, leaving maximum room for the future.",
     "patternID": "activity-selection",
-    "rustSketch": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "rustSketch": "fn maximum_meetings(intervals:&[(i32,i32)])->usize {\n    let mut sorted=intervals.to_vec(); sorted.sort_by_key(|&(s,e)|(e,s)); let mut end=i32::MIN; let mut kept=0;\n    for (s,e) in sorted { if s>=end { kept+=1; end=e; } } kept\n}\n\nfn main() {\n    let result = maximum_meetings(&[(1,2),(3,4),(0,6),(5,7),(8,9),(5,9)]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return the maximum number of compatible meetings.",
     "useCases": "maximum count of non-overlapping jobs",
     "visibleInput": "[(1,2),(3,4),(0,6),(5,7),(8,9),(5,9)]"
   },
   "concept": "maximum count of non-overlapping jobs",
-  "contentDigest": "1b6c9d993ef8fa1bda5ba660a5d3a9e125f1327ff8a7d46419775d74166b587a",
+  "contentDigest": "eea1bbb947ff34e50d4c1dbacbfc7778ceec4935811500ade6de4355b01b9b4d",
   "depth": {
     "connections": [
       {
-        "concept": "Choose the compatible interval that finishes earliest, leaving maximum room for the future.",
         "direction": "previous",
-        "title": "Activity Selection: Mental Model"
+        "title": "Activity Selection: Mental Model",
+        "concept": "Choose the compatible interval that finishes earliest, leaving maximum room for the future."
       },
       {
-        "concept": "Return the maximum number of compatible meetings.",
         "direction": "next",
-        "title": "Challenge: Activity Selection"
+        "title": "Challenge: Activity Selection",
+        "concept": "Return the maximum number of compatible meetings."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "It leaves the most remaining time without reducing achievable count. Sort the six sample meetings by finish time. Keeping (1,2),(3,4),(5,7),(8,9) yields count 4. Touching endpoints are compatible under the half-open convention, so [(1,2),(2,3)] yields 2.",
+    "misconception": "“The longest interval always leaves the most choices”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[(1,2),(3,4),(0,6),(5,7),(8,9),(5,9)]`, write the state before the first update. Explain how it represents this claim: Choose the compatible interval that finishes earliest, leaving maximum room for the future. A greedy step commits to a local choice. Give the exchange or dominance reason that an optimal solution can still include that choice."
+        "title": "Concrete transition",
+        "detail": "Sort the six sample meetings by finish time. Keeping (1,2),(3,4),(5,7),(8,9) yields count 4. Touching endpoints are compatible under the half-open convention, so [(1,2),(2,3)] yields 2."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `4`. Keep interval endpoint conventions explicit where they apply. If sorting is part of the method, its Rust comparator must encode the proof's exact tie break."
+        "title": "Independent second fixture",
+        "detail": "Input `[(0,1),(1,2),(2,3)]` produces `3`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test touching intervals, equal endpoints, empty input, and a locally attractive choice that blocks a better future choice. Defend the O(n log n) time · O(1) extra after sort bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[(1,4),(2,5)]` produces `1`. It leaves the most remaining time without reducing achievable count. The stated work bound is O(n log n) time · O(n) owned sorted copy; O(1) greedy state. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[(1,2),(3,4),(0,6),(5,7),(8,9),(5,9)]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Activity Selection survives, which state must be updated, and whether the O(n log n) time · O(1) extra after sort bound still holds. When the method sorts intervals or events, use the coordinate and tie break required by its proof. Other greedy walks keep an invariant without sorting."
+    "transferChallenge": "Compare the visible input `[(1,2),(3,4),(0,6),(5,7),(8,9),(5,9)]` with `[(0,5),(1,3),(3,4)]`. Predict why their results are `4` and `2`. Then change one legal value and explain whether the same invariant, it leaves the most remaining time without reducing achievable count, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.activity-selection.recognize",
@@ -54,21 +54,21 @@
   "title": "Activity Selection: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "maximum count of non-overlapping jobs",
-      "Only problems with exactly one input value"
+      "`4`",
+      "`3`",
+      "`2`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Activity Selection",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Activity Selection",
-    "explanation": "A problem is a good match for Activity Selection when it asks for maximum count of non-overlapping jobs. Here the concrete task is: Return the maximum number of compatible meetings. The visible input `[(1,2),(3,4),(0,6),(5,7),(8,9),(5,9)]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. When the method sorts intervals or events, use the coordinate and tie break required by its proof. Other greedy walks keep an invariant without sorting. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Choose the compatible interval that finishes earliest, leaving maximum room for the future. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A greedy step commits to a local choice. Give the exchange or dominance reason that an optimal solution can still include that choice. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n log n) time · O(1) extra after sort; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `4` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test touching intervals, equal endpoints, empty input, and a locally attractive choice that blocks a better future choice. Keep interval endpoint conventions explicit where they apply. If sorting is part of the method, its Rust comparator must encode the proof's exact tie break. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: maximum count of non-overlapping jobs.",
-    "practiceCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only activity-selection program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn maximum_meetings(intervals:&[(i32,i32)])->usize {\n    let mut sorted=intervals.to_vec(); sorted.sort_by_key(|&(s,e)|(e,s)); let mut end=i32::MIN; let mut kept=0;\n    for (s,e) in sorted { if s>=end { kept+=1; end=e; } } kept\n}\n\nfn main() {\n    let result = maximum_meetings(&[(1,2),(3,4),(0,6),(5,7),(8,9),(5,9)]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "Sort the six sample meetings by finish time. Keeping (1,2),(3,4),(5,7),(8,9) yields count 4. Touching endpoints are compatible under the half-open convention, so [(1,2),(2,3)] yields 2.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the maximum number of compatible meetings. The visible fixture is `[(1,2),(3,4),(0,6),(5,7),(8,9),(5,9)]` and its example result is `4`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Activity Selection when it asks for maximum count of non-overlapping jobs. Here the concrete task is: Return the maximum number of compatible meetings. The visible input `[(1,2),(3,4),(0,6),(5,7),(8,9),(5,9)]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. When the method sorts intervals or events, use the coordinate and tie break required by its proof. Other greedy walks keep an invariant without sorting. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Choose the compatible interval that finishes earliest, leaving maximum room for the future. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A greedy step commits to a local choice. Give the exchange or dominance reason that an optimal solution can still include that choice. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n log n) time · O(n) owned sorted copy; O(1) greedy state; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `4` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test touching intervals, equal endpoints, empty input, and a locally attractive choice that blocks a better future choice. Keep interval endpoint conventions explicit where they apply. If sorting is part of the method, its Rust comparator must encode the proof's exact tie break. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `3`. It leaves the most remaining time without reducing achievable count. Compare this independent fixture with the worked trace: Sort the six sample meetings by finish time. Keeping (1,2),(3,4),(5,7),(8,9) yields count 4. Touching endpoints are compatible under the half-open convention, so [(1,2),(2,3)] yields 2.",
+    "practiceCode": "fn maximum_meetings(intervals:&[(i32,i32)])->usize {\n    let mut sorted=intervals.to_vec(); sorted.sort_by_key(|&(s,e)|(e,s)); let mut end=i32::MIN; let mut kept=0;\n    for (s,e) in sorted { if s>=end { kept+=1; end=e; } } kept\n}\n\nfn main() {\n    let result = maximum_meetings(&[(1,2),(3,4),(0,6),(5,7),(8,9),(5,9)]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Activity Selection on input `[(0,1),(1,2),(2,3)]`. Which result follows from the documented contract?",
+    "rule": "It leaves the most remaining time without reducing achievable count. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Activity Selection.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-greedy-intervals-a.png",

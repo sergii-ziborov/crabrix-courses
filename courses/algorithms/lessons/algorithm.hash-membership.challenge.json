@@ -7,44 +7,44 @@
     "expectedAnswer": "true",
     "idea": "Store seen keys so later membership checks are expected constant time.",
     "patternID": "hash-membership",
-    "rustSketch": "use std::collections::HashMap;\nfn counts(values: &[i32]) -> HashMap<i32, usize> {\n    let mut map = HashMap::new();\n    for &value in values { *map.entry(value).or_insert(0) += 1; }\n    map\n}",
+    "rustSketch": "fn has_duplicate(values: &[i32]) -> bool {\n    let mut seen = std::collections::HashSet::new();\n    values.iter().any(|&x| !seen.insert(x))\n}\n\nfn main() {\n    let result = has_duplicate(&[1,2,3]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Return true when any badge ID occurs twice.",
     "useCases": "duplicate detection, visited values, allowlists and denylists",
     "visibleInput": "[11, 8, 3, 8]"
   },
   "concept": "Return true when any badge ID occurs twice.",
-  "contentDigest": "5efafbfb10450c13c356d50ef9b88b862749230e543e2f1a0726601d87b8184c",
+  "contentDigest": "0a9dcc76eba423b65a18d92a13556edbd08d5cc8aa75d4339a8d756ab1036eda",
   "depth": {
     "connections": [
       {
-        "concept": "duplicate detection, visited values, allowlists and denylists",
         "direction": "previous",
-        "title": "Hash Membership: When to Use It"
+        "title": "Hash Membership: When to Use It",
+        "concept": "duplicate detection, visited values, allowlists and denylists"
       },
       {
-        "concept": "Map each key to its number of occurrences in one pass.",
         "direction": "next",
-        "title": "Hash Frequency Map: Mental Model"
+        "title": "Hash Frequency Map: Mental Model",
+        "concept": "Map each key to its number of occurrences in one pass."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "The same value was already inserted. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“Two unrelated values merely share a hash”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[11, 8, 3, 8]`, write the state before the first update. Explain how it represents this claim: Store seen keys so later membership checks are expected constant time. A key-derived representation lets later work reuse an earlier fact. It may be a set, a map from keys to state, compressed ranks, or a rolling fingerprint; name which one this pattern uses."
+        "title": "Pattern-specific invariant",
+        "detail": "The same value was already inserted. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. In Rust, use `HashSet` for presence and `HashMap` for associated state. Compression and rolling hashes need their own arrays or arithmetic; do not force every hashing pattern into a map."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `[1, 2, 3]` and computes `false`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check missing keys, repeated keys, and collisions conceptually; expected constant-time operations are not a worst-case promise. Defend the O(n) expected time · O(n) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `[8,7,6,5,4,3,2]`, the independently calculated result is `false`. The complexity discussion uses O(n) expected time · O(n) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `[11, 8, 3, 8]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Hash Membership survives, which state must be updated, and whether the O(n) expected time · O(n) space bound still holds. Look for repeated membership, grouping, or a reusable key representation. A sorted structure may be preferable when deterministic order is part of the requirement."
+    "transferChallenge": "Change the independent fixture `[1, 2, 3]` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `[11, 8, 3, 8]`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.hash-membership.challenge",
@@ -54,19 +54,19 @@
   "title": "Challenge: Hash Membership",
   "writing": {
     "answers": [
-      "O(n) expected time · O(n) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`false`",
+      "`true`",
+      "The valid input necessarily panics"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return true when any badge ID occurs twice.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Hash Membership\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Return true when any badge ID occurs twice. On input `[11, 8, 3, 8]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Store seen keys so later membership checks are expected constant time. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A key-derived representation lets later work reuse an earlier fact. It may be a set, a map from keys to state, compressed ranks, or a rolling fingerprint; name which one this pattern uses. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. In Rust, use `HashSet` for presence and `HashMap` for associated state. Compression and rolling hashes need their own arrays or arithmetic; do not force every hashing pattern into a map. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n) expected time · O(n) space; explain which operation dominates it and how many times the input can trigger that operation. Check missing keys, repeated keys, and collisions conceptually; expected constant-time operations are not a worst-case promise. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(n) expected time · O(n) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return true when any badge ID occurs twice.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Hash Membership\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS hash-membership, and your explanation still meets O(n) expected time · O(n) space.",
+    "exampleCaption": "Complete std-only hash-membership program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn has_duplicate(values: &[i32]) -> bool {\n    let mut seen = std::collections::HashSet::new();\n    values.iter().any(|&x| !seen.insert(x))\n}\n\nfn main() {\n    let result = has_duplicate(&[1,2,3]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "The same value was already inserted. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `[1, 2, 3]`, the worked program returns `false`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `[11, 8, 3, 8]`; predict that result before opening the answer reveal. The precise contract is: Return true when any badge ID occurs twice.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Return true when any badge ID occurs twice. On input `[11, 8, 3, 8]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Store seen keys so later membership checks are expected constant time. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A key-derived representation lets later work reuse an earlier fact. It may be a set, a map from keys to state, compressed ranks, or a rolling fingerprint; name which one this pattern uses. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(n) expected time · O(n) space; explain which operation dominates it and how many times the input can trigger that operation. Check missing keys, repeated keys, and collisions conceptually; expected constant-time operations are not a worst-case promise. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `false`. The same value was already inserted. Compare this independent fixture with the worked trace: Insert 11, then 8, then 3 successfully. Inserting the second 8 returns false because equality finds the existing value. Hash collisions alone do not make distinct values duplicates.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return true when any badge ID occurs twice.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement hash-membership\")\n}\n",
+    "question": "Boundary check for hash-membership: with input `[8,7,6,5,4,3,2]`, what result should solve return?",
+    "rule": "The same value was already inserted. Return true when any badge ID occurs twice.",
+    "success": "The private harness prints PASS hash-membership. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Return true when any badge ID occurs twice.",
     "task": "Return true when any badge ID occurs twice."
   },

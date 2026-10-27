@@ -7,7 +7,7 @@
     "expectedAnswer": "2",
     "idea": "Choose each palindromic prefix as the next piece and recurse on the remaining suffix.",
     "patternID": "palindrome-partition",
-    "rustSketch": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
+    "rustSketch": "fn palindrome_partitions(text:&str)->usize {\n    assert!(text.is_ascii()); let a=text.as_bytes(); let n=a.len(); let mut palindrome=vec![vec![false;n];n];\n    for i in (0..n).rev() { for j in i..n { palindrome[i][j]=a[i]==a[j] && (j-i<2 || palindrome[i+1][j-1]); } }\n    fn count(i:usize,p:&[Vec<bool>])->usize {\n        if i==p.len() { return 1; } (i..p.len()).filter(|&j|p[i][j]).map(|j|count(j+1,p)).sum()\n    }\n    count(0,&palindrome)\n}\n\nfn main() {\n    let result = palindrome_partitions(\"aaa\").to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Return the number of palindrome partitions.",
     "useCases": "string segmentation under a local validity rule",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "string segmentation under a local validity rule",
         "direction": "previous",
-        "title": "Palindrome Partitioning: When to Use It"
+        "title": "Palindrome Partitioning: When to Use It",
+        "concept": "string segmentation under a local validity rule"
       },
       {
-        "concept": "Place one queen per row and reject occupied columns and both diagonals before recursing.",
         "direction": "next",
-        "title": "N-Queens: Mental Model"
+        "title": "N-Queens: Mental Model",
+        "concept": "Place one queen per row and reject occupied columns and both diagonals before recursing."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "Every segment of a valid partition must itself be palindromic. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“Only the complete original string must be a palindrome”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `aab`, write the state before the first update. Explain how it represents this claim: Choose each palindromic prefix as the next piece and recurse on the remaining suffix. Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains."
+        "title": "Pattern-specific invariant",
+        "detail": "Every segment of a valid partition must itself be palindromic. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. For recursive search, push a choice, recurse, then undo it; for meet-in-the-middle, collect each half before matching them. In Rust, clone a path only when storing a completed answer."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `aaa` and computes `4`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. Defend the O(n*2^n) worst · O(n^2) palindrome work bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `aaaa`, the independently calculated result is `8`. The complexity discussion uses O(n*2^n) worst · O(n^2) palindrome work. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `aab` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Palindrome Partitioning survives, which state must be updated, and whether the O(n*2^n) worst · O(n^2) palindrome work bound still holds. Use pruning when partial choices can already be ruled out. Meet-in-the-middle instead trades two exhaustive half-enumerations for a smaller search space."
+    "transferChallenge": "Change the independent fixture `aaa` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `aab`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.palindrome-partition.challenge",
@@ -54,19 +54,19 @@
   "title": "Challenge: Palindrome Partitioning",
   "writing": {
     "answers": [
-      "O(n*2^n) worst · O(n^2) palindrome work",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`2`",
+      "`3`",
+      "`1`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return the number of palindrome partitions.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Palindrome Partitioning\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Return the number of palindrome partitions. On input `aab`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Choose each palindromic prefix as the next piece and recurse on the remaining suffix. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. For recursive search, push a choice, recurse, then undo it; for meet-in-the-middle, collect each half before matching them. In Rust, clone a path only when storing a completed answer. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n*2^n) worst · O(n^2) palindrome work; explain which operation dominates it and how many times the input can trigger that operation. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(n*2^n) worst · O(n^2) palindrome work; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return the number of palindrome partitions.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Palindrome Partitioning\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS palindrome-partition, and your explanation still meets O(n*2^n) worst · O(n^2) palindrome work.",
+    "exampleCaption": "Complete std-only palindrome-partition program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn palindrome_partitions(text:&str)->usize {\n    assert!(text.is_ascii()); let a=text.as_bytes(); let n=a.len(); let mut palindrome=vec![vec![false;n];n];\n    for i in (0..n).rev() { for j in i..n { palindrome[i][j]=a[i]==a[j] && (j-i<2 || palindrome[i+1][j-1]); } }\n    fn count(i:usize,p:&[Vec<bool>])->usize {\n        if i==p.len() { return 1; } (i..p.len()).filter(|&j|p[i][j]).map(|j|count(j+1,p)).sum()\n    }\n    count(0,&palindrome)\n}\n\nfn main() {\n    let result = palindrome_partitions(\"aaa\").to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "Every segment of a valid partition must itself be palindromic. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `aaa`, the worked program returns `4`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `aab`; predict that result before opening the answer reveal. The precise contract is: Return the number of palindrome partitions.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Return the number of palindrome partitions. On input `aab`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Choose each palindromic prefix as the next piece and recurse on the remaining suffix. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(n*2^n) worst · O(n^2) palindrome work; explain which operation dominates it and how many times the input can trigger that operation. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `2`. Every segment of a valid partition must itself be palindromic. Compare this independent fixture with the worked trace: For aab, choose a then a then b, or choose aa then b. Both reach the empty suffix and count once, giving 2. Precomputing palindrome intervals avoids repeating the character test during recursive enumeration.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return the number of palindrome partitions.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement palindrome-partition\")\n}\n",
+    "question": "Boundary check for palindrome-partition: with input `aba`, what result should solve return?",
+    "rule": "Every segment of a valid partition must itself be palindromic. Return the number of palindrome partitions.",
+    "success": "The private harness prints PASS palindrome-partition. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Return the number of palindrome partitions.",
     "task": "Return the number of palindrome partitions."
   },

@@ -2,49 +2,49 @@
   "algorithm": {
     "categoryID": "hashing",
     "categoryTitle": "Hash Maps & Sets",
-    "complexity": "O(total input) expected time · O(total input) space",
+    "complexity": "O(sum of L log L) letter-key sorting · O(total symbols) space",
     "difficulty": "medium",
     "expectedAnswer": "3",
     "idea": "Transform each item to a stable key and collect items sharing that key.",
     "patternID": "group-by-key",
-    "rustSketch": "use std::collections::HashMap;\nfn counts(values: &[i32]) -> HashMap<i32, usize> {\n    let mut map = HashMap::new();\n    for &value in values { *map.entry(value).or_insert(0) += 1; }\n    map\n}",
+    "rustSketch": "fn largest_anagram_group(words: &[&str]) -> usize {\n    let mut groups = std::collections::HashMap::new();\n    for word in words {\n        let mut key: Vec<char> = word.chars().collect();\n        key.sort_unstable();\n        *groups.entry(key).or_insert(0) += 1;\n    }\n    groups.values().copied().max().unwrap_or(0)\n}\n\nfn main() {\n    let result = largest_anagram_group(&[\"eat\",\"tea\",\"tan\",\"ate\",\"nat\"]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Group words by sorted letters and return the size of the largest group.",
     "useCases": "anagram groups, bucketing records, equivalence classes",
     "visibleInput": "[eat,tea,tan,ate,nat]"
   },
   "concept": "Transform each item to a stable key and collect items sharing that key.",
-  "contentDigest": "1e838ac7be9d9ac7c823e38786b910d2bed776605a96da83191d84623857d359",
+  "contentDigest": "d83a52cb851c853cc25f2dc317144898176f4a6b6aaf739f241072926c36037c",
   "depth": {
     "connections": [
       {
-        "concept": "Return the zero-based indexes of two values summing to target.",
         "direction": "previous",
-        "title": "Challenge: Complement Lookup"
+        "title": "Challenge: Complement Lookup",
+        "concept": "Return zero-based indexes i,j of any two distinct positions whose values sum to target. Return -1,-1 if no pair exists; either order of a valid pair is accepted."
       },
       {
-        "concept": "anagram groups, bucketing records, equivalence classes",
         "direction": "next",
-        "title": "Group by Canonical Key: When to Use It"
+        "title": "Group by Canonical Key: When to Use It",
+        "concept": "anagram groups, bucketing records, equivalence classes"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "Anagrams have the same sorted multiset of letters. eat, tea, and ate all produce the key [a,e,t]. tan and nat produce [a,n,t]. The largest group therefore contains 3 words, even though the groups may be iterated in a different order.",
+    "misconception": "“All words of the same length have the same key”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[eat,tea,tan,ate,nat]`, write the state before the first update. Explain how it represents this claim: Transform each item to a stable key and collect items sharing that key. A key-derived representation lets later work reuse an earlier fact. It may be a set, a map from keys to state, compressed ranks, or a rolling fingerprint; name which one this pattern uses."
+        "title": "Concrete transition",
+        "detail": "eat, tea, and ate all produce the key [a,e,t]. tan and nat produce [a,n,t]. The largest group therefore contains 3 words, even though the groups may be iterated in a different order."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `3`. In Rust, use `HashSet` for presence and `HashMap` for associated state. Compression and rolling hashes need their own arrays or arithmetic; do not force every hashing pattern into a map."
+        "title": "Independent second fixture",
+        "detail": "Input `[ab,ba,ab,cd]` produces `3`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check missing keys, repeated keys, and collisions conceptually; expected constant-time operations are not a worst-case promise. Defend the O(total input) expected time · O(total input) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[a,b,c]` produces `1`. Anagrams have the same sorted multiset of letters. The stated work bound is O(sum of L log L) letter-key sorting · O(total symbols) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[eat,tea,tan,ate,nat]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Group by Canonical Key survives, which state must be updated, and whether the O(total input) expected time · O(total input) space bound still holds. Look for repeated membership, grouping, or a reusable key representation. A sorted structure may be preferable when deterministic order is part of the requirement."
+    "transferChallenge": "Compare the visible input `[eat,tea,tan,ate,nat]` with `[rust]`. Predict why their results are `3` and `1`. Then change one legal value and explain whether the same invariant, anagrams have the same sorted multiset of letters, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.group-by-key.model",
@@ -54,21 +54,21 @@
   "title": "Group by Canonical Key: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "Anagrams have the same sorted multiset of letters",
+      "All words of the same length have the same key",
+      "Sorting preserves the original word's position"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(total input) expected time · O(total input) space",
-    "exampleCode": "use std::collections::HashMap;\nfn counts(values: &[i32]) -> HashMap<i32, usize> {\n    let mut map = HashMap::new();\n    for &value in values { *map.entry(value).or_insert(0) += 1; }\n    map\n}",
-    "explanation": "Begin with the concrete question: Group words by sorted letters and return the size of the largest group. For the visible input `[eat,tea,tan,ate,nat]`, the stated result is `3`. Before reading code, name the smallest piece of information that must survive from one step to the next. A key-derived representation lets later work reuse an earlier fact. It may be a set, a map from keys to state, compressed ranks, or a rolling fingerprint; name which one this pattern uses. That is the mental model for Group by Canonical Key; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Transform each item to a stable key and collect items sharing that key. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. In Rust, use `HashSet` for presence and `HashMap` for associated state. Compression and rolling hashes need their own arrays or arithmetic; do not force every hashing pattern into a map. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(total input) expected time · O(total input) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check missing keys, repeated keys, and collisions conceptually; expected constant-time operations are not a worst-case promise. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "use std::collections::HashMap;\nfn counts(values: &[i32]) -> HashMap<i32, usize> {\n    let mut map = HashMap::new();\n    for &value in values { *map.entry(value).or_insert(0) += 1; }\n    map\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
-    "success": "You can explain the invariant, termination condition, and O(total input) expected time · O(total input) space bound without looking at the code.",
+    "exampleCaption": "Complete std-only group-by-key program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn largest_anagram_group(words: &[&str]) -> usize {\n    let mut groups = std::collections::HashMap::new();\n    for word in words {\n        let mut key: Vec<char> = word.chars().collect();\n        key.sort_unstable();\n        *groups.entry(key).or_insert(0) += 1;\n    }\n    groups.values().copied().max().unwrap_or(0)\n}\n\nfn main() {\n    let result = largest_anagram_group(&[\"eat\",\"tea\",\"tan\",\"ate\",\"nat\"]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "eat, tea, and ate all produce the key [a,e,t]. tan and nat produce [a,n,t]. The largest group therefore contains 3 words, even though the groups may be iterated in a different order.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Group words by sorted letters and return the size of the largest group. The visible fixture is `[eat,tea,tan,ate,nat]` and its example result is `3`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Group words by sorted letters and return the size of the largest group. For the visible input `[eat,tea,tan,ate,nat]`, the stated result is `3`. Before reading code, name the smallest piece of information that must survive from one step to the next. A key-derived representation lets later work reuse an earlier fact. It may be a set, a map from keys to state, compressed ranks, or a rolling fingerprint; name which one this pattern uses. That is the mental model for Group by Canonical Key; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Transform each item to a stable key and collect items sharing that key. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(sum of L log L) letter-key sorting · O(total symbols) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check missing keys, repeated keys, and collisions conceptually; expected constant-time operations are not a worst-case promise. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "eat, tea, and ate all produce the key [a,e,t]. tan and nat produce [a,n,t]. The largest group therefore contains 3 words, even though the groups may be iterated in a different order.",
+    "practiceCode": "fn largest_anagram_group(words: &[&str]) -> usize {\n    let mut groups = std::collections::HashMap::new();\n    for word in words {\n        let mut key: Vec<char> = word.chars().collect();\n        key.sort_unstable();\n        *groups.entry(key).or_insert(0) += 1;\n    }\n    groups.values().copied().max().unwrap_or(0)\n}\n\nfn main() {\n    let result = largest_anagram_group(&[\"eat\",\"tea\",\"tan\",\"ate\",\"nat\"]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Why do sorted letters form a useful anagram key?",
+    "rule": "Anagrams have the same sorted multiset of letters. State the input preconditions before applying this invariant.",
+    "success": "You can explain the invariant, termination condition, and O(sum of L log L) letter-key sorting · O(total symbols) space bound without looking at the code.",
     "summary": "Transform each item to a stable key and collect items sharing that key.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-hashing-a.png",

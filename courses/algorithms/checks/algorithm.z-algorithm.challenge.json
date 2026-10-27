@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS z-algorithm\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"0,1,0,0,3,1,0,0,2,2,1,0\".to_string()",
-      "String::from(\"0,1,0,0,3,1,0,0,2,2,1,0\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.z-algorithm.challenge",
     "patternID": "z-algorithm",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return the Z array.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Z Algorithm\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Return the Z array.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement z-algorithm\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "0,1,0,0,3,1,0,0,2,2,1,0",
+        "kind": "visible",
         "input": "aabcaabxaaaz",
-        "kind": "visible"
+        "expectedAnswer": "0,1,0,0,3,1,0,0,2,2,1,0"
       },
       {
-        "expectedAnswer": "0,3,2,1",
+        "kind": "boundary",
         "input": "aaaa",
-        "kind": "boundary"
+        "expectedAnswer": "0,3,2,1"
       },
       {
-        "expectedAnswer": "0,3,2,1",
-        "input": "\naaaa\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "a",
+        "expectedAnswer": "0"
       },
       {
-        "expectedAnswer": "0,1,0,0,3,1,0,0,2,2,1,0",
+        "kind": "adversarial",
+        "input": "abcde",
+        "expectedAnswer": "0,0,0,0,0"
+      },
+      {
+        "kind": "adversarial",
+        "input": "abacaba",
+        "expectedAnswer": "0,0,1,0,3,0,1"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \naabcaabxaaaz\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "0,1,0,0,3,1,0,0,2,2,1,0"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\nabacaba\n",
+        "expectedAnswer": "0,0,1,0,3,0,1"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"aabcaabxaaaz\"#, r#\"0,1,0,0,3,1,0,0,2,2,1,0\"#),\n    (r#\"aaaa\"#, r#\"0,3,2,1\"#),\n    (r#\"\naaaa\n\"#, r#\"0,3,2,1\"#),\n    (r#\"  \naabcaabxaaaz\n  \"#, r#\"0,1,0,0,3,1,0,0,2,2,1,0\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS z-algorithm\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"aabcaabxaaaz\",\"0,1,0,0,3,1,0,0,2,2,1,0\"),\n        (\"aaaa\",\"0,3,2,1\"),\n        (\"a\",\"0\"),\n        (\"abcde\",\"0,0,0,0,0\"),\n        (\"abacaba\",\"0,0,1,0,3,0,1\"),\n        (\"  \\naabcaabxaaaz\\n  \",\"0,1,0,0,3,1,0,0,2,2,1,0\"),\n        (\"\\nabacaba\\n\",\"0,0,1,0,3,0,1\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS z-algorithm\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS z-algorithm\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"0,1,0,0,3,1,0,0,2,2,1,0\".to_string()",
-      "String::from(\"0,1,0,0,3,1,0,0,2,2,1,0\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

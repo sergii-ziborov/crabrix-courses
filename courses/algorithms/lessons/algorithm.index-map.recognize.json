@@ -7,44 +7,44 @@
     "expectedAnswer": "3",
     "idea": "Remember the latest or earliest position associated with each value.",
     "patternID": "index-map",
-    "rustSketch": "use std::collections::HashMap;\nfn counts(values: &[i32]) -> HashMap<i32, usize> {\n    let mut map = HashMap::new();\n    for &value in values { *map.entry(value).or_insert(0) += 1; }\n    map\n}",
+    "rustSketch": "fn nearest_repeat(values: &[i32]) -> Option<usize> {\n    let mut last = std::collections::HashMap::new();\n    let mut best = None;\n    for (i, &x) in values.iter().enumerate() {\n        if let Some(j) = last.insert(x, i) {\n            best = Some(best.map_or(i - j, |old: usize| old.min(i - j)));\n        }\n    }\n    best\n}\n\nfn main() {\n    let result = nearest_repeat(&[5,1,9,5,1]).map_or(\"-1\".into(),|i|i.to_string());\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return the shortest distance between equal values.",
     "useCases": "distance between repeats, sparse lookup, reconciliation",
     "visibleInput": "[5, 1, 9, 5, 1]"
   },
   "concept": "distance between repeats, sparse lookup, reconciliation",
-  "contentDigest": "04d1992af4480558cba925e62bb6949afd9a1b19f797a188f155ac4373b39f45",
+  "contentDigest": "7b53f6523547b30449f6c0f4bb949a1d873e772d3df2750f4f497b2e09d51a68",
   "depth": {
     "connections": [
       {
-        "concept": "Remember the latest or earliest position associated with each value.",
         "direction": "previous",
-        "title": "Value-to-Index Map: Mental Model"
+        "title": "Value-to-Index Map: Mental Model",
+        "concept": "Remember the latest or earliest position associated with each value."
       },
       {
-        "concept": "Return the shortest distance between equal values.",
         "direction": "next",
-        "title": "Challenge: Value-to-Index Map"
+        "title": "Challenge: Value-to-Index Map",
+        "concept": "Return the shortest distance between equal values."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "The latest equal predecessor gives the shortest new distance. In [5,1,9,5,1], the repeated 5 at index 3 has distance 3, and the repeated 1 at index 4 also has distance 3. Replacing each last index matters for later repeats; with no repeated value the result is -1.",
+    "misconception": "“The earliest occurrence always gives the smallest distance”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[5, 1, 9, 5, 1]`, write the state before the first update. Explain how it represents this claim: Remember the latest or earliest position associated with each value. A key-derived representation lets later work reuse an earlier fact. It may be a set, a map from keys to state, compressed ranks, or a rolling fingerprint; name which one this pattern uses."
+        "title": "Concrete transition",
+        "detail": "In [5,1,9,5,1], the repeated 5 at index 3 has distance 3, and the repeated 1 at index 4 also has distance 3. Replacing each last index matters for later repeats; with no repeated value the result is -1."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `3`. In Rust, use `HashSet` for presence and `HashMap` for associated state. Compression and rolling hashes need their own arrays or arithmetic; do not force every hashing pattern into a map."
+        "title": "Independent second fixture",
+        "detail": "Input `[1,2,3,4,5,6,7]` produces `-1`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check missing keys, repeated keys, and collisions conceptually; expected constant-time operations are not a worst-case promise. Defend the O(n) expected time · O(k) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[8,7,6,5,4,3,2]` produces `-1`. The latest equal predecessor gives the shortest new distance. The stated work bound is O(n) expected time · O(k) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[5, 1, 9, 5, 1]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Value-to-Index Map survives, which state must be updated, and whether the O(n) expected time · O(k) space bound still holds. Look for repeated membership, grouping, or a reusable key representation. A sorted structure may be preferable when deterministic order is part of the requirement."
+    "transferChallenge": "Compare the visible input `[5, 1, 9, 5, 1]` with `[3,3,3,3,3,3,3]`. Predict why their results are `3` and `1`. Then change one legal value and explain whether the same invariant, the latest equal predecessor gives the shortest new distance, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.index-map.recognize",
@@ -54,21 +54,21 @@
   "title": "Value-to-Index Map: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "distance between repeats, sparse lookup, reconciliation",
-      "Only problems with exactly one input value"
+      "`0`",
+      "`-1`",
+      "`-2`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Value-to-Index Map",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Value-to-Index Map",
-    "explanation": "A problem is a good match for Value-to-Index Map when it asks for distance between repeats, sparse lookup, reconciliation. Here the concrete task is: Return the shortest distance between equal values. The visible input `[5, 1, 9, 5, 1]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for repeated membership, grouping, or a reusable key representation. A sorted structure may be preferable when deterministic order is part of the requirement. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Remember the latest or earliest position associated with each value. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A key-derived representation lets later work reuse an earlier fact. It may be a set, a map from keys to state, compressed ranks, or a rolling fingerprint; name which one this pattern uses. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) expected time · O(k) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `3` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check missing keys, repeated keys, and collisions conceptually; expected constant-time operations are not a worst-case promise. In Rust, use `HashSet` for presence and `HashMap` for associated state. Compression and rolling hashes need their own arrays or arithmetic; do not force every hashing pattern into a map. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: distance between repeats, sparse lookup, reconciliation.",
-    "practiceCode": "use std::collections::HashMap;\nfn counts(values: &[i32]) -> HashMap<i32, usize> {\n    let mut map = HashMap::new();\n    for &value in values { *map.entry(value).or_insert(0) += 1; }\n    map\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only index-map program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn nearest_repeat(values: &[i32]) -> Option<usize> {\n    let mut last = std::collections::HashMap::new();\n    let mut best = None;\n    for (i, &x) in values.iter().enumerate() {\n        if let Some(j) = last.insert(x, i) {\n            best = Some(best.map_or(i - j, |old: usize| old.min(i - j)));\n        }\n    }\n    best\n}\n\nfn main() {\n    let result = nearest_repeat(&[5,1,9,5,1]).map_or(\"-1\".into(),|i|i.to_string());\n    println!(\"{result}\");\n}\n",
+    "explanation": "In [5,1,9,5,1], the repeated 5 at index 3 has distance 3, and the repeated 1 at index 4 also has distance 3. Replacing each last index matters for later repeats; with no repeated value the result is -1.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the shortest distance between equal values. The visible fixture is `[5, 1, 9, 5, 1]` and its example result is `3`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Value-to-Index Map when it asks for distance between repeats, sparse lookup, reconciliation. Here the concrete task is: Return the shortest distance between equal values. The visible input `[5, 1, 9, 5, 1]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for repeated membership, grouping, or a reusable key representation. A sorted structure may be preferable when deterministic order is part of the requirement. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Remember the latest or earliest position associated with each value. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A key-derived representation lets later work reuse an earlier fact. It may be a set, a map from keys to state, compressed ranks, or a rolling fingerprint; name which one this pattern uses. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) expected time · O(k) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `3` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check missing keys, repeated keys, and collisions conceptually; expected constant-time operations are not a worst-case promise. In Rust, use `HashSet` for presence and `HashMap` for associated state. Compression and rolling hashes need their own arrays or arithmetic; do not force every hashing pattern into a map. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `-1`. The latest equal predecessor gives the shortest new distance. Compare this independent fixture with the worked trace: In [5,1,9,5,1], the repeated 5 at index 3 has distance 3, and the repeated 1 at index 4 also has distance 3. Replacing each last index matters for later repeats; with no repeated value the result is -1.",
+    "practiceCode": "fn nearest_repeat(values: &[i32]) -> Option<usize> {\n    let mut last = std::collections::HashMap::new();\n    let mut best = None;\n    for (i, &x) in values.iter().enumerate() {\n        if let Some(j) = last.insert(x, i) {\n            best = Some(best.map_or(i - j, |old: usize| old.min(i - j)));\n        }\n    }\n    best\n}\n\nfn main() {\n    let result = nearest_repeat(&[5,1,9,5,1]).map_or(\"-1\".into(),|i|i.to_string());\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Value-to-Index Map on input `[1,2,3,4,5,6,7]`. Which result follows from the documented contract?",
+    "rule": "The latest equal predecessor gives the shortest new distance. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Value-to-Index Map.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-hashing-a.png",

@@ -7,7 +7,7 @@
     "expectedAnswer": "2.5",
     "idea": "Binary-search a partition where every left-side value is no larger than every right-side value.",
     "patternID": "partition-median",
-    "rustSketch": "fn lower_bound(values: &[i32], target: i32) -> usize {\n    let (mut low, mut high) = (0, values.len());\n    while low < high {\n        let mid = low + (high - low) / 2;\n        if values[mid] < target { low = mid + 1; } else { high = mid; }\n    }\n    low\n}",
+    "rustSketch": "fn sorted_median(a:&[i32],b:&[i32])->f64 {\n    if a.len()>b.len() { return sorted_median(b,a); }\n    assert!(!b.is_empty()); let half=(a.len()+b.len()).div_ceil(2);\n    let (mut lo,mut hi)=(0,a.len());\n    loop {\n        let i=lo+(hi-lo)/2; let j=half-i;\n        let al=if i==0 { i32::MIN } else { a[i-1] }; let ar=a.get(i).copied().unwrap_or(i32::MAX);\n        let bl=if j==0 { i32::MIN } else { b[j-1] }; let br=b.get(j).copied().unwrap_or(i32::MAX);\n        if al<=br && bl<=ar {\n            if (a.len()+b.len())%2==1 { return al.max(bl) as f64; }\n            return (al.max(bl) as f64+ar.min(br) as f64)/2.0;\n        }\n        if al>br { hi=i-1; } else { lo=i+1; }\n    }\n}\n\nfn main() {\n    let result = sorted_median(&[1],&[3]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Return the median of the two sorted arrays.",
     "useCases": "median or kth item across two sorted arrays",
@@ -18,33 +18,28 @@
   "depth": {
     "connections": [
       {
-        "concept": "median or kth item across two sorted arrays",
         "direction": "previous",
-        "title": "Partition Median: When to Use It"
-      },
-      {
-        "concept": "Detach the next link before redirecting the current node toward the reversed prefix.",
-        "direction": "next",
-        "title": "Iterative List Reversal: Mental Model"
+        "title": "Partition Median: When to Use It",
+        "concept": "median or kth item across two sorted arrays"
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "Both left-side maxima are no greater than the opposite right-side minima. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“The shorter array's midpoint alone is the median”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[1,3] and [2,4]`, write the state before the first update. Explain how it represents this claim: Binary-search a partition where every left-side value is no larger than every right-side value. Binary search maintains an interval that is still capable of containing the answer. State precisely why the discarded half cannot contain it."
+        "title": "Pattern-specific invariant",
+        "detail": "Both left-side maxima are no greater than the opposite right-side minima. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Use half-open bounds consistently and compute the midpoint without overflowing large integer indices."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `[1] and [3]` and computes `2`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check no match, duplicate matches, the first and last valid positions, and an answer at the boundary of the search domain. Defend the O(log min(n,m)) time · O(1) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `[2] and [5]`, the independently calculated result is `3.5`. The complexity discussion uses O(log min(n,m)) time · O(1) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `[1,3] and [2,4]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Partition Median survives, which state must be updated, and whether the O(log min(n,m)) time · O(1) space bound still holds. It needs ordering, a monotone predicate, or another proved structure that lets one half be discarded; merely containing numbers is not enough."
+    "transferChallenge": "Change the independent fixture `[1] and [3]` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `[1,3] and [2,4]`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.partition-median.challenge",
@@ -54,19 +49,19 @@
   "title": "Challenge: Partition Median",
   "writing": {
     "answers": [
-      "O(log min(n,m)) time · O(1) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`3.5`",
+      "`3.50`",
+      "`5.3`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return the median of the two sorted arrays.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Partition Median\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Return the median of the two sorted arrays. On input `[1,3] and [2,4]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Binary-search a partition where every left-side value is no larger than every right-side value. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. Binary search maintains an interval that is still capable of containing the answer. State precisely why the discarded half cannot contain it. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use half-open bounds consistently and compute the midpoint without overflowing large integer indices. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(log min(n,m)) time · O(1) space; explain which operation dominates it and how many times the input can trigger that operation. Check no match, duplicate matches, the first and last valid positions, and an answer at the boundary of the search domain. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(log min(n,m)) time · O(1) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return the median of the two sorted arrays.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Partition Median\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS partition-median, and your explanation still meets O(log min(n,m)) time · O(1) space.",
+    "exampleCaption": "Complete std-only partition-median program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn sorted_median(a:&[i32],b:&[i32])->f64 {\n    if a.len()>b.len() { return sorted_median(b,a); }\n    assert!(!b.is_empty()); let half=(a.len()+b.len()).div_ceil(2);\n    let (mut lo,mut hi)=(0,a.len());\n    loop {\n        let i=lo+(hi-lo)/2; let j=half-i;\n        let al=if i==0 { i32::MIN } else { a[i-1] }; let ar=a.get(i).copied().unwrap_or(i32::MAX);\n        let bl=if j==0 { i32::MIN } else { b[j-1] }; let br=b.get(j).copied().unwrap_or(i32::MAX);\n        if al<=br && bl<=ar {\n            if (a.len()+b.len())%2==1 { return al.max(bl) as f64; }\n            return (al.max(bl) as f64+ar.min(br) as f64)/2.0;\n        }\n        if al>br { hi=i-1; } else { lo=i+1; }\n    }\n}\n\nfn main() {\n    let result = sorted_median(&[1],&[3]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "Both left-side maxima are no greater than the opposite right-side minima. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `[1] and [3]`, the worked program returns `2`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `[1,3] and [2,4]`; predict that result before opening the answer reveal. The precise contract is: Return the median of the two sorted arrays.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Return the median of the two sorted arrays. On input `[1,3] and [2,4]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Binary-search a partition where every left-side value is no larger than every right-side value. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. Binary search maintains an interval that is still capable of containing the answer. State precisely why the discarded half cannot contain it. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(log min(n,m)) time · O(1) space; explain which operation dominates it and how many times the input can trigger that operation. Check no match, duplicate matches, the first and last valid positions, and an answer at the boundary of the search domain. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `3.5`. Both left-side maxima are no greater than the opposite right-side minima. Compare this independent fixture with the worked trace: For [1,3] and [2,4], choose left-side values 1 and 2, right-side values 3 and 4. The middle pair is 2 and 3, giving 2.5. Search partitions only in the shorter array and handle empty partition sides with sentinels.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return the median of the two sorted arrays.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement partition-median\")\n}\n",
+    "question": "Boundary check for partition-median: with input `[2] and [5]`, what result should solve return?",
+    "rule": "Both left-side maxima are no greater than the opposite right-side minima. Return the median of the two sorted arrays.",
+    "success": "The private harness prints PASS partition-median. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Return the median of the two sorted arrays.",
     "task": "Return the median of the two sorted arrays."
   },

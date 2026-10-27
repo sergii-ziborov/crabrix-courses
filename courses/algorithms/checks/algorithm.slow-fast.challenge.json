@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS slow-fast\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"16\".to_string()",
-      "String::from(\"16\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.slow-fast.challenge",
     "patternID": "slow-fast",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return the middle value; for even length choose the second middle.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Slow/Fast Pointers\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Return the middle value; for even length choose the second middle.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement slow-fast\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "16",
+        "kind": "visible",
         "input": "[4,8,15,16,23,42]",
-        "kind": "visible"
+        "expectedAnswer": "16"
       },
       {
-        "expectedAnswer": "3",
+        "kind": "boundary",
         "input": "[1,2,3,4,5]",
-        "kind": "boundary"
+        "expectedAnswer": "3"
       },
       {
-        "expectedAnswer": "3",
-        "input": "\n[1,2,3,4,5]\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "[1,2,3,4,5,6,7]",
+        "expectedAnswer": "4"
       },
       {
-        "expectedAnswer": "16",
+        "kind": "adversarial",
+        "input": "[3,3,3,3,3,3,3]",
+        "expectedAnswer": "3"
+      },
+      {
+        "kind": "adversarial",
+        "input": "[8,7,6,5,4,3,2]",
+        "expectedAnswer": "5"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \n[4,8,15,16,23,42]\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "16"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\n[8,7,6,5,4,3,2]\n",
+        "expectedAnswer": "5"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"[4,8,15,16,23,42]\"#, r#\"16\"#),\n    (r#\"[1,2,3,4,5]\"#, r#\"3\"#),\n    (r#\"\n[1,2,3,4,5]\n\"#, r#\"3\"#),\n    (r#\"  \n[4,8,15,16,23,42]\n  \"#, r#\"16\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS slow-fast\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"[4,8,15,16,23,42]\",\"16\"),\n        (\"[1,2,3,4,5]\",\"3\"),\n        (\"[1,2,3,4,5,6,7]\",\"4\"),\n        (\"[3,3,3,3,3,3,3]\",\"3\"),\n        (\"[8,7,6,5,4,3,2]\",\"5\"),\n        (\"  \\n[4,8,15,16,23,42]\\n  \",\"16\"),\n        (\"\\n[8,7,6,5,4,3,2]\\n\",\"5\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS slow-fast\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS slow-fast\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"16\".to_string()",
-      "String::from(\"16\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

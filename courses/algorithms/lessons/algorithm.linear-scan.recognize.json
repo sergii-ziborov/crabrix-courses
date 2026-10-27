@@ -7,44 +7,44 @@
     "expectedAnswer": "2",
     "idea": "Visit every element once and stop when the predicate is satisfied.",
     "patternID": "linear-scan",
-    "rustSketch": "fn scan(values: &[i32]) -> Option<usize> {\n    for (index, value) in values.iter().enumerate() {\n        if *value < 0 { return Some(index); }\n    }\n    None\n}",
+    "rustSketch": "fn first_negative(values: &[i32]) -> i32 {\n    for (i, &value) in values.iter().enumerate() {\n        if value < 0 { return i as i32; }\n    }\n    -1\n}\n\nfn main() {\n    let result = first_negative(&[4,9,-2,7]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return the first index whose reading is negative, or -1 when none is negative.",
     "useCases": "unsorted lookup, validation, first or last matching position",
     "visibleInput": "[4, 9, -2, 7]"
   },
   "concept": "unsorted lookup, validation, first or last matching position",
-  "contentDigest": "66eb3f243a212fefaff02a963704aec3bb21b3dccf2192334b13dca7b1eed9d9",
+  "contentDigest": "8e7e8cd253f007b32d124cdcef9f3402873fb807cd7a2a0a8293cb4198222cdd",
   "depth": {
     "connections": [
       {
-        "concept": "Visit every element once and stop when the predicate is satisfied.",
         "direction": "previous",
-        "title": "Linear Scan: Mental Model"
+        "title": "Linear Scan: Mental Model",
+        "concept": "Visit every element once and stop when the predicate is satisfied."
       },
       {
-        "concept": "Return the first index whose reading is negative, or -1 when none is negative.",
         "direction": "next",
-        "title": "Challenge: Linear Scan"
+        "title": "Challenge: Linear Scan",
+        "concept": "Return the first index whose reading is negative, or -1 when none is negative."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "Every earlier value has already been checked and is nonnegative. At index 0 the value 4 is not negative; index 1 also fails. Index 2 contains -2, so return 2 without inspecting 7. The empty prefix before index 0 has no match.",
+    "misconception": "“The remaining suffix is guaranteed negative”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[4, 9, -2, 7]`, write the state before the first update. Explain how it represents this claim: Visit every element once and stop when the predicate is satisfied. A scan turns a sequence into a small piece of state. Say what the state means after the first i elements, before you describe a loop body."
+        "title": "Concrete transition",
+        "detail": "At index 0 the value 4 is not negative; index 1 also fails. Index 2 contains -2, so return 2 without inspecting 7. The empty prefix before index 0 has no match."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `2`. A borrowed slice and a for loop usually express the traversal clearly; distinguish an index you need to return from a value you merely read."
+        "title": "Independent second fixture",
+        "detail": "Input `[1,2,3,4,5,6,7]` produces `-1`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Use an empty slice and a one-element slice as checks. Initial values must not silently assume that at least one item exists. Defend the O(n) time · O(1) extra space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[8,7,6,5,4,3,2]` produces `-1`. Every earlier value has already been checked and is nonnegative. The stated work bound is O(n) time · O(1) extra space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[4, 9, -2, 7]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Linear Scan survives, which state must be updated, and whether the O(n) time · O(1) extra space bound still holds. Ask whether one pass is enough, whether order matters, and whether a later query will need information you already discarded."
+    "transferChallenge": "Compare the visible input `[4, 9, -2, 7]` with `[3,3,3,3,3,3,3]`. Predict why their results are `2` and `-1`. Then change one legal value and explain whether the same invariant, every earlier value has already been checked and is nonnegative, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.linear-scan.recognize",
@@ -54,21 +54,21 @@
   "title": "Linear Scan: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "unsorted lookup, validation, first or last matching position",
-      "Only problems with exactly one input value"
+      "`0`",
+      "`-1`",
+      "`-2`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Linear Scan",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Linear Scan",
-    "explanation": "A problem is a good match for Linear Scan when it asks for unsorted lookup, validation, first or last matching position. Here the concrete task is: Return the first index whose reading is negative, or -1 when none is negative. The visible input `[4, 9, -2, 7]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Ask whether one pass is enough, whether order matters, and whether a later query will need information you already discarded. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Visit every element once and stop when the predicate is satisfied. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A scan turns a sequence into a small piece of state. Say what the state means after the first i elements, before you describe a loop body. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(1) extra space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `2` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Use an empty slice and a one-element slice as checks. Initial values must not silently assume that at least one item exists. A borrowed slice and a for loop usually express the traversal clearly; distinguish an index you need to return from a value you merely read. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: unsorted lookup, validation, first or last matching position.",
-    "practiceCode": "fn scan(values: &[i32]) -> Option<usize> {\n    for (index, value) in values.iter().enumerate() {\n        if *value < 0 { return Some(index); }\n    }\n    None\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only linear-scan program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn first_negative(values: &[i32]) -> i32 {\n    for (i, &value) in values.iter().enumerate() {\n        if value < 0 { return i as i32; }\n    }\n    -1\n}\n\nfn main() {\n    let result = first_negative(&[4,9,-2,7]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "At index 0 the value 4 is not negative; index 1 also fails. Index 2 contains -2, so return 2 without inspecting 7. The empty prefix before index 0 has no match.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the first index whose reading is negative, or -1 when none is negative. The visible fixture is `[4, 9, -2, 7]` and its example result is `2`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Linear Scan when it asks for unsorted lookup, validation, first or last matching position. Here the concrete task is: Return the first index whose reading is negative, or -1 when none is negative. The visible input `[4, 9, -2, 7]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Ask whether one pass is enough, whether order matters, and whether a later query will need information you already discarded. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Visit every element once and stop when the predicate is satisfied. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A scan turns a sequence into a small piece of state. Say what the state means after the first i elements, before you describe a loop body. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(1) extra space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `2` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Use an empty slice and a one-element slice as checks. Initial values must not silently assume that at least one item exists. A borrowed slice and a for loop usually express the traversal clearly; distinguish an index you need to return from a value you merely read. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `-1`. Every earlier value has already been checked and is nonnegative. Compare this independent fixture with the worked trace: At index 0 the value 4 is not negative; index 1 also fails. Index 2 contains -2, so return 2 without inspecting 7. The empty prefix before index 0 has no match.",
+    "practiceCode": "fn first_negative(values: &[i32]) -> i32 {\n    for (i, &value) in values.iter().enumerate() {\n        if value < 0 { return i as i32; }\n    }\n    -1\n}\n\nfn main() {\n    let result = first_negative(&[4,9,-2,7]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Linear Scan on input `[1,2,3,4,5,6,7]`. Which result follows from the documented contract?",
+    "rule": "Every earlier value has already been checked and is nonnegative. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Linear Scan.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-scans-a.png",

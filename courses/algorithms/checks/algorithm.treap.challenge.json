@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS treap\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"1,5,8\".to_string()",
-      "String::from(\"1,5,8\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.treap.challenge",
     "patternID": "treap",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Apply the insert/delete operations and return keys requested by inorder.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Randomized Treap\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Apply the insert/delete operations and return keys requested by inorder.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement treap\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "1,5,8",
+        "kind": "visible",
         "input": "insert5 insert2 insert8 insert1 delete2 inorder",
-        "kind": "visible"
+        "expectedAnswer": "1,5,8"
       },
       {
-        "expectedAnswer": "2",
+        "kind": "boundary",
         "input": "insert4 insert2 delete4 inorder",
-        "kind": "boundary"
+        "expectedAnswer": "2"
       },
       {
-        "expectedAnswer": "2",
-        "input": "\ninsert4 insert2 delete4 inorder\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "insert2 insert2 insert1 inorder",
+        "expectedAnswer": "1,2"
       },
       {
-        "expectedAnswer": "1,5,8",
+        "kind": "adversarial",
+        "input": "insert3 insert1 insert5 delete3 inorder",
+        "expectedAnswer": "1,5"
+      },
+      {
+        "kind": "adversarial",
+        "input": "insert9 delete9 insert4 inorder",
+        "expectedAnswer": "4"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \ninsert5 insert2 insert8 insert1 delete2 inorder\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "1,5,8"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\ninsert9 delete9 insert4 inorder\n",
+        "expectedAnswer": "4"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"insert5 insert2 insert8 insert1 delete2 inorder\"#, r#\"1,5,8\"#),\n    (r#\"insert4 insert2 delete4 inorder\"#, r#\"2\"#),\n    (r#\"\ninsert4 insert2 delete4 inorder\n\"#, r#\"2\"#),\n    (r#\"  \ninsert5 insert2 insert8 insert1 delete2 inorder\n  \"#, r#\"1,5,8\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS treap\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"insert5 insert2 insert8 insert1 delete2 inorder\",\"1,5,8\"),\n        (\"insert4 insert2 delete4 inorder\",\"2\"),\n        (\"insert2 insert2 insert1 inorder\",\"1,2\"),\n        (\"insert3 insert1 insert5 delete3 inorder\",\"1,5\"),\n        (\"insert9 delete9 insert4 inorder\",\"4\"),\n        (\"  \\ninsert5 insert2 insert8 insert1 delete2 inorder\\n  \",\"1,5,8\"),\n        (\"\\ninsert9 delete9 insert4 inorder\\n\",\"4\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS treap\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS treap\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"1,5,8\".to_string()",
-      "String::from(\"1,5,8\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

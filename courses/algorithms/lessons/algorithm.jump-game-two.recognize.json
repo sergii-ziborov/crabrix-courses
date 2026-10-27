@@ -7,44 +7,44 @@
     "expectedAnswer": "2",
     "idea": "Treat the current reach as a BFS layer and commit a jump when the scan reaches its boundary.",
     "patternID": "jump-game-two",
-    "rustSketch": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "rustSketch": "fn minimum_jumps(values:&[usize])->i32 {\n    if values.is_empty() { return -1; } let (mut end,mut farthest,mut jumps)=(0,0,0);\n    for i in 0..values.len()-1 {\n        if i>farthest { return -1; } farthest=farthest.max(i+values[i]);\n        if i==end { if farthest==end { return -1; } jumps+=1; end=farthest; if end>=values.len()-1 { break; } }\n    } jumps\n}\n\nfn main() {\n    let result = minimum_jumps(&[2,3,1,1,4]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return the minimum jumps to the final index.",
     "useCases": "minimum jumps in forward-reach arrays",
     "visibleInput": "[2,3,1,1,4]"
   },
   "concept": "minimum jumps in forward-reach arrays",
-  "contentDigest": "b0d76f7180a53cef170f0eccb95945a39ab34401c38023c877ff507c39592981",
+  "contentDigest": "8da2f897f3a1fa6b3acec5631dc279cbcd03c011615e059460023fcf5f63cc34",
   "depth": {
     "connections": [
       {
-        "concept": "Treat the current reach as a BFS layer and commit a jump when the scan reaches its boundary.",
         "direction": "previous",
-        "title": "Greedy Layered Jumps: Mental Model"
+        "title": "Greedy Layered Jumps: Mental Model",
+        "concept": "Treat the current reach as a BFS layer and commit a jump when the scan reaches its boundary."
       },
       {
-        "concept": "Return the minimum jumps to the final index.",
         "direction": "next",
-        "title": "Challenge: Greedy Layered Jumps"
+        "title": "Challenge: Greedy Layered Jumps",
+        "concept": "Return the minimum jumps to the final index."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "All positions reachable with that many jumps have contributed their next frontier. For [2,3,1,1,4], the first jump covers positions through 2; their combined next frontier reaches 4. Crossing the first layer end commits the second jump, giving 2. A stalled frontier before the final index reports -1.",
+    "misconception": "“Every visited index requires a new jump”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[2,3,1,1,4]`, write the state before the first update. Explain how it represents this claim: Treat the current reach as a BFS layer and commit a jump when the scan reaches its boundary. A greedy step commits to a local choice. Give the exchange or dominance reason that an optimal solution can still include that choice."
+        "title": "Concrete transition",
+        "detail": "For [2,3,1,1,4], the first jump covers positions through 2; their combined next frontier reaches 4. Crossing the first layer end commits the second jump, giving 2. A stalled frontier before the final index reports -1."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `2`. Keep interval endpoint conventions explicit where they apply. If sorting is part of the method, its Rust comparator must encode the proof's exact tie break."
+        "title": "Independent second fixture",
+        "detail": "Input `[0]` produces `0`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test touching intervals, equal endpoints, empty input, and a locally attractive choice that blocks a better future choice. Defend the O(n) time · O(1) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[1,2,1,1,1]` produces `3`. All positions reachable with that many jumps have contributed their next frontier. The stated work bound is O(n) time · O(1) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[2,3,1,1,4]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Greedy Layered Jumps survives, which state must be updated, and whether the O(n) time · O(1) space bound still holds. When the method sorts intervals or events, use the coordinate and tie break required by its proof. Other greedy walks keep an invariant without sorting."
+    "transferChallenge": "Compare the visible input `[2,3,1,1,4]` with `[2,1,1]`. Predict why their results are `2` and `1`. Then change one legal value and explain whether the same invariant, all positions reachable with that many jumps have contributed their next frontier, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.jump-game-two.recognize",
@@ -54,21 +54,21 @@
   "title": "Greedy Layered Jumps: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "minimum jumps in forward-reach arrays",
-      "Only problems with exactly one input value"
+      "`1`",
+      "`0`",
+      "`-1`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Greedy Layered Jumps",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Greedy Layered Jumps",
-    "explanation": "A problem is a good match for Greedy Layered Jumps when it asks for minimum jumps in forward-reach arrays. Here the concrete task is: Return the minimum jumps to the final index. The visible input `[2,3,1,1,4]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. When the method sorts intervals or events, use the coordinate and tie break required by its proof. Other greedy walks keep an invariant without sorting. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Treat the current reach as a BFS layer and commit a jump when the scan reaches its boundary. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A greedy step commits to a local choice. Give the exchange or dominance reason that an optimal solution can still include that choice. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(1) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `2` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test touching intervals, equal endpoints, empty input, and a locally attractive choice that blocks a better future choice. Keep interval endpoint conventions explicit where they apply. If sorting is part of the method, its Rust comparator must encode the proof's exact tie break. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: minimum jumps in forward-reach arrays.",
-    "practiceCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only jump-game-two program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn minimum_jumps(values:&[usize])->i32 {\n    if values.is_empty() { return -1; } let (mut end,mut farthest,mut jumps)=(0,0,0);\n    for i in 0..values.len()-1 {\n        if i>farthest { return -1; } farthest=farthest.max(i+values[i]);\n        if i==end { if farthest==end { return -1; } jumps+=1; end=farthest; if end>=values.len()-1 { break; } }\n    } jumps\n}\n\nfn main() {\n    let result = minimum_jumps(&[2,3,1,1,4]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "For [2,3,1,1,4], the first jump covers positions through 2; their combined next frontier reaches 4. Crossing the first layer end commits the second jump, giving 2. A stalled frontier before the final index reports -1.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the minimum jumps to the final index. The visible fixture is `[2,3,1,1,4]` and its example result is `2`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Greedy Layered Jumps when it asks for minimum jumps in forward-reach arrays. Here the concrete task is: Return the minimum jumps to the final index. The visible input `[2,3,1,1,4]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. When the method sorts intervals or events, use the coordinate and tie break required by its proof. Other greedy walks keep an invariant without sorting. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Treat the current reach as a BFS layer and commit a jump when the scan reaches its boundary. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A greedy step commits to a local choice. Give the exchange or dominance reason that an optimal solution can still include that choice. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(1) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `2` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test touching intervals, equal endpoints, empty input, and a locally attractive choice that blocks a better future choice. Keep interval endpoint conventions explicit where they apply. If sorting is part of the method, its Rust comparator must encode the proof's exact tie break. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `0`. All positions reachable with that many jumps have contributed their next frontier. Compare this independent fixture with the worked trace: For [2,3,1,1,4], the first jump covers positions through 2; their combined next frontier reaches 4. Crossing the first layer end commits the second jump, giving 2. A stalled frontier before the final index reports -1.",
+    "practiceCode": "fn minimum_jumps(values:&[usize])->i32 {\n    if values.is_empty() { return -1; } let (mut end,mut farthest,mut jumps)=(0,0,0);\n    for i in 0..values.len()-1 {\n        if i>farthest { return -1; } farthest=farthest.max(i+values[i]);\n        if i==end { if farthest==end { return -1; } jumps+=1; end=farthest; if end>=values.len()-1 { break; } }\n    } jumps\n}\n\nfn main() {\n    let result = minimum_jumps(&[2,3,1,1,4]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Greedy Layered Jumps on input `[0]`. Which result follows from the documented contract?",
+    "rule": "All positions reachable with that many jumps have contributed their next frontier. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Greedy Layered Jumps.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-greedy-intervals-b.png",

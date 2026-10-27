@@ -7,44 +7,44 @@
     "expectedAnswer": "true",
     "idea": "Assign opposite colors across every edge and reject any edge whose endpoints match.",
     "patternID": "bipartite-coloring",
-    "rustSketch": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "rustSketch": "fn bipartite(graph:&[Vec<usize>])->bool {\n    let mut color=vec![None;graph.len()];\n    for start in 0..graph.len() {\n        if color[start].is_some() { continue; } color[start]=Some(false); let mut queue=std::collections::VecDeque::from([start]);\n        while let Some(v)=queue.pop_front() {\n            for &u in &graph[v] {\n                if color[u]==color[v] { return false; }\n                if color[u].is_none() { color[u]=Some(!color[v].unwrap()); queue.push_back(u); }\n            }\n        }\n    }\n    true\n}\n\nfn main() {\n    let result = bipartite(&[vec![1,3],vec![0,2],vec![1,3],vec![0,2]]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return whether the graph can be two-colored.",
     "useCases": "two-team constraints and odd-cycle detection",
     "visibleInput": "n=4 edges=(0,1),(1,2),(2,3),(3,0)"
   },
   "concept": "two-team constraints and odd-cycle detection",
-  "contentDigest": "8793dabcbc1e1cec099d41e896770a2997cbc1c5af41ba800ce2dd258735813f",
+  "contentDigest": "6c04b59be5cfab0abad411ffcdf499e518f9968c1d92f77cd4bc2aee9c835845",
   "depth": {
     "connections": [
       {
-        "concept": "Assign opposite colors across every edge and reject any edge whose endpoints match.",
         "direction": "previous",
-        "title": "Bipartite Coloring: Mental Model"
+        "title": "Bipartite Coloring: Mental Model",
+        "concept": "Assign opposite colors across every edge and reject any edge whose endpoints match."
       },
       {
-        "concept": "Return whether the graph can be two-colored.",
         "direction": "next",
-        "title": "Challenge: Bipartite Coloring"
+        "title": "Challenge: Bipartite Coloring",
+        "concept": "Return whether the graph can be two-colored."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "An edge joins two vertices assigned the same color. A four-cycle alternates colors and succeeds. A triangle forces the final edge to join equal colors, so it fails. Start coloring again in each disconnected component; an isolated vertex poses no contradiction.",
+    "misconception": "“A vertex has degree greater than two”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `n=4 edges=(0,1),(1,2),(2,3),(3,0)`, write the state before the first update. Explain how it represents this claim: Assign opposite colors across every edge and reject any edge whose endpoints match. A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal."
+        "title": "Concrete transition",
+        "detail": "A four-cycle alternates colors and succeeds. A triangle forces the final edge to join equal colors, so it fails. Start coloring again in each disconnected component; an isolated vertex poses no contradiction."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `true`. An adjacency list and `VecDeque` make breadth-first work explicit. Mark before enqueuing to avoid duplicate frontier entries."
+        "title": "Independent second fixture",
+        "detail": "Input `n=5 edges=(0,1),(2,3)` produces `true`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. Defend the O(V+E) time · O(V) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `n=4 edges=(0,1),(0,2),(0,3)` produces `true`. An edge joins two vertices assigned the same color. The stated work bound is O(V+E) time · O(V) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `n=4 edges=(0,1),(1,2),(2,3),(3,0)` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Bipartite Coloring survives, which state must be updated, and whether the O(V+E) time · O(V) space bound still holds. Choose a representation for the operations first; when traversing, DFS explores depth and BFS follows equal-cost layers. Directed edges and disconnected components change the plan."
+    "transferChallenge": "Compare the visible input `n=4 edges=(0,1),(1,2),(2,3),(3,0)` with `n=1 edges=`. Predict why their results are `true` and `true`. Then change one legal value and explain whether the same invariant, an edge joins two vertices assigned the same color, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.bipartite-coloring.recognize",
@@ -54,21 +54,21 @@
   "title": "Bipartite Coloring: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "two-team constraints and odd-cycle detection",
-      "Only problems with exactly one input value"
+      "`false`",
+      "`true`",
+      "The valid input necessarily panics"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Bipartite Coloring",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Bipartite Coloring",
-    "explanation": "A problem is a good match for Bipartite Coloring when it asks for two-team constraints and odd-cycle detection. Here the concrete task is: Return whether the graph can be two-colored. The visible input `n=4 edges=(0,1),(1,2),(2,3),(3,0)` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Choose a representation for the operations first; when traversing, DFS explores depth and BFS follows equal-cost layers. Directed edges and disconnected components change the plan. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Assign opposite colors across every edge and reject any edge whose endpoints match. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(V+E) time · O(V) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `true` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. An adjacency list and `VecDeque` make breadth-first work explicit. Mark before enqueuing to avoid duplicate frontier entries. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: two-team constraints and odd-cycle detection.",
-    "practiceCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only bipartite-coloring program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn bipartite(graph:&[Vec<usize>])->bool {\n    let mut color=vec![None;graph.len()];\n    for start in 0..graph.len() {\n        if color[start].is_some() { continue; } color[start]=Some(false); let mut queue=std::collections::VecDeque::from([start]);\n        while let Some(v)=queue.pop_front() {\n            for &u in &graph[v] {\n                if color[u]==color[v] { return false; }\n                if color[u].is_none() { color[u]=Some(!color[v].unwrap()); queue.push_back(u); }\n            }\n        }\n    }\n    true\n}\n\nfn main() {\n    let result = bipartite(&[vec![1,3],vec![0,2],vec![1,3],vec![0,2]]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "A four-cycle alternates colors and succeeds. A triangle forces the final edge to join equal colors, so it fails. Start coloring again in each disconnected component; an isolated vertex poses no contradiction.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return whether the graph can be two-colored. The visible fixture is `n=4 edges=(0,1),(1,2),(2,3),(3,0)` and its example result is `true`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Bipartite Coloring when it asks for two-team constraints and odd-cycle detection. Here the concrete task is: Return whether the graph can be two-colored. The visible input `n=4 edges=(0,1),(1,2),(2,3),(3,0)` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Choose a representation for the operations first; when traversing, DFS explores depth and BFS follows equal-cost layers. Directed edges and disconnected components change the plan. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Assign opposite colors across every edge and reject any edge whose endpoints match. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(V+E) time · O(V) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `true` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. An adjacency list and `VecDeque` make breadth-first work explicit. Mark before enqueuing to avoid duplicate frontier entries. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `true`. An edge joins two vertices assigned the same color. Compare this independent fixture with the worked trace: A four-cycle alternates colors and succeeds. A triangle forces the final edge to join equal colors, so it fails. Start coloring again in each disconnected component; an isolated vertex poses no contradiction.",
+    "practiceCode": "fn bipartite(graph:&[Vec<usize>])->bool {\n    let mut color=vec![None;graph.len()];\n    for start in 0..graph.len() {\n        if color[start].is_some() { continue; } color[start]=Some(false); let mut queue=std::collections::VecDeque::from([start]);\n        while let Some(v)=queue.pop_front() {\n            for &u in &graph[v] {\n                if color[u]==color[v] { return false; }\n                if color[u].is_none() { color[u]=Some(!color[v].unwrap()); queue.push_back(u); }\n            }\n        }\n    }\n    true\n}\n\nfn main() {\n    let result = bipartite(&[vec![1,3],vec![0,2],vec![1,3],vec![0,2]]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Bipartite Coloring on input `n=5 edges=(0,1),(2,3)`. Which result follows from the documented contract?",
+    "rule": "An edge joins two vertices assigned the same color. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Bipartite Coloring.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-graph-traversal-b.png",

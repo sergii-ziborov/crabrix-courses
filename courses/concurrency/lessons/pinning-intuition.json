@@ -1,6 +1,6 @@
 {
-  "concept": "Promise that a value will not move in memory",
-  "contentDigest": "012ccff13f96d5137c270404db955553909395a38276d076b390383ca730f851",
+  "concept": "Distinguish a pinned !Unpin pointee from an Unpin value and its movable pointer wrapper",
+  "contentDigest": "f96d62721b45811914d7d21a23dc93a683e95de5c52a64e9d0f82891c5f81fc6",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Cancellation Safety"
       }
     ],
-    "correction": "`Pin` protects location-sensitive values after they are pinned; it does not make every value immovable from creation.",
-    "misconception": "“Thread safety”",
+    "correction": "`Pin` constrains moves of a pointee that relies on pinning. `Unpin` types such as `String` opt out of that restriction; moving the pointer wrapper itself is a separate matter.",
+    "misconception": "“Pin makes String thread safe”",
     "traceSteps": [
       {
-        "detail": "Name each task or thread, the state it can reach, and every point where work can wait, race, block, or be cancelled.",
-        "title": "Draw the event timeline"
+        "title": "Identify the pointee",
+        "detail": "The pointee is a String, which implements Unpin. Its heap allocation and the stack slot holding String are different locations."
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "title": "Follow safe extraction",
+        "detail": "Pin::into_inner returns the mutable String reference because String is Unpin. mem::take moves its value and leaves an empty String."
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "title": "Compare a location-sensitive type",
+        "detail": "For an address-sensitive !Unpin pointee, safe extraction through this API is unavailable. Moving a Pin<Box<T>> handle still leaves the boxed pointee at its allocation."
       }
     ],
-    "transferChallenge": "Add a second worker or cancellation point. Draw two possible event orders and state the invariant that both orders must preserve. Keep the focus on promise that a value will not move in memory."
+    "transferChallenge": "Draw separate boxes for a String, its byte buffer, a Pin<Box<T>> handle and its pointee. Explain which address is constrained for an address-sensitive !Unpin T."
   },
   "exerciseKind": "planned",
   "id": "pinning-intuition",
@@ -40,25 +40,25 @@
   "title": "Pinning Intuition",
   "writing": {
     "answers": [
-      "Stable location",
-      "Thread safety",
-      "Static lifetime"
+      "String implements Unpin, so this pinning wrapper does not forbid the move",
+      "Pin makes String thread safe",
+      "Pin gives the borrowed String a static lifetime"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "The example makes the contract visible in code.",
-    "exampleCode": "use std::pin::Pin;\nfn poll_name(value: Pin<&mut String>) {\n    println!(\"{}\", value.len());\n}",
-    "explanation": "`Pin` protects location-sensitive values after they are pinned; it does not make every value immovable from creation. Most users interact through pinned futures while libraries handle the `unsafe` construction details.\n\n`Some` future state machines can contain references into their own stored state while suspended. Moving such a value after those references become valid could invalidate them. `Pin<P>` is a contract that the value reached through pointer `P` will not be moved again if the value's type relies on pinning. It is not a magical freeze of every value from birth, and it does not mean the surrounding pointer variable can never move.\n\nMany ordinary types are `Unpin`, so pinning adds no movement restriction for them. A type that is `!Unpin` needs more care: once pinned, safe code must not move its inner value out through the pinned pointer. APIs that project pinned fields or construct self-referential structures carry subtle invariants. At this stage, use library-provided safe pinning helpers and avoid writing `unsafe` projections to make a compiler error disappear.\n\nCompare a plain `String`, which can be moved between bindings, with a future that a runtime stores and polls repeatedly. Think of pinning as protecting the address of the future's internal state across polls. Then read an API signature accepting `Pin<&mut F>` and identify what it promises to the future implementation. Do not infer that every `async` function creates self-references or that `Box::pin` is required for every future. The practical rule is to follow the executor and library API, and to treat `Pin` as a movement guarantee with a precisely defined start.",
-    "feedback": "Correct: Stable location.",
-    "practiceCode": "use std::pin::Pin;\nfn poll_name(value: Pin<&mut String>) {\n    println!(\"{}\", value.len());\n}",
-    "question": "What does `Pin` guarantee about the value?",
-    "rule": "`Pin` protects location-sensitive values after they are pinned; it does not make every value immovable from creation.",
+    "exampleCaption": "This complete safe program moves a String out through Pin because String implements Unpin. It contrasts with a location-sensitive !Unpin pointee.",
+    "exampleCode": "use std::pin::Pin;\nfn main() {\n    let mut text = String::from(\"crab\");\n    let pinned = Pin::new(&mut text);\n    let moved = std::mem::take(Pin::into_inner(pinned));\n    assert_eq!(moved, \"crab\");\n    assert!(text.is_empty());\n    println!(\"Unpin permits the move: {moved}\");\n}",
+    "explanation": "`Pin` protects location-sensitive values after they are pinned; it does not make every value immovable from creation. Most users interact through pinned futures while libraries handle the `unsafe` construction details.\n\nSome future state machines can contain references into their own stored state while suspended. Moving such a value after those references become valid could invalidate them. `Pin<P>` is a contract that the value reached through pointer `P` will not be moved again if the value's type relies on pinning. It is not a magical freeze of every value from birth, and it does not mean the surrounding pointer variable can never move.\n\nMany ordinary types are `Unpin`, so pinning adds no movement restriction for them. A type that is `!Unpin` needs more care: once pinned, safe code must not move its inner value out through the pinned pointer. APIs that project pinned fields or construct self-referential structures carry subtle invariants. At this stage, use library-provided safe pinning helpers and avoid writing `unsafe` projections to make a compiler error disappear.\n\nCompare a plain `String`, which can be moved between bindings, with a future that a runtime stores and polls repeatedly. Think of pinning as protecting the address of the future's internal state across polls. Then read an API signature accepting `Pin<&mut F>` and identify what it promises to the future implementation. Do not infer that every `async` function creates self-references or that `Box::pin` is required for every future. The practical rule is to follow the executor and library API, and to treat `Pin` as a movement guarantee with a precisely defined start.",
+    "feedback": "Unpin opts a type out of pinning movement restrictions. The guarantee for an address-sensitive !Unpin pointee does not apply to this String.",
+    "practiceCode": "use std::pin::Pin;\nfn main() {\n    let mut text = String::from(\"crab\");\n    let pinned = Pin::new(&mut text);\n    let moved = std::mem::take(Pin::into_inner(pinned));\n    println!(\"{moved}\");\n}",
+    "question": "Why is moving the String out through Pin safe in this example?",
+    "rule": "`Pin` constrains moves of a pointee that relies on pinning. `Unpin` types such as `String` opt out of that restriction; moving the pointer wrapper itself is a separate matter.",
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Promise that a value will not move in memory.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Run the safe String example, then explain why the same safe extraction API is unavailable for an address-sensitive !Unpin pointee. Do not use unsafe code to bypass its contract."
   },
   "illustration": {
     "path": "media/pinning-intuition.png",
-    "alt": "Diagram for Pinning Intuition: a Rust code example flows to the lesson rule and the key observation.",
-    "caption": "The example makes the contract visible in code."
+    "alt": "Three panels distinguish a safely movable Unpin String, a location-sensitive !Unpin self-reference, and a movable Pin<Box<T>> handle whose pointee stays at its heap address. A small crab marks the contract.",
+    "caption": "Pin constrains a location-sensitive !Unpin pointee; String opts out through Unpin. Moving the owning pointer wrapper is a separate operation."
   }
 }

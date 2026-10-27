@@ -7,44 +7,44 @@
     "expectedAnswer": "7",
     "idea": "Store partial sums in power-of-two ranges and move indexes by their lowest set bit.",
     "patternID": "fenwick-tree",
-    "rustSketch": "fn prefix(values: &[i64]) -> Vec<i64> {\n    let mut sums = vec![0; values.len() + 1];\n    for i in 0..values.len() { sums[i + 1] = sums[i] + values[i]; }\n    sums\n}",
+    "rustSketch": "fn fenwick_prefix(n: usize, adds: &[(usize, i64)], query: usize) -> i64 {\n    let mut bit = vec![0; n+1];\n    for &(index, value) in adds {\n        assert!(index > 0);\n        let mut i = index;\n        while i <= n { bit[i] += value; i += i & i.wrapping_neg(); }\n    }\n    let (mut i, mut sum) = (query, 0);\n    while i > 0 { sum += bit[i]; i &= i - 1; }\n    sum\n}\n\nfn main() {\n    let result = fenwick_prefix(5,&[(1,5),(3,2),(4,4)],3).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Apply the 1-indexed add operations and return the prefix sum through query.",
     "useCases": "dynamic prefix sums, frequency tables, inversion counts",
     "visibleInput": "n=5 adds=(1,5),(3,2),(4,4) query=3"
   },
   "concept": "Store partial sums in power-of-two ranges and move indexes by their lowest set bit.",
-  "contentDigest": "c9c9ea4b2e593c2d8fece9cab5a6e624cac33432cba9dc32f421e0d63f6ec143",
+  "contentDigest": "a161ece24f1bc2a535b545c7efe0bb03c2a61337d3d20f358244b5043305a6a5",
   "depth": {
     "connections": [
       {
-        "concept": "Parse n and inclusive (start,end,delta) updates; return the maximum simultaneous load.",
         "direction": "previous",
-        "title": "Challenge: Imos Sweep"
+        "title": "Challenge: Imos Sweep",
+        "concept": "Parse n and inclusive (start,end,delta) updates with nonnegative loads. Return the maximum simultaneous load over indexes 0..n-1. Add at start and subtract at end+1."
       },
       {
-        "concept": "dynamic prefix sums, frequency tables, inversion counts",
         "direction": "next",
-        "title": "Fenwick Tree: When to Use It"
+        "title": "Fenwick Tree: When to Use It",
+        "concept": "dynamic prefix sums, frequency tables, inversion counts"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "The size of the node's lowest-set-bit range. Adding 5 at index 1 visits 1,2,4; adding 2 at 3 visits 3,4. Querying prefix 3 visits 3 then 2, collecting 2+5=7. Indexes are one-based, and an update at zero would not advance.",
+    "misconception": "“The index of the tree's root for every node”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `n=5 adds=(1,5),(3,2),(4,4) query=3`, write the state before the first update. Explain how it represents this claim: Store partial sums in power-of-two ranges and move indexes by their lowest set bit. A range method summarizes intervals so the same information is not recomputed. A static prefix table and an updateable tree make different tradeoffs; define endpoint conventions first."
+        "title": "Concrete transition",
+        "detail": "Adding 5 at index 1 visits 1,2,4; adding 2 at 3 visits 3,4. Querying prefix 3 visits 3 then 2, collecting 2+5=7. Indexes are one-based, and an update at zero would not advance."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `7`. Allocate an extra prefix slot when a zero-length prefix simplifies indexing, and use a numeric type large enough for accumulated values."
+        "title": "Independent second fixture",
+        "detail": "Input `n=1 adds=(1,7) query=1` produces `7`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test the first and last position, an empty range where permitted, and the boundary immediately after an update. Defend the O(log n) update/query · O(n) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `n=3 adds=(2,5),(2,-2) query=3` produces `3`. The size of the node's lowest-set-bit range. The stated work bound is O(log n) update/query · O(n) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `n=5 adds=(1,5),(3,2),(4,4) query=3` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Fenwick Tree survives, which state must be updated, and whether the O(log n) update/query · O(n) space bound still holds. Precomputation pays when many ranges are queried. If values change between queries, an updateable structure may be needed; for one small query, a direct walk is simpler."
+    "transferChallenge": "Compare the visible input `n=5 adds=(1,5),(3,2),(4,4) query=3` with `n=5 adds=(1,2),(5,9) query=4`. Predict why their results are `7` and `2`. Then change one legal value and explain whether the same invariant, the size of the node's lowest-set-bit range, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.fenwick-tree.model",
@@ -54,21 +54,21 @@
   "title": "Fenwick Tree: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "The size of the node's lowest-set-bit range",
+      "The index of the tree's root for every node",
+      "The number of values smaller than the current value"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(log n) update/query · O(n) space",
-    "exampleCode": "fn prefix(values: &[i64]) -> Vec<i64> {\n    let mut sums = vec![0; values.len() + 1];\n    for i in 0..values.len() { sums[i + 1] = sums[i] + values[i]; }\n    sums\n}",
-    "explanation": "Begin with the concrete question: Apply the 1-indexed add operations and return the prefix sum through query. For the visible input `n=5 adds=(1,5),(3,2),(4,4) query=3`, the stated result is `7`. Before reading code, name the smallest piece of information that must survive from one step to the next. A range method summarizes intervals so the same information is not recomputed. A static prefix table and an updateable tree make different tradeoffs; define endpoint conventions first. That is the mental model for Fenwick Tree; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Store partial sums in power-of-two ranges and move indexes by their lowest set bit. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Allocate an extra prefix slot when a zero-length prefix simplifies indexing, and use a numeric type large enough for accumulated values. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(log n) update/query · O(n) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test the first and last position, an empty range where permitted, and the boundary immediately after an update. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn prefix(values: &[i64]) -> Vec<i64> {\n    let mut sums = vec![0; values.len() + 1];\n    for i in 0..values.len() { sums[i + 1] = sums[i] + values[i]; }\n    sums\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only fenwick-tree program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn fenwick_prefix(n: usize, adds: &[(usize, i64)], query: usize) -> i64 {\n    let mut bit = vec![0; n+1];\n    for &(index, value) in adds {\n        assert!(index > 0);\n        let mut i = index;\n        while i <= n { bit[i] += value; i += i & i.wrapping_neg(); }\n    }\n    let (mut i, mut sum) = (query, 0);\n    while i > 0 { sum += bit[i]; i &= i - 1; }\n    sum\n}\n\nfn main() {\n    let result = fenwick_prefix(5,&[(1,5),(3,2),(4,4)],3).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "Adding 5 at index 1 visits 1,2,4; adding 2 at 3 visits 3,4. Querying prefix 3 visits 3 then 2, collecting 2+5=7. Indexes are one-based, and an update at zero would not advance.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Apply the 1-indexed add operations and return the prefix sum through query. The visible fixture is `n=5 adds=(1,5),(3,2),(4,4) query=3` and its example result is `7`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Apply the 1-indexed add operations and return the prefix sum through query. For the visible input `n=5 adds=(1,5),(3,2),(4,4) query=3`, the stated result is `7`. Before reading code, name the smallest piece of information that must survive from one step to the next. A range method summarizes intervals so the same information is not recomputed. A static prefix table and an updateable tree make different tradeoffs; define endpoint conventions first. That is the mental model for Fenwick Tree; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Store partial sums in power-of-two ranges and move indexes by their lowest set bit. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(log n) update/query · O(n) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test the first and last position, an empty range where permitted, and the boundary immediately after an update. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "Adding 5 at index 1 visits 1,2,4; adding 2 at 3 visits 3,4. Querying prefix 3 visits 3 then 2, collecting 2+5=7. Indexes are one-based, and an update at zero would not advance.",
+    "practiceCode": "fn fenwick_prefix(n: usize, adds: &[(usize, i64)], query: usize) -> i64 {\n    let mut bit = vec![0; n+1];\n    for &(index, value) in adds {\n        assert!(index > 0);\n        let mut i = index;\n        while i <= n { bit[i] += value; i += i & i.wrapping_neg(); }\n    }\n    let (mut i, mut sum) = (query, 0);\n    while i > 0 { sum += bit[i]; i &= i - 1; }\n    sum\n}\n\nfn main() {\n    let result = fenwick_prefix(5,&[(1,5),(3,2),(4,4)],3).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "What does i & -i identify in a Fenwick index?",
+    "rule": "The size of the node's lowest-set-bit range. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(log n) update/query · O(n) space bound without looking at the code.",
     "summary": "Store partial sums in power-of-two ranges and move indexes by their lowest set bit.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-ranges-b.png",

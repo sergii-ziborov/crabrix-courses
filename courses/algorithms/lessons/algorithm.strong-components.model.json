@@ -2,14 +2,14 @@
   "algorithm": {
     "categoryID": "graph-traversal",
     "categoryTitle": "DFS, BFS & Graph Traversal",
-    "complexity": "O(V+E) time · O(V) space",
+    "complexity": "O(V+E) SCC traversal; canonical report sorting adds O(V log V)",
     "difficulty": "hard",
     "expectedAnswer": "0,1,2;3,4",
     "idea": "Use finish order plus reversed edges, or low links, to collapse mutual reachability.",
     "patternID": "strong-components",
-    "rustSketch": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn semicolon<T:std::fmt::Display>(a:Vec<Vec<T>>)->String { a.into_iter().map(csv).collect::<Vec<_>>().join(\";\") }\nfn strongly_connected(graph:&[Vec<usize>])->Vec<Vec<usize>> {\n    fn finish(v:usize,g:&[Vec<usize>],seen:&mut [bool],order:&mut Vec<usize>) {\n        seen[v]=true; for &u in &g[v] { if !seen[u] { finish(u,g,seen,order); } } order.push(v);\n    }\n    fn collect(v:usize,g:&[Vec<usize>],seen:&mut [bool],group:&mut Vec<usize>) {\n        seen[v]=true; group.push(v); for &u in &g[v] { if !seen[u] { collect(u,g,seen,group); } }\n    }\n    let n=graph.len(); let mut reverse=vec![Vec::new();n];\n    for (v,ns) in graph.iter().enumerate() { for &u in ns { reverse[u].push(v); } }\n    let mut seen=vec![false;n]; let mut order=Vec::new();\n    for v in 0..n { if !seen[v] { finish(v,graph,&mut seen,&mut order); } }\n    seen.fill(false); let mut groups=Vec::new();\n    for v in order.into_iter().rev() { if !seen[v] { let mut group=Vec::new(); collect(v,&reverse,&mut seen,&mut group); group.sort_unstable(); groups.push(group); } }\n    groups.sort(); groups\n}\n\nfn main() {\n    let result = semicolon(strongly_connected(&[vec![1],vec![2],vec![0,3],vec![4],vec![3]]));\n    println!(\"{result}\");\n}\n",
     "stage": "model",
-    "task": "Return strongly connected components with sorted members.",
+    "task": "Parse directed edges with vertices 0..maximum endpoint. Return SCCs with sorted members, and sort the component lists lexicographically; separate components with semicolons.",
     "useCases": "dependency cycles, graph condensation, state machines",
     "visibleInput": "edges=0->1,1->2,2->0,2->3,3->4,4->3"
   },
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Return reverse-postorder for ascending neighbors.",
         "direction": "previous",
-        "title": "Challenge: DFS Topological Sort"
+        "title": "Challenge: DFS Topological Sort",
+        "concept": "Return reverse-postorder for ascending neighbors."
       },
       {
-        "concept": "dependency cycles, graph condensation, state machines",
         "direction": "next",
-        "title": "Strongly Connected Components: When to Use It"
+        "title": "Strongly Connected Components: When to Use It",
+        "concept": "dependency cycles, graph condensation, state machines"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "It isolates maximal mutually reachable vertex groups. The sample groups are {0,1,2} and {3,4}: each group is mutually reachable, with a one-way edge between them. Sort members and then groups for the output 0,1,2;3,4. SCC grouping does not imply connectivity in both directions between groups.",
+    "misconception": "“Reversing edges removes all cycles”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `edges=0->1,1->2,2->0,2->3,3->4,4->3`, write the state before the first update. Explain how it represents this claim: Use finish order plus reversed edges, or low links, to collapse mutual reachability. A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal."
+        "title": "Concrete transition",
+        "detail": "The sample groups are {0,1,2} and {3,4}: each group is mutually reachable, with a one-way edge between them. Sort members and then groups for the output 0,1,2;3,4. SCC grouping does not imply connectivity in both directions between groups."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `0,1,2;3,4`. An adjacency list and `VecDeque` make breadth-first work explicit. Mark before enqueuing to avoid duplicate frontier entries."
+        "title": "Independent second fixture",
+        "detail": "Input `edges=0->1,1->2` produces `0;1;2`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. Defend the O(V+E) time · O(V) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `edges=0->1,1->2,2->0` produces `0,1,2`. It isolates maximal mutually reachable vertex groups. The stated work bound is O(V+E) SCC traversal; canonical report sorting adds O(V log V). Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `edges=0->1,1->2,2->0,2->3,3->4,4->3` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Strongly Connected Components survives, which state must be updated, and whether the O(V+E) time · O(V) space bound still holds. Choose a representation for the operations first; when traversing, DFS explores depth and BFS follows equal-cost layers. Directed edges and disconnected components change the plan."
+    "transferChallenge": "Compare the visible input `edges=0->1,1->2,2->0,2->3,3->4,4->3` with `edges=0->1,1->0`. Predict why their results are `0,1,2;3,4` and `0,1`. Then change one legal value and explain whether the same invariant, it isolates maximal mutually reachable vertex groups, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.strong-components.model",
@@ -54,21 +54,21 @@
   "title": "Strongly Connected Components: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "It isolates maximal mutually reachable vertex groups",
+      "Reversing edges removes all cycles",
+      "Every DFS tree is automatically one SCC"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(V+E) time · O(V) space",
-    "exampleCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
-    "explanation": "Begin with the concrete question: Return strongly connected components with sorted members. For the visible input `edges=0->1,1->2,2->0,2->3,3->4,4->3`, the stated result is `0,1,2;3,4`. Before reading code, name the smallest piece of information that must survive from one step to the next. A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal. That is the mental model for Strongly Connected Components; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Use finish order plus reversed edges, or low links, to collapse mutual reachability. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. An adjacency list and `VecDeque` make breadth-first work explicit. Mark before enqueuing to avoid duplicate frontier entries. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(V+E) time · O(V) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
-    "success": "You can explain the invariant, termination condition, and O(V+E) time · O(V) space bound without looking at the code.",
+    "exampleCaption": "Complete std-only strong-components program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn semicolon<T:std::fmt::Display>(a:Vec<Vec<T>>)->String { a.into_iter().map(csv).collect::<Vec<_>>().join(\";\") }\nfn strongly_connected(graph:&[Vec<usize>])->Vec<Vec<usize>> {\n    fn finish(v:usize,g:&[Vec<usize>],seen:&mut [bool],order:&mut Vec<usize>) {\n        seen[v]=true; for &u in &g[v] { if !seen[u] { finish(u,g,seen,order); } } order.push(v);\n    }\n    fn collect(v:usize,g:&[Vec<usize>],seen:&mut [bool],group:&mut Vec<usize>) {\n        seen[v]=true; group.push(v); for &u in &g[v] { if !seen[u] { collect(u,g,seen,group); } }\n    }\n    let n=graph.len(); let mut reverse=vec![Vec::new();n];\n    for (v,ns) in graph.iter().enumerate() { for &u in ns { reverse[u].push(v); } }\n    let mut seen=vec![false;n]; let mut order=Vec::new();\n    for v in 0..n { if !seen[v] { finish(v,graph,&mut seen,&mut order); } }\n    seen.fill(false); let mut groups=Vec::new();\n    for v in order.into_iter().rev() { if !seen[v] { let mut group=Vec::new(); collect(v,&reverse,&mut seen,&mut group); group.sort_unstable(); groups.push(group); } }\n    groups.sort(); groups\n}\n\nfn main() {\n    let result = semicolon(strongly_connected(&[vec![1],vec![2],vec![0,3],vec![4],vec![3]]));\n    println!(\"{result}\");\n}\n",
+    "explanation": "The sample groups are {0,1,2} and {3,4}: each group is mutually reachable, with a one-way edge between them. Sort members and then groups for the output 0,1,2;3,4. SCC grouping does not imply connectivity in both directions between groups.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Parse directed edges with vertices 0..maximum endpoint. Return SCCs with sorted members, and sort the component lists lexicographically; separate components with semicolons. The visible fixture is `edges=0->1,1->2,2->0,2->3,3->4,4->3` and its example result is `0,1,2;3,4`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Parse directed edges with vertices 0..maximum endpoint. Return SCCs with sorted members, and sort the component lists lexicographically; separate components with semicolons. For the visible input `edges=0->1,1->2,2->0,2->3,3->4,4->3`, the stated result is `0,1,2;3,4`. Before reading code, name the smallest piece of information that must survive from one step to the next. A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal. That is the mental model for Strongly Connected Components; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Use finish order plus reversed edges, or low links, to collapse mutual reachability. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(V+E) SCC traversal; canonical report sorting adds O(V log V). Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "The sample groups are {0,1,2} and {3,4}: each group is mutually reachable, with a one-way edge between them. Sort members and then groups for the output 0,1,2;3,4. SCC grouping does not imply connectivity in both directions between groups.",
+    "practiceCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn semicolon<T:std::fmt::Display>(a:Vec<Vec<T>>)->String { a.into_iter().map(csv).collect::<Vec<_>>().join(\";\") }\nfn strongly_connected(graph:&[Vec<usize>])->Vec<Vec<usize>> {\n    fn finish(v:usize,g:&[Vec<usize>],seen:&mut [bool],order:&mut Vec<usize>) {\n        seen[v]=true; for &u in &g[v] { if !seen[u] { finish(u,g,seen,order); } } order.push(v);\n    }\n    fn collect(v:usize,g:&[Vec<usize>],seen:&mut [bool],group:&mut Vec<usize>) {\n        seen[v]=true; group.push(v); for &u in &g[v] { if !seen[u] { collect(u,g,seen,group); } }\n    }\n    let n=graph.len(); let mut reverse=vec![Vec::new();n];\n    for (v,ns) in graph.iter().enumerate() { for &u in ns { reverse[u].push(v); } }\n    let mut seen=vec![false;n]; let mut order=Vec::new();\n    for v in 0..n { if !seen[v] { finish(v,graph,&mut seen,&mut order); } }\n    seen.fill(false); let mut groups=Vec::new();\n    for v in order.into_iter().rev() { if !seen[v] { let mut group=Vec::new(); collect(v,&reverse,&mut seen,&mut group); group.sort_unstable(); groups.push(group); } }\n    groups.sort(); groups\n}\n\nfn main() {\n    let result = semicolon(strongly_connected(&[vec![1],vec![2],vec![0,3],vec![4],vec![3]]));\n    println!(\"{result}\");\n}\n",
+    "question": "Why does the second Kosaraju pass traverse the reversed graph in decreasing finish order?",
+    "rule": "It isolates maximal mutually reachable vertex groups. State the input preconditions before applying this invariant.",
+    "success": "You can explain the invariant, termination condition, and O(V+E) SCC traversal; canonical report sorting adds O(V log V) bound without looking at the code.",
     "summary": "Use finish order plus reversed edges, or low links, to collapse mutual reachability.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-graph-traversal-b.png",

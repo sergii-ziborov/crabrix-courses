@@ -7,7 +7,7 @@
     "expectedAnswer": "true",
     "idea": "Move across symbol boundaries deliberately rather than indexing arbitrary UTF-8 bytes.",
     "patternID": "string-two-pointers",
-    "rustSketch": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "rustSketch": "fn normalized_palindrome(text:&str)->bool {\n    assert!(text.is_ascii());\n    let mut symbols=text.bytes().filter(|c|c.is_ascii_alphanumeric()).map(|c|c.to_ascii_lowercase());\n    while let Some(first)=symbols.next() { if let Some(last)=symbols.next_back() { if first!=last { return false; } } }\n    true\n}\n\nfn main() {\n    let result = normalized_palindrome(\"Rust\").to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Return true after ignoring non-alphanumeric ASCII and case.",
     "useCases": "palindromes, trimming, mirrored comparison",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "palindromes, trimming, mirrored comparison",
         "direction": "previous",
-        "title": "String Two Pointers: When to Use It"
+        "title": "String Two Pointers: When to Use It",
+        "concept": "palindromes, trimming, mirrored comparison"
       },
       {
-        "concept": "Group maximal adjacent equal symbols and emit the symbol with its run length.",
         "direction": "next",
-        "title": "Run-Length Encoding: Mental Model"
+        "title": "Run-Length Encoding: Mental Model",
+        "concept": "Group maximal adjacent equal symbols and emit the symbol with its run length."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "It filters and compares symbols lazily from both ends. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“It builds a complete lowercase copy first”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `A man, a plan, a canal: Panama`, write the state before the first update. Explain how it represents this claim: Move across symbol boundaries deliberately rather than indexing arbitrary UTF-8 bytes. `String` algorithms compare symbols or prefixes, but a Rust `String` is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters."
+        "title": "Pattern-specific invariant",
+        "detail": "It filters and compares symbols lazily from both ends. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Use bytes only when the input contract permits byte-wise matching. Never index a `String` as though every character occupied one byte."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `Rust` and computes `false`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Defend the O(n) time · O(1) or decoded storage bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `abca`, the independently calculated result is `false`. The complexity discussion uses O(n) time · O(1) or decoded storage. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `A man, a plan, a canal: Panama` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from `String` Two Pointers survives, which state must be updated, and whether the O(n) time · O(1) or decoded storage bound still holds. Look for repeated prefix queries or pattern matching before choosing a trie or preprocessing; a one-off short search may not need either."
+    "transferChallenge": "Change the independent fixture `Rust` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `A man, a plan, a canal: Panama`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.string-two-pointers.challenge",
@@ -54,19 +54,19 @@
   "title": "Challenge: String Two Pointers",
   "writing": {
     "answers": [
-      "O(n) time · O(1) or decoded storage",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`true`",
+      "`false`",
+      "The valid input necessarily panics"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return true after ignoring non-alphanumeric ASCII and case.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement String Two Pointers\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Return true after ignoring non-alphanumeric ASCII and case. On input `A man, a plan, a canal: Panama`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Move across symbol boundaries deliberately rather than indexing arbitrary UTF-8 bytes. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. `String` algorithms compare symbols or prefixes, but a Rust `String` is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use bytes only when the input contract permits byte-wise matching. Never index a `String` as though every character occupied one byte. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(1) or decoded storage; explain which operation dominates it and how many times the input can trigger that operation. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(n) time · O(1) or decoded storage; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return true after ignoring non-alphanumeric ASCII and case.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement String Two Pointers\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS string-two-pointers, and your explanation still meets O(n) time · O(1) or decoded storage.",
+    "exampleCaption": "Complete std-only string-two-pointers program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn normalized_palindrome(text:&str)->bool {\n    assert!(text.is_ascii());\n    let mut symbols=text.bytes().filter(|c|c.is_ascii_alphanumeric()).map(|c|c.to_ascii_lowercase());\n    while let Some(first)=symbols.next() { if let Some(last)=symbols.next_back() { if first!=last { return false; } } }\n    true\n}\n\nfn main() {\n    let result = normalized_palindrome(\"Rust\").to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "It filters and compares symbols lazily from both ends. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `Rust`, the worked program returns `false`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `A man, a plan, a canal: Panama`; predict that result before opening the answer reveal. The precise contract is: Return true after ignoring non-alphanumeric ASCII and case.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Return true after ignoring non-alphanumeric ASCII and case. On input `A man, a plan, a canal: Panama`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Move across symbol boundaries deliberately rather than indexing arbitrary UTF-8 bytes. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. `String` algorithms compare symbols or prefixes, but a Rust `String` is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(1) or decoded storage; explain which operation dominates it and how many times the input can trigger that operation. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `true`. It filters and compares symbols lazily from both ends. Compare this independent fixture with the worked trace: For A man, a plan, a canal: Panama, punctuation and spaces are skipped and remaining ASCII letters compare equal from both ends. For Rust, the first retained pair differs, so return false. The implementation explicitly restricts normalization to ASCII.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return true after ignoring non-alphanumeric ASCII and case.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement string-two-pointers\")\n}\n",
+    "question": "Boundary check for string-two-pointers: with input `x`, what result should solve return?",
+    "rule": "It filters and compares symbols lazily from both ends. Return true after ignoring non-alphanumeric ASCII and case.",
+    "success": "The private harness prints PASS string-two-pointers. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Return true after ignoring non-alphanumeric ASCII and case.",
     "task": "Return true after ignoring non-alphanumeric ASCII and case."
   },

@@ -7,44 +7,44 @@
     "expectedAnswer": "12586269025",
     "idea": "Encode a linear recurrence as a matrix and exponentiate the transition by squaring.",
     "patternID": "matrix-exponentiation",
-    "rustSketch": "fn gcd(mut a: u64, mut b: u64) -> u64 {\n    while b != 0 {\n        (a, b) = (b, a % b);\n    }\n    a\n}",
+    "rustSketch": "fn fibonacci_matrix(mut n:u64)->u64 {\n    fn multiply(a:[[u64;2];2],b:[[u64;2];2])->[[u64;2];2] {\n        let mut out=[[0;2];2]; for i in 0..2 { for j in 0..2 { for k in 0..2 { out[i][j]+=a[i][k]*b[k][j]; } } } out\n    }\n    assert!(n<=90); let mut result=[[1,0],[0,1]]; let mut power=[[1,1],[1,0]];\n    while n>0 { if n&1==1 { result=multiply(result,power); } n>>=1; if n>0 { power=multiply(power,power); } }\n    result[0][1]\n}\n\nfn main() {\n    let result = fibonacci_matrix(50).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
-    "task": "Return Fibonacci F(50).",
+    "task": "Parse n and return Fibonacci F(n), with F(0)=0 and F(1)=1; n<=90 in this u64 example.",
     "useCases": "huge recurrence indexes and state transitions",
     "visibleInput": "n=50"
   },
   "concept": "huge recurrence indexes and state transitions",
-  "contentDigest": "f02695fae4b4f76ac92d75e9dfbebe80d24286775a163e90242cbf3065d58bc6",
+  "contentDigest": "35c12c6d1d9ddcf151e73081a36c87cab0d958b67bdd57652b8d5cbd47e344d0",
   "depth": {
     "connections": [
       {
-        "concept": "Encode a linear recurrence as a matrix and exponentiate the transition by squaring.",
         "direction": "previous",
-        "title": "Matrix Exponentiation: Mental Model"
+        "title": "Matrix Exponentiation: Mental Model",
+        "concept": "Encode a linear recurrence as a matrix and exponentiate the transition by squaring."
       },
       {
-        "concept": "Return Fibonacci F(50).",
         "direction": "next",
-        "title": "Challenge: Matrix Exponentiation"
+        "title": "Challenge: Matrix Exponentiation",
+        "concept": "Parse n and return Fibonacci F(n), with F(0)=0 and F(1)=1; n<=90 in this u64 example."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "Exponentiation processes the exponent's binary representation. Matrix [[1,1],[1,0]] advances the Fibonacci state by one. Raising it to power 50 gives F(50)=12586269025 in the appropriate entry. The identity matrix handles exponent zero; the sample bounds keep u64 arithmetic representable.",
+    "misconception": "“Squaring the matrix halves the Fibonacci answer”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `n=50`, write the state before the first update. Explain how it represents this claim: Encode a linear recurrence as a matrix and exponentiate the transition by squaring. An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds."
+        "title": "Concrete transition",
+        "detail": "Matrix [[1,1],[1,0]] advances the Fibonacci state by one. Raising it to power 50 gives F(50)=12586269025 in the appropriate entry. The identity matrix handles exponent zero; the sample bounds keep u64 arithmetic representable."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `12586269025`. Use explicit integer widths and checked arithmetic when input bounds require them. Distinguish bit positions from numeric values."
+        "title": "Independent second fixture",
+        "detail": "Input `n=0` produces `0`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Defend the O(k^3 log n) time · O(k^2) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `n=8` produces `21`. Exponentiation processes the exponent's binary representation. The stated work bound is O(k^3 log n) time · O(k^2) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `n=50` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Matrix Exponentiation survives, which state must be updated, and whether the O(k^3 log n) time · O(k^2) space bound still holds. Check number size, sign, and modulus assumptions before using a shortcut; not every inverse or division exists."
+    "transferChallenge": "Compare the visible input `n=50` with `n=1`. Predict why their results are `12586269025` and `1`. Then change one legal value and explain whether the same invariant, exponentiation processes the exponent's binary representation, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.matrix-exponentiation.recognize",
@@ -54,21 +54,21 @@
   "title": "Matrix Exponentiation: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "huge recurrence indexes and state transitions",
-      "Only problems with exactly one input value"
+      "`1`",
+      "`0`",
+      "`-1`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Matrix Exponentiation",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Matrix Exponentiation",
-    "explanation": "A problem is a good match for Matrix Exponentiation when it asks for huge recurrence indexes and state transitions. Here the concrete task is: Return Fibonacci F(50). The visible input `n=50` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Check number size, sign, and modulus assumptions before using a shortcut; not every inverse or division exists. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Encode a linear recurrence as a matrix and exponentiate the transition by squaring. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(k^3 log n) time · O(k^2) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `12586269025` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Use explicit integer widths and checked arithmetic when input bounds require them. Distinguish bit positions from numeric values. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: huge recurrence indexes and state transitions.",
-    "practiceCode": "fn gcd(mut a: u64, mut b: u64) -> u64 {\n    while b != 0 {\n        (a, b) = (b, a % b);\n    }\n    a\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only matrix-exponentiation program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn fibonacci_matrix(mut n:u64)->u64 {\n    fn multiply(a:[[u64;2];2],b:[[u64;2];2])->[[u64;2];2] {\n        let mut out=[[0;2];2]; for i in 0..2 { for j in 0..2 { for k in 0..2 { out[i][j]+=a[i][k]*b[k][j]; } } } out\n    }\n    assert!(n<=90); let mut result=[[1,0],[0,1]]; let mut power=[[1,1],[1,0]];\n    while n>0 { if n&1==1 { result=multiply(result,power); } n>>=1; if n>0 { power=multiply(power,power); } }\n    result[0][1]\n}\n\nfn main() {\n    let result = fibonacci_matrix(50).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "Matrix [[1,1],[1,0]] advances the Fibonacci state by one. Raising it to power 50 gives F(50)=12586269025 in the appropriate entry. The identity matrix handles exponent zero; the sample bounds keep u64 arithmetic representable.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Parse n and return Fibonacci F(n), with F(0)=0 and F(1)=1; n<=90 in this u64 example. The visible fixture is `n=50` and its example result is `12586269025`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Matrix Exponentiation when it asks for huge recurrence indexes and state transitions. Here the concrete task is: Parse n and return Fibonacci F(n), with F(0)=0 and F(1)=1; n<=90 in this u64 example. The visible input `n=50` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Check number size, sign, and modulus assumptions before using a shortcut; not every inverse or division exists. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Encode a linear recurrence as a matrix and exponentiate the transition by squaring. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(k^3 log n) time · O(k^2) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `12586269025` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Use explicit integer widths and checked arithmetic when input bounds require them. Distinguish bit positions from numeric values. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `0`. Exponentiation processes the exponent's binary representation. Compare this independent fixture with the worked trace: Matrix [[1,1],[1,0]] advances the Fibonacci state by one. Raising it to power 50 gives F(50)=12586269025 in the appropriate entry. The identity matrix handles exponent zero; the sample bounds keep u64 arithmetic representable.",
+    "practiceCode": "fn fibonacci_matrix(mut n:u64)->u64 {\n    fn multiply(a:[[u64;2];2],b:[[u64;2];2])->[[u64;2];2] {\n        let mut out=[[0;2];2]; for i in 0..2 { for j in 0..2 { for k in 0..2 { out[i][j]+=a[i][k]*b[k][j]; } } } out\n    }\n    assert!(n<=90); let mut result=[[1,0],[0,1]]; let mut power=[[1,1],[1,0]];\n    while n>0 { if n&1==1 { result=multiply(result,power); } n>>=1; if n>0 { power=multiply(power,power); } }\n    result[0][1]\n}\n\nfn main() {\n    let result = fibonacci_matrix(50).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Matrix Exponentiation on input `n=0`. Which result follows from the documented contract?",
+    "rule": "Exponentiation processes the exponent's binary representation. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Matrix Exponentiation.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-math-bits-b.png",

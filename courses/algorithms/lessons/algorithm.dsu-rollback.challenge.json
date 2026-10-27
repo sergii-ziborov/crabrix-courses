@@ -7,44 +7,44 @@
     "expectedAnswer": "false",
     "idea": "Record every parent or size mutation so recursion over time can undo unions without path compression.",
     "patternID": "dsu-rollback",
-    "rustSketch": "// Advanced structures start from the same discipline:\n// define the query monoid, update semantics, and the invariant that\n// makes each decomposition smaller than the original problem.",
+    "rustSketch": "struct RollbackDsu { parent:Vec<usize>, size:Vec<usize>, history:Vec<(usize,usize,usize)> }\nimpl RollbackDsu {\n    fn new(n:usize)->Self { Self{parent:(0..n).collect(),size:vec![1;n],history:Vec::new()} }\n    fn root(&self,mut v:usize)->usize { while v!=self.parent[v] { v=self.parent[v]; } v }\n    fn join(&mut self,a:usize,b:usize) {\n        let (mut a,mut b)=(self.root(a),self.root(b)); if a==b { return; }\n        if self.size[a]<self.size[b] { std::mem::swap(&mut a,&mut b); }\n        self.history.push((b,a,self.size[a])); self.parent[b]=a; self.size[a]+=self.size[b];\n    }\n    fn checkpoint(&self)->usize { self.history.len() }\n    fn rollback(&mut self,mark:usize) {\n        while self.history.len()>mark { let (b,a,size)=self.history.pop().unwrap(); self.parent[b]=b; self.size[a]=size; }\n    }\n}\nfn rollback_query(n:usize,before:&[(usize,usize)],after:&[(usize,usize)],query:(usize,usize))->bool {\n    let mut dsu=RollbackDsu::new(n); for &(a,b) in before { dsu.join(a,b); } let mark=dsu.checkpoint();\n    for &(a,b) in after { dsu.join(a,b); } dsu.rollback(mark); dsu.root(query.0)==dsu.root(query.1)\n}\n\nfn main() {\n    let result = rollback_query(3,&[(0,1)],&[(1,2)],(0,1)).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Apply unions and checkpoint operations, then answer the connectivity query after rollback.",
     "useCases": "offline dynamic connectivity and divide-over-time",
     "visibleInput": "n=4 unions=(0,1),(1,2) checkpoint union=(2,3) rollback query=(0,3)"
   },
   "concept": "Apply unions and checkpoint operations, then answer the connectivity query after rollback.",
-  "contentDigest": "d2fc9df2b6a4520a8670488968adedfc88625580608c4900e8a1942a9d25d925",
+  "contentDigest": "19b191913416b8aefcc23bc4e7bbe1b4379593f9b6a7a858dbdfa662053802ac",
   "depth": {
     "connections": [
       {
-        "concept": "offline dynamic connectivity and divide-over-time",
         "direction": "previous",
-        "title": "Rollback DSU: When to Use It"
+        "title": "Rollback DSU: When to Use It",
+        "concept": "offline dynamic connectivity and divide-over-time"
       },
       {
-        "concept": "Order offline range queries so adjacent queries move their boundaries only a small distance.",
         "direction": "next",
-        "title": "Mo's Algorithm: Mental Model"
+        "title": "Mo's Algorithm: Mental Model",
+        "concept": "Order offline range queries so adjacent queries move their boundaries only a small distance."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "Every parent change would need to be recorded to undo it. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“Union by size cannot work without compression”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `n=4 unions=(0,1),(1,2) checkpoint union=(2,3) rollback query=(0,3)`, write the state before the first update. Explain how it represents this claim: Record every parent or size mutation so recursion over time can undo unions without path compression. An advanced structure or offline query order packages an invariant across operations. Name what each node, block, or reordered query state stores."
+        "title": "Pattern-specific invariant",
+        "detail": "Every parent change would need to be recorded to undo it. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Keep representation and operations separate in Rust. Verify a tiny instance against a straightforward reference implementation before optimizing."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `n=3 unions=(0,1) checkpoint union=(1,2) rollback query=(0,1)` and computes `true`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test empty ranges, repeated updates, undo operations where supported, and the exact boundary between adjacent blocks. Defend the O(log n) union/find typical · O(changes) history bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `n=3 unions=(0,1),(1,2) checkpoint union=(0,2) rollback query=(0,2)`, the independently calculated result is `true`. The complexity discussion uses O(log n) union/find typical · O(changes) history. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `n=4 unions=(0,1),(1,2) checkpoint union=(2,3) rollback query=(0,3)` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Rollback DSU survives, which state must be updated, and whether the O(log n) union/find typical · O(changes) history bound still holds. Choose it when the required operation sequence, query volume, or substring structure exceeds a simple scan or prefix summary; compare the real time and memory limits first."
+    "transferChallenge": "Change the independent fixture `n=3 unions=(0,1) checkpoint union=(1,2) rollback query=(0,1)` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `n=4 unions=(0,1),(1,2) checkpoint union=(2,3) rollback query=(0,3)`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.dsu-rollback.challenge",
@@ -54,19 +54,19 @@
   "title": "Challenge: Rollback DSU",
   "writing": {
     "answers": [
-      "O(log n) union/find typical · O(changes) history",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`true`",
+      "`false`",
+      "The valid input necessarily panics"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Apply unions and checkpoint operations, then answer the connectivity query after rollback.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Rollback DSU\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Apply unions and checkpoint operations, then answer the connectivity query after rollback. On input `n=4 unions=(0,1),(1,2) checkpoint union=(2,3) rollback query=(0,3)`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Record every parent or size mutation so recursion over time can undo unions without path compression. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. An advanced structure or offline query order packages an invariant across operations. Name what each node, block, or reordered query state stores. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is an invariant note rather than a complete program. Turn it into explicit state and transitions before coding. Keep representation and operations separate in Rust. Verify a tiny instance against a straightforward reference implementation before optimizing. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(log n) union/find typical · O(changes) history; explain which operation dominates it and how many times the input can trigger that operation. Test empty ranges, repeated updates, undo operations where supported, and the exact boundary between adjacent blocks. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(log n) union/find typical · O(changes) history; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Apply unions and checkpoint operations, then answer the connectivity query after rollback.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Rollback DSU\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS dsu-rollback, and your explanation still meets O(log n) union/find typical · O(changes) history.",
+    "exampleCaption": "Complete std-only dsu-rollback program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "struct RollbackDsu { parent:Vec<usize>, size:Vec<usize>, history:Vec<(usize,usize,usize)> }\nimpl RollbackDsu {\n    fn new(n:usize)->Self { Self{parent:(0..n).collect(),size:vec![1;n],history:Vec::new()} }\n    fn root(&self,mut v:usize)->usize { while v!=self.parent[v] { v=self.parent[v]; } v }\n    fn join(&mut self,a:usize,b:usize) {\n        let (mut a,mut b)=(self.root(a),self.root(b)); if a==b { return; }\n        if self.size[a]<self.size[b] { std::mem::swap(&mut a,&mut b); }\n        self.history.push((b,a,self.size[a])); self.parent[b]=a; self.size[a]+=self.size[b];\n    }\n    fn checkpoint(&self)->usize { self.history.len() }\n    fn rollback(&mut self,mark:usize) {\n        while self.history.len()>mark { let (b,a,size)=self.history.pop().unwrap(); self.parent[b]=b; self.size[a]=size; }\n    }\n}\nfn rollback_query(n:usize,before:&[(usize,usize)],after:&[(usize,usize)],query:(usize,usize))->bool {\n    let mut dsu=RollbackDsu::new(n); for &(a,b) in before { dsu.join(a,b); } let mark=dsu.checkpoint();\n    for &(a,b) in after { dsu.join(a,b); } dsu.rollback(mark); dsu.root(query.0)==dsu.root(query.1)\n}\n\nfn main() {\n    let result = rollback_query(3,&[(0,1)],&[(1,2)],(0,1)).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "Every parent change would need to be recorded to undo it. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `n=3 unions=(0,1) checkpoint union=(1,2) rollback query=(0,1)`, the worked program returns `true`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `n=4 unions=(0,1),(1,2) checkpoint union=(2,3) rollback query=(0,3)`; predict that result before opening the answer reveal. The precise contract is: Apply unions and checkpoint operations, then answer the connectivity query after rollback.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Apply unions and checkpoint operations, then answer the connectivity query after rollback. On input `n=4 unions=(0,1),(1,2) checkpoint union=(2,3) rollback query=(0,3)`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Record every parent or size mutation so recursion over time can undo unions without path compression. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. An advanced structure or offline query order packages an invariant across operations. Name what each node, block, or reordered query state stores. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(log n) union/find typical · O(changes) history; explain which operation dominates it and how many times the input can trigger that operation. Test empty ranges, repeated updates, undo operations where supported, and the exact boundary between adjacent blocks. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `true`. Every parent change would need to be recorded to undo it. Compare this independent fixture with the worked trace: Build (0,1),(1,2), mark the history length, then join (2,3). Rolling back pops that last union and restores sizes and the separated root. Query (0,3) is false again, while (0,2) remains connected.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Apply unions and checkpoint operations, then answer the connectivity query after rollback.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement dsu-rollback\")\n}\n",
+    "question": "Boundary check for dsu-rollback: with input `n=3 unions=(0,1),(1,2) checkpoint union=(0,2) rollback query=(0,2)`, what result should solve return?",
+    "rule": "Every parent change would need to be recorded to undo it. Apply unions and checkpoint operations, then answer the connectivity query after rollback.",
+    "success": "The private harness prints PASS dsu-rollback. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Apply unions and checkpoint operations, then answer the connectivity query after rollback.",
     "task": "Apply unions and checkpoint operations, then answer the connectivity query after rollback."
   },

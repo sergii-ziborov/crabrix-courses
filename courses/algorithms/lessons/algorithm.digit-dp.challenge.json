@@ -7,44 +7,44 @@
     "expectedAnswer": "3",
     "idea": "Process digits with position, tight-bound, leading-zero, and property state.",
     "patternID": "digit-dp",
-    "rustSketch": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
+    "rustSketch": "fn digit_sum_count(bound:u64,target:usize)->u64 {\n    fn count(pos:usize,left:usize,tight:bool,digits:&[u8],memo:&mut [Vec<Option<u64>>])->u64 {\n        if pos==digits.len() { return u64::from(left==0); }\n        if !tight { if let Some(answer)=memo[pos][left] { return answer; } }\n        let limit=if tight { digits[pos] } else { 9 }; let mut answer=0;\n        for digit in 0..=limit { if digit as usize<=left { answer+=count(pos+1,left-digit as usize,tight && digit==limit,digits,memo); } }\n        if !tight { memo[pos][left]=Some(answer); } answer\n    }\n    let digits:Vec<_>=bound.to_string().bytes().map(|c|c-b'0').collect();\n    count(0,target,true,&digits,&mut vec![vec![None;target+1];digits.len()])\n}\n\nfn main() {\n    let result = digit_sum_count(9,5).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
-    "task": "Count integers from 0 through 25 whose digit sum is 5.",
+    "task": "Parse bound and sum. Count integers from 0 through bound inclusive whose decimal digit sum is sum; zero has digit sum zero.",
     "useCases": "count numbers under a bound satisfying digit constraints",
     "visibleInput": "bound=25 sum=5"
   },
-  "concept": "Count integers from 0 through 25 whose digit sum is 5.",
-  "contentDigest": "6cb0d74aa0e41ce574a230c64c50234911d8e19f0395a19183ab9c035a861b1e",
+  "concept": "Parse bound and sum. Count integers from 0 through bound inclusive whose decimal digit sum is sum; zero has digit sum zero.",
+  "contentDigest": "0440ced0af463270ea0b2df61d60b8f8ed65f12269a289d5483c3b560bc481a7",
   "depth": {
     "connections": [
       {
-        "concept": "count numbers under a bound satisfying digit constraints",
         "direction": "previous",
-        "title": "Digit DP: When to Use It"
+        "title": "Digit DP: When to Use It",
+        "concept": "count numbers under a bound satisfying digit constraints"
       },
       {
-        "concept": "Encode the chosen subset in bits and transition by adding one unused item.",
         "direction": "next",
-        "title": "Bitmask DP: Mental Model"
+        "title": "Bitmask DP: Mental Model",
+        "concept": "Encode the chosen subset in bits and transition by adding one unused item."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "A tight prefix restricts the next digit to the bound's digit. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“All later digits must equal the bound once a smaller digit is chosen”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `bound=25 sum=5`, write the state before the first update. Explain how it represents this claim: Process digits with position, tight-bound, leading-zero, and property state. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit."
+        "title": "Pattern-specific invariant",
+        "detail": "A tight prefix restricts the next digit to the bound's digit. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Index tables consistently where the state is tabular. Compress dimensions only after the full recurrence and its dependency order are clear."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `bound=9 sum=5` and computes `1`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Defend the O(digits * states * base) time bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `bound=99 sum=1`, the independently calculated result is `2`. The complexity discussion uses O(digits * states * base) time. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `bound=25 sum=5` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Digit DP survives, which state must be updated, and whether the O(digits * states * base) time bound still holds. Write the dependency arrows before choosing loop order; a recurrence that reads the future cannot be filled left to right without adjustment."
+    "transferChallenge": "Change the independent fixture `bound=9 sum=5` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `bound=25 sum=5`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.digit-dp.challenge",
@@ -54,21 +54,21 @@
   "title": "Challenge: Digit DP",
   "writing": {
     "answers": [
-      "O(digits * states * base) time",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`3`",
+      "`4`",
+      "`2`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Count integers from 0 through 25 whose digit sum is 5.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Digit DP\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Count integers from 0 through 25 whose digit sum is 5. On input `bound=25 sum=5`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Process digits with position, tight-bound, leading-zero, and property state. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Index tables consistently where the state is tabular. Compress dimensions only after the full recurrence and its dependency order are clear. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(digits * states * base) time; explain which operation dominates it and how many times the input can trigger that operation. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(digits * states * base) time; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Count integers from 0 through 25 whose digit sum is 5.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Digit DP\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS digit-dp, and your explanation still meets O(digits * states * base) time.",
-    "summary": "Count integers from 0 through 25 whose digit sum is 5.",
-    "task": "Count integers from 0 through 25 whose digit sum is 5."
+    "exampleCaption": "Complete std-only digit-dp program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn digit_sum_count(bound:u64,target:usize)->u64 {\n    fn count(pos:usize,left:usize,tight:bool,digits:&[u8],memo:&mut [Vec<Option<u64>>])->u64 {\n        if pos==digits.len() { return u64::from(left==0); }\n        if !tight { if let Some(answer)=memo[pos][left] { return answer; } }\n        let limit=if tight { digits[pos] } else { 9 }; let mut answer=0;\n        for digit in 0..=limit { if digit as usize<=left { answer+=count(pos+1,left-digit as usize,tight && digit==limit,digits,memo); } }\n        if !tight { memo[pos][left]=Some(answer); } answer\n    }\n    let digits:Vec<_>=bound.to_string().bytes().map(|c|c-b'0').collect();\n    count(0,target,true,&digits,&mut vec![vec![None;target+1];digits.len()])\n}\n\nfn main() {\n    let result = digit_sum_count(9,5).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "A tight prefix restricts the next digit to the bound's digit. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `bound=9 sum=5`, the worked program returns `1`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `bound=25 sum=5`; predict that result before opening the answer reveal. The precise contract is: Parse bound and sum. Count integers from 0 through bound inclusive whose decimal digit sum is sum; zero has digit sum zero.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Parse bound and sum. Count integers from 0 through bound inclusive whose decimal digit sum is sum; zero has digit sum zero. On input `bound=25 sum=5`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Process digits with position, tight-bound, leading-zero, and property state. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(digits * states * base) time; explain which operation dominates it and how many times the input can trigger that operation. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `3`. A tight prefix restricts the next digit to the bound's digit. Compare this independent fixture with the worked trace: Up to 25, digit sum 5 is achieved by 05,14,23, so the answer is 3. Once a prefix is smaller than 2, later digits can range freely. Leading zeros are part of one fixed-width representation and let zero be counted exactly once when target sum is zero.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Parse bound and sum. Count integers from 0 through bound inclusive whose decimal digit sum is sum; zero has digit sum zero.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement digit-dp\")\n}\n",
+    "question": "Boundary check for digit-dp: with input `bound=100 sum=2`, what result should solve return?",
+    "rule": "A tight prefix restricts the next digit to the bound's digit. Parse bound and sum. Count integers from 0 through bound inclusive whose decimal digit sum is sum; zero has digit sum zero.",
+    "success": "The private harness prints PASS digit-dp. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
+    "summary": "Parse bound and sum. Count integers from 0 through bound inclusive whose decimal digit sum is sum; zero has digit sum zero.",
+    "task": "Parse bound and sum. Count integers from 0 through bound inclusive whose decimal digit sum is sum; zero has digit sum zero."
   },
   "illustration": {
     "path": "media/algorithms-dynamic-2d-b.png",

@@ -7,44 +7,44 @@
     "expectedAnswer": "1,3,4,5,10",
     "idea": "Build a max heap and repeatedly move the maximum into its final suffix position.",
     "patternID": "heap-sort",
-    "rustSketch": "fn insertion_sort(values: &mut [i32]) {\n    for i in 1..values.len() {\n        let mut j = i;\n        while j > 0 && values[j] < values[j - 1] {\n            values.swap(j, j - 1);\n            j -= 1;\n        }\n    }\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn heap_sort(a:&mut [i32]) {\n    fn sift(a:&mut [i32],mut root:usize,end:usize) {\n        while 2*root+1<end {\n            let mut child=2*root+1; if child+1<end && a[child]<a[child+1] { child+=1; }\n            if a[root]>=a[child] { break; } a.swap(root,child); root=child;\n        }\n    }\n    let n=a.len(); for i in (0..n/2).rev() { sift(a,i,n); }\n    for end in (1..n).rev() { a.swap(0,end); sift(a,0,end); }\n}\n\nfn main() {\n    let result = { let mut values=vec![4,10,3,5,1]; heap_sort(&mut values); csv(values) };\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return the ascending ordering produced by an in-place max heap.",
     "useCases": "bounded-memory worst-case sorting",
     "visibleInput": "[4,10,3,5,1]"
   },
   "concept": "Build a max heap and repeatedly move the maximum into its final suffix position.",
-  "contentDigest": "fd33006e15608e6e6022f265799ed4e7e105432bf1813160e7b59d29a3ad67e7",
+  "contentDigest": "d48e8681ef2eea20b1b45a0226ca59ab646c63e52c33691104598bd1b059ecaa",
   "depth": {
     "connections": [
       {
-        "concept": "Sort the values using an in-place partition.",
         "direction": "previous",
-        "title": "Challenge: Quicksort"
+        "title": "Challenge: Quicksort",
+        "concept": "Sort the values using an in-place partition."
       },
       {
-        "concept": "bounded-memory worst-case sorting",
         "direction": "next",
-        "title": "Heap Sort: When to Use It"
+        "title": "Heap Sort: When to Use It",
+        "concept": "bounded-memory worst-case sorting"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "That position is its final ascending-sort position. Build a max-heap for [4,10,3,5,1], swap root 10 to the last slot, then sift within the first four items. Repeat with the shrinking active heap. The finished suffix grows in ascending final positions.",
+    "misconception": "“The suffix remains part of the active heap”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[4,10,3,5,1]`, write the state before the first update. Explain how it represents this claim: Build a max heap and repeatedly move the maximum into its final suffix position. Sorting establishes global order; selection asks only for a rank or partition. Explain which comparisons make progress toward that goal."
+        "title": "Concrete transition",
+        "detail": "Build a max-heap for [4,10,3,5,1], swap root 10 to the last slot, then sift within the first four items. Repeat with the shrinking active heap. The finished suffix grows in ascending final positions."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `1,3,4,5,10`. Rust slice sorting is available, but an exercise asking for the algorithm requires the actual invariant and mutation steps, not a library shortcut."
+        "title": "Independent second fixture",
+        "detail": "Input `[1,2,3,4,5,6,7]` produces `1,2,3,4,5,6,7`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test all-equal keys, already ordered input, reverse order, and extreme pivot or bucket distributions. Defend the O(n log n) time · O(1) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[8,7,6,5,4,3,2]` produces `2,3,4,5,6,7,8`. That position is its final ascending-sort position. The stated work bound is O(n log n) time · O(1) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[4,10,3,5,1]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Heap Sort survives, which state must be updated, and whether the O(n log n) time · O(1) space bound still holds. Before sorting everything, ask whether a single statistic is enough and whether stable order among equal keys matters."
+    "transferChallenge": "Compare the visible input `[4,10,3,5,1]` with `[3,3,3,3,3,3,3]`. Predict why their results are `1,3,4,5,10` and `3,3,3,3,3,3,3`. Then change one legal value and explain whether the same invariant, that position is its final ascending-sort position, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.heap-sort.model",
@@ -54,21 +54,21 @@
   "title": "Heap Sort: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "That position is its final ascending-sort position",
+      "The suffix remains part of the active heap",
+      "A max-heap already stores all elements in sorted order"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n log n) time · O(1) space",
-    "exampleCode": "fn insertion_sort(values: &mut [i32]) {\n    for i in 1..values.len() {\n        let mut j = i;\n        while j > 0 && values[j] < values[j - 1] {\n            values.swap(j, j - 1);\n            j -= 1;\n        }\n    }\n}",
-    "explanation": "Begin with the concrete question: Return the ascending ordering produced by an in-place max heap. For the visible input `[4,10,3,5,1]`, the stated result is `1,3,4,5,10`. Before reading code, name the smallest piece of information that must survive from one step to the next. Sorting establishes global order; selection asks only for a rank or partition. Explain which comparisons make progress toward that goal. That is the mental model for Heap Sort; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Build a max heap and repeatedly move the maximum into its final suffix position. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Rust slice sorting is available, but an exercise asking for the algorithm requires the actual invariant and mutation steps, not a library shortcut. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n log n) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test all-equal keys, already ordered input, reverse order, and extreme pivot or bucket distributions. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn insertion_sort(values: &mut [i32]) {\n    for i in 1..values.len() {\n        let mut j = i;\n        while j > 0 && values[j] < values[j - 1] {\n            values.swap(j, j - 1);\n            j -= 1;\n        }\n    }\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only heap-sort program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn heap_sort(a:&mut [i32]) {\n    fn sift(a:&mut [i32],mut root:usize,end:usize) {\n        while 2*root+1<end {\n            let mut child=2*root+1; if child+1<end && a[child]<a[child+1] { child+=1; }\n            if a[root]>=a[child] { break; } a.swap(root,child); root=child;\n        }\n    }\n    let n=a.len(); for i in (0..n/2).rev() { sift(a,i,n); }\n    for end in (1..n).rev() { a.swap(0,end); sift(a,0,end); }\n}\n\nfn main() {\n    let result = { let mut values=vec![4,10,3,5,1]; heap_sort(&mut values); csv(values) };\n    println!(\"{result}\");\n}\n",
+    "explanation": "Build a max-heap for [4,10,3,5,1], swap root 10 to the last slot, then sift within the first four items. Repeat with the shrinking active heap. The finished suffix grows in ascending final positions.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the ascending ordering produced by an in-place max heap. The visible fixture is `[4,10,3,5,1]` and its example result is `1,3,4,5,10`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return the ascending ordering produced by an in-place max heap. For the visible input `[4,10,3,5,1]`, the stated result is `1,3,4,5,10`. Before reading code, name the smallest piece of information that must survive from one step to the next. Sorting establishes global order; selection asks only for a rank or partition. Explain which comparisons make progress toward that goal. That is the mental model for Heap Sort; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Build a max heap and repeatedly move the maximum into its final suffix position. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n log n) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test all-equal keys, already ordered input, reverse order, and extreme pivot or bucket distributions. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "Build a max-heap for [4,10,3,5,1], swap root 10 to the last slot, then sift within the first four items. Repeat with the shrinking active heap. The finished suffix grows in ascending final positions.",
+    "practiceCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn heap_sort(a:&mut [i32]) {\n    fn sift(a:&mut [i32],mut root:usize,end:usize) {\n        while 2*root+1<end {\n            let mut child=2*root+1; if child+1<end && a[child]<a[child+1] { child+=1; }\n            if a[root]>=a[child] { break; } a.swap(root,child); root=child;\n        }\n    }\n    let n=a.len(); for i in (0..n/2).rev() { sift(a,i,n); }\n    for end in (1..n).rev() { a.swap(0,end); sift(a,0,end); }\n}\n\nfn main() {\n    let result = { let mut values=vec![4,10,3,5,1]; heap_sort(&mut values); csv(values) };\n    println!(\"{result}\");\n}\n",
+    "question": "Why move the maximum heap element to the shrinking suffix?",
+    "rule": "That position is its final ascending-sort position. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(n log n) time · O(1) space bound without looking at the code.",
     "summary": "Build a max heap and repeatedly move the maximum into its final suffix position.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-sorting-selection-a.png",

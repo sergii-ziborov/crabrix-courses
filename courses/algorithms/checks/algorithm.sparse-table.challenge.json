@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS sparse-table\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"0,0,3\".to_string()",
-      "String::from(\"0,0,3\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.sparse-table.challenge",
     "patternID": "sparse-table",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return minimums for ranges [0,3], [2,5], and [4,6].\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Sparse Table\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Return minima for inclusive ranges [0,3], [2,5], [4,6], in that order; input contains at least seven integers.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement sparse-table\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "0,0,3",
+        "kind": "visible",
         "input": "[7,2,3,0,5,10,3,12,18]",
-        "kind": "visible"
+        "expectedAnswer": "0,0,3"
       },
       {
-        "expectedAnswer": "1,3,5",
+        "kind": "boundary",
         "input": "[1,2,3,4,5,6,7]",
-        "kind": "boundary"
+        "expectedAnswer": "1,3,5"
       },
       {
-        "expectedAnswer": "1,3,5",
-        "input": "\n[1,2,3,4,5,6,7]\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "[9,8,7,6,5,4,3]",
+        "expectedAnswer": "6,4,3"
       },
       {
-        "expectedAnswer": "0,0,3",
+        "kind": "adversarial",
+        "input": "[2,2,2,2,2,2,2]",
+        "expectedAnswer": "2,2,2"
+      },
+      {
+        "kind": "adversarial",
+        "input": "[1,9,2,8,3,7,4]",
+        "expectedAnswer": "1,2,3"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \n[7,2,3,0,5,10,3,12,18]\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "0,0,3"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\n[1,9,2,8,3,7,4]\n",
+        "expectedAnswer": "1,2,3"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"[7,2,3,0,5,10,3,12,18]\"#, r#\"0,0,3\"#),\n    (r#\"[1,2,3,4,5,6,7]\"#, r#\"1,3,5\"#),\n    (r#\"\n[1,2,3,4,5,6,7]\n\"#, r#\"1,3,5\"#),\n    (r#\"  \n[7,2,3,0,5,10,3,12,18]\n  \"#, r#\"0,0,3\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS sparse-table\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"[7,2,3,0,5,10,3,12,18]\",\"0,0,3\"),\n        (\"[1,2,3,4,5,6,7]\",\"1,3,5\"),\n        (\"[9,8,7,6,5,4,3]\",\"6,4,3\"),\n        (\"[2,2,2,2,2,2,2]\",\"2,2,2\"),\n        (\"[1,9,2,8,3,7,4]\",\"1,2,3\"),\n        (\"  \\n[7,2,3,0,5,10,3,12,18]\\n  \",\"0,0,3\"),\n        (\"\\n[1,9,2,8,3,7,4]\\n\",\"1,2,3\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS sparse-table\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS sparse-table\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"0,0,3\".to_string()",
-      "String::from(\"0,0,3\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

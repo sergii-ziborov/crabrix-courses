@@ -2,49 +2,49 @@
   "algorithm": {
     "categoryID": "dynamic-2d",
     "categoryTitle": "2D & Advanced Dynamic Programming",
-    "complexity": "O(n*m) time · O(min(n,m)) space possible",
+    "complexity": "O(n*m) time · O(m) row state in this example",
     "difficulty": "medium",
     "expectedAnswer": "3",
     "idea": "Each state chooses insert, delete, or replace from adjacent smaller prefixes.",
     "patternID": "edit-distance",
-    "rustSketch": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
+    "rustSketch": "fn edit_distance(a:&str,b:&str)->usize {\n    assert!(a.is_ascii() && b.is_ascii()); let mut dp:Vec<_>=(0..=b.len()).collect();\n    for (i,x) in a.bytes().enumerate() {\n        let mut next=vec![i+1];\n        for (j,y) in b.bytes().enumerate() { next.push((next[j]+1).min(dp[j+1]+1).min(dp[j]+usize::from(x!=y))); } dp=next;\n    } dp[b.len()]\n}\n\nfn main() {\n    let result = edit_distance(\"a\",\"b\").to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Return Levenshtein distance.",
     "useCases": "spell correction, fuzzy matching, sequence alignment",
     "visibleInput": "horse -> ros"
   },
   "concept": "Return Levenshtein distance.",
-  "contentDigest": "351c1b151a51f25a8cb513f45ba5f69ed77a9a8d0fbc3bd2df511b77339eb71d",
+  "contentDigest": "c335f5841161bca0c921d5d30482329e3b2a9b4ea0d1a1837eeac5ebdfa18979",
   "depth": {
     "connections": [
       {
-        "concept": "spell correction, fuzzy matching, sequence alignment",
         "direction": "previous",
-        "title": "Edit Distance: When to Use It"
+        "title": "Edit Distance: When to Use It",
+        "concept": "spell correction, fuzzy matching, sequence alignment"
       },
       {
-        "concept": "Equal interval ends add two; unequal ends discard one boundary and keep the better interval.",
         "direction": "next",
-        "title": "Longest Palindromic Subsequence: Mental Model"
+        "title": "Longest Palindromic Subsequence: Mental Model",
+        "concept": "Equal interval ends add two; unequal ends discard one boundary and keep the better interval."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "Insert, delete and substitute, each with unit cost. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“Swap, sort and reverse”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `horse -> ros`, write the state before the first update. Explain how it represents this claim: Each state chooses insert, delete, or replace from adjacent smaller prefixes. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit."
+        "title": "Pattern-specific invariant",
+        "detail": "Insert, delete and substitute, each with unit cost. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Index tables consistently where the state is tabular. Compress dimensions only after the full recurrence and its dependency order are clear."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `a -> b` and computes `1`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Defend the O(n*m) time · O(min(n,m)) space possible bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `same -> same`, the independently calculated result is `0`. The complexity discussion uses O(n*m) time · O(m) row state in this example. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `horse -> ros` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Edit Distance survives, which state must be updated, and whether the O(n*m) time · O(min(n,m)) space possible bound still holds. Write the dependency arrows before choosing loop order; a recurrence that reads the future cannot be filled left to right without adjustment."
+    "transferChallenge": "Change the independent fixture `a -> b` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `horse -> ros`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.edit-distance.challenge",
@@ -54,19 +54,19 @@
   "title": "Challenge: Edit Distance",
   "writing": {
     "answers": [
-      "O(n*m) time · O(min(n,m)) space possible",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`0`",
+      "`1`",
+      "`-1`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return Levenshtein distance.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Edit Distance\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Return Levenshtein distance. On input `horse -> ros`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Each state chooses insert, delete, or replace from adjacent smaller prefixes. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Index tables consistently where the state is tabular. Compress dimensions only after the full recurrence and its dependency order are clear. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n*m) time · O(min(n,m)) space possible; explain which operation dominates it and how many times the input can trigger that operation. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(n*m) time · O(min(n,m)) space possible; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return Levenshtein distance.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Edit Distance\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS edit-distance, and your explanation still meets O(n*m) time · O(min(n,m)) space possible.",
+    "exampleCaption": "Complete std-only edit-distance program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn edit_distance(a:&str,b:&str)->usize {\n    assert!(a.is_ascii() && b.is_ascii()); let mut dp:Vec<_>=(0..=b.len()).collect();\n    for (i,x) in a.bytes().enumerate() {\n        let mut next=vec![i+1];\n        for (j,y) in b.bytes().enumerate() { next.push((next[j]+1).min(dp[j+1]+1).min(dp[j]+usize::from(x!=y))); } dp=next;\n    } dp[b.len()]\n}\n\nfn main() {\n    let result = edit_distance(\"a\",\"b\").to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "Insert, delete and substitute, each with unit cost. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `a -> b`, the worked program returns `1`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `horse -> ros`; predict that result before opening the answer reveal. The precise contract is: Return Levenshtein distance.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Return Levenshtein distance. On input `horse -> ros`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Each state chooses insert, delete, or replace from adjacent smaller prefixes. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(n*m) time · O(m) row state in this example; explain which operation dominates it and how many times the input can trigger that operation. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `0`. Insert, delete and substitute, each with unit cost. Compare this independent fixture with the worked trace: Transform horse to ros using three edits under the unit-cost model. In the DP row update, current-left+1 is insertion, old-above+1 deletion, and old-diagonal plus a mismatch bit substitution. Equal characters use diagonal cost unchanged.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return Levenshtein distance.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement edit-distance\")\n}\n",
+    "question": "Boundary check for edit-distance: with input `same -> same`, what result should solve return?",
+    "rule": "Insert, delete and substitute, each with unit cost. Return Levenshtein distance.",
+    "success": "The private harness prints PASS edit-distance. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Return Levenshtein distance.",
     "task": "Return Levenshtein distance."
   },

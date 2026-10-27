@@ -7,7 +7,7 @@
     "expectedAnswer": "true",
     "idea": "Track reachable totals and update backward so every item is used at most once.",
     "patternID": "subset-sum",
-    "rustSketch": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
+    "rustSketch": "fn subset_sum(values:&[usize],target:usize)->bool {\n    let mut reachable=vec![false;target+1]; reachable[0]=true;\n    for &x in values { for sum in (x..=target).rev() { reachable[sum]|=reachable[sum-x]; } } reachable[target]\n}\n\nfn main() {\n    let result = subset_sum(&[2,3,7,8,10],11).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return whether some subset sums to 11.",
     "useCases": "partition checks and bounded target reachability",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Return unique paths through a 3 by 4 empty grid moving right or down.",
         "direction": "previous",
-        "title": "Challenge: Grid Path DP"
+        "title": "Challenge: Grid Path DP",
+        "concept": "Parse rows and cols. Count paths through that empty grid using right/down moves from the top-left cell to the bottom-right. A 1x1 grid has one path."
       },
       {
-        "concept": "partition checks and bounded target reachability",
         "direction": "next",
-        "title": "Subset Sum DP: When to Use It"
+        "title": "Subset Sum DP: When to Use It",
+        "concept": "partition checks and bounded target reachability"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "It prevents taking the current item multiple times. For [2,3,7,8,10] and target 11, selecting 3 and 8 is sufficient. When processing value 3, descending sums may use states from earlier items but not a newly created state that already used this same 3.",
+    "misconception": "“It requires every value to be used”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[2,3,7,8,10]`, write the state before the first update. Explain how it represents this claim: Track reachable totals and update backward so every item is used at most once. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit."
+        "title": "Concrete transition",
+        "detail": "For [2,3,7,8,10] and target 11, selecting 3 and 8 is sufficient. When processing value 3, descending sums may use states from earlier items but not a newly created state that already used this same 3."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `true`. Index tables consistently where the state is tabular. Compress dimensions only after the full recurrence and its dependency order are clear."
+        "title": "Independent second fixture",
+        "detail": "Input `[11]` produces `true`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Defend the O(n*target) time · O(target) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[4,7,8]` produces `true`. It prevents taking the current item multiple times. The stated work bound is O(n*target) time · O(target) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[2,3,7,8,10]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Subset Sum DP survives, which state must be updated, and whether the O(n*target) time · O(target) space bound still holds. Write the dependency arrows before choosing loop order; a recurrence that reads the future cannot be filled left to right without adjustment."
+    "transferChallenge": "Compare the visible input `[2,3,7,8,10]` with `[1,2,3]`. Predict why their results are `true` and `false`. Then change one legal value and explain whether the same invariant, it prevents taking the current item multiple times, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.subset-sum.model",
@@ -54,21 +54,21 @@
   "title": "Subset Sum DP: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "It prevents taking the current item multiple times",
+      "It requires every value to be used",
+      "It sorts reachable sums automatically"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n*target) time · O(target) space",
-    "exampleCode": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
-    "explanation": "Begin with the concrete question: Return whether some subset sums to 11. For the visible input `[2,3,7,8,10]`, the stated result is `true`. Before reading code, name the smallest piece of information that must survive from one step to the next. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit. That is the mental model for Subset Sum DP; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Track reachable totals and update backward so every item is used at most once. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Index tables consistently where the state is tabular. Compress dimensions only after the full recurrence and its dependency order are clear. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n*target) time · O(target) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only subset-sum program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn subset_sum(values:&[usize],target:usize)->bool {\n    let mut reachable=vec![false;target+1]; reachable[0]=true;\n    for &x in values { for sum in (x..=target).rev() { reachable[sum]|=reachable[sum-x]; } } reachable[target]\n}\n\nfn main() {\n    let result = subset_sum(&[2,3,7,8,10],11).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "For [2,3,7,8,10] and target 11, selecting 3 and 8 is sufficient. When processing value 3, descending sums may use states from earlier items but not a newly created state that already used this same 3.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return whether some subset sums to 11. The visible fixture is `[2,3,7,8,10]` and its example result is `true`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return whether some subset sums to 11. For the visible input `[2,3,7,8,10]`, the stated result is `true`. Before reading code, name the smallest piece of information that must survive from one step to the next. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit. That is the mental model for Subset Sum DP; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Track reachable totals and update backward so every item is used at most once. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n*target) time · O(target) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "For [2,3,7,8,10] and target 11, selecting 3 and 8 is sufficient. When processing value 3, descending sums may use states from earlier items but not a newly created state that already used this same 3.",
+    "practiceCode": "fn subset_sum(values:&[usize],target:usize)->bool {\n    let mut reachable=vec![false;target+1]; reachable[0]=true;\n    for &x in values { for sum in (x..=target).rev() { reachable[sum]|=reachable[sum-x]; } } reachable[target]\n}\n\nfn main() {\n    let result = subset_sum(&[2,3,7,8,10],11).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Why scan reachable sums downward for each subset-sum item?",
+    "rule": "It prevents taking the current item multiple times. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(n*target) time · O(target) space bound without looking at the code.",
     "summary": "Track reachable totals and update backward so every item is used at most once.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-dynamic-2d-a.png",

@@ -7,44 +7,44 @@
     "expectedAnswer": "3",
     "idea": "Count valid one-symbol and two-symbol predecessors while rejecting leading zero states.",
     "patternID": "decode-ways",
-    "rustSketch": "fn ways(n: usize) -> usize {\n    let (mut previous, mut current) = (1, 1);\n    for _ in 0..n {\n        (previous, current) = (current, previous + current);\n    }\n    previous\n}",
+    "rustSketch": "fn decodings(text:&str)->u64 {\n    assert!(text.bytes().all(|c|c.is_ascii_digit())); let a=text.as_bytes(); let (mut before,mut current)=(1,1);\n    for i in 0..a.len() {\n        let mut next=if a[i]!=b'0' { current } else { 0 };\n        if i>0 && (a[i-1]==b'1' || a[i-1]==b'2' && a[i]<=b'6') { next+=before; }\n        before=current; current=next;\n    } current\n}\n\nfn main() {\n    let result = decodings(\"06\").to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Return the number of valid A=1 through Z=26 decodings.",
     "useCases": "encoded strings with local validity rules",
     "visibleInput": "226"
   },
   "concept": "Return the number of valid A=1 through Z=26 decodings.",
-  "contentDigest": "c89897a34fba6f16901469b7ff8ebce4103f7ca099e95c9da87e3a3b2c63d6ce",
+  "contentDigest": "f144d6fc13c1d3c9e0c491fb30b1d3325c156941ee8b8639b257db9755e22e2e",
   "depth": {
     "connections": [
       {
-        "concept": "encoded strings with local validity rules",
         "direction": "previous",
-        "title": "Decode Ways DP: When to Use It"
+        "title": "Decode Ways DP: When to Use It",
+        "concept": "encoded strings with local validity rules"
       },
       {
-        "concept": "Keep the smallest possible tail for an increasing subsequence of every length.",
         "direction": "next",
-        "title": "Longest Increasing Subsequence: Mental Model"
+        "title": "Longest Increasing Subsequence: Mental Model",
+        "concept": "Keep the smallest possible tail for an increasing subsequence of every length."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "Valid letter codes are 1 through 26. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“Zero always means an extra optional letter”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `226`, write the state before the first update. Explain how it represents this claim: Count valid one-symbol and two-symbol predecessors while rejecting leading zero states. A one-dimensional DP state summarizes a prefix or a single parameter. Define its meaning before writing a recurrence."
+        "title": "Pattern-specific invariant",
+        "detail": "Valid letter codes are 1 through 26. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Use `Option` or a safe sentinel for unreachable states, and choose an iteration direction that matches the recurrence's dependencies."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `06` and computes `0`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test the base state, the first transition, impossible states, and whether an in-place update accidentally reuses an item twice. Defend the O(n) time · O(1) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `1111`, the independently calculated result is `5`. The complexity discussion uses O(n) time · O(1) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `226` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Decode Ways DP survives, which state must be updated, and whether the O(n) time · O(1) space bound still holds. Choose a recurrence when subproblems overlap. `Some` patterns summarize a frontier instead of a full DP table; either representation needs an invariant, and any greedy shortcut needs proof."
+    "transferChallenge": "Change the independent fixture `06` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `226`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.decode-ways.challenge",
@@ -54,19 +54,19 @@
   "title": "Challenge: Decode Ways DP",
   "writing": {
     "answers": [
-      "O(n) time · O(1) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`5`",
+      "`6`",
+      "`4`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return the number of valid A=1 through Z=26 decodings.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Decode Ways DP\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Return the number of valid A=1 through Z=26 decodings. On input `226`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Count valid one-symbol and two-symbol predecessors while rejecting leading zero states. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A one-dimensional DP state summarizes a prefix or a single parameter. Define its meaning before writing a recurrence. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use `Option` or a safe sentinel for unreachable states, and choose an iteration direction that matches the recurrence's dependencies. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(1) space; explain which operation dominates it and how many times the input can trigger that operation. Test the base state, the first transition, impossible states, and whether an in-place update accidentally reuses an item twice. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(n) time · O(1) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return the number of valid A=1 through Z=26 decodings.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Decode Ways DP\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS decode-ways, and your explanation still meets O(n) time · O(1) space.",
+    "exampleCaption": "Complete std-only decode-ways program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn decodings(text:&str)->u64 {\n    assert!(text.bytes().all(|c|c.is_ascii_digit())); let a=text.as_bytes(); let (mut before,mut current)=(1,1);\n    for i in 0..a.len() {\n        let mut next=if a[i]!=b'0' { current } else { 0 };\n        if i>0 && (a[i-1]==b'1' || a[i-1]==b'2' && a[i]<=b'6') { next+=before; }\n        before=current; current=next;\n    } current\n}\n\nfn main() {\n    let result = decodings(\"06\").to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "Valid letter codes are 1 through 26. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `06`, the worked program returns `0`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `226`; predict that result before opening the answer reveal. The precise contract is: Return the number of valid A=1 through Z=26 decodings.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Return the number of valid A=1 through Z=26 decodings. On input `226`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Count valid one-symbol and two-symbol predecessors while rejecting leading zero states. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A one-dimensional DP state summarizes a prefix or a single parameter. Define its meaning before writing a recurrence. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(1) space; explain which operation dominates it and how many times the input can trigger that operation. Test the base state, the first transition, impossible states, and whether an in-place update accidentally reuses an item twice. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `5`. Valid letter codes are 1 through 26. Compare this independent fixture with the worked trace: String 226 splits as 2-2-6,22-6,2-26, giving 3. String 06 begins with an invalid zero and gives 0. String 10 is valid only as the two-digit code 10, so it has one decoding.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return the number of valid A=1 through Z=26 decodings.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement decode-ways\")\n}\n",
+    "question": "Boundary check for decode-ways: with input `1111`, what result should solve return?",
+    "rule": "Valid letter codes are 1 through 26. Return the number of valid A=1 through Z=26 decodings.",
+    "success": "The private harness prints PASS decode-ways. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Return the number of valid A=1 through Z=26 decodings.",
     "task": "Return the number of valid A=1 through Z=26 decodings."
   },

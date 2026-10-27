@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS bitmask-enumeration\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"5\".to_string()",
-      "String::from(\"5\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.bitmask-enumeration.challenge",
     "patternID": "bitmask-enumeration",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return masks whose selected values sum to 5.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Bitmask Enumeration\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Parse values and return, in increasing order, every zero-based position mask whose selected values sum to 5.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement bitmask-enumeration\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "5",
+        "kind": "visible",
         "input": "values=[1,2,4]",
-        "kind": "visible"
+        "expectedAnswer": "5"
       },
       {
-        "expectedAnswer": "3",
+        "kind": "boundary",
         "input": "values=[2,3]",
-        "kind": "boundary"
+        "expectedAnswer": "3"
       },
       {
-        "expectedAnswer": "3",
-        "input": "\nvalues=[2,3]\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "values=[5]",
+        "expectedAnswer": "1"
       },
       {
-        "expectedAnswer": "5",
+        "kind": "adversarial",
+        "input": "values=[1,1,3]",
+        "expectedAnswer": "7"
+      },
+      {
+        "kind": "adversarial",
+        "input": "values=[2,4]",
+        "expectedAnswer": ""
+      },
+      {
+        "kind": "normalisation",
         "input": "  \nvalues=[1,2,4]\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "5"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\nvalues=[2,4]\n",
+        "expectedAnswer": ""
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"values=[1,2,4]\"#, r#\"5\"#),\n    (r#\"values=[2,3]\"#, r#\"3\"#),\n    (r#\"\nvalues=[2,3]\n\"#, r#\"3\"#),\n    (r#\"  \nvalues=[1,2,4]\n  \"#, r#\"5\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS bitmask-enumeration\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"values=[1,2,4]\",\"5\"),\n        (\"values=[2,3]\",\"3\"),\n        (\"values=[5]\",\"1\"),\n        (\"values=[1,1,3]\",\"7\"),\n        (\"values=[2,4]\",\"\"),\n        (\"  \\nvalues=[1,2,4]\\n  \",\"5\"),\n        (\"\\nvalues=[2,4]\\n\",\"\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS bitmask-enumeration\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS bitmask-enumeration\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"5\".to_string()",
-      "String::from(\"5\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

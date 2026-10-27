@@ -7,44 +7,44 @@
     "expectedAnswer": "true",
     "idea": "Map a flat midpoint back to row and column when rows form one global sorted order.",
     "patternID": "matrix-binary-search",
-    "rustSketch": "fn lower_bound(values: &[i32], target: i32) -> usize {\n    let (mut low, mut high) = (0, values.len());\n    while low < high {\n        let mid = low + (high - low) / 2;\n        if values[mid] < target { low = mid + 1; } else { high = mid; }\n    }\n    low\n}",
+    "rustSketch": "fn matrix_contains(a:&[Vec<i32>],target:i32)->bool {\n    if a.is_empty() || a[0].is_empty() { return false; }\n    let cols=a[0].len(); let (mut lo,mut hi)=(0,a.len()*cols);\n    while lo<hi {\n        let mid=lo+(hi-lo)/2; let value=a[mid/cols][mid%cols];\n        if value==target { return true; } if value<target { lo=mid+1; } else { hi=mid; }\n    }\n    false // Row-major ordering must be globally sorted.\n}\n\nfn main() {\n    let result = matrix_contains(&[vec![1,3,5,7],vec![10,11,16,20],vec![23,30,34,60]],16).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return true when 16 is present.",
     "useCases": "sorted rectangular matrices",
     "visibleInput": "[[1,3,5,7],[10,11,16,20],[23,30,34,60]]"
   },
   "concept": "sorted rectangular matrices",
-  "contentDigest": "45764603216cd1d7e6b574563edfb4edea6a868c50b3c7824cc77d09267e20c9",
+  "contentDigest": "4f9fcc2dd05d56bccd5ae4ce0f43f63717a46de2d1e75092a253dd8454c2a76b",
   "depth": {
     "connections": [
       {
-        "concept": "Map a flat midpoint back to row and column when rows form one global sorted order.",
         "direction": "previous",
-        "title": "Flattened Matrix Search: Mental Model"
+        "title": "Flattened Matrix Search: Mental Model",
+        "concept": "Map a flat midpoint back to row and column when rows form one global sorted order."
       },
       {
-        "concept": "Return true when 16 is present.",
         "direction": "next",
-        "title": "Challenge: Flattened Matrix Search"
+        "title": "Challenge: Flattened Matrix Search",
+        "concept": "Return true when 16 is present."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "Every row is sorted and each next row starts after the previous row ends. Treat the 3×4 sample as a single sorted array of length 12. Flat index i maps to row i/4 and column i%4. Search for 16 returns true; individually sorted rows without global row-major order would not suffice.",
+    "misconception": "“Each column merely has some increasing pair”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[[1,3,5,7],[10,11,16,20],[23,30,34,60]]`, write the state before the first update. Explain how it represents this claim: Map a flat midpoint back to row and column when rows form one global sorted order. Binary search maintains an interval that is still capable of containing the answer. State precisely why the discarded half cannot contain it."
+        "title": "Concrete transition",
+        "detail": "Treat the 3×4 sample as a single sorted array of length 12. Flat index i maps to row i/4 and column i%4. Search for 16 returns true; individually sorted rows without global row-major order would not suffice."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `true`. Use half-open bounds consistently and compute the midpoint without overflowing large integer indices."
+        "title": "Independent second fixture",
+        "detail": "Input `[[2,4],[8,16]]` produces `true`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check no match, duplicate matches, the first and last valid positions, and an answer at the boundary of the search domain. Defend the O(log(rows*cols)) time · O(1) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[[1,2,3],[4,5,6]]` produces `false`. Every row is sorted and each next row starts after the previous row ends. The stated work bound is O(log(rows*cols)) time · O(1) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[[1,3,5,7],[10,11,16,20],[23,30,34,60]]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Flattened Matrix Search survives, which state must be updated, and whether the O(log(rows*cols)) time · O(1) space bound still holds. It needs ordering, a monotone predicate, or another proved structure that lets one half be discarded; merely containing numbers is not enough."
+    "transferChallenge": "Compare the visible input `[[1,3,5,7],[10,11,16,20],[23,30,34,60]]` with `[[16]]`. Predict why their results are `true` and `true`. Then change one legal value and explain whether the same invariant, every row is sorted and each next row starts after the previous row ends, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.matrix-binary-search.recognize",
@@ -54,21 +54,21 @@
   "title": "Flattened Matrix Search: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "sorted rectangular matrices",
-      "Only problems with exactly one input value"
+      "`false`",
+      "`true`",
+      "The valid input necessarily panics"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Flattened Matrix Search",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Flattened Matrix Search",
-    "explanation": "A problem is a good match for Flattened Matrix Search when it asks for sorted rectangular matrices. Here the concrete task is: Return true when 16 is present. The visible input `[[1,3,5,7],[10,11,16,20],[23,30,34,60]]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. It needs ordering, a monotone predicate, or another proved structure that lets one half be discarded; merely containing numbers is not enough. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Map a flat midpoint back to row and column when rows form one global sorted order. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Binary search maintains an interval that is still capable of containing the answer. State precisely why the discarded half cannot contain it. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(log(rows*cols)) time · O(1) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `true` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check no match, duplicate matches, the first and last valid positions, and an answer at the boundary of the search domain. Use half-open bounds consistently and compute the midpoint without overflowing large integer indices. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: sorted rectangular matrices.",
-    "practiceCode": "fn lower_bound(values: &[i32], target: i32) -> usize {\n    let (mut low, mut high) = (0, values.len());\n    while low < high {\n        let mid = low + (high - low) / 2;\n        if values[mid] < target { low = mid + 1; } else { high = mid; }\n    }\n    low\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only matrix-binary-search program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn matrix_contains(a:&[Vec<i32>],target:i32)->bool {\n    if a.is_empty() || a[0].is_empty() { return false; }\n    let cols=a[0].len(); let (mut lo,mut hi)=(0,a.len()*cols);\n    while lo<hi {\n        let mid=lo+(hi-lo)/2; let value=a[mid/cols][mid%cols];\n        if value==target { return true; } if value<target { lo=mid+1; } else { hi=mid; }\n    }\n    false // Row-major ordering must be globally sorted.\n}\n\nfn main() {\n    let result = matrix_contains(&[vec![1,3,5,7],vec![10,11,16,20],vec![23,30,34,60]],16).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "Treat the 3×4 sample as a single sorted array of length 12. Flat index i maps to row i/4 and column i%4. Search for 16 returns true; individually sorted rows without global row-major order would not suffice.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return true when 16 is present. The visible fixture is `[[1,3,5,7],[10,11,16,20],[23,30,34,60]]` and its example result is `true`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Flattened Matrix Search when it asks for sorted rectangular matrices. Here the concrete task is: Return true when 16 is present. The visible input `[[1,3,5,7],[10,11,16,20],[23,30,34,60]]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. It needs ordering, a monotone predicate, or another proved structure that lets one half be discarded; merely containing numbers is not enough. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Map a flat midpoint back to row and column when rows form one global sorted order. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Binary search maintains an interval that is still capable of containing the answer. State precisely why the discarded half cannot contain it. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(log(rows*cols)) time · O(1) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `true` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check no match, duplicate matches, the first and last valid positions, and an answer at the boundary of the search domain. Use half-open bounds consistently and compute the midpoint without overflowing large integer indices. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `true`. Every row is sorted and each next row starts after the previous row ends. Compare this independent fixture with the worked trace: Treat the 3×4 sample as a single sorted array of length 12. Flat index i maps to row i/4 and column i%4. Search for 16 returns true; individually sorted rows without global row-major order would not suffice.",
+    "practiceCode": "fn matrix_contains(a:&[Vec<i32>],target:i32)->bool {\n    if a.is_empty() || a[0].is_empty() { return false; }\n    let cols=a[0].len(); let (mut lo,mut hi)=(0,a.len()*cols);\n    while lo<hi {\n        let mid=lo+(hi-lo)/2; let value=a[mid/cols][mid%cols];\n        if value==target { return true; } if value<target { lo=mid+1; } else { hi=mid; }\n    }\n    false // Row-major ordering must be globally sorted.\n}\n\nfn main() {\n    let result = matrix_contains(&[vec![1,3,5,7],vec![10,11,16,20],vec![23,30,34,60]],16).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Flattened Matrix Search on input `[[2,4],[8,16]]`. Which result follows from the documented contract?",
+    "rule": "Every row is sorted and each next row starts after the previous row ends. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Flattened Matrix Search.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-binary-search-b.png",

@@ -7,44 +7,44 @@
     "expectedAnswer": "0,1,1,2,2",
     "idea": "Process the frontier in queue order so first discovery has minimum edge count.",
     "patternID": "graph-bfs",
-    "rustSketch": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn edge_distances(graph:&[Vec<usize>],start:usize)->Vec<i32> {\n    let mut distance=vec![-1;graph.len()]; let mut queue=std::collections::VecDeque::from([start]); distance[start]=0;\n    while let Some(v)=queue.pop_front() {\n        for &u in &graph[v] { if distance[u]==-1 { distance[u]=distance[v]+1; queue.push_back(u); } }\n    }\n    distance\n}\n\nfn main() {\n    let result = csv(edge_distances(&[vec![1],vec![0],vec![],vec![]],0));\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Return distance in edges from node 0 to every node.",
     "useCases": "unweighted shortest paths and layer expansion",
     "visibleInput": "n=5 edges=(0,1),(0,2),(1,3),(2,4)"
   },
   "concept": "Return distance in edges from node 0 to every node.",
-  "contentDigest": "cfb4c1def766904dce81f7e3c509b399b8436b576c99a0cd66fc4d95bde4a09e",
+  "contentDigest": "e00c7ee17e9a8b8ea1f290fe2bc05e5f1696dac8ddfccab4612431d5935809f7",
   "depth": {
     "connections": [
       {
-        "concept": "unweighted shortest paths and layer expansion",
         "direction": "previous",
-        "title": "Graph BFS: When to Use It"
+        "title": "Graph BFS: When to Use It",
+        "concept": "unweighted shortest paths and layer expansion"
       },
       {
-        "concept": "Start a traversal from every still-unseen node and count starts.",
         "direction": "next",
-        "title": "Connected Components: Mental Model"
+        "title": "Connected Components: Mental Model",
+        "concept": "Start a traversal from every still-unseen node and count starts."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "The first discovered BFS route is shortest in an unweighted graph. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“Queue order guarantees no duplicate discovery without a mark”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `n=5 edges=(0,1),(0,2),(1,3),(2,4)`, write the state before the first update. Explain how it represents this claim: Process the frontier in queue order so first discovery has minimum edge count. A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal."
+        "title": "Pattern-specific invariant",
+        "detail": "The first discovered BFS route is shortest in an unweighted graph. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. An adjacency list and `VecDeque` make breadth-first work explicit. Mark before enqueuing to avoid duplicate frontier entries."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `n=4 edges=(0,1)` and computes `0,1,-1,-1`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. Defend the O(V+E) time · O(V) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `n=5 edges=(1,2),(3,4)`, the independently calculated result is `0,-1,-1,-1,-1`. The complexity discussion uses O(V+E) time · O(V) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `n=5 edges=(0,1),(0,2),(1,3),(2,4)` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Graph BFS survives, which state must be updated, and whether the O(V+E) time · O(V) space bound still holds. Choose a representation for the operations first; when traversing, DFS explores depth and BFS follows equal-cost layers. Directed edges and disconnected components change the plan."
+    "transferChallenge": "Change the independent fixture `n=4 edges=(0,1)` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `n=5 edges=(0,1),(0,2),(1,3),(2,4)`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.graph-bfs.challenge",
@@ -54,19 +54,19 @@
   "title": "Challenge: Graph BFS",
   "writing": {
     "answers": [
-      "O(V+E) time · O(V) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`0,-1,-1,-1,-1`",
+      "`-1,-1,-1,-1`",
+      "`1,-1,-1,-1,-1`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return distance in edges from node 0 to every node.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Graph BFS\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Return distance in edges from node 0 to every node. On input `n=5 edges=(0,1),(0,2),(1,3),(2,4)`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Process the frontier in queue order so first discovery has minimum edge count. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. An adjacency list and `VecDeque` make breadth-first work explicit. Mark before enqueuing to avoid duplicate frontier entries. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(V+E) time · O(V) space; explain which operation dominates it and how many times the input can trigger that operation. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(V+E) time · O(V) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return distance in edges from node 0 to every node.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Graph BFS\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS graph-bfs, and your explanation still meets O(V+E) time · O(V) space.",
+    "exampleCaption": "Complete std-only graph-bfs program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn edge_distances(graph:&[Vec<usize>],start:usize)->Vec<i32> {\n    let mut distance=vec![-1;graph.len()]; let mut queue=std::collections::VecDeque::from([start]); distance[start]=0;\n    while let Some(v)=queue.pop_front() {\n        for &u in &graph[v] { if distance[u]==-1 { distance[u]=distance[v]+1; queue.push_back(u); } }\n    }\n    distance\n}\n\nfn main() {\n    let result = csv(edge_distances(&[vec![1],vec![0],vec![],vec![]],0));\n    println!(\"{result}\");\n}\n",
+    "explanation": "The first discovered BFS route is shortest in an unweighted graph. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `n=4 edges=(0,1)`, the worked program returns `0,1,-1,-1`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `n=5 edges=(0,1),(0,2),(1,3),(2,4)`; predict that result before opening the answer reveal. The precise contract is: Return distance in edges from node 0 to every node.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Return distance in edges from node 0 to every node. On input `n=5 edges=(0,1),(0,2),(1,3),(2,4)`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Process the frontier in queue order so first discovery has minimum edge count. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(V+E) time · O(V) space; explain which operation dominates it and how many times the input can trigger that operation. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `0,-1,-1,-1,-1`. The first discovered BFS route is shortest in an unweighted graph. Compare this independent fixture with the worked trace: Starting at 0 in the five-node sample assigns distance 1 to 1 and 2, then distance 2 to 3 and 4. The output is [0,1,1,2,2]. Disconnected vertices retain the explicit sentinel -1.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return distance in edges from node 0 to every node.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement graph-bfs\")\n}\n",
+    "question": "Boundary check for graph-bfs: with input `n=5 edges=(1,2),(3,4)`, what result should solve return?",
+    "rule": "The first discovered BFS route is shortest in an unweighted graph. Return distance in edges from node 0 to every node.",
+    "success": "The private harness prints PASS graph-bfs. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Return distance in edges from node 0 to every node.",
     "task": "Return distance in edges from node 0 to every node."
   },

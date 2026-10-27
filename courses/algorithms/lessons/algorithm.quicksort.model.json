@@ -7,7 +7,7 @@
     "expectedAnswer": "1,2,3,7,8,9",
     "idea": "Partition around a pivot, then recurse only on the two unresolved regions.",
     "patternID": "quicksort",
-    "rustSketch": "fn insertion_sort(values: &mut [i32]) {\n    for i in 1..values.len() {\n        let mut j = i;\n        while j > 0 && values[j] < values[j - 1] {\n            values.swap(j, j - 1);\n            j -= 1;\n        }\n    }\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn quicksort(a:&mut [i32]) {\n    if a.len()<2 { return; }\n    let pivot=a[a.len()/2]; let (mut low,mut i,mut high)=(0,0,a.len());\n    while i<high {\n        if a[i]<pivot { a.swap(low,i); low+=1; i+=1; }\n        else if a[i]>pivot { high-=1; a.swap(i,high); } else { i+=1; }\n    }\n    quicksort(&mut a[..low]); quicksort(&mut a[high..]);\n}\n\nfn main() {\n    let result = { let mut values=vec![9,3,7,1,8,2]; quicksort(&mut values); csv(values) };\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Sort the values using an in-place partition.",
     "useCases": "fast general in-memory sorting",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Return the sorted values and preserve the original order of equal keys.",
         "direction": "previous",
-        "title": "Challenge: Merge Sort"
+        "title": "Challenge: Merge Sort",
+        "concept": "Return the sorted values and preserve the original order of equal keys."
       },
       {
-        "concept": "fast general in-memory sorting",
         "direction": "next",
-        "title": "Quicksort: When to Use It"
+        "title": "Quicksort: When to Use It",
+        "concept": "fast general in-memory sorting"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "It is already in final relative key position and is excluded from recursion. Partition [9,3,7,1,8,2] around a chosen pivot into less, equal and greater regions. Only the outer regions recurse. All-equal input terminates after one partition; adversarial pivots can still cause quadratic worst-case work.",
+    "misconception": "“It must be recursively partitioned indefinitely”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[9,3,7,1,8,2]`, write the state before the first update. Explain how it represents this claim: Partition around a pivot, then recurse only on the two unresolved regions. Sorting establishes global order; selection asks only for a rank or partition. Explain which comparisons make progress toward that goal."
+        "title": "Concrete transition",
+        "detail": "Partition [9,3,7,1,8,2] around a chosen pivot into less, equal and greater regions. Only the outer regions recurse. All-equal input terminates after one partition; adversarial pivots can still cause quadratic worst-case work."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `1,2,3,7,8,9`. Rust slice sorting is available, but an exercise asking for the algorithm requires the actual invariant and mutation steps, not a library shortcut."
+        "title": "Independent second fixture",
+        "detail": "Input `[1,2,3,4,5,6,7]` produces `1,2,3,4,5,6,7`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test all-equal keys, already ordered input, reverse order, and extreme pivot or bucket distributions. Defend the O(n log n) average · O(n^2) worst · O(log n) stack average bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[8,7,6,5,4,3,2]` produces `2,3,4,5,6,7,8`. It is already in final relative key position and is excluded from recursion. The stated work bound is O(n log n) average · O(n^2) worst · O(log n) stack average. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[9,3,7,1,8,2]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Quicksort survives, which state must be updated, and whether the O(n log n) average · O(n^2) worst · O(log n) stack average bound still holds. Before sorting everything, ask whether a single statistic is enough and whether stable order among equal keys matters."
+    "transferChallenge": "Compare the visible input `[9,3,7,1,8,2]` with `[3,3,3,3,3,3,3]`. Predict why their results are `1,2,3,7,8,9` and `3,3,3,3,3,3,3`. Then change one legal value and explain whether the same invariant, it is already in final relative key position and is excluded from recursion, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.quicksort.model",
@@ -54,21 +54,21 @@
   "title": "Quicksort: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "It is already in final relative key position and is excluded from recursion",
+      "It must be recursively partitioned indefinitely",
+      "It is moved into a separate heap"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n log n) average · O(n^2) worst · O(log n) stack average",
-    "exampleCode": "fn insertion_sort(values: &mut [i32]) {\n    for i in 1..values.len() {\n        let mut j = i;\n        while j > 0 && values[j] < values[j - 1] {\n            values.swap(j, j - 1);\n            j -= 1;\n        }\n    }\n}",
-    "explanation": "Begin with the concrete question: Sort the values using an in-place partition. For the visible input `[9,3,7,1,8,2]`, the stated result is `1,2,3,7,8,9`. Before reading code, name the smallest piece of information that must survive from one step to the next. Sorting establishes global order; selection asks only for a rank or partition. Explain which comparisons make progress toward that goal. That is the mental model for Quicksort; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Partition around a pivot, then recurse only on the two unresolved regions. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Rust slice sorting is available, but an exercise asking for the algorithm requires the actual invariant and mutation steps, not a library shortcut. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n log n) average · O(n^2) worst · O(log n) stack average. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test all-equal keys, already ordered input, reverse order, and extreme pivot or bucket distributions. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn insertion_sort(values: &mut [i32]) {\n    for i in 1..values.len() {\n        let mut j = i;\n        while j > 0 && values[j] < values[j - 1] {\n            values.swap(j, j - 1);\n            j -= 1;\n        }\n    }\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only quicksort program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn quicksort(a:&mut [i32]) {\n    if a.len()<2 { return; }\n    let pivot=a[a.len()/2]; let (mut low,mut i,mut high)=(0,0,a.len());\n    while i<high {\n        if a[i]<pivot { a.swap(low,i); low+=1; i+=1; }\n        else if a[i]>pivot { high-=1; a.swap(i,high); } else { i+=1; }\n    }\n    quicksort(&mut a[..low]); quicksort(&mut a[high..]);\n}\n\nfn main() {\n    let result = { let mut values=vec![9,3,7,1,8,2]; quicksort(&mut values); csv(values) };\n    println!(\"{result}\");\n}\n",
+    "explanation": "Partition [9,3,7,1,8,2] around a chosen pivot into less, equal and greater regions. Only the outer regions recurse. All-equal input terminates after one partition; adversarial pivots can still cause quadratic worst-case work.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Sort the values using an in-place partition. The visible fixture is `[9,3,7,1,8,2]` and its example result is `1,2,3,7,8,9`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Sort the values using an in-place partition. For the visible input `[9,3,7,1,8,2]`, the stated result is `1,2,3,7,8,9`. Before reading code, name the smallest piece of information that must survive from one step to the next. Sorting establishes global order; selection asks only for a rank or partition. Explain which comparisons make progress toward that goal. That is the mental model for Quicksort; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Partition around a pivot, then recurse only on the two unresolved regions. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n log n) average · O(n^2) worst · O(log n) stack average. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test all-equal keys, already ordered input, reverse order, and extreme pivot or bucket distributions. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "Partition [9,3,7,1,8,2] around a chosen pivot into less, equal and greater regions. Only the outer regions recurse. All-equal input terminates after one partition; adversarial pivots can still cause quadratic worst-case work.",
+    "practiceCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn quicksort(a:&mut [i32]) {\n    if a.len()<2 { return; }\n    let pivot=a[a.len()/2]; let (mut low,mut i,mut high)=(0,0,a.len());\n    while i<high {\n        if a[i]<pivot { a.swap(low,i); low+=1; i+=1; }\n        else if a[i]>pivot { high-=1; a.swap(i,high); } else { i+=1; }\n    }\n    quicksort(&mut a[..low]); quicksort(&mut a[high..]);\n}\n\nfn main() {\n    let result = { let mut values=vec![9,3,7,1,8,2]; quicksort(&mut values); csv(values) };\n    println!(\"{result}\");\n}\n",
+    "question": "What happens to the region of values equal to a three-way quicksort pivot?",
+    "rule": "It is already in final relative key position and is excluded from recursion. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(n log n) average · O(n^2) worst · O(log n) stack average bound without looking at the code.",
     "summary": "Partition around a pivot, then recurse only on the two unresolved regions.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-sorting-selection-a.png",

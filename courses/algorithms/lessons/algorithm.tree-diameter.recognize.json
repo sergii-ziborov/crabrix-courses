@@ -7,7 +7,7 @@
     "expectedAnswer": "3",
     "idea": "At each node combine the two deepest child paths while returning only the deepest one upward.",
     "patternID": "tree-diameter",
-    "rustSketch": "fn height(node: Option<&Node>) -> usize {\n    match node {\n        None => 0,\n        Some(node) => 1 + height(node.left.as_deref()).max(height(node.right.as_deref())),\n    }\n}",
+    "rustSketch": "\ntype Tree=Option<Box<Node>>;\nstruct Node { value:i32, left:Tree, right:Tree }\nfn node(value:i32,left:Tree,right:Tree)->Tree { Some(Box::new(Node{value,left,right})) }\nfn diameter(root:&Tree)->usize {\n    fn height(root:&Tree,best:&mut usize)->usize {\n        match root { None=>0,Some(n)=>{\n            let left=height(&n.left,best); let right=height(&n.right,best);\n            *best=(*best).max(left+right); 1+left.max(right)\n        } }\n    }\n    let mut best=0; height(root,&mut best); best\n}\n\nfn main() {\n    let result = diameter(&node(1,node(2,node(4,None,None),node(5,None,None)),node(3,None,None))).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return the diameter measured in edges.",
     "useCases": "longest path in a tree and path-through-node aggregation",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "At each node combine the two deepest child paths while returning only the deepest one upward.",
         "direction": "previous",
-        "title": "Tree Diameter: Mental Model"
+        "title": "Tree Diameter: Mental Model",
+        "concept": "At each node combine the two deepest child paths while returning only the deepest one upward."
       },
       {
-        "concept": "Return the diameter measured in edges.",
         "direction": "next",
-        "title": "Challenge: Tree Diameter"
+        "title": "Challenge: Tree Diameter",
+        "concept": "Return the diameter measured in edges."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "It counts the edges in the longest path through that node. In [1,2,3,4,5], a deepest path such as 4→2→1→3 uses 3 edges. Every node contributes a through-node candidate; the maximum may be entirely inside one subtree, so retain a global best.",
+    "misconception": "“Every longest path must pass through the root”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[1,2,3,4,5]`, write the state before the first update. Explain how it represents this claim: At each node combine the two deepest child paths while returning only the deepest one upward. A tree result is built from a node and its children. Decide whether information flows downward, upward, or in level order."
+        "title": "Concrete transition",
+        "detail": "In [1,2,3,4,5], a deepest path such as 4→2→1→3 uses 3 edges. Every node contributes a through-node candidate; the maximum may be entirely inside one subtree, so retain a global best."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `3`. Use references for read-only traversals and make the stack or queue explicit when recursion depth might be large."
+        "title": "Independent second fixture",
+        "detail": "Input `[1]` produces `0`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test a missing root, a leaf, a skewed tree, and equal or duplicate values when ordering rules depend on them. Defend the O(n) time · O(h) stack bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[1,null,2,null,3]` produces `2`. It counts the edges in the longest path through that node. The stated work bound is O(n) time · O(h) stack. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[1,2,3,4,5]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Tree Diameter survives, which state must be updated, and whether the O(n) time · O(h) stack bound still holds. Look for hierarchy and parent-child structure; a plain sequence algorithm loses the branching relationships."
+    "transferChallenge": "Compare the visible input `[1,2,3,4,5]` with `[2,1,3]`. Predict why their results are `3` and `2`. Then change one legal value and explain whether the same invariant, it counts the edges in the longest path through that node, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.tree-diameter.recognize",
@@ -54,21 +54,21 @@
   "title": "Tree Diameter: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "longest path in a tree and path-through-node aggregation",
-      "Only problems with exactly one input value"
+      "`1`",
+      "`0`",
+      "`-1`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Tree Diameter",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Tree Diameter",
-    "explanation": "A problem is a good match for Tree Diameter when it asks for longest path in a tree and path-through-node aggregation. Here the concrete task is: Return the diameter measured in edges. The visible input `[1,2,3,4,5]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for hierarchy and parent-child structure; a plain sequence algorithm loses the branching relationships. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: At each node combine the two deepest child paths while returning only the deepest one upward. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A tree result is built from a node and its children. Decide whether information flows downward, upward, or in level order. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(h) stack; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `3` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test a missing root, a leaf, a skewed tree, and equal or duplicate values when ordering rules depend on them. Use references for read-only traversals and make the stack or queue explicit when recursion depth might be large. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: longest path in a tree and path-through-node aggregation.",
-    "practiceCode": "fn height(node: Option<&Node>) -> usize {\n    match node {\n        None => 0,\n        Some(node) => 1 + height(node.left.as_deref()).max(height(node.right.as_deref())),\n    }\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only tree-diameter program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "\ntype Tree=Option<Box<Node>>;\nstruct Node { value:i32, left:Tree, right:Tree }\nfn node(value:i32,left:Tree,right:Tree)->Tree { Some(Box::new(Node{value,left,right})) }\nfn diameter(root:&Tree)->usize {\n    fn height(root:&Tree,best:&mut usize)->usize {\n        match root { None=>0,Some(n)=>{\n            let left=height(&n.left,best); let right=height(&n.right,best);\n            *best=(*best).max(left+right); 1+left.max(right)\n        } }\n    }\n    let mut best=0; height(root,&mut best); best\n}\n\nfn main() {\n    let result = diameter(&node(1,node(2,node(4,None,None),node(5,None,None)),node(3,None,None))).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "In [1,2,3,4,5], a deepest path such as 4→2→1→3 uses 3 edges. Every node contributes a through-node candidate; the maximum may be entirely inside one subtree, so retain a global best.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the diameter measured in edges. The visible fixture is `[1,2,3,4,5]` and its example result is `3`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Tree Diameter when it asks for longest path in a tree and path-through-node aggregation. Here the concrete task is: Return the diameter measured in edges. The visible input `[1,2,3,4,5]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for hierarchy and parent-child structure; a plain sequence algorithm loses the branching relationships. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: At each node combine the two deepest child paths while returning only the deepest one upward. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A tree result is built from a node and its children. Decide whether information flows downward, upward, or in level order. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(h) stack; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `3` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test a missing root, a leaf, a skewed tree, and equal or duplicate values when ordering rules depend on them. Use references for read-only traversals and make the stack or queue explicit when recursion depth might be large. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `0`. It counts the edges in the longest path through that node. Compare this independent fixture with the worked trace: In [1,2,3,4,5], a deepest path such as 4→2→1→3 uses 3 edges. Every node contributes a through-node candidate; the maximum may be entirely inside one subtree, so retain a global best.",
+    "practiceCode": "\ntype Tree=Option<Box<Node>>;\nstruct Node { value:i32, left:Tree, right:Tree }\nfn node(value:i32,left:Tree,right:Tree)->Tree { Some(Box::new(Node{value,left,right})) }\nfn diameter(root:&Tree)->usize {\n    fn height(root:&Tree,best:&mut usize)->usize {\n        match root { None=>0,Some(n)=>{\n            let left=height(&n.left,best); let right=height(&n.right,best);\n            *best=(*best).max(left+right); 1+left.max(right)\n        } }\n    }\n    let mut best=0; height(root,&mut best); best\n}\n\nfn main() {\n    let result = diameter(&node(1,node(2,node(4,None,None),node(5,None,None)),node(3,None,None))).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Tree Diameter on input `[1]`. Which result follows from the documented contract?",
+    "rule": "It counts the edges in the longest path through that node. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Tree Diameter.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-trees-b.png",

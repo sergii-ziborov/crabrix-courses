@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS memoization\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"144\".to_string()",
-      "String::from(\"144\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.memoization.challenge",
     "patternID": "memoization",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return Fibonacci number F(12) with F(0)=0 and F(1)=1.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Top-Down Memoization\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Parse n and return Fibonacci F(n), with F(0)=0 and F(1)=1. Teaching fixtures use n<=90 so all demonstrated u64 arithmetic fits.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement memoization\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "144",
+        "kind": "visible",
         "input": "n=12",
-        "kind": "visible"
+        "expectedAnswer": "144"
       },
       {
-        "expectedAnswer": "5",
+        "kind": "boundary",
         "input": "n=5",
-        "kind": "boundary"
+        "expectedAnswer": "5"
       },
       {
-        "expectedAnswer": "5",
-        "input": "\nn=5\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "n=0",
+        "expectedAnswer": "0"
       },
       {
-        "expectedAnswer": "144",
+        "kind": "adversarial",
+        "input": "n=1",
+        "expectedAnswer": "1"
+      },
+      {
+        "kind": "adversarial",
+        "input": "n=8",
+        "expectedAnswer": "21"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \nn=12\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "144"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\nn=8\n",
+        "expectedAnswer": "21"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"n=12\"#, r#\"144\"#),\n    (r#\"n=5\"#, r#\"5\"#),\n    (r#\"\nn=5\n\"#, r#\"5\"#),\n    (r#\"  \nn=12\n  \"#, r#\"144\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS memoization\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"n=12\",\"144\"),\n        (\"n=5\",\"5\"),\n        (\"n=0\",\"0\"),\n        (\"n=1\",\"1\"),\n        (\"n=8\",\"21\"),\n        (\"  \\nn=12\\n  \",\"144\"),\n        (\"\\nn=8\\n\",\"21\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS memoization\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS memoization\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"144\".to_string()",
-      "String::from(\"144\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

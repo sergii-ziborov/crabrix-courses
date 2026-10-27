@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS deadline-scheduling\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"142\".to_string()",
-      "String::from(\"142\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.deadline-scheduling.challenge",
     "patternID": "deadline-scheduling",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return maximum profit using one slot per time and deadlines 1-based.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Deadline Profit Scheduling\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Return maximum profit using one slot per time and deadlines 1-based.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement deadline-scheduling\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "142",
+        "kind": "visible",
         "input": "jobs=(d2,p100),(d1,p19),(d2,p27),(d1,p25),(d3,p15)",
-        "kind": "visible"
+        "expectedAnswer": "142"
       },
       {
-        "expectedAnswer": "10",
+        "kind": "boundary",
         "input": "jobs=(d1,p5),(d1,p10)",
-        "kind": "boundary"
+        "expectedAnswer": "10"
       },
       {
-        "expectedAnswer": "10",
-        "input": "\njobs=(d1,p5),(d1,p10)\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "jobs=(d1,p10),(d2,p20)",
+        "expectedAnswer": "30"
       },
       {
-        "expectedAnswer": "142",
+        "kind": "adversarial",
+        "input": "jobs=(d1,p3),(d1,p9),(d1,p6)",
+        "expectedAnswer": "9"
+      },
+      {
+        "kind": "adversarial",
+        "input": "jobs=(d3,p5),(d1,p7),(d2,p8)",
+        "expectedAnswer": "20"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \njobs=(d2,p100),(d1,p19),(d2,p27),(d1,p25),(d3,p15)\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "142"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\njobs=(d3,p5),(d1,p7),(d2,p8)\n",
+        "expectedAnswer": "20"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"jobs=(d2,p100),(d1,p19),(d2,p27),(d1,p25),(d3,p15)\"#, r#\"142\"#),\n    (r#\"jobs=(d1,p5),(d1,p10)\"#, r#\"10\"#),\n    (r#\"\njobs=(d1,p5),(d1,p10)\n\"#, r#\"10\"#),\n    (r#\"  \njobs=(d2,p100),(d1,p19),(d2,p27),(d1,p25),(d3,p15)\n  \"#, r#\"142\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS deadline-scheduling\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"jobs=(d2,p100),(d1,p19),(d2,p27),(d1,p25),(d3,p15)\",\"142\"),\n        (\"jobs=(d1,p5),(d1,p10)\",\"10\"),\n        (\"jobs=(d1,p10),(d2,p20)\",\"30\"),\n        (\"jobs=(d1,p3),(d1,p9),(d1,p6)\",\"9\"),\n        (\"jobs=(d3,p5),(d1,p7),(d2,p8)\",\"20\"),\n        (\"  \\njobs=(d2,p100),(d1,p19),(d2,p27),(d1,p25),(d3,p15)\\n  \",\"142\"),\n        (\"\\njobs=(d3,p5),(d1,p7),(d2,p8)\\n\",\"20\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS deadline-scheduling\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS deadline-scheduling\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"142\".to_string()",
-      "String::from(\"142\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

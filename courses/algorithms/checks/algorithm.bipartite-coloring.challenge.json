@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS bipartite-coloring\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"true\".to_string()",
-      "String::from(\"true\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.bipartite-coloring.challenge",
     "patternID": "bipartite-coloring",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return whether the graph can be two-colored.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Bipartite Coloring\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Return whether the graph can be two-colored.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement bipartite-coloring\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "true",
+        "kind": "visible",
         "input": "n=4 edges=(0,1),(1,2),(2,3),(3,0)",
-        "kind": "visible"
+        "expectedAnswer": "true"
       },
       {
-        "expectedAnswer": "false",
+        "kind": "boundary",
         "input": "n=3 edges=(0,1),(1,2),(2,0)",
-        "kind": "adversarial"
+        "expectedAnswer": "false"
       },
       {
-        "expectedAnswer": "false",
-        "input": "\nn=3 edges=(0,1),(1,2),(2,0)\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "n=5 edges=(0,1),(2,3)",
+        "expectedAnswer": "true"
       },
       {
-        "expectedAnswer": "true",
+        "kind": "adversarial",
+        "input": "n=1 edges=",
+        "expectedAnswer": "true"
+      },
+      {
+        "kind": "adversarial",
+        "input": "n=4 edges=(0,1),(0,2),(0,3)",
+        "expectedAnswer": "true"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \nn=4 edges=(0,1),(1,2),(2,3),(3,0)\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "true"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\nn=4 edges=(0,1),(0,2),(0,3)\n",
+        "expectedAnswer": "true"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"n=4 edges=(0,1),(1,2),(2,3),(3,0)\"#, r#\"true\"#),\n    (r#\"n=3 edges=(0,1),(1,2),(2,0)\"#, r#\"false\"#),\n    (r#\"\nn=3 edges=(0,1),(1,2),(2,0)\n\"#, r#\"false\"#),\n    (r#\"  \nn=4 edges=(0,1),(1,2),(2,3),(3,0)\n  \"#, r#\"true\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS bipartite-coloring\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"n=4 edges=(0,1),(1,2),(2,3),(3,0)\",\"true\"),\n        (\"n=3 edges=(0,1),(1,2),(2,0)\",\"false\"),\n        (\"n=5 edges=(0,1),(2,3)\",\"true\"),\n        (\"n=1 edges=\",\"true\"),\n        (\"n=4 edges=(0,1),(0,2),(0,3)\",\"true\"),\n        (\"  \\nn=4 edges=(0,1),(1,2),(2,3),(3,0)\\n  \",\"true\"),\n        (\"\\nn=4 edges=(0,1),(0,2),(0,3)\\n\",\"true\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS bipartite-coloring\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS bipartite-coloring\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"true\".to_string()",
-      "String::from(\"true\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

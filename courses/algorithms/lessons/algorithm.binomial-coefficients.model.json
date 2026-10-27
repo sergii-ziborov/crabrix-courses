@@ -2,49 +2,49 @@
   "algorithm": {
     "categoryID": "math-bits",
     "categoryTitle": "Math, Bits & Combinatorics",
-    "complexity": "O(n*k) DP or O(k) multiplicative time",
+    "complexity": "O(min(k,n-k)) exact multiplicative steps · O(1) state",
     "difficulty": "medium",
     "expectedAnswer": "38760",
     "idea": "Build Pascal recurrence or multiply a shortened numerator while controlling division.",
     "patternID": "binomial-coefficients",
-    "rustSketch": "fn gcd(mut a: u64, mut b: u64) -> u64 {\n    while b != 0 {\n        (a, b) = (b, a % b);\n    }\n    a\n}",
+    "rustSketch": "fn choose(n:u64,k:u64)->u64 {\n    if k>n { return 0; } assert!(n<=60); let k=k.min(n-k); let mut answer=1_u128;\n    for i in 1..=k { answer=answer*(n-k+i) as u128/i as u128; } answer as u64\n}\n\nfn main() {\n    let result = choose(20,6).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
-    "task": "Return 20 choose 6.",
+    "task": "Parse n and k and return n choose k. The multiplicative example bounds n<=60; return 0 when k>n.",
     "useCases": "choose-k counts, lattice paths, probability",
     "visibleInput": "n=20 k=6"
   },
   "concept": "Build Pascal recurrence or multiply a shortened numerator while controlling division.",
-  "contentDigest": "ccc4c348510f1285811ba4c5a02e0feca35769a5522eb8884da08a733f0f67cc",
+  "contentDigest": "89753a98be2ca5b7249a5c4469397b54589b8fbc1dda6cbae505429523bbc510",
   "depth": {
     "connections": [
       {
-        "concept": "Return inverse of 3 modulo 11.",
         "direction": "previous",
-        "title": "Challenge: Modular Inverse"
+        "title": "Challenge: Modular Inverse",
+        "concept": "Parse a and mod with mod>1 and gcd(a,mod)=1. Return the inverse normalized to 0..mod-1."
       },
       {
-        "concept": "choose-k counts, lattice paths, probability",
         "direction": "next",
-        "title": "Binomial Coefficients: When to Use It"
+        "title": "Binomial Coefficients: When to Use It",
+        "concept": "choose-k counts, lattice paths, probability"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "Choosing k elements is symmetric with choosing the omitted n-k. For 20 choose 6, repeated exact multiplicative steps give 38760. The intermediate type is u128 and the teaching function restricts n<=60. Choosing zero elements yields one, including the empty-set case n=0,k=0.",
+    "misconception": "“It changes the answer to an approximation”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `n=20 k=6`, write the state before the first update. Explain how it represents this claim: Build Pascal recurrence or multiply a shortened numerator while controlling division. An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds."
+        "title": "Concrete transition",
+        "detail": "For 20 choose 6, repeated exact multiplicative steps give 38760. The intermediate type is u128 and the teaching function restricts n<=60. Choosing zero elements yields one, including the empty-set case n=0,k=0."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `38760`. Use explicit integer widths and checked arithmetic when input bounds require them. Distinguish bit positions from numeric values."
+        "title": "Independent second fixture",
+        "detail": "Input `n=0 k=0` produces `1`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Defend the O(n*k) DP or O(k) multiplicative time bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `n=7 k=3` produces `35`. Choosing k elements is symmetric with choosing the omitted n-k. The stated work bound is O(min(k,n-k)) exact multiplicative steps · O(1) state. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `n=20 k=6` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Binomial Coefficients survives, which state must be updated, and whether the O(n*k) DP or O(k) multiplicative time bound still holds. Check number size, sign, and modulus assumptions before using a shortcut; not every inverse or division exists."
+    "transferChallenge": "Compare the visible input `n=20 k=6` with `n=10 k=0`. Predict why their results are `38760` and `1`. Then change one legal value and explain whether the same invariant, choosing k elements is symmetric with choosing the omitted n-k, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.binomial-coefficients.model",
@@ -54,21 +54,21 @@
   "title": "Binomial Coefficients: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "Choosing k elements is symmetric with choosing the omitted n-k",
+      "It changes the answer to an approximation",
+      "It removes the need for exact integer arithmetic"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n*k) DP or O(k) multiplicative time",
-    "exampleCode": "fn gcd(mut a: u64, mut b: u64) -> u64 {\n    while b != 0 {\n        (a, b) = (b, a % b);\n    }\n    a\n}",
-    "explanation": "Begin with the concrete question: Return 20 choose 6. For the visible input `n=20 k=6`, the stated result is `38760`. Before reading code, name the smallest piece of information that must survive from one step to the next. An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds. That is the mental model for Binomial Coefficients; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Build Pascal recurrence or multiply a shortened numerator while controlling division. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use explicit integer widths and checked arithmetic when input bounds require them. Distinguish bit positions from numeric values. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n*k) DP or O(k) multiplicative time. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn gcd(mut a: u64, mut b: u64) -> u64 {\n    while b != 0 {\n        (a, b) = (b, a % b);\n    }\n    a\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
-    "success": "You can explain the invariant, termination condition, and O(n*k) DP or O(k) multiplicative time bound without looking at the code.",
+    "exampleCaption": "Complete std-only binomial-coefficients program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn choose(n:u64,k:u64)->u64 {\n    if k>n { return 0; } assert!(n<=60); let k=k.min(n-k); let mut answer=1_u128;\n    for i in 1..=k { answer=answer*(n-k+i) as u128/i as u128; } answer as u64\n}\n\nfn main() {\n    let result = choose(20,6).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "For 20 choose 6, repeated exact multiplicative steps give 38760. The intermediate type is u128 and the teaching function restricts n<=60. Choosing zero elements yields one, including the empty-set case n=0,k=0.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Parse n and k and return n choose k. The multiplicative example bounds n<=60; return 0 when k>n. The visible fixture is `n=20 k=6` and its example result is `38760`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Parse n and k and return n choose k. The multiplicative example bounds n<=60; return 0 when k>n. For the visible input `n=20 k=6`, the stated result is `38760`. Before reading code, name the smallest piece of information that must survive from one step to the next. An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds. That is the mental model for Binomial Coefficients; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Build Pascal recurrence or multiply a shortened numerator while controlling division. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(min(k,n-k)) exact multiplicative steps · O(1) state. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "For 20 choose 6, repeated exact multiplicative steps give 38760. The intermediate type is u128 and the teaching function restricts n<=60. Choosing zero elements yields one, including the empty-set case n=0,k=0.",
+    "practiceCode": "fn choose(n:u64,k:u64)->u64 {\n    if k>n { return 0; } assert!(n<=60); let k=k.min(n-k); let mut answer=1_u128;\n    for i in 1..=k { answer=answer*(n-k+i) as u128/i as u128; } answer as u64\n}\n\nfn main() {\n    let result = choose(20,6).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Why use k=min(k,n-k) when computing a binomial coefficient?",
+    "rule": "Choosing k elements is symmetric with choosing the omitted n-k. State the input preconditions before applying this invariant.",
+    "success": "You can explain the invariant, termination condition, and O(min(k,n-k)) exact multiplicative steps · O(1) state bound without looking at the code.",
     "summary": "Build Pascal recurrence or multiply a shortened numerator while controlling division.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-math-bits-b.png",

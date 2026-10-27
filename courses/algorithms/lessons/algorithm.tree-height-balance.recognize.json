@@ -7,9 +7,9 @@
     "expectedAnswer": "true",
     "idea": "Return height normally but propagate a sentinel immediately when a subtree is already unbalanced.",
     "patternID": "tree-height-balance",
-    "rustSketch": "fn height(node: Option<&Node>) -> usize {\n    match node {\n        None => 0,\n        Some(node) => 1 + height(node.left.as_deref()).max(height(node.right.as_deref())),\n    }\n}",
+    "rustSketch": "\ntype Tree=Option<Box<Node>>;\nstruct Node { value:i32, left:Tree, right:Tree }\nfn node(value:i32,left:Tree,right:Tree)->Tree { Some(Box::new(Node{value,left,right})) }\nfn is_balanced(root:&Tree)->bool {\n    fn height(root:&Tree)->Option<usize> {\n        match root { None=>Some(0), Some(n)=>{\n            let (left,right)=(height(&n.left)?,height(&n.right)?);\n            (left.abs_diff(right)<=1).then_some(1+left.max(right))\n        } }\n    }\n    height(root).is_some()\n}\n\nfn main() {\n    let result = is_balanced(&node(3,node(9,None,None),node(20,node(15,None,None),node(7,None,None)))).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
-    "task": "Return true when every node's subtree heights differ by at most one.",
+    "task": "Parse the compact level-order binary tree, where null omits a node. Return true exactly when every subtree has child heights differing by at most one.",
     "useCases": "balanced-tree validation without repeated heights",
     "visibleInput": "[3,9,20,null,null,15,7]"
   },
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Return height normally but propagate a sentinel immediately when a subtree is already unbalanced.",
         "direction": "previous",
-        "title": "Height with Balance Sentinel: Mental Model"
+        "title": "Height with Balance Sentinel: Mental Model",
+        "concept": "Return height normally but propagate a sentinel immediately when a subtree is already unbalanced."
       },
       {
-        "concept": "Return true when every node's subtree heights differ by at most one.",
         "direction": "next",
-        "title": "Challenge: Height with Balance Sentinel"
+        "title": "Challenge: Height with Balance Sentinel",
+        "concept": "Parse the compact level-order binary tree, where null omits a node. Return true exactly when every subtree has child heights differing by at most one."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "One postorder pass can detect imbalance and compute heights. For [3,9,20,null,null,15,7], leaf heights are 1 and both root subtrees differ by at most one. In [1,2,null,3], root subtree heights differ by 2, so the sentinel reaches the root and returns false.",
+    "misconception": "“Height balance depends only on the root's immediate child count”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[3,9,20,null,null,15,7]`, write the state before the first update. Explain how it represents this claim: Return height normally but propagate a sentinel immediately when a subtree is already unbalanced. A tree result is built from a node and its children. Decide whether information flows downward, upward, or in level order."
+        "title": "Concrete transition",
+        "detail": "For [3,9,20,null,null,15,7], leaf heights are 1 and both root subtrees differ by at most one. In [1,2,null,3], root subtree heights differ by 2, so the sentinel reaches the root and returns false."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `true`. Use references for read-only traversals and make the stack or queue explicit when recursion depth might be large."
+        "title": "Independent second fixture",
+        "detail": "Input `[1]` produces `true`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test a missing root, a leaf, a skewed tree, and equal or duplicate values when ordering rules depend on them. Defend the O(n) time · O(h) stack bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[1,null,2,null,3]` produces `false`. One postorder pass can detect imbalance and compute heights. The stated work bound is O(n) time · O(h) stack. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[3,9,20,null,null,15,7]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Height with Balance Sentinel survives, which state must be updated, and whether the O(n) time · O(h) stack bound still holds. Look for hierarchy and parent-child structure; a plain sequence algorithm loses the branching relationships."
+    "transferChallenge": "Compare the visible input `[3,9,20,null,null,15,7]` with `[2,1,3]`. Predict why their results are `true` and `true`. Then change one legal value and explain whether the same invariant, one postorder pass can detect imbalance and compute heights, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.tree-height-balance.recognize",
@@ -54,21 +54,21 @@
   "title": "Height with Balance Sentinel: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "balanced-tree validation without repeated heights",
-      "Only problems with exactly one input value"
+      "`false`",
+      "`true`",
+      "The valid input necessarily panics"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Height with Balance Sentinel",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Height with Balance Sentinel",
-    "explanation": "A problem is a good match for Height with Balance Sentinel when it asks for balanced-tree validation without repeated heights. Here the concrete task is: Return true when every node's subtree heights differ by at most one. The visible input `[3,9,20,null,null,15,7]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for hierarchy and parent-child structure; a plain sequence algorithm loses the branching relationships. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Return height normally but propagate a sentinel immediately when a subtree is already unbalanced. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A tree result is built from a node and its children. Decide whether information flows downward, upward, or in level order. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(h) stack; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `true` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test a missing root, a leaf, a skewed tree, and equal or duplicate values when ordering rules depend on them. Use references for read-only traversals and make the stack or queue explicit when recursion depth might be large. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: balanced-tree validation without repeated heights.",
-    "practiceCode": "fn height(node: Option<&Node>) -> usize {\n    match node {\n        None => 0,\n        Some(node) => 1 + height(node.left.as_deref()).max(height(node.right.as_deref())),\n    }\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only tree-height-balance program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "\ntype Tree=Option<Box<Node>>;\nstruct Node { value:i32, left:Tree, right:Tree }\nfn node(value:i32,left:Tree,right:Tree)->Tree { Some(Box::new(Node{value,left,right})) }\nfn is_balanced(root:&Tree)->bool {\n    fn height(root:&Tree)->Option<usize> {\n        match root { None=>Some(0), Some(n)=>{\n            let (left,right)=(height(&n.left)?,height(&n.right)?);\n            (left.abs_diff(right)<=1).then_some(1+left.max(right))\n        } }\n    }\n    height(root).is_some()\n}\n\nfn main() {\n    let result = is_balanced(&node(3,node(9,None,None),node(20,node(15,None,None),node(7,None,None)))).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "For [3,9,20,null,null,15,7], leaf heights are 1 and both root subtrees differ by at most one. In [1,2,null,3], root subtree heights differ by 2, so the sentinel reaches the root and returns false.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Parse the compact level-order binary tree, where null omits a node. Return true exactly when every subtree has child heights differing by at most one. The visible fixture is `[3,9,20,null,null,15,7]` and its example result is `true`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Height with Balance Sentinel when it asks for balanced-tree validation without repeated heights. Here the concrete task is: Parse the compact level-order binary tree, where null omits a node. Return true exactly when every subtree has child heights differing by at most one. The visible input `[3,9,20,null,null,15,7]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for hierarchy and parent-child structure; a plain sequence algorithm loses the branching relationships. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Return height normally but propagate a sentinel immediately when a subtree is already unbalanced. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A tree result is built from a node and its children. Decide whether information flows downward, upward, or in level order. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(h) stack; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `true` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test a missing root, a leaf, a skewed tree, and equal or duplicate values when ordering rules depend on them. Use references for read-only traversals and make the stack or queue explicit when recursion depth might be large. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `true`. One postorder pass can detect imbalance and compute heights. Compare this independent fixture with the worked trace: For [3,9,20,null,null,15,7], leaf heights are 1 and both root subtrees differ by at most one. In [1,2,null,3], root subtree heights differ by 2, so the sentinel reaches the root and returns false.",
+    "practiceCode": "\ntype Tree=Option<Box<Node>>;\nstruct Node { value:i32, left:Tree, right:Tree }\nfn node(value:i32,left:Tree,right:Tree)->Tree { Some(Box::new(Node{value,left,right})) }\nfn is_balanced(root:&Tree)->bool {\n    fn height(root:&Tree)->Option<usize> {\n        match root { None=>Some(0), Some(n)=>{\n            let (left,right)=(height(&n.left)?,height(&n.right)?);\n            (left.abs_diff(right)<=1).then_some(1+left.max(right))\n        } }\n    }\n    height(root).is_some()\n}\n\nfn main() {\n    let result = is_balanced(&node(3,node(9,None,None),node(20,node(15,None,None),node(7,None,None)))).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Height with Balance Sentinel on input `[1]`. Which result follows from the documented contract?",
+    "rule": "One postorder pass can detect imbalance and compute heights. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Height with Balance Sentinel.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-trees-a.png",

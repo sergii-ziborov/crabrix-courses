@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS connected-components\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"3\".to_string()",
-      "String::from(\"3\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.connected-components.challenge",
     "patternID": "connected-components",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return the number of undirected connected components.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Connected Components\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Return the number of undirected connected components.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement connected-components\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "3",
+        "kind": "visible",
         "input": "n=6 edges=(0,1),(1,2),(3,4)",
-        "kind": "visible"
+        "expectedAnswer": "3"
       },
       {
-        "expectedAnswer": "4",
+        "kind": "boundary",
         "input": "n=4 edges=none",
-        "kind": "boundary"
+        "expectedAnswer": "4"
       },
       {
-        "expectedAnswer": "4",
-        "input": "\nn=4 edges=none\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "n=3 edges=",
+        "expectedAnswer": "3"
       },
       {
-        "expectedAnswer": "3",
+        "kind": "adversarial",
+        "input": "n=4 edges=(0,1),(1,2),(2,3)",
+        "expectedAnswer": "1"
+      },
+      {
+        "kind": "adversarial",
+        "input": "n=5 edges=(0,1),(2,3)",
+        "expectedAnswer": "3"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \nn=6 edges=(0,1),(1,2),(3,4)\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "3"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\nn=5 edges=(0,1),(2,3)\n",
+        "expectedAnswer": "3"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"n=6 edges=(0,1),(1,2),(3,4)\"#, r#\"3\"#),\n    (r#\"n=4 edges=none\"#, r#\"4\"#),\n    (r#\"\nn=4 edges=none\n\"#, r#\"4\"#),\n    (r#\"  \nn=6 edges=(0,1),(1,2),(3,4)\n  \"#, r#\"3\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS connected-components\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"n=6 edges=(0,1),(1,2),(3,4)\",\"3\"),\n        (\"n=4 edges=none\",\"4\"),\n        (\"n=3 edges=\",\"3\"),\n        (\"n=4 edges=(0,1),(1,2),(2,3)\",\"1\"),\n        (\"n=5 edges=(0,1),(2,3)\",\"3\"),\n        (\"  \\nn=6 edges=(0,1),(1,2),(3,4)\\n  \",\"3\"),\n        (\"\\nn=5 edges=(0,1),(2,3)\\n\",\"3\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS connected-components\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS connected-components\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"3\".to_string()",
-      "String::from(\"3\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

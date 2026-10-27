@@ -7,44 +7,44 @@
     "expectedAnswer": "12",
     "idea": "For each item compare skipping it with taking it plus the best compatible earlier state.",
     "patternID": "house-robber",
-    "rustSketch": "fn ways(n: usize) -> usize {\n    let (mut previous, mut current) = (1, 1);\n    for _ in 0..n {\n        (previous, current) = (current, previous + current);\n    }\n    previous\n}",
+    "rustSketch": "fn non_adjacent_sum(values:&[i32])->i32 {\n    let (mut previous,mut best)=(0,0);\n    for &value in values { let next=best.max(previous+value); previous=best; best=next; } best\n}\n\nfn main() {\n    let result = non_adjacent_sum(&[2,7,9,3,1]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return the maximum non-adjacent sum.",
     "useCases": "non-adjacent selection and weighted independent paths",
     "visibleInput": "[2,7,9,3,1]"
   },
   "concept": "For each item compare skipping it with taking it plus the best compatible earlier state.",
-  "contentDigest": "27f671262a90b8d5ce3419fe21b33efb0a3caa928e429604052a74ef02ca7c81",
+  "contentDigest": "f3c508ca31f980a9519fc0c861a3d150ac616f4555a21c32bd7e1c7db28aaa6f",
   "depth": {
     "connections": [
       {
-        "concept": "Return the minimum cost to move beyond the final stair.",
         "direction": "previous",
-        "title": "Challenge: Rolling-State DP"
+        "title": "Challenge: Rolling-State DP",
+        "concept": "Return the minimum cost to move beyond the final stair."
       },
       {
-        "concept": "non-adjacent selection and weighted independent paths",
         "direction": "next",
-        "title": "Take-or-Skip DP: When to Use It"
+        "title": "Take-or-Skip DP: When to Use It",
+        "concept": "non-adjacent selection and weighted independent paths"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "Taking this item excludes its immediate predecessor. For [2,7,9,3,1], the best prefix totals are 2,7,11,11,12. Taking final 1 combines with total 11 from before its neighbor. The answer 12 comes from values 2,9,1, not the three largest values regardless of positions.",
+    "misconception": "“Every positive value can be taken independently”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[2,7,9,3,1]`, write the state before the first update. Explain how it represents this claim: For each item compare skipping it with taking it plus the best compatible earlier state. A one-dimensional DP state summarizes a prefix or a single parameter. Define its meaning before writing a recurrence."
+        "title": "Concrete transition",
+        "detail": "For [2,7,9,3,1], the best prefix totals are 2,7,11,11,12. Taking final 1 combines with total 11 from before its neighbor. The answer 12 comes from values 2,9,1, not the three largest values regardless of positions."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `12`. Use `Option` or a safe sentinel for unreachable states, and choose an iteration direction that matches the recurrence's dependencies."
+        "title": "Independent second fixture",
+        "detail": "Input `[1,2,3,4,5,6,7]` produces `16`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test the base state, the first transition, impossible states, and whether an in-place update accidentally reuses an item twice. Defend the O(n) time · O(1) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[8,7,6,5,4,3,2]` produces `20`. Taking this item excludes its immediate predecessor. The stated work bound is O(n) time · O(1) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[2,7,9,3,1]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Take-or-Skip DP survives, which state must be updated, and whether the O(n) time · O(1) space bound still holds. Choose a recurrence when subproblems overlap. `Some` patterns summarize a frontier instead of a full DP table; either representation needs an invariant, and any greedy shortcut needs proof."
+    "transferChallenge": "Compare the visible input `[2,7,9,3,1]` with `[3,3,3,3,3,3,3]`. Predict why their results are `12` and `12`. Then change one legal value and explain whether the same invariant, taking this item excludes its immediate predecessor, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.house-robber.model",
@@ -54,21 +54,21 @@
   "title": "Take-or-Skip DP: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "Taking this item excludes its immediate predecessor",
+      "Every positive value can be taken independently",
+      "Non-adjacent means values must differ numerically"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n) time · O(1) space",
-    "exampleCode": "fn ways(n: usize) -> usize {\n    let (mut previous, mut current) = (1, 1);\n    for _ in 0..n {\n        (previous, current) = (current, previous + current);\n    }\n    previous\n}",
-    "explanation": "Begin with the concrete question: Return the maximum non-adjacent sum. For the visible input `[2,7,9,3,1]`, the stated result is `12`. Before reading code, name the smallest piece of information that must survive from one step to the next. A one-dimensional DP state summarizes a prefix or a single parameter. Define its meaning before writing a recurrence. That is the mental model for Take-or-Skip DP; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: For each item compare skipping it with taking it plus the best compatible earlier state. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use `Option` or a safe sentinel for unreachable states, and choose an iteration direction that matches the recurrence's dependencies. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test the base state, the first transition, impossible states, and whether an in-place update accidentally reuses an item twice. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn ways(n: usize) -> usize {\n    let (mut previous, mut current) = (1, 1);\n    for _ in 0..n {\n        (previous, current) = (current, previous + current);\n    }\n    previous\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only house-robber program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn non_adjacent_sum(values:&[i32])->i32 {\n    let (mut previous,mut best)=(0,0);\n    for &value in values { let next=best.max(previous+value); previous=best; best=next; } best\n}\n\nfn main() {\n    let result = non_adjacent_sum(&[2,7,9,3,1]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "For [2,7,9,3,1], the best prefix totals are 2,7,11,11,12. Taking final 1 combines with total 11 from before its neighbor. The answer 12 comes from values 2,9,1, not the three largest values regardless of positions.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the maximum non-adjacent sum. The visible fixture is `[2,7,9,3,1]` and its example result is `12`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return the maximum non-adjacent sum. For the visible input `[2,7,9,3,1]`, the stated result is `12`. Before reading code, name the smallest piece of information that must survive from one step to the next. A one-dimensional DP state summarizes a prefix or a single parameter. Define its meaning before writing a recurrence. That is the mental model for Take-or-Skip DP; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: For each item compare skipping it with taking it plus the best compatible earlier state. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test the base state, the first transition, impossible states, and whether an in-place update accidentally reuses an item twice. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "For [2,7,9,3,1], the best prefix totals are 2,7,11,11,12. Taking final 1 combines with total 11 from before its neighbor. The answer 12 comes from values 2,9,1, not the three largest values regardless of positions.",
+    "practiceCode": "fn non_adjacent_sum(values:&[i32])->i32 {\n    let (mut previous,mut best)=(0,0);\n    for &value in values { let next=best.max(previous+value); previous=best; best=next; } best\n}\n\nfn main() {\n    let result = non_adjacent_sum(&[2,7,9,3,1]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Why compare the previous best with the value plus the two-back best?",
+    "rule": "Taking this item excludes its immediate predecessor. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(1) space bound without looking at the code.",
     "summary": "For each item compare skipping it with taking it plus the best compatible earlier state.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-dynamic-1d-a.png",

@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS suffix-aggregate\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"5,5,5,2\".to_string()",
-      "String::from(\"5,5,5,2\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.suffix-aggregate.challenge",
     "patternID": "suffix-aggregate",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return the suffix maximum at every index.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Suffix Aggregate\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Return the suffix maximum at every index.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement suffix-aggregate\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "5,5,5,2",
+        "kind": "visible",
         "input": "[3, 1, 5, 2]",
-        "kind": "visible"
+        "expectedAnswer": "5,5,5,2"
       },
       {
-        "expectedAnswer": "4,4,1",
+        "kind": "boundary",
         "input": "[2, 4, 1]",
-        "kind": "boundary"
+        "expectedAnswer": "4,4,1"
       },
       {
-        "expectedAnswer": "4,4,1",
-        "input": "\n[2, 4, 1]\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "[1,2,3,4,5,6,7]",
+        "expectedAnswer": "7,7,7,7,7,7,7"
       },
       {
-        "expectedAnswer": "5,5,5,2",
+        "kind": "adversarial",
+        "input": "[3,3,3,3,3,3,3]",
+        "expectedAnswer": "3,3,3,3,3,3,3"
+      },
+      {
+        "kind": "adversarial",
+        "input": "[8,7,6,5,4,3,2]",
+        "expectedAnswer": "8,7,6,5,4,3,2"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \n[3, 1, 5, 2]\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "5,5,5,2"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\n[8,7,6,5,4,3,2]\n",
+        "expectedAnswer": "8,7,6,5,4,3,2"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"[3, 1, 5, 2]\"#, r#\"5,5,5,2\"#),\n    (r#\"[2, 4, 1]\"#, r#\"4,4,1\"#),\n    (r#\"\n[2, 4, 1]\n\"#, r#\"4,4,1\"#),\n    (r#\"  \n[3, 1, 5, 2]\n  \"#, r#\"5,5,5,2\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS suffix-aggregate\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"[3, 1, 5, 2]\",\"5,5,5,2\"),\n        (\"[2, 4, 1]\",\"4,4,1\"),\n        (\"[1,2,3,4,5,6,7]\",\"7,7,7,7,7,7,7\"),\n        (\"[3,3,3,3,3,3,3]\",\"3,3,3,3,3,3,3\"),\n        (\"[8,7,6,5,4,3,2]\",\"8,7,6,5,4,3,2\"),\n        (\"  \\n[3, 1, 5, 2]\\n  \",\"5,5,5,2\"),\n        (\"\\n[8,7,6,5,4,3,2]\\n\",\"8,7,6,5,4,3,2\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS suffix-aggregate\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS suffix-aggregate\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"5,5,5,2\".to_string()",
-      "String::from(\"5,5,5,2\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

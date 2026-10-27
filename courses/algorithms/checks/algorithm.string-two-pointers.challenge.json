@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS string-two-pointers\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"true\".to_string()",
-      "String::from(\"true\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.string-two-pointers.challenge",
     "patternID": "string-two-pointers",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return true after ignoring non-alphanumeric ASCII and case.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement String Two Pointers\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Return true after ignoring non-alphanumeric ASCII and case.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement string-two-pointers\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "true",
+        "kind": "visible",
         "input": "A man, a plan, a canal: Panama",
-        "kind": "visible"
+        "expectedAnswer": "true"
       },
       {
-        "expectedAnswer": "false",
+        "kind": "boundary",
         "input": "Rust",
-        "kind": "boundary"
+        "expectedAnswer": "false"
       },
       {
-        "expectedAnswer": "false",
-        "input": "\nRust\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "abca",
+        "expectedAnswer": "false"
       },
       {
-        "expectedAnswer": "true",
+        "kind": "adversarial",
+        "input": "No lemon, no melon",
+        "expectedAnswer": "true"
+      },
+      {
+        "kind": "adversarial",
+        "input": "x",
+        "expectedAnswer": "true"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \nA man, a plan, a canal: Panama\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "true"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\nx\n",
+        "expectedAnswer": "true"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"A man, a plan, a canal: Panama\"#, r#\"true\"#),\n    (r#\"Rust\"#, r#\"false\"#),\n    (r#\"\nRust\n\"#, r#\"false\"#),\n    (r#\"  \nA man, a plan, a canal: Panama\n  \"#, r#\"true\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS string-two-pointers\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"A man, a plan, a canal: Panama\",\"true\"),\n        (\"Rust\",\"false\"),\n        (\"abca\",\"false\"),\n        (\"No lemon, no melon\",\"true\"),\n        (\"x\",\"true\"),\n        (\"  \\nA man, a plan, a canal: Panama\\n  \",\"true\"),\n        (\"\\nx\\n\",\"true\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS string-two-pointers\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS string-two-pointers\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"true\".to_string()",
-      "String::from(\"true\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

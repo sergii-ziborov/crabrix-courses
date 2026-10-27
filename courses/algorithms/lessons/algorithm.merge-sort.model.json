@@ -7,44 +7,44 @@
     "expectedAnswer": "1x,1y,2a,2b",
     "idea": "Sort halves independently, then merge two ordered streams without backtracking.",
     "patternID": "merge-sort",
-    "rustSketch": "fn insertion_sort(values: &mut [i32]) {\n    for i in 1..values.len() {\n        let mut j = i;\n        while j > 0 && values[j] < values[j - 1] {\n            values.swap(j, j - 1);\n            j -= 1;\n        }\n    }\n}",
+    "rustSketch": "fn stable_merge_sort(values:&[(i32,char)])->Vec<(i32,char)> {\n    if values.len()<2 { return values.to_vec(); }\n    let mid=values.len()/2; let left=stable_merge_sort(&values[..mid]); let right=stable_merge_sort(&values[mid..]);\n    let (mut i,mut j)=(0,0); let mut out=Vec::with_capacity(values.len());\n    while i<left.len() && j<right.len() {\n        if left[i].0<=right[j].0 { out.push(left[i]); i+=1; } else { out.push(right[j]); j+=1; }\n    }\n    out.extend_from_slice(&left[i..]); out.extend_from_slice(&right[j..]); out\n}\n\nfn main() {\n    let result = stable_merge_sort(&[(2,'a'),(1,'x'),(2,'b'),(1,'y')]).iter().map(|(k,v)|format!(\"{k}{v}\")).collect::<Vec<_>>().join(\",\");\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return the sorted values and preserve the original order of equal keys.",
     "useCases": "stable sorting, linked data, inversion counting",
     "visibleInput": "[(2,a),(1,x),(2,b),(1,y)]"
   },
   "concept": "Sort halves independently, then merge two ordered streams without backtracking.",
-  "contentDigest": "7d0314d05b7eae055a08b7cc392d2e88b7f3af56857125f530897ae285c0058d",
+  "contentDigest": "187217a6e3fe0a199497ce59f202b001990fdf1269f3d541c7706d8547818c55",
   "depth": {
     "connections": [
       {
-        "concept": "Sort ascending and return the number of swaps performed by classic selection sort.",
         "direction": "previous",
-        "title": "Challenge: Selection Sort"
+        "title": "Challenge: Selection Sort",
+        "concept": "Sort ascending with classic selection sort and return the count of exchanges between different positions. Do not count self-swaps."
       },
       {
-        "concept": "stable sorting, linked data, inversion counting",
         "direction": "next",
-        "title": "Merge Sort: When to Use It"
+        "title": "Merge Sort: When to Use It",
+        "concept": "stable sorting, linked data, inversion counting"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "It preserves the earlier item's original relative order. Split [(2,a),(1,x),(2,b),(1,y)], sort the halves, then merge equal keys from the left first. Output is [1x,1y,2a,2b]. The letters are payload identity, not an additional sorting key.",
+    "misconception": "“The right item must always be older”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[(2,a),(1,x),(2,b),(1,y)]`, write the state before the first update. Explain how it represents this claim: Sort halves independently, then merge two ordered streams without backtracking. Sorting establishes global order; selection asks only for a rank or partition. Explain which comparisons make progress toward that goal."
+        "title": "Concrete transition",
+        "detail": "Split [(2,a),(1,x),(2,b),(1,y)], sort the halves, then merge equal keys from the left first. Output is [1x,1y,2a,2b]. The letters are payload identity, not an additional sorting key."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `1x,1y,2a,2b`. Rust slice sorting is available, but an exercise asking for the algorithm requires the actual invariant and mutation steps, not a library shortcut."
+        "title": "Independent second fixture",
+        "detail": "Input `[(3,a),(2,b),(3,c)]` produces `2b,3a,3c`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test all-equal keys, already ordered input, reverse order, and extreme pivot or bucket distributions. Defend the O(n log n) time · O(n) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[(4,x),(2,z),(1,y)]` produces `1y,2z,4x`. It preserves the earlier item's original relative order. The stated work bound is O(n log n) time · O(n) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[(2,a),(1,x),(2,b),(1,y)]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Merge Sort survives, which state must be updated, and whether the O(n log n) time · O(n) space bound still holds. Before sorting everything, ask whether a single statistic is enough and whether stable order among equal keys matters."
+    "transferChallenge": "Compare the visible input `[(2,a),(1,x),(2,b),(1,y)]` with `[(0,a),(0,b)]`. Predict why their results are `1x,1y,2a,2b` and `0a,0b`. Then change one legal value and explain whether the same invariant, it preserves the earlier item's original relative order, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.merge-sort.model",
@@ -54,21 +54,21 @@
   "title": "Merge Sort: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "It preserves the earlier item's original relative order",
+      "The right item must always be older",
+      "Stability requires equal keys to be removed"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n log n) time · O(n) space",
-    "exampleCode": "fn insertion_sort(values: &mut [i32]) {\n    for i in 1..values.len() {\n        let mut j = i;\n        while j > 0 && values[j] < values[j - 1] {\n            values.swap(j, j - 1);\n            j -= 1;\n        }\n    }\n}",
-    "explanation": "Begin with the concrete question: Return the sorted values and preserve the original order of equal keys. For the visible input `[(2,a),(1,x),(2,b),(1,y)]`, the stated result is `1x,1y,2a,2b`. Before reading code, name the smallest piece of information that must survive from one step to the next. Sorting establishes global order; selection asks only for a rank or partition. Explain which comparisons make progress toward that goal. That is the mental model for Merge Sort; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Sort halves independently, then merge two ordered streams without backtracking. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Rust slice sorting is available, but an exercise asking for the algorithm requires the actual invariant and mutation steps, not a library shortcut. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n log n) time · O(n) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test all-equal keys, already ordered input, reverse order, and extreme pivot or bucket distributions. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn insertion_sort(values: &mut [i32]) {\n    for i in 1..values.len() {\n        let mut j = i;\n        while j > 0 && values[j] < values[j - 1] {\n            values.swap(j, j - 1);\n            j -= 1;\n        }\n    }\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only merge-sort program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn stable_merge_sort(values:&[(i32,char)])->Vec<(i32,char)> {\n    if values.len()<2 { return values.to_vec(); }\n    let mid=values.len()/2; let left=stable_merge_sort(&values[..mid]); let right=stable_merge_sort(&values[mid..]);\n    let (mut i,mut j)=(0,0); let mut out=Vec::with_capacity(values.len());\n    while i<left.len() && j<right.len() {\n        if left[i].0<=right[j].0 { out.push(left[i]); i+=1; } else { out.push(right[j]); j+=1; }\n    }\n    out.extend_from_slice(&left[i..]); out.extend_from_slice(&right[j..]); out\n}\n\nfn main() {\n    let result = stable_merge_sort(&[(2,'a'),(1,'x'),(2,'b'),(1,'y')]).iter().map(|(k,v)|format!(\"{k}{v}\")).collect::<Vec<_>>().join(\",\");\n    println!(\"{result}\");\n}\n",
+    "explanation": "Split [(2,a),(1,x),(2,b),(1,y)], sort the halves, then merge equal keys from the left first. Output is [1x,1y,2a,2b]. The letters are payload identity, not an additional sorting key.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the sorted values and preserve the original order of equal keys. The visible fixture is `[(2,a),(1,x),(2,b),(1,y)]` and its example result is `1x,1y,2a,2b`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return the sorted values and preserve the original order of equal keys. For the visible input `[(2,a),(1,x),(2,b),(1,y)]`, the stated result is `1x,1y,2a,2b`. Before reading code, name the smallest piece of information that must survive from one step to the next. Sorting establishes global order; selection asks only for a rank or partition. Explain which comparisons make progress toward that goal. That is the mental model for Merge Sort; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Sort halves independently, then merge two ordered streams without backtracking. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n log n) time · O(n) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test all-equal keys, already ordered input, reverse order, and extreme pivot or bucket distributions. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "Split [(2,a),(1,x),(2,b),(1,y)], sort the halves, then merge equal keys from the left first. Output is [1x,1y,2a,2b]. The letters are payload identity, not an additional sorting key.",
+    "practiceCode": "fn stable_merge_sort(values:&[(i32,char)])->Vec<(i32,char)> {\n    if values.len()<2 { return values.to_vec(); }\n    let mid=values.len()/2; let left=stable_merge_sort(&values[..mid]); let right=stable_merge_sort(&values[mid..]);\n    let (mut i,mut j)=(0,0); let mut out=Vec::with_capacity(values.len());\n    while i<left.len() && j<right.len() {\n        if left[i].0<=right[j].0 { out.push(left[i]); i+=1; } else { out.push(right[j]); j+=1; }\n    }\n    out.extend_from_slice(&left[i..]); out.extend_from_slice(&right[j..]); out\n}\n\nfn main() {\n    let result = stable_merge_sort(&[(2,'a'),(1,'x'),(2,'b'),(1,'y')]).iter().map(|(k,v)|format!(\"{k}{v}\")).collect::<Vec<_>>().join(\",\");\n    println!(\"{result}\");\n}\n",
+    "question": "Why take the left item when the two merge keys compare equal?",
+    "rule": "It preserves the earlier item's original relative order. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(n log n) time · O(n) space bound without looking at the code.",
     "summary": "Sort halves independently, then merge two ordered streams without backtracking.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-sorting-selection-a.png",

@@ -7,7 +7,7 @@
     "expectedAnswer": "4",
     "idea": "Equal values cancel and zero is neutral, leaving an odd-occurring value.",
     "patternID": "xor-cancellation",
-    "rustSketch": "fn gcd(mut a: u64, mut b: u64) -> u64 {\n    while b != 0 {\n        (a, b) = (b, a % b);\n    }\n    a\n}",
+    "rustSketch": "fn single_value(values:&[i32])->i32 {\n    // Every other value occurs exactly twice.\n    values.iter().fold(0,|acc,&x|acc^x)\n}\n\nfn main() {\n    let result = single_value(&[9,1,1]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Every value occurs twice except one; return it.",
     "useCases": "single-number recovery and parity fingerprints",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "single-number recovery and parity fingerprints",
         "direction": "previous",
-        "title": "XOR Cancellation: When to Use It"
+        "title": "XOR Cancellation: When to Use It",
+        "concept": "single-number recovery and parity fingerprints"
       },
       {
-        "concept": "Mark multiples beginning at p squared for each still-prime p.",
         "direction": "next",
-        "title": "Sieve of Eratosthenes: Mental Model"
+        "title": "Sieve of Eratosthenes: Mental Model",
+        "concept": "Mark multiples beginning at p squared for each still-prime p."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "Every other value occurs exactly twice. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“All values are sorted”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[4,1,2,1,2]`, write the state before the first update. Explain how it represents this claim: Equal values cancel and zero is neutral, leaving an odd-occurring value. An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds."
+        "title": "Pattern-specific invariant",
+        "detail": "Every other value occurs exactly twice. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Use explicit integer widths and checked arithmetic when input bounds require them. Distinguish bit positions from numeric values."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `[9,1,1]` and computes `9`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Defend the O(n) time · O(1) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `[3,5,3,9,5]`, the independently calculated result is `9`. The complexity discussion uses O(n) time · O(1) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `[4,1,2,1,2]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from XOR Cancellation survives, which state must be updated, and whether the O(n) time · O(1) space bound still holds. Check number size, sign, and modulus assumptions before using a shortcut; not every inverse or division exists."
+    "transferChallenge": "Change the independent fixture `[9,1,1]` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `[4,1,2,1,2]`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.xor-cancellation.challenge",
@@ -54,19 +54,19 @@
   "title": "Challenge: XOR Cancellation",
   "writing": {
     "answers": [
-      "O(n) time · O(1) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`9`",
+      "`10`",
+      "`8`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Every value occurs twice except one; return it.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement XOR Cancellation\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Every value occurs twice except one; return it. On input `[4,1,2,1,2]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Equal values cancel and zero is neutral, leaving an odd-occurring value. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use explicit integer widths and checked arithmetic when input bounds require them. Distinguish bit positions from numeric values. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(1) space; explain which operation dominates it and how many times the input can trigger that operation. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(n) time · O(1) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Every value occurs twice except one; return it.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement XOR Cancellation\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS xor-cancellation, and your explanation still meets O(n) time · O(1) space.",
+    "exampleCaption": "Complete std-only xor-cancellation program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn single_value(values:&[i32])->i32 {\n    // Every other value occurs exactly twice.\n    values.iter().fold(0,|acc,&x|acc^x)\n}\n\nfn main() {\n    let result = single_value(&[9,1,1]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "Every other value occurs exactly twice. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `[9,1,1]`, the worked program returns `9`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `[4,1,2,1,2]`; predict that result before opening the answer reveal. The precise contract is: Every value occurs twice except one; return it.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Every value occurs twice except one; return it. On input `[4,1,2,1,2]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Equal values cancel and zero is neutral, leaving an odd-occurring value. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(1) space; explain which operation dominates it and how many times the input can trigger that operation. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `9`. Every other value occurs exactly twice. Compare this independent fixture with the worked trace: XOR [4,1,2,1,2] cancels both 1s and both 2s, leaving 4. The order of cancellation does not matter. If other values occur arbitrary odd counts, this single-value interpretation no longer follows.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Every value occurs twice except one; return it.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement xor-cancellation\")\n}\n",
+    "question": "Boundary check for xor-cancellation: with input `[3,5,3,9,5]`, what result should solve return?",
+    "rule": "Every other value occurs exactly twice. Every value occurs twice except one; return it.",
+    "success": "The private harness prints PASS xor-cancellation. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Every value occurs twice except one; return it.",
     "task": "Every value occurs twice except one; return it."
   },

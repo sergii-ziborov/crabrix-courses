@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS boyer-moore-majority\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"2\".to_string()",
-      "String::from(\"2\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.boyer-moore-majority.challenge",
     "patternID": "boyer-moore-majority",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return the strict majority value; the input guarantees that one exists.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Boyer–Moore Majority Vote\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Return the strict majority value; the input guarantees that one exists.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement boyer-moore-majority\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "2",
+        "kind": "visible",
         "input": "[2, 1, 2, 3, 2, 2, 4]",
-        "kind": "visible"
+        "expectedAnswer": "2"
       },
       {
-        "expectedAnswer": "7",
+        "kind": "boundary",
         "input": "[7, 7, 2]",
-        "kind": "boundary"
+        "expectedAnswer": "7"
       },
       {
-        "expectedAnswer": "7",
-        "input": "\n[7, 7, 2]\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "[1,1,2]",
+        "expectedAnswer": "1"
       },
       {
-        "expectedAnswer": "2",
+        "kind": "adversarial",
+        "input": "[7]",
+        "expectedAnswer": "7"
+      },
+      {
+        "kind": "adversarial",
+        "input": "[4,2,4,4,3]",
+        "expectedAnswer": "4"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \n[2, 1, 2, 3, 2, 2, 4]\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "2"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\n[4,2,4,4,3]\n",
+        "expectedAnswer": "4"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"[2, 1, 2, 3, 2, 2, 4]\"#, r#\"2\"#),\n    (r#\"[7, 7, 2]\"#, r#\"7\"#),\n    (r#\"\n[7, 7, 2]\n\"#, r#\"7\"#),\n    (r#\"  \n[2, 1, 2, 3, 2, 2, 4]\n  \"#, r#\"2\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS boyer-moore-majority\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"[2, 1, 2, 3, 2, 2, 4]\",\"2\"),\n        (\"[7, 7, 2]\",\"7\"),\n        (\"[1,1,2]\",\"1\"),\n        (\"[7]\",\"7\"),\n        (\"[4,2,4,4,3]\",\"4\"),\n        (\"  \\n[2, 1, 2, 3, 2, 2, 4]\\n  \",\"2\"),\n        (\"\\n[4,2,4,4,3]\\n\",\"4\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS boyer-moore-majority\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS boyer-moore-majority\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"2\".to_string()",
-      "String::from(\"2\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

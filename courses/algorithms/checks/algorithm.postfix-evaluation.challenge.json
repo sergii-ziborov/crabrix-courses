@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS postfix-evaluation\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"23\".to_string()",
-      "String::from(\"23\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.postfix-evaluation.challenge",
     "patternID": "postfix-evaluation",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Evaluate the space-separated postfix expression.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Postfix Evaluation\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Evaluate the space-separated postfix expression.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement postfix-evaluation\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "23",
+        "kind": "visible",
         "input": "2 7 + 3 * 4 -",
-        "kind": "visible"
+        "expectedAnswer": "23"
       },
       {
-        "expectedAnswer": "3",
+        "kind": "boundary",
         "input": "5 2 -",
-        "kind": "boundary"
+        "expectedAnswer": "3"
       },
       {
-        "expectedAnswer": "3",
-        "input": "\n5 2 -\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "9 4 -",
+        "expectedAnswer": "5"
       },
       {
-        "expectedAnswer": "23",
+        "kind": "adversarial",
+        "input": "8 2 / 3 +",
+        "expectedAnswer": "7"
+      },
+      {
+        "kind": "adversarial",
+        "input": "2 3 4 * +",
+        "expectedAnswer": "14"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \n2 7 + 3 * 4 -\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "23"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\n2 3 4 * +\n",
+        "expectedAnswer": "14"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"2 7 + 3 * 4 -\"#, r#\"23\"#),\n    (r#\"5 2 -\"#, r#\"3\"#),\n    (r#\"\n5 2 -\n\"#, r#\"3\"#),\n    (r#\"  \n2 7 + 3 * 4 -\n  \"#, r#\"23\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS postfix-evaluation\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"2 7 + 3 * 4 -\",\"23\"),\n        (\"5 2 -\",\"3\"),\n        (\"9 4 -\",\"5\"),\n        (\"8 2 / 3 +\",\"7\"),\n        (\"2 3 4 * +\",\"14\"),\n        (\"  \\n2 7 + 3 * 4 -\\n  \",\"23\"),\n        (\"\\n2 3 4 * +\\n\",\"14\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS postfix-evaluation\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS postfix-evaluation\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"23\".to_string()",
-      "String::from(\"23\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

@@ -7,7 +7,7 @@
     "expectedAnswer": "2,24,45,66,75,90,170,802",
     "idea": "Apply a stable bucket pass from the least significant digit toward the most significant.",
     "patternID": "radix-sort",
-    "rustSketch": "fn insertion_sort(values: &mut [i32]) {\n    for i in 1..values.len() {\n        let mut j = i;\n        while j > 0 && values[j] < values[j - 1] {\n            values.swap(j, j - 1);\n            j -= 1;\n        }\n    }\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn radix_sort(values:&mut [u32]) {\n    let mut out=vec![0;values.len()];\n    for shift in [0,8,16,24] {\n        let mut counts=[0;256];\n        for &x in values.iter() { counts[((x>>shift)&255) as usize]+=1; }\n        let mut total=0; for count in &mut counts { let n=*count; *count=total; total+=n; }\n        for &x in values.iter() { let key=((x>>shift)&255) as usize; out[counts[key]]=x; counts[key]+=1; }\n        values.copy_from_slice(&out);\n    }\n}\n\nfn main() {\n    let result = { let mut values=vec![170,45,75,90,802,24,2,66]; radix_sort(&mut values); csv(values) };\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Sort the base-10 nonnegative integers.",
     "useCases": "fixed-width nonnegative integers and identifiers",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Apply a stable bucket pass from the least significant digit toward the most significant.",
         "direction": "previous",
-        "title": "LSD Radix Sort: Mental Model"
+        "title": "LSD Radix Sort: Mental Model",
+        "concept": "Apply a stable bucket pass from the least significant digit toward the most significant."
       },
       {
-        "concept": "Sort the base-10 nonnegative integers.",
         "direction": "next",
-        "title": "Challenge: LSD Radix Sort"
+        "title": "Challenge: LSD Radix Sort",
+        "concept": "Sort the base-10 nonnegative integers."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "Higher passes must retain ordering established by lower digits. The implementation processes four 8-bit digits of each u32. Prefix counters place equal-digit values in source order. After all four passes, [170,45,75,90,802,24,2,66] is sorted numerically, not lexicographically as text.",
+    "misconception": "“Low digits are discarded after each pass”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[170,45,75,90,802,24,2,66]`, write the state before the first update. Explain how it represents this claim: Apply a stable bucket pass from the least significant digit toward the most significant. Sorting establishes global order; selection asks only for a rank or partition. Explain which comparisons make progress toward that goal."
+        "title": "Concrete transition",
+        "detail": "The implementation processes four 8-bit digits of each u32. Prefix counters place equal-digit values in source order. After all four passes, [170,45,75,90,802,24,2,66] is sorted numerically, not lexicographically as text."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `2,24,45,66,75,90,170,802`. Rust slice sorting is available, but an exercise asking for the algorithm requires the actual invariant and mutation steps, not a library shortcut."
+        "title": "Independent second fixture",
+        "detail": "Input `[1,2,3,4,5,6,7]` produces `1,2,3,4,5,6,7`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test all-equal keys, already ordered input, reverse order, and extreme pivot or bucket distributions. Defend the O(d*(n+b)) time · O(n+b) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[8,7,6,5,4,3,2]` produces `2,3,4,5,6,7,8`. Higher passes must retain ordering established by lower digits. The stated work bound is O(d*(n+b)) time · O(n+b) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[170,45,75,90,802,24,2,66]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from LSD Radix Sort survives, which state must be updated, and whether the O(d*(n+b)) time · O(n+b) space bound still holds. Before sorting everything, ask whether a single statistic is enough and whether stable order among equal keys matters."
+    "transferChallenge": "Compare the visible input `[170,45,75,90,802,24,2,66]` with `[3,3,3,3,3,3,3]`. Predict why their results are `2,24,45,66,75,90,170,802` and `3,3,3,3,3,3,3`. Then change one legal value and explain whether the same invariant, higher passes must retain ordering established by lower digits, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.radix-sort.recognize",
@@ -54,21 +54,21 @@
   "title": "LSD Radix Sort: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "fixed-width nonnegative integers and identifiers",
-      "Only problems with exactly one input value"
+      "`2,3,4,5,6,7`",
+      "`1,2,3,4,5,6,7`",
+      "`2,2,3,4,5,6,7`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for LSD Radix Sort",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: LSD Radix Sort",
-    "explanation": "A problem is a good match for LSD Radix Sort when it asks for fixed-width nonnegative integers and identifiers. Here the concrete task is: Sort the base-10 nonnegative integers. The visible input `[170,45,75,90,802,24,2,66]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Before sorting everything, ask whether a single statistic is enough and whether stable order among equal keys matters. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Apply a stable bucket pass from the least significant digit toward the most significant. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Sorting establishes global order; selection asks only for a rank or partition. Explain which comparisons make progress toward that goal. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(d*(n+b)) time · O(n+b) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `2,24,45,66,75,90,170,802` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test all-equal keys, already ordered input, reverse order, and extreme pivot or bucket distributions. Rust slice sorting is available, but an exercise asking for the algorithm requires the actual invariant and mutation steps, not a library shortcut. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: fixed-width nonnegative integers and identifiers.",
-    "practiceCode": "fn insertion_sort(values: &mut [i32]) {\n    for i in 1..values.len() {\n        let mut j = i;\n        while j > 0 && values[j] < values[j - 1] {\n            values.swap(j, j - 1);\n            j -= 1;\n        }\n    }\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only radix-sort program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn radix_sort(values:&mut [u32]) {\n    let mut out=vec![0;values.len()];\n    for shift in [0,8,16,24] {\n        let mut counts=[0;256];\n        for &x in values.iter() { counts[((x>>shift)&255) as usize]+=1; }\n        let mut total=0; for count in &mut counts { let n=*count; *count=total; total+=n; }\n        for &x in values.iter() { let key=((x>>shift)&255) as usize; out[counts[key]]=x; counts[key]+=1; }\n        values.copy_from_slice(&out);\n    }\n}\n\nfn main() {\n    let result = { let mut values=vec![170,45,75,90,802,24,2,66]; radix_sort(&mut values); csv(values) };\n    println!(\"{result}\");\n}\n",
+    "explanation": "The implementation processes four 8-bit digits of each u32. Prefix counters place equal-digit values in source order. After all four passes, [170,45,75,90,802,24,2,66] is sorted numerically, not lexicographically as text.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Sort the base-10 nonnegative integers. The visible fixture is `[170,45,75,90,802,24,2,66]` and its example result is `2,24,45,66,75,90,170,802`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for LSD Radix Sort when it asks for fixed-width nonnegative integers and identifiers. Here the concrete task is: Sort the base-10 nonnegative integers. The visible input `[170,45,75,90,802,24,2,66]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Before sorting everything, ask whether a single statistic is enough and whether stable order among equal keys matters. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Apply a stable bucket pass from the least significant digit toward the most significant. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Sorting establishes global order; selection asks only for a rank or partition. Explain which comparisons make progress toward that goal. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(d*(n+b)) time · O(n+b) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `2,24,45,66,75,90,170,802` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test all-equal keys, already ordered input, reverse order, and extreme pivot or bucket distributions. Rust slice sorting is available, but an exercise asking for the algorithm requires the actual invariant and mutation steps, not a library shortcut. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `1,2,3,4,5,6,7`. Higher passes must retain ordering established by lower digits. Compare this independent fixture with the worked trace: The implementation processes four 8-bit digits of each u32. Prefix counters place equal-digit values in source order. After all four passes, [170,45,75,90,802,24,2,66] is sorted numerically, not lexicographically as text.",
+    "practiceCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn radix_sort(values:&mut [u32]) {\n    let mut out=vec![0;values.len()];\n    for shift in [0,8,16,24] {\n        let mut counts=[0;256];\n        for &x in values.iter() { counts[((x>>shift)&255) as usize]+=1; }\n        let mut total=0; for count in &mut counts { let n=*count; *count=total; total+=n; }\n        for &x in values.iter() { let key=((x>>shift)&255) as usize; out[counts[key]]=x; counts[key]+=1; }\n        values.copy_from_slice(&out);\n    }\n}\n\nfn main() {\n    let result = { let mut values=vec![170,45,75,90,802,24,2,66]; radix_sort(&mut values); csv(values) };\n    println!(\"{result}\");\n}\n",
+    "question": "Trace LSD Radix Sort on input `[1,2,3,4,5,6,7]`. Which result follows from the documented contract?",
+    "rule": "Higher passes must retain ordering established by lower digits. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing LSD Radix Sort.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-sorting-selection-b.png",

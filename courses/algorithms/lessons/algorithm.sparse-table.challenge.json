@@ -7,44 +7,44 @@
     "expectedAnswer": "0,0,3",
     "idea": "Precompute answers for power-of-two blocks and combine two blocks for idempotent queries.",
     "patternID": "sparse-table",
-    "rustSketch": "// Advanced structures start from the same discipline:\n// define the query monoid, update semantics, and the invariant that\n// makes each decomposition smaller than the original problem.",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn sparse_minima(values:&[i32],queries:&[(usize,usize)])->Vec<i32> {\n    assert!(!values.is_empty()); let n=values.len(); let mut levels=vec![values.to_vec()]; let mut width=2;\n    while width<=n {\n        let previous=levels.last().unwrap(); let half=width/2;\n        levels.push((0..=n-width).map(|i|previous[i].min(previous[i+half])).collect()); width*=2;\n    }\n    queries.iter().map(|&(left,right)| {\n        let length=right-left+1; let level=length.ilog2() as usize; let width=1<<level;\n        levels[level][left].min(levels[level][right+1-width])\n    }).collect()\n}\n\nfn main() {\n    let result = csv(sparse_minima(&[1,2,3,4,5,6,7],&[(0,3),(2,5),(4,6)]));\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
-    "task": "Return minimums for ranges [0,3], [2,5], and [4,6].",
+    "task": "Return minima for inclusive ranges [0,3], [2,5], [4,6], in that order; input contains at least seven integers.",
     "useCases": "immutable range minimum, maximum, gcd",
     "visibleInput": "[7,2,3,0,5,10,3,12,18]"
   },
-  "concept": "Return minimums for ranges [0,3], [2,5], and [4,6].",
+  "concept": "Return minima for inclusive ranges [0,3], [2,5], [4,6], in that order; input contains at least seven integers.",
   "contentDigest": "34a343d1f85675f7758a7db102637fbd889900aed0495e3d6ae59a7a4346f004",
   "depth": {
     "connections": [
       {
-        "concept": "immutable range minimum, maximum, gcd",
         "direction": "previous",
-        "title": "Sparse Table: When to Use It"
+        "title": "Sparse Table: When to Use It",
+        "concept": "immutable range minimum, maximum, gcd"
       },
       {
-        "concept": "Compress find paths and attach smaller trees beneath larger roots.",
         "direction": "next",
-        "title": "Disjoint Set Union: Mental Model"
+        "title": "Disjoint Set Union: Mental Model",
+        "concept": "Compress find paths and attach smaller trees beneath larger roots."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "Minimum is idempotent, so overlap does not double-count a contribution. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“Every aggregate permits overlapping blocks”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[7,2,3,0,5,10,3,12,18]`, write the state before the first update. Explain how it represents this claim: Precompute answers for power-of-two blocks and combine two blocks for idempotent queries. An advanced structure or offline query order packages an invariant across operations. Name what each node, block, or reordered query state stores."
+        "title": "Pattern-specific invariant",
+        "detail": "Minimum is idempotent, so overlap does not double-count a contribution. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Keep representation and operations separate in Rust. Verify a tiny instance against a straightforward reference implementation before optimizing."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `[1,2,3,4,5,6,7]` and computes `1,3,5`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test empty ranges, repeated updates, undo operations where supported, and the exact boundary between adjacent blocks. Defend the O(n log n) build · O(1) query · O(n log n) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `[1,9,2,8,3,7,4]`, the independently calculated result is `1,2,3`. The complexity discussion uses O(n log n) build · O(1) query · O(n log n) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `[7,2,3,0,5,10,3,12,18]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Sparse Table survives, which state must be updated, and whether the O(n log n) build · O(1) query · O(n log n) space bound still holds. Choose it when the required operation sequence, query volume, or substring structure exceeds a simple scan or prefix summary; compare the real time and memory limits first."
+    "transferChallenge": "Change the independent fixture `[1,2,3,4,5,6,7]` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `[7,2,3,0,5,10,3,12,18]`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.sparse-table.challenge",
@@ -54,21 +54,21 @@
   "title": "Challenge: Sparse Table",
   "writing": {
     "answers": [
-      "O(n log n) build · O(1) query · O(n log n) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`1,2,3`",
+      "`2,3`",
+      "`2,2,3`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return minimums for ranges [0,3], [2,5], and [4,6].\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Sparse Table\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Return minimums for ranges [0,3], [2,5], and [4,6]. On input `[7,2,3,0,5,10,3,12,18]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Precompute answers for power-of-two blocks and combine two blocks for idempotent queries. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. An advanced structure or offline query order packages an invariant across operations. Name what each node, block, or reordered query state stores. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is an invariant note rather than a complete program. Turn it into explicit state and transitions before coding. Keep representation and operations separate in Rust. Verify a tiny instance against a straightforward reference implementation before optimizing. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n log n) build · O(1) query · O(n log n) space; explain which operation dominates it and how many times the input can trigger that operation. Test empty ranges, repeated updates, undo operations where supported, and the exact boundary between adjacent blocks. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(n log n) build · O(1) query · O(n log n) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return minimums for ranges [0,3], [2,5], and [4,6].\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Sparse Table\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS sparse-table, and your explanation still meets O(n log n) build · O(1) query · O(n log n) space.",
-    "summary": "Return minimums for ranges [0,3], [2,5], and [4,6].",
-    "task": "Return minimums for ranges [0,3], [2,5], and [4,6]."
+    "exampleCaption": "Complete std-only sparse-table program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn sparse_minima(values:&[i32],queries:&[(usize,usize)])->Vec<i32> {\n    assert!(!values.is_empty()); let n=values.len(); let mut levels=vec![values.to_vec()]; let mut width=2;\n    while width<=n {\n        let previous=levels.last().unwrap(); let half=width/2;\n        levels.push((0..=n-width).map(|i|previous[i].min(previous[i+half])).collect()); width*=2;\n    }\n    queries.iter().map(|&(left,right)| {\n        let length=right-left+1; let level=length.ilog2() as usize; let width=1<<level;\n        levels[level][left].min(levels[level][right+1-width])\n    }).collect()\n}\n\nfn main() {\n    let result = csv(sparse_minima(&[1,2,3,4,5,6,7],&[(0,3),(2,5),(4,6)]));\n    println!(\"{result}\");\n}\n",
+    "explanation": "Minimum is idempotent, so overlap does not double-count a contribution. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `[1,2,3,4,5,6,7]`, the worked program returns `1,3,5`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `[7,2,3,0,5,10,3,12,18]`; predict that result before opening the answer reveal. The precise contract is: Return minima for inclusive ranges [0,3], [2,5], [4,6], in that order; input contains at least seven integers.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Return minima for inclusive ranges [0,3], [2,5], [4,6], in that order; input contains at least seven integers. On input `[7,2,3,0,5,10,3,12,18]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Precompute answers for power-of-two blocks and combine two blocks for idempotent queries. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. An advanced structure or offline query order packages an invariant across operations. Name what each node, block, or reordered query state stores. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(n log n) build · O(1) query · O(n log n) space; explain which operation dominates it and how many times the input can trigger that operation. Test empty ranges, repeated updates, undo operations where supported, and the exact boundary between adjacent blocks. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `1,2,3`. Minimum is idempotent, so overlap does not double-count a contribution. Compare this independent fixture with the worked trace: On [7,2,3,0,5,10,3,12,18], ranges [0,3],[2,5],[4,6] return 0,0,3. Choose k=floor(log2(length)) and combine blocks beginning at left and ending at right. A sum table would need another strategy because overlap would be counted twice.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return minima for inclusive ranges [0,3], [2,5], [4,6], in that order; input contains at least seven integers.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement sparse-table\")\n}\n",
+    "question": "Boundary check for sparse-table: with input `[1,9,2,8,3,7,4]`, what result should solve return?",
+    "rule": "Minimum is idempotent, so overlap does not double-count a contribution. Return minima for inclusive ranges [0,3], [2,5], [4,6], in that order; input contains at least seven integers.",
+    "success": "The private harness prints PASS sparse-table. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
+    "summary": "Return minima for inclusive ranges [0,3], [2,5], [4,6], in that order; input contains at least seven integers.",
+    "task": "Return minima for inclusive ranges [0,3], [2,5], [4,6], in that order; input contains at least seven integers."
   },
   "illustration": {
     "path": "media/algorithms-advanced-structures-a.png",

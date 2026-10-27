@@ -2,12 +2,12 @@
   "algorithm": {
     "categoryID": "advanced-structures",
     "categoryTitle": "Advanced Data Structures",
-    "complexity": "O(n) build · O(n) states",
+    "complexity": "O(n log alphabet) with ordered transitions · O(n) states and transitions",
     "difficulty": "hard",
     "expectedAnswer": "9",
     "idea": "Extend one character while cloning states when needed to preserve end-position equivalence classes.",
     "patternID": "suffix-automaton",
-    "rustSketch": "// Advanced structures start from the same discipline:\n// define the query monoid, update semantics, and the invariant that\n// makes each decomposition smaller than the original problem.",
+    "rustSketch": "#[derive(Clone)]\nstruct SuffixState { length:usize, link:Option<usize>, next:std::collections::BTreeMap<u8,usize> }\nfn distinct_substrings(text:&str)->usize {\n    let empty=SuffixState{length:0,link:None,next:std::collections::BTreeMap::new()}; let mut states=vec![empty.clone()]; let mut last=0;\n    for c in text.bytes() {\n        let current=states.len(); states.push(SuffixState{length:states[last].length+1,..empty.clone()}); let mut p=Some(last);\n        while let Some(v)=p { if states[v].next.contains_key(&c) { break; } states[v].next.insert(c,current); p=states[v].link; }\n        if let Some(v)=p {\n            let q=states[v].next[&c];\n            if states[v].length+1==states[q].length { states[current].link=Some(q); }\n            else {\n                let clone=states.len(); let mut copied=states[q].clone(); copied.length=states[v].length+1; states.push(copied);\n                while let Some(v)=p { if states[v].next.get(&c)!=Some(&q) { break; } states[v].next.insert(c,clone); p=states[v].link; }\n                states[q].link=Some(clone); states[current].link=Some(clone);\n            }\n        } else { states[current].link=Some(0); }\n        last=current;\n    }\n    states.iter().skip(1).map(|s|s.length-states[s.link.unwrap()].length).sum()\n}\n\nfn main() {\n    let result = distinct_substrings(\"ababa\").to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return the number of distinct non-empty substrings.",
     "useCases": "all substrings, repeated substring counts, online text indexing",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Extend one character while cloning states when needed to preserve end-position equivalence classes.",
         "direction": "previous",
-        "title": "Suffix Automaton: Mental Model"
+        "title": "Suffix Automaton: Mental Model",
+        "concept": "Extend one character while cloning states when needed to preserve end-position equivalence classes."
       },
       {
-        "concept": "Return the number of distinct non-empty substrings.",
         "direction": "next",
-        "title": "Challenge: Suffix Automaton"
+        "title": "Challenge: Suffix Automaton",
+        "concept": "Return the number of distinct non-empty substrings."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "It represents one new substring for each length in that interval. For ababa, the automaton represents 9 distinct nonempty substrings. A cloned state splits an existing length class without adding text. For aaa, the length intervals contribute only a,aa,aaa, giving 3 rather than counting repeated occurrences separately.",
+    "misconception": "“Every state represents exactly one substring”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `ababa`, write the state before the first update. Explain how it represents this claim: Extend one character while cloning states when needed to preserve end-position equivalence classes. An advanced structure or offline query order packages an invariant across operations. Name what each node, block, or reordered query state stores."
+        "title": "Concrete transition",
+        "detail": "For ababa, the automaton represents 9 distinct nonempty substrings. A cloned state splits an existing length class without adding text. For aaa, the length intervals contribute only a,aa,aaa, giving 3 rather than counting repeated occurrences separately."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `9`. Keep representation and operations separate in Rust. Verify a tiny instance against a straightforward reference implementation before optimizing."
+        "title": "Independent second fixture",
+        "detail": "Input `a` produces `1`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test empty ranges, repeated updates, undo operations where supported, and the exact boundary between adjacent blocks. Defend the O(n) build · O(n) states bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `abacaba` produces `21`. It represents one new substring for each length in that interval. The stated work bound is O(n log alphabet) with ordered transitions · O(n) states and transitions. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `ababa` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Suffix Automaton survives, which state must be updated, and whether the O(n) build · O(n) states bound still holds. Choose it when the required operation sequence, query volume, or substring structure exceeds a simple scan or prefix summary; compare the real time and memory limits first."
+    "transferChallenge": "Compare the visible input `ababa` with `abcde`. Predict why their results are `9` and `15`. Then change one legal value and explain whether the same invariant, it represents one new substring for each length in that interval, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.suffix-automaton.recognize",
@@ -54,21 +54,21 @@
   "title": "Suffix Automaton: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "all substrings, repeated substring counts, online text indexing",
-      "Only problems with exactly one input value"
+      "`2`",
+      "`1`",
+      "`0`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Suffix Automaton",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Suffix Automaton",
-    "explanation": "A problem is a good match for Suffix Automaton when it asks for all substrings, repeated substring counts, online text indexing. Here the concrete task is: Return the number of distinct non-empty substrings. The visible input `ababa` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Choose it when the required operation sequence, query volume, or substring structure exceeds a simple scan or prefix summary; compare the real time and memory limits first. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Extend one character while cloning states when needed to preserve end-position equivalence classes. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? An advanced structure or offline query order packages an invariant across operations. Name what each node, block, or reordered query state stores. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) build · O(n) states; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `9` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test empty ranges, repeated updates, undo operations where supported, and the exact boundary between adjacent blocks. Keep representation and operations separate in Rust. Verify a tiny instance against a straightforward reference implementation before optimizing. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: all substrings, repeated substring counts, online text indexing.",
-    "practiceCode": "// Advanced structures start from the same discipline:\n// define the query monoid, update semantics, and the invariant that\n// makes each decomposition smaller than the original problem.",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only suffix-automaton program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "#[derive(Clone)]\nstruct SuffixState { length:usize, link:Option<usize>, next:std::collections::BTreeMap<u8,usize> }\nfn distinct_substrings(text:&str)->usize {\n    let empty=SuffixState{length:0,link:None,next:std::collections::BTreeMap::new()}; let mut states=vec![empty.clone()]; let mut last=0;\n    for c in text.bytes() {\n        let current=states.len(); states.push(SuffixState{length:states[last].length+1,..empty.clone()}); let mut p=Some(last);\n        while let Some(v)=p { if states[v].next.contains_key(&c) { break; } states[v].next.insert(c,current); p=states[v].link; }\n        if let Some(v)=p {\n            let q=states[v].next[&c];\n            if states[v].length+1==states[q].length { states[current].link=Some(q); }\n            else {\n                let clone=states.len(); let mut copied=states[q].clone(); copied.length=states[v].length+1; states.push(copied);\n                while let Some(v)=p { if states[v].next.get(&c)!=Some(&q) { break; } states[v].next.insert(c,clone); p=states[v].link; }\n                states[q].link=Some(clone); states[current].link=Some(clone);\n            }\n        } else { states[current].link=Some(0); }\n        last=current;\n    }\n    states.iter().skip(1).map(|s|s.length-states[s.link.unwrap()].length).sum()\n}\n\nfn main() {\n    let result = distinct_substrings(\"ababa\").to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "For ababa, the automaton represents 9 distinct nonempty substrings. A cloned state splits an existing length class without adding text. For aaa, the length intervals contribute only a,aa,aaa, giving 3 rather than counting repeated occurrences separately.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the number of distinct non-empty substrings. The visible fixture is `ababa` and its example result is `9`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Suffix Automaton when it asks for all substrings, repeated substring counts, online text indexing. Here the concrete task is: Return the number of distinct non-empty substrings. The visible input `ababa` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Choose it when the required operation sequence, query volume, or substring structure exceeds a simple scan or prefix summary; compare the real time and memory limits first. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Extend one character while cloning states when needed to preserve end-position equivalence classes. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? An advanced structure or offline query order packages an invariant across operations. Name what each node, block, or reordered query state stores. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n log alphabet) with ordered transitions · O(n) states and transitions; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `9` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test empty ranges, repeated updates, undo operations where supported, and the exact boundary between adjacent blocks. Keep representation and operations separate in Rust. Verify a tiny instance against a straightforward reference implementation before optimizing. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `1`. It represents one new substring for each length in that interval. Compare this independent fixture with the worked trace: For ababa, the automaton represents 9 distinct nonempty substrings. A cloned state splits an existing length class without adding text. For aaa, the length intervals contribute only a,aa,aaa, giving 3 rather than counting repeated occurrences separately.",
+    "practiceCode": "#[derive(Clone)]\nstruct SuffixState { length:usize, link:Option<usize>, next:std::collections::BTreeMap<u8,usize> }\nfn distinct_substrings(text:&str)->usize {\n    let empty=SuffixState{length:0,link:None,next:std::collections::BTreeMap::new()}; let mut states=vec![empty.clone()]; let mut last=0;\n    for c in text.bytes() {\n        let current=states.len(); states.push(SuffixState{length:states[last].length+1,..empty.clone()}); let mut p=Some(last);\n        while let Some(v)=p { if states[v].next.contains_key(&c) { break; } states[v].next.insert(c,current); p=states[v].link; }\n        if let Some(v)=p {\n            let q=states[v].next[&c];\n            if states[v].length+1==states[q].length { states[current].link=Some(q); }\n            else {\n                let clone=states.len(); let mut copied=states[q].clone(); copied.length=states[v].length+1; states.push(copied);\n                while let Some(v)=p { if states[v].next.get(&c)!=Some(&q) { break; } states[v].next.insert(c,clone); p=states[v].link; }\n                states[q].link=Some(clone); states[current].link=Some(clone);\n            }\n        } else { states[current].link=Some(0); }\n        last=current;\n    }\n    states.iter().skip(1).map(|s|s.length-states[s.link.unwrap()].length).sum()\n}\n\nfn main() {\n    let result = distinct_substrings(\"ababa\").to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Suffix Automaton on input `a`. Which result follows from the documented contract?",
+    "rule": "It represents one new substring for each length in that interval. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Suffix Automaton.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-advanced-structures-b.png",

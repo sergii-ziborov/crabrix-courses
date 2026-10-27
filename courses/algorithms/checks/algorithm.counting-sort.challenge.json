@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS counting-sort\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"0,1,2,2,4,4,5\".to_string()",
-      "String::from(\"0,1,2,2,4,4,5\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.counting-sort.challenge",
     "patternID": "counting-sort",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Sort values known to be in 0 through 5.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Counting Sort\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Sort values known to be in 0 through 5.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement counting-sort\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "0,1,2,2,4,4,5",
+        "kind": "visible",
         "input": "[4,2,2,5,0,1,4]",
-        "kind": "visible"
+        "expectedAnswer": "0,1,2,2,4,4,5"
       },
       {
-        "expectedAnswer": "0,5,5",
+        "kind": "boundary",
         "input": "[5,0,5]",
-        "kind": "boundary"
+        "expectedAnswer": "0,5,5"
       },
       {
-        "expectedAnswer": "0,5,5",
-        "input": "\n[5,0,5]\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "[5,5,5]",
+        "expectedAnswer": "5,5,5"
       },
       {
-        "expectedAnswer": "0,1,2,2,4,4,5",
+        "kind": "adversarial",
+        "input": "[0,1,2,3,4,5]",
+        "expectedAnswer": "0,1,2,3,4,5"
+      },
+      {
+        "kind": "adversarial",
+        "input": "[2,0,2,0]",
+        "expectedAnswer": "0,0,2,2"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \n[4,2,2,5,0,1,4]\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "0,1,2,2,4,4,5"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\n[2,0,2,0]\n",
+        "expectedAnswer": "0,0,2,2"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"[4,2,2,5,0,1,4]\"#, r#\"0,1,2,2,4,4,5\"#),\n    (r#\"[5,0,5]\"#, r#\"0,5,5\"#),\n    (r#\"\n[5,0,5]\n\"#, r#\"0,5,5\"#),\n    (r#\"  \n[4,2,2,5,0,1,4]\n  \"#, r#\"0,1,2,2,4,4,5\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS counting-sort\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"[4,2,2,5,0,1,4]\",\"0,1,2,2,4,4,5\"),\n        (\"[5,0,5]\",\"0,5,5\"),\n        (\"[5,5,5]\",\"5,5,5\"),\n        (\"[0,1,2,3,4,5]\",\"0,1,2,3,4,5\"),\n        (\"[2,0,2,0]\",\"0,0,2,2\"),\n        (\"  \\n[4,2,2,5,0,1,4]\\n  \",\"0,1,2,2,4,4,5\"),\n        (\"\\n[2,0,2,0]\\n\",\"0,0,2,2\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS counting-sort\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS counting-sort\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"0,1,2,2,4,4,5\".to_string()",
-      "String::from(\"0,1,2,2,4,4,5\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

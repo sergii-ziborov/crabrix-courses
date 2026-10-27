@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS activity-selection\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"4\".to_string()",
-      "String::from(\"4\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.activity-selection.challenge",
     "patternID": "activity-selection",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return the maximum number of compatible meetings.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Activity Selection\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Return the maximum number of compatible meetings.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement activity-selection\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "4",
+        "kind": "visible",
         "input": "[(1,2),(3,4),(0,6),(5,7),(8,9),(5,9)]",
-        "kind": "visible"
+        "expectedAnswer": "4"
       },
       {
-        "expectedAnswer": "2",
+        "kind": "boundary",
         "input": "[(1,2),(2,3)]",
-        "kind": "boundary"
+        "expectedAnswer": "2"
       },
       {
-        "expectedAnswer": "2",
-        "input": "\n[(1,2),(2,3)]\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "[(0,1),(1,2),(2,3)]",
+        "expectedAnswer": "3"
       },
       {
-        "expectedAnswer": "4",
+        "kind": "adversarial",
+        "input": "[(0,5),(1,3),(3,4)]",
+        "expectedAnswer": "2"
+      },
+      {
+        "kind": "adversarial",
+        "input": "[(1,4),(2,5)]",
+        "expectedAnswer": "1"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \n[(1,2),(3,4),(0,6),(5,7),(8,9),(5,9)]\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "4"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\n[(1,4),(2,5)]\n",
+        "expectedAnswer": "1"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"[(1,2),(3,4),(0,6),(5,7),(8,9),(5,9)]\"#, r#\"4\"#),\n    (r#\"[(1,2),(2,3)]\"#, r#\"2\"#),\n    (r#\"\n[(1,2),(2,3)]\n\"#, r#\"2\"#),\n    (r#\"  \n[(1,2),(3,4),(0,6),(5,7),(8,9),(5,9)]\n  \"#, r#\"4\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS activity-selection\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"[(1,2),(3,4),(0,6),(5,7),(8,9),(5,9)]\",\"4\"),\n        (\"[(1,2),(2,3)]\",\"2\"),\n        (\"[(0,1),(1,2),(2,3)]\",\"3\"),\n        (\"[(0,5),(1,3),(3,4)]\",\"2\"),\n        (\"[(1,4),(2,5)]\",\"1\"),\n        (\"  \\n[(1,2),(3,4),(0,6),(5,7),(8,9),(5,9)]\\n  \",\"4\"),\n        (\"\\n[(1,4),(2,5)]\\n\",\"1\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS activity-selection\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS activity-selection\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"4\".to_string()",
-      "String::from(\"4\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

@@ -7,7 +7,7 @@
     "expectedAnswer": "((()));(()());(())();()(());()()()",
     "idea": "Add an open symbol while available and a close only when it cannot exceed opens used.",
     "patternID": "parentheses-generation",
-    "rustSketch": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
+    "rustSketch": "fn parentheses(n:usize)->Vec<String> {\n    fn visit(n:usize,open:usize,closed:usize,text:&mut String,out:&mut Vec<String>) {\n        if closed==n { out.push(text.clone()); return; }\n        if open<n { text.push('('); visit(n,open+1,closed,text,out); text.pop(); }\n        if closed<open { text.push(')'); visit(n,open,closed+1,text,out); text.pop(); }\n    }\n    let mut out=Vec::new(); visit(n,0,0,&mut String::new(),&mut out); out\n}\n\nfn main() {\n    let result = parentheses(3).join(\";\");\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return valid sequences for three pairs in lexicographic order.",
     "useCases": "balanced sequence construction",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Add an open symbol while available and a close only when it cannot exceed opens used.",
         "direction": "previous",
-        "title": "Valid Parentheses Generation: Mental Model"
+        "title": "Valid Parentheses Generation: Mental Model",
+        "concept": "Add an open symbol while available and a close only when it cannot exceed opens used."
       },
       {
-        "concept": "Return valid sequences for three pairs in lexicographic order.",
         "direction": "next",
-        "title": "Challenge: Valid Parentheses Generation"
+        "title": "Challenge: Valid Parentheses Generation",
+        "concept": "Return valid sequences for three pairs in lexicographic order."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "No prefix may contain more closes than opens. For n=3, append '(' first whenever openings remain. Only close an unmatched opening. The five valid strings are emitted in lexicographic order; n=0 has one valid empty construction, not a failed search.",
+    "misconception": "“Every prefix must have equal opens and closes”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `n=3`, write the state before the first update. Explain how it represents this claim: Add an open symbol while available and a close only when it cannot exceed opens used. Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains."
+        "title": "Concrete transition",
+        "detail": "For n=3, append '(' first whenever openings remain. Only close an unmatched opening. The five valid strings are emitted in lexicographic order; n=0 has one valid empty construction, not a failed search."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `((()));(()());(())();()(());()()()`. For recursive search, push a choice, recurse, then undo it; for meet-in-the-middle, collect each half before matching them. In Rust, clone a path only when storing a completed answer."
+        "title": "Independent second fixture",
+        "detail": "Input `n=0` produces An empty output string. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. Defend the O(Catalan(n)*n) time · O(n) depth bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `n=4` produces `(((())));((()()));((())());((()))();(()(()));(()()());(()())();(())(());(())()();()((()));()(()());()(())();()()(());()()()()`. No prefix may contain more closes than opens. The stated work bound is O(Catalan(n)*n) time · O(n) depth. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `n=3` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Valid Parentheses Generation survives, which state must be updated, and whether the O(Catalan(n)*n) time · O(n) depth bound still holds. Use pruning when partial choices can already be ruled out. Meet-in-the-middle instead trades two exhaustive half-enumerations for a smaller search space."
+    "transferChallenge": "Compare the visible input `n=3` with `n=2`. Predict why their results are `((()));(()());(())();()(());()()()` and `(());()()`. Then change one legal value and explain whether the same invariant, no prefix may contain more closes than opens, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.parentheses-generation.recognize",
@@ -54,21 +54,21 @@
   "title": "Valid Parentheses Generation: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "balanced sequence construction",
-      "Only problems with exactly one input value"
+      "`0`",
+      "An empty output string",
+      "`not a valid result`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Valid Parentheses Generation",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Valid Parentheses Generation",
-    "explanation": "A problem is a good match for Valid Parentheses Generation when it asks for balanced sequence construction. Here the concrete task is: Return valid sequences for three pairs in lexicographic order. The visible input `n=3` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Use pruning when partial choices can already be ruled out. Meet-in-the-middle instead trades two exhaustive half-enumerations for a smaller search space. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Add an open symbol while available and a close only when it cannot exceed opens used. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(Catalan(n)*n) time · O(n) depth; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `((()));(()());(())();()(());()()()` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. For recursive search, push a choice, recurse, then undo it; for meet-in-the-middle, collect each half before matching them. In Rust, clone a path only when storing a completed answer. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: balanced sequence construction.",
-    "practiceCode": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only parentheses-generation program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn parentheses(n:usize)->Vec<String> {\n    fn visit(n:usize,open:usize,closed:usize,text:&mut String,out:&mut Vec<String>) {\n        if closed==n { out.push(text.clone()); return; }\n        if open<n { text.push('('); visit(n,open+1,closed,text,out); text.pop(); }\n        if closed<open { text.push(')'); visit(n,open,closed+1,text,out); text.pop(); }\n    }\n    let mut out=Vec::new(); visit(n,0,0,&mut String::new(),&mut out); out\n}\n\nfn main() {\n    let result = parentheses(3).join(\";\");\n    println!(\"{result}\");\n}\n",
+    "explanation": "For n=3, append '(' first whenever openings remain. Only close an unmatched opening. The five valid strings are emitted in lexicographic order; n=0 has one valid empty construction, not a failed search.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return valid sequences for three pairs in lexicographic order. The visible fixture is `n=3` and its example result is `((()));(()());(())();()(());()()()`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Valid Parentheses Generation when it asks for balanced sequence construction. Here the concrete task is: Return valid sequences for three pairs in lexicographic order. The visible input `n=3` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Use pruning when partial choices can already be ruled out. Meet-in-the-middle instead trades two exhaustive half-enumerations for a smaller search space. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Add an open symbol while available and a close only when it cannot exceed opens used. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(Catalan(n)*n) time · O(n) depth; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `((()));(()());(())();()(());()()()` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. For recursive search, push a choice, recurse, then undo it; for meet-in-the-middle, collect each half before matching them. In Rust, clone a path only when storing a completed answer. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is An empty output string. No prefix may contain more closes than opens. Compare this independent fixture with the worked trace: For n=3, append '(' first whenever openings remain. Only close an unmatched opening. The five valid strings are emitted in lexicographic order; n=0 has one valid empty construction, not a failed search.",
+    "practiceCode": "fn parentheses(n:usize)->Vec<String> {\n    fn visit(n:usize,open:usize,closed:usize,text:&mut String,out:&mut Vec<String>) {\n        if closed==n { out.push(text.clone()); return; }\n        if open<n { text.push('('); visit(n,open+1,closed,text,out); text.pop(); }\n        if closed<open { text.push(')'); visit(n,open,closed+1,text,out); text.pop(); }\n    }\n    let mut out=Vec::new(); visit(n,0,0,&mut String::new(),&mut out); out\n}\n\nfn main() {\n    let result = parentheses(3).join(\";\");\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Valid Parentheses Generation on input `n=0`. Which result follows from the documented contract?",
+    "rule": "No prefix may contain more closes than opens. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Valid Parentheses Generation.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-backtracking-a.png",

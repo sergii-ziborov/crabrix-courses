@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS xor-cancellation\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"4\".to_string()",
-      "String::from(\"4\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.xor-cancellation.challenge",
     "patternID": "xor-cancellation",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Every value occurs twice except one; return it.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement XOR Cancellation\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Every value occurs twice except one; return it.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement xor-cancellation\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "4",
+        "kind": "visible",
         "input": "[4,1,2,1,2]",
-        "kind": "visible"
+        "expectedAnswer": "4"
       },
       {
-        "expectedAnswer": "9",
+        "kind": "boundary",
         "input": "[9,1,1]",
-        "kind": "boundary"
+        "expectedAnswer": "9"
       },
       {
-        "expectedAnswer": "9",
-        "input": "\n[9,1,1]\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "[7]",
+        "expectedAnswer": "7"
       },
       {
-        "expectedAnswer": "4",
+        "kind": "adversarial",
+        "input": "[0,2,2]",
+        "expectedAnswer": "0"
+      },
+      {
+        "kind": "adversarial",
+        "input": "[3,5,3,9,5]",
+        "expectedAnswer": "9"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \n[4,1,2,1,2]\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "4"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\n[3,5,3,9,5]\n",
+        "expectedAnswer": "9"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"[4,1,2,1,2]\"#, r#\"4\"#),\n    (r#\"[9,1,1]\"#, r#\"9\"#),\n    (r#\"\n[9,1,1]\n\"#, r#\"9\"#),\n    (r#\"  \n[4,1,2,1,2]\n  \"#, r#\"4\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS xor-cancellation\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"[4,1,2,1,2]\",\"4\"),\n        (\"[9,1,1]\",\"9\"),\n        (\"[7]\",\"7\"),\n        (\"[0,2,2]\",\"0\"),\n        (\"[3,5,3,9,5]\",\"9\"),\n        (\"  \\n[4,1,2,1,2]\\n  \",\"4\"),\n        (\"\\n[3,5,3,9,5]\\n\",\"9\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS xor-cancellation\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS xor-cancellation\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"4\".to_string()",
-      "String::from(\"4\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

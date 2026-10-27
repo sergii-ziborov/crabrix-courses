@@ -2,14 +2,14 @@
   "algorithm": {
     "categoryID": "backtracking",
     "categoryTitle": "Backtracking & Exhaustive Search",
-    "complexity": "O(n!) worst · O(n) state",
+    "complexity": "O(n*n!) loose worst-case bound · O(n) search state",
     "difficulty": "hard",
     "expectedAnswer": "10",
     "idea": "Place one queen per row and reject occupied columns and both diagonals before recursing.",
     "patternID": "n-queens",
-    "rustSketch": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
+    "rustSketch": "fn queens(n:usize)->usize {\n    fn place(row:usize,n:usize,cols:&mut [bool],down:&mut [bool],up:&mut [bool])->usize {\n        if row==n { return 1; } let mut count=0;\n        for c in 0..n { let (d,u)=(row+c,row+n-1-c);\n            if !cols[c] && !down[d] && !up[u] {\n                cols[c]=true; down[d]=true; up[u]=true;\n                count+=place(row+1,n,cols,down,up); cols[c]=false; down[d]=false; up[u]=false;\n            }\n        } count\n    }\n    if n==0 { return 1; } place(0,n,&mut vec![false;n],&mut vec![false;2*n-1],&mut vec![false;2*n-1])\n}\n\nfn main() {\n    let result = queens(5).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
-    "task": "Return the number of solutions for a 5x5 board.",
+    "task": "Parse n and return the number of placements of n non-attacking queens on an n-by-n board. Count the empty placement once for n=0.",
     "useCases": "constraint satisfaction with compact conflict sets",
     "visibleInput": "n=5"
   },
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Place one queen per row and reject occupied columns and both diagonals before recursing.",
         "direction": "previous",
-        "title": "N-Queens: Mental Model"
+        "title": "N-Queens: Mental Model",
+        "concept": "Place one queen per row and reject occupied columns and both diagonals before recursing."
       },
       {
-        "concept": "Return the number of solutions for a 5x5 board.",
         "direction": "next",
-        "title": "Challenge: N-Queens"
+        "title": "Challenge: N-Queens",
+        "concept": "Parse n and return the number of placements of n non-attacking queens on an n-by-n board. Count the empty placement once for n=0."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "Her column and both diagonals are unused. On a 5×5 board, choose one column per row and update column, row+column and row-column diagonal state. Undo all three marks on return. Exhausting legal branches counts 10 solutions; a 2×2 board has none.",
+    "misconception": "“Her row index is smaller than her column index”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `n=5`, write the state before the first update. Explain how it represents this claim: Place one queen per row and reject occupied columns and both diagonals before recursing. Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains."
+        "title": "Concrete transition",
+        "detail": "On a 5×5 board, choose one column per row and update column, row+column and row-column diagonal state. Undo all three marks on return. Exhausting legal branches counts 10 solutions; a 2×2 board has none."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `10`. For recursive search, push a choice, recurse, then undo it; for meet-in-the-middle, collect each half before matching them. In Rust, clone a path only when storing a completed answer."
+        "title": "Independent second fixture",
+        "detail": "Input `n=1` produces `1`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. Defend the O(n!) worst · O(n) state bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `n=6` produces `4`. Her column and both diagonals are unused. The stated work bound is O(n*n!) loose worst-case bound · O(n) search state. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `n=5` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from N-Queens survives, which state must be updated, and whether the O(n!) worst · O(n) state bound still holds. Use pruning when partial choices can already be ruled out. Meet-in-the-middle instead trades two exhaustive half-enumerations for a smaller search space."
+    "transferChallenge": "Compare the visible input `n=5` with `n=2`. Predict why their results are `10` and `0`. Then change one legal value and explain whether the same invariant, her column and both diagonals are unused, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.n-queens.recognize",
@@ -54,21 +54,21 @@
   "title": "N-Queens: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "constraint satisfaction with compact conflict sets",
-      "Only problems with exactly one input value"
+      "`2`",
+      "`1`",
+      "`0`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for N-Queens",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: N-Queens",
-    "explanation": "A problem is a good match for N-Queens when it asks for constraint satisfaction with compact conflict sets. Here the concrete task is: Return the number of solutions for a 5x5 board. The visible input `n=5` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Use pruning when partial choices can already be ruled out. Meet-in-the-middle instead trades two exhaustive half-enumerations for a smaller search space. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Place one queen per row and reject occupied columns and both diagonals before recursing. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n!) worst · O(n) state; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `10` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. For recursive search, push a choice, recurse, then undo it; for meet-in-the-middle, collect each half before matching them. In Rust, clone a path only when storing a completed answer. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: constraint satisfaction with compact conflict sets.",
-    "practiceCode": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only n-queens program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn queens(n:usize)->usize {\n    fn place(row:usize,n:usize,cols:&mut [bool],down:&mut [bool],up:&mut [bool])->usize {\n        if row==n { return 1; } let mut count=0;\n        for c in 0..n { let (d,u)=(row+c,row+n-1-c);\n            if !cols[c] && !down[d] && !up[u] {\n                cols[c]=true; down[d]=true; up[u]=true;\n                count+=place(row+1,n,cols,down,up); cols[c]=false; down[d]=false; up[u]=false;\n            }\n        } count\n    }\n    if n==0 { return 1; } place(0,n,&mut vec![false;n],&mut vec![false;2*n-1],&mut vec![false;2*n-1])\n}\n\nfn main() {\n    let result = queens(5).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "On a 5×5 board, choose one column per row and update column, row+column and row-column diagonal state. Undo all three marks on return. Exhausting legal branches counts 10 solutions; a 2×2 board has none.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Parse n and return the number of placements of n non-attacking queens on an n-by-n board. Count the empty placement once for n=0. The visible fixture is `n=5` and its example result is `10`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for N-Queens when it asks for constraint satisfaction with compact conflict sets. Here the concrete task is: Parse n and return the number of placements of n non-attacking queens on an n-by-n board. Count the empty placement once for n=0. The visible input `n=5` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Use pruning when partial choices can already be ruled out. Meet-in-the-middle instead trades two exhaustive half-enumerations for a smaller search space. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Place one queen per row and reject occupied columns and both diagonals before recursing. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n*n!) loose worst-case bound · O(n) search state; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `10` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. For recursive search, push a choice, recurse, then undo it; for meet-in-the-middle, collect each half before matching them. In Rust, clone a path only when storing a completed answer. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `1`. Her column and both diagonals are unused. Compare this independent fixture with the worked trace: On a 5×5 board, choose one column per row and update column, row+column and row-column diagonal state. Undo all three marks on return. Exhausting legal branches counts 10 solutions; a 2×2 board has none.",
+    "practiceCode": "fn queens(n:usize)->usize {\n    fn place(row:usize,n:usize,cols:&mut [bool],down:&mut [bool],up:&mut [bool])->usize {\n        if row==n { return 1; } let mut count=0;\n        for c in 0..n { let (d,u)=(row+c,row+n-1-c);\n            if !cols[c] && !down[d] && !up[u] {\n                cols[c]=true; down[d]=true; up[u]=true;\n                count+=place(row+1,n,cols,down,up); cols[c]=false; down[d]=false; up[u]=false;\n            }\n        } count\n    }\n    if n==0 { return 1; } place(0,n,&mut vec![false;n],&mut vec![false;2*n-1],&mut vec![false;2*n-1])\n}\n\nfn main() {\n    let result = queens(5).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace N-Queens on input `n=1`. Which result follows from the documented contract?",
+    "rule": "Her column and both diagonals are unused. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing N-Queens.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-backtracking-b.png",

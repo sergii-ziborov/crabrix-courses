@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS grid-path-dp\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"10\".to_string()",
-      "String::from(\"10\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.grid-path-dp.challenge",
     "patternID": "grid-path-dp",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return unique paths through a 3 by 4 empty grid moving right or down.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Grid Path DP\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Parse rows and cols. Count paths through that empty grid using right/down moves from the top-left cell to the bottom-right. A 1x1 grid has one path.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement grid-path-dp\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "10",
+        "kind": "visible",
         "input": "rows=3 cols=4",
-        "kind": "visible"
+        "expectedAnswer": "10"
       },
       {
-        "expectedAnswer": "2",
+        "kind": "boundary",
         "input": "rows=2 cols=2",
-        "kind": "boundary"
+        "expectedAnswer": "2"
       },
       {
-        "expectedAnswer": "2",
-        "input": "\nrows=2 cols=2\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "rows=1 cols=1",
+        "expectedAnswer": "1"
       },
       {
-        "expectedAnswer": "10",
+        "kind": "adversarial",
+        "input": "rows=1 cols=5",
+        "expectedAnswer": "1"
+      },
+      {
+        "kind": "adversarial",
+        "input": "rows=4 cols=4",
+        "expectedAnswer": "20"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \nrows=3 cols=4\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "10"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\nrows=4 cols=4\n",
+        "expectedAnswer": "20"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"rows=3 cols=4\"#, r#\"10\"#),\n    (r#\"rows=2 cols=2\"#, r#\"2\"#),\n    (r#\"\nrows=2 cols=2\n\"#, r#\"2\"#),\n    (r#\"  \nrows=3 cols=4\n  \"#, r#\"10\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS grid-path-dp\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"rows=3 cols=4\",\"10\"),\n        (\"rows=2 cols=2\",\"2\"),\n        (\"rows=1 cols=1\",\"1\"),\n        (\"rows=1 cols=5\",\"1\"),\n        (\"rows=4 cols=4\",\"20\"),\n        (\"  \\nrows=3 cols=4\\n  \",\"10\"),\n        (\"\\nrows=4 cols=4\\n\",\"20\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS grid-path-dp\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS grid-path-dp\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"10\".to_string()",
-      "String::from(\"10\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

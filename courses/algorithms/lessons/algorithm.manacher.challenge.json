@@ -7,44 +7,39 @@
     "expectedAnswer": "bab",
     "idea": "Mirror known radii inside the rightmost palindrome and expand only beyond its boundary.",
     "patternID": "manacher",
-    "rustSketch": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "rustSketch": "fn longest_palindrome(text:&str)->&str {\n    assert!(text.is_ascii()); let mut symbols=vec![0_u16]; for b in text.bytes() { symbols.push(b as u16+1); symbols.push(0); }\n    let n=symbols.len(); let mut radius=vec![0;n]; let (mut center,mut right)=(0,0); let (mut start,mut length)=(0,0);\n    for i in 0..n {\n        if i<right { radius[i]=radius[2*center-i].min(right-i); }\n        while radius[i]<i && i+radius[i]+1<n && symbols[i-radius[i]-1]==symbols[i+radius[i]+1] { radius[i]+=1; }\n        if i+radius[i]>right { center=i; right=i+radius[i]; }\n        let candidate=(i-radius[i])/2;\n        if radius[i]>length || radius[i]==length && candidate<start { start=candidate; length=radius[i]; }\n    }\n    &text[start..start+length]\n}\n\nfn main() {\n    let result = longest_palindrome(\"cbbd\").to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Return the longest palindromic substring; choose the earliest on ties.",
     "useCases": "all palindromic centers and longest palindrome in linear time",
     "visibleInput": "babad"
   },
   "concept": "Return the longest palindromic substring; choose the earliest on ties.",
-  "contentDigest": "32c8ded3d86a1d189ae7dba5ac0a86d4ab171afb1e5c4a7b752096c5c4e7025d",
+  "contentDigest": "a6d9c0473c0d277c8b2e6a22592e25ebe876fdd5dcf5976826092ad07e2954a4",
   "depth": {
     "connections": [
       {
-        "concept": "all palindromic centers and longest palindrome in linear time",
         "direction": "previous",
-        "title": "Manacher Palindrome Radii: When to Use It"
-      },
-      {
-        "concept": "Replace the larger pair with divisor and remainder without changing their greatest common divisor.",
-        "direction": "next",
-        "title": "Euclidean GCD: Mental Model"
+        "title": "Manacher Palindrome Radii: When to Use It",
+        "concept": "all palindromic centers and longest palindrome in linear time"
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "Symmetry guarantees that portion, while beyond it new comparisons are required. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“Every mirrored palindrome has exactly the same full radius”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `babad`, write the state before the first update. Explain how it represents this claim: Mirror known radii inside the rightmost palindrome and expand only beyond its boundary. `String` algorithms compare symbols or prefixes, but a Rust `String` is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters."
+        "title": "Pattern-specific invariant",
+        "detail": "Symmetry guarantees that portion, while beyond it new comparisons are required. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Use bytes only when the input contract permits byte-wise matching. Never index a `String` as though every character occupied one byte."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `cbbd` and computes `bb`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Defend the O(n) time · O(n) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `abacaba`, the independently calculated result is `abacaba`. The complexity discussion uses O(n) time · O(n) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `babad` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Manacher Palindrome Radii survives, which state must be updated, and whether the O(n) time · O(n) space bound still holds. Look for repeated prefix queries or pattern matching before choosing a trie or preprocessing; a one-off short search may not need either."
+    "transferChallenge": "Change the independent fixture `cbbd` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `babad`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.manacher.challenge",
@@ -54,19 +49,19 @@
   "title": "Challenge: Manacher Palindrome Radii",
   "writing": {
     "answers": [
-      "O(n) time · O(n) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`abacaba`",
+      "`abacaba0`",
+      "`abacab`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return the longest palindromic substring; choose the earliest on ties.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Manacher Palindrome Radii\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Return the longest palindromic substring; choose the earliest on ties. On input `babad`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Mirror known radii inside the rightmost palindrome and expand only beyond its boundary. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. `String` algorithms compare symbols or prefixes, but a Rust `String` is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use bytes only when the input contract permits byte-wise matching. Never index a `String` as though every character occupied one byte. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(n) space; explain which operation dominates it and how many times the input can trigger that operation. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(n) time · O(n) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return the longest palindromic substring; choose the earliest on ties.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Manacher Palindrome Radii\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS manacher, and your explanation still meets O(n) time · O(n) space.",
+    "exampleCaption": "Complete std-only manacher program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn longest_palindrome(text:&str)->&str {\n    assert!(text.is_ascii()); let mut symbols=vec![0_u16]; for b in text.bytes() { symbols.push(b as u16+1); symbols.push(0); }\n    let n=symbols.len(); let mut radius=vec![0;n]; let (mut center,mut right)=(0,0); let (mut start,mut length)=(0,0);\n    for i in 0..n {\n        if i<right { radius[i]=radius[2*center-i].min(right-i); }\n        while radius[i]<i && i+radius[i]+1<n && symbols[i-radius[i]-1]==symbols[i+radius[i]+1] { radius[i]+=1; }\n        if i+radius[i]>right { center=i; right=i+radius[i]; }\n        let candidate=(i-radius[i])/2;\n        if radius[i]>length || radius[i]==length && candidate<start { start=candidate; length=radius[i]; }\n    }\n    &text[start..start+length]\n}\n\nfn main() {\n    let result = longest_palindrome(\"cbbd\").to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "Symmetry guarantees that portion, while beyond it new comparisons are required. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `cbbd`, the worked program returns `bb`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `babad`; predict that result before opening the answer reveal. The precise contract is: Return the longest palindromic substring; choose the earliest on ties.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Return the longest palindromic substring; choose the earliest on ties. On input `babad`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Mirror known radii inside the rightmost palindrome and expand only beyond its boundary. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. `String` algorithms compare symbols or prefixes, but a Rust `String` is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(n) space; explain which operation dominates it and how many times the input can trigger that operation. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `abacaba`. Symmetry guarantees that portion, while beyond it new comparisons are required. Compare this independent fixture with the worked trace: In babad, bab and aba both have length 3, so the earliest-start tie break chooses bab. Interleaved separator tokens allow odd and even centers in one scan. For cbbd, the even-center answer is bb.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return the longest palindromic substring; choose the earliest on ties.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement manacher\")\n}\n",
+    "question": "Boundary check for manacher: with input `abacaba`, what result should solve return?",
+    "rule": "Symmetry guarantees that portion, while beyond it new comparisons are required. Return the longest palindromic substring; choose the earliest on ties.",
+    "success": "The private harness prints PASS manacher. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Return the longest palindromic substring; choose the earliest on ties.",
     "task": "Return the longest palindromic substring; choose the earliest on ties."
   },

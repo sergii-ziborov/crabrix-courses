@@ -2,49 +2,49 @@
   "algorithm": {
     "categoryID": "ranges",
     "categoryTitle": "Prefix Sums & Range Queries",
-    "complexity": "O((n+q)) on discrete coordinates · O(n) space",
+    "complexity": "O(n+q) time on discrete coordinates · O(n) space",
     "difficulty": "medium",
-    "expectedAnswer": "4",
+    "expectedAnswer": "5",
     "idea": "Record interval starts and ends, then sweep a running active count.",
     "patternID": "imos-sweep",
-    "rustSketch": "fn prefix(values: &[i64]) -> Vec<i64> {\n    let mut sums = vec![0; values.len() + 1];\n    for i in 0..values.len() { sums[i + 1] = sums[i] + values[i]; }\n    sums\n}",
+    "rustSketch": "fn peak_load(n: usize, updates: &[(usize, usize, i64)]) -> i64 {\n    let mut events = vec![0; n+1];\n    for &(left, right, delta) in updates {\n        events[left] += delta; events[right+1] -= delta;\n    }\n    let (mut active, mut peak) = (0, 0);\n    for &delta in &events[..n] { active += delta; peak = peak.max(active); }\n    peak\n}\n\nfn main() {\n    let result = peak_load(4,&[(0,1,2),(1,3,1)]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
-    "task": "Parse n and inclusive (start,end,delta) updates; return the maximum simultaneous load.",
+    "task": "Parse n and inclusive (start,end,delta) updates with nonnegative loads. Return the maximum simultaneous load over indexes 0..n-1. Add at start and subtract at end+1.",
     "useCases": "coverage, bookings, overlapping demand",
     "visibleInput": "n=5 updates=(0,2,2),(1,3,3),(3,4,1)"
   },
-  "concept": "Parse n and inclusive (start,end,delta) updates; return the maximum simultaneous load.",
-  "contentDigest": "1c116e7b54c59b2d49be9dcf45c639009096d67e0c4de2c7fb87a65058776fba",
+  "concept": "Parse n and inclusive (start,end,delta) updates with nonnegative loads. Return the maximum simultaneous load over indexes 0..n-1. Add at start and subtract at end+1.",
+  "contentDigest": "163ba88fd6d03022061fdde0b73f0125fd7da2a9ea0acf4d25971840a1eebeb6",
   "depth": {
     "connections": [
       {
-        "concept": "coverage, bookings, overlapping demand",
         "direction": "previous",
-        "title": "Imos Sweep: When to Use It"
+        "title": "Imos Sweep: When to Use It",
+        "concept": "coverage, bookings, overlapping demand"
       },
       {
-        "concept": "Store partial sums in power-of-two ranges and move indexes by their lowest set bit.",
         "direction": "next",
-        "title": "Fenwick Tree: Mental Model"
+        "title": "Fenwick Tree: Mental Model",
+        "concept": "Store partial sums in power-of-two ranges and move indexes by their lowest set bit."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "The load at R still belongs to the interval. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“Endpoints are always excluded from intervals”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `n=5 updates=(0,2,2),(1,3,3),(3,4,1)`, write the state before the first update. Explain how it represents this claim: Record interval starts and ends, then sweep a running active count. A range method summarizes intervals so the same information is not recomputed. A static prefix table and an updateable tree make different tradeoffs; define endpoint conventions first."
+        "title": "Pattern-specific invariant",
+        "detail": "The load at R still belongs to the interval. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Allocate an extra prefix slot when a zero-length prefix simplifies indexing, and use a numeric type large enough for accumulated values."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `n=4 updates=(0,1,2),(1,3,1)` and computes `3`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test the first and last position, an empty range where permitted, and the boundary immediately after an update. Defend the O((n+q)) on discrete coordinates · O(n) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `n=5 updates=(4,4,9),(0,0,2)`, the independently calculated result is `9`. The complexity discussion uses O(n+q) time on discrete coordinates · O(n) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `n=5 updates=(0,2,2),(1,3,3),(3,4,1)` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Imos Sweep survives, which state must be updated, and whether the O((n+q)) on discrete coordinates · O(n) space bound still holds. Precomputation pays when many ranges are queried. If values change between queries, an updateable structure may be needed; for one small query, a direct walk is simpler."
+    "transferChallenge": "Change the independent fixture `n=4 updates=(0,1,2),(1,3,1)` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `n=5 updates=(0,2,2),(1,3,3),(3,4,1)`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.imos-sweep.challenge",
@@ -54,21 +54,21 @@
   "title": "Challenge: Imos Sweep",
   "writing": {
     "answers": [
-      "O((n+q)) on discrete coordinates · O(n) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`9`",
+      "`10`",
+      "`8`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Parse n and inclusive (start,end,delta) updates; return the maximum simultaneous load.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Imos Sweep\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Parse n and inclusive (start,end,delta) updates; return the maximum simultaneous load. On input `n=5 updates=(0,2,2),(1,3,3),(3,4,1)`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Record interval starts and ends, then sweep a running active count. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A range method summarizes intervals so the same information is not recomputed. A static prefix table and an updateable tree make different tradeoffs; define endpoint conventions first. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Allocate an extra prefix slot when a zero-length prefix simplifies indexing, and use a numeric type large enough for accumulated values. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O((n+q)) on discrete coordinates · O(n) space; explain which operation dominates it and how many times the input can trigger that operation. Test the first and last position, an empty range where permitted, and the boundary immediately after an update. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O((n+q)) on discrete coordinates · O(n) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Parse n and inclusive (start,end,delta) updates; return the maximum simultaneous load.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Imos Sweep\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS imos-sweep, and your explanation still meets O((n+q)) on discrete coordinates · O(n) space.",
-    "summary": "Parse n and inclusive (start,end,delta) updates; return the maximum simultaneous load.",
-    "task": "Parse n and inclusive (start,end,delta) updates; return the maximum simultaneous load."
+    "exampleCaption": "Complete std-only imos-sweep program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn peak_load(n: usize, updates: &[(usize, usize, i64)]) -> i64 {\n    let mut events = vec![0; n+1];\n    for &(left, right, delta) in updates {\n        events[left] += delta; events[right+1] -= delta;\n    }\n    let (mut active, mut peak) = (0, 0);\n    for &delta in &events[..n] { active += delta; peak = peak.max(active); }\n    peak\n}\n\nfn main() {\n    let result = peak_load(4,&[(0,1,2),(1,3,1)]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "The load at R still belongs to the interval. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `n=4 updates=(0,1,2),(1,3,1)`, the worked program returns `3`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `n=5 updates=(0,2,2),(1,3,3),(3,4,1)`; predict that result before opening the answer reveal. The precise contract is: Parse n and inclusive (start,end,delta) updates with nonnegative loads. Return the maximum simultaneous load over indexes 0..n-1. Add at start and subtract at end+1.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Parse n and inclusive (start,end,delta) updates with nonnegative loads. Return the maximum simultaneous load over indexes 0..n-1. Add at start and subtract at end+1. On input `n=5 updates=(0,2,2),(1,3,3),(3,4,1)`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Record interval starts and ends, then sweep a running active count. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A range method summarizes intervals so the same information is not recomputed. A static prefix table and an updateable tree make different tradeoffs; define endpoint conventions first. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(n+q) time on discrete coordinates · O(n) space; explain which operation dominates it and how many times the input can trigger that operation. Test the first and last position, an empty range where permitted, and the boundary immediately after an update. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `9`. The load at R still belongs to the interval. Compare this independent fixture with the worked trace: Applying (0,2,+2) and (1,3,+3) gives load 5 at indexes 1 and 2. Adding (3,4,+1) produces [2,5,5,4,1]. The maximum is 5; the previous published answer 4 omitted that overlap.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Parse n and inclusive (start,end,delta) updates with nonnegative loads. Return the maximum simultaneous load over indexes 0..n-1. Add at start and subtract at end+1.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement imos-sweep\")\n}\n",
+    "question": "Boundary check for imos-sweep: with input `n=5 updates=(4,4,9),(0,0,2)`, what result should solve return?",
+    "rule": "The load at R still belongs to the interval. Parse n and inclusive (start,end,delta) updates with nonnegative loads. Return the maximum simultaneous load over indexes 0..n-1. Add at start and subtract at end+1.",
+    "success": "The private harness prints PASS imos-sweep. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
+    "summary": "Parse n and inclusive (start,end,delta) updates with nonnegative loads. Return the maximum simultaneous load over indexes 0..n-1. Add at start and subtract at end+1.",
+    "task": "Parse n and inclusive (start,end,delta) updates with nonnegative loads. Return the maximum simultaneous load over indexes 0..n-1. Add at start and subtract at end+1."
   },
   "illustration": {
     "path": "media/algorithms-ranges-b.png",

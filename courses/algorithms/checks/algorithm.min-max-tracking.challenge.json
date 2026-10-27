@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS min-max-tracking\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"8\".to_string()",
-      "String::from(\"8\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.min-max-tracking.challenge",
     "patternID": "min-max-tracking",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return max - min for the sensor readings.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Min/Max Tracking\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Return max - min for the sensor readings.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement min-max-tracking\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "8",
+        "kind": "visible",
         "input": "[8, 3, 11, 6]",
-        "kind": "visible"
+        "expectedAnswer": "8"
       },
       {
-        "expectedAnswer": "0",
+        "kind": "boundary",
         "input": "[5, 5]",
-        "kind": "boundary"
+        "expectedAnswer": "0"
       },
       {
-        "expectedAnswer": "0",
-        "input": "\n[5, 5]\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "[1,2,3,4,5,6,7]",
+        "expectedAnswer": "6"
       },
       {
-        "expectedAnswer": "8",
+        "kind": "adversarial",
+        "input": "[3,3,3,3,3,3,3]",
+        "expectedAnswer": "0"
+      },
+      {
+        "kind": "adversarial",
+        "input": "[8,7,6,5,4,3,2]",
+        "expectedAnswer": "6"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \n[8, 3, 11, 6]\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "8"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\n[8,7,6,5,4,3,2]\n",
+        "expectedAnswer": "6"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"[8, 3, 11, 6]\"#, r#\"8\"#),\n    (r#\"[5, 5]\"#, r#\"0\"#),\n    (r#\"\n[5, 5]\n\"#, r#\"0\"#),\n    (r#\"  \n[8, 3, 11, 6]\n  \"#, r#\"8\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS min-max-tracking\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"[8, 3, 11, 6]\",\"8\"),\n        (\"[5, 5]\",\"0\"),\n        (\"[1,2,3,4,5,6,7]\",\"6\"),\n        (\"[3,3,3,3,3,3,3]\",\"0\"),\n        (\"[8,7,6,5,4,3,2]\",\"6\"),\n        (\"  \\n[8, 3, 11, 6]\\n  \",\"8\"),\n        (\"\\n[8,7,6,5,4,3,2]\\n\",\"6\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS min-max-tracking\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS min-max-tracking\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"8\".to_string()",
-      "String::from(\"8\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

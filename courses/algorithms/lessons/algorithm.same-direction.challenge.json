@@ -7,7 +7,7 @@
     "expectedAnswer": "7,5,9",
     "idea": "Let a read pointer inspect every item while a write pointer marks the kept prefix.",
     "patternID": "same-direction",
-    "rustSketch": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn keep_at_least(values: &mut Vec<i32>, threshold: i32) {\n    let mut write = 0;\n    for read in 0..values.len() {\n        if values[read] >= threshold { values[write] = values[read]; write += 1; }\n    }\n    values.truncate(write);\n}\n\nfn main() {\n    let result = { let mut values=vec![1,6,5]; keep_at_least(&mut values,5); csv(values) };\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Remove values below 5 stably and return the kept prefix.",
     "useCases": "stable filtering, deduplication, in-place transforms",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "stable filtering, deduplication, in-place transforms",
         "direction": "previous",
-        "title": "Same-Direction Pointers: When to Use It"
+        "title": "Same-Direction Pointers: When to Use It",
+        "concept": "stable filtering, deduplication, in-place transforms"
       },
       {
-        "concept": "Advance pointers at different rates so relative motion reveals a midpoint or cycle.",
         "direction": "next",
-        "title": "Slow/Fast Pointers: Mental Model"
+        "title": "Slow/Fast Pointers: Mental Model",
+        "concept": "Advance pointers at different rates so relative motion reveals a midpoint or cycle."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "The write position never advances beyond the read position. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“The read position must always stay behind write”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[7,2,5,4,9]`, write the state before the first update. Explain how it represents this claim: Let a read pointer inspect every item while a write pointer marks the kept prefix. Two positions move according to a monotone fact: after one comparison, some candidates can be ruled out permanently. Name that fact."
+        "title": "Pattern-specific invariant",
+        "detail": "The write position never advances beyond the read position. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Use explicit bounds for both indices. If the algorithm mutates a vector, separate read and write positions so ownership stays clear."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `[1,6,5]` and computes `6,5`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test pointers meeting, crossing, duplicate values, and the smallest valid input; many off-by-one errors hide there. Defend the O(n) time · O(1) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `[8,7,6,5,4,3,2]`, the independently calculated result is `8,7,6,5`. The complexity discussion uses O(n) time · O(1) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `[7,2,5,4,9]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Same-Direction Pointers survives, which state must be updated, and whether the O(n) time · O(1) space bound still holds. Check whether the input is sorted, whether you may reorder it, and whether moving a pointer preserves the answer you seek."
+    "transferChallenge": "Change the independent fixture `[1,6,5]` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `[7,2,5,4,9]`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.same-direction.challenge",
@@ -54,19 +54,19 @@
   "title": "Challenge: Same-Direction Pointers",
   "writing": {
     "answers": [
-      "O(n) time · O(1) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`8,7,6,5`",
+      "`7,6,5`",
+      "`9,7,6,5`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Remove values below 5 stably and return the kept prefix.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Same-Direction Pointers\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Remove values below 5 stably and return the kept prefix. On input `[7,2,5,4,9]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Let a read pointer inspect every item while a write pointer marks the kept prefix. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. Two positions move according to a monotone fact: after one comparison, some candidates can be ruled out permanently. Name that fact. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use explicit bounds for both indices. If the algorithm mutates a vector, separate read and write positions so ownership stays clear. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(1) space; explain which operation dominates it and how many times the input can trigger that operation. Test pointers meeting, crossing, duplicate values, and the smallest valid input; many off-by-one errors hide there. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(n) time · O(1) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Remove values below 5 stably and return the kept prefix.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Same-Direction Pointers\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS same-direction, and your explanation still meets O(n) time · O(1) space.",
+    "exampleCaption": "Complete std-only same-direction program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn keep_at_least(values: &mut Vec<i32>, threshold: i32) {\n    let mut write = 0;\n    for read in 0..values.len() {\n        if values[read] >= threshold { values[write] = values[read]; write += 1; }\n    }\n    values.truncate(write);\n}\n\nfn main() {\n    let result = { let mut values=vec![1,6,5]; keep_at_least(&mut values,5); csv(values) };\n    println!(\"{result}\");\n}\n",
+    "explanation": "The write position never advances beyond the read position. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `[1,6,5]`, the worked program returns `6,5`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `[7,2,5,4,9]`; predict that result before opening the answer reveal. The precise contract is: Remove values below 5 stably and return the kept prefix.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Remove values below 5 stably and return the kept prefix. On input `[7,2,5,4,9]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Let a read pointer inspect every item while a write pointer marks the kept prefix. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. Two positions move according to a monotone fact: after one comparison, some candidates can be ruled out permanently. Name that fact. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(1) space; explain which operation dominates it and how many times the input can trigger that operation. Test pointers meeting, crossing, duplicate values, and the smallest valid input; many off-by-one errors hide there. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `8,7,6,5`. The write position never advances beyond the read position. Compare this independent fixture with the worked trace: In [7,2,5,4,9], retain 7 at slot 0, skip 2, write 5 at slot 1, skip 4, and write 9 at slot 2. Truncate to three elements. The retained prefix [7,5,9] keeps source order.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Remove values below 5 stably and return the kept prefix.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement same-direction\")\n}\n",
+    "question": "Boundary check for same-direction: with input `[8,7,6,5,4,3,2]`, what result should solve return?",
+    "rule": "The write position never advances beyond the read position. Remove values below 5 stably and return the kept prefix.",
+    "success": "The private harness prints PASS same-direction. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Remove values below 5 stably and return the kept prefix.",
     "task": "Remove values below 5 stably and return the kept prefix."
   },

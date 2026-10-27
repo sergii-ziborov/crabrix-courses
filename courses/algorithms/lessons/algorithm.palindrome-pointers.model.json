@@ -7,7 +7,7 @@
     "expectedAnswer": "true",
     "idea": "Compare normalized symbols from the outside inward and skip irrelevant input.",
     "patternID": "palindrome-pointers",
-    "rustSketch": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
+    "rustSketch": "fn ascii_palindrome(text: &str) -> bool {\n    assert!(text.is_ascii());\n    let bytes = text.as_bytes(); let (mut left, mut right) = (0, bytes.len());\n    while left < right {\n        if !bytes[left].is_ascii_alphanumeric() { left += 1; continue; }\n        if !bytes[right-1].is_ascii_alphanumeric() { right -= 1; continue; }\n        if !bytes[left].eq_ignore_ascii_case(&bytes[right-1]) { return false; }\n        left += 1; right -= 1;\n    }\n    true\n}\n\nfn main() {\n    let result = ascii_palindrome(\"Never odd or even\").to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Ignore punctuation and case; return whether the text is a palindrome.",
     "useCases": "palindrome validation and mirrored constraints",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Return one-based indexes of the pair summing to 17.",
         "direction": "previous",
-        "title": "Challenge: Sorted Two-Sum"
+        "title": "Challenge: Sorted Two-Sum",
+        "concept": "For sorted values, return one-based indexes of any two distinct positions summing to 17. Return -1,-1 if no pair exists."
       },
       {
-        "concept": "palindrome validation and mirrored constraints",
         "direction": "next",
-        "title": "Palindrome Pointers: When to Use It"
+        "title": "Palindrome Pointers: When to Use It",
+        "concept": "palindrome validation and mirrored constraints"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "When it is non-alphanumeric under the stated ASCII normalization. In Never odd or even, spaces are skipped and matching letters are compared without ASCII case. Each retained pair agrees. A mismatch in abca is decisive; skipping the mismatched letter itself would incorrectly change the task.",
+    "misconception": "“Whenever it differs from its opposite byte”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `Never odd or even`, write the state before the first update. Explain how it represents this claim: Compare normalized symbols from the outside inward and skip irrelevant input. Two positions move according to a monotone fact: after one comparison, some candidates can be ruled out permanently. Name that fact."
+        "title": "Concrete transition",
+        "detail": "In Never odd or even, spaces are skipped and matching letters are compared without ASCII case. Each retained pair agrees. A mismatch in abca is decisive; skipping the mismatched letter itself would incorrectly change the task."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `true`. Use explicit bounds for both indices. If the algorithm mutates a vector, separate read and write positions so ownership stays clear."
+        "title": "Independent second fixture",
+        "detail": "Input `abca` produces `false`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test pointers meeting, crossing, duplicate values, and the smallest valid input; many off-by-one errors hide there. Defend the O(n) time · O(1) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `x` produces `true`. When it is non-alphanumeric under the stated ASCII normalization. The stated work bound is O(n) time · O(1) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `Never odd or even` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Palindrome Pointers survives, which state must be updated, and whether the O(n) time · O(1) space bound still holds. Check whether the input is sorted, whether you may reorder it, and whether moving a pointer preserves the answer you seek."
+    "transferChallenge": "Compare the visible input `Never odd or even` with `No lemon, no melon`. Predict why their results are `true` and `true`. Then change one legal value and explain whether the same invariant, when it is non-alphanumeric under the stated ascii normalization, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.palindrome-pointers.model",
@@ -54,21 +54,21 @@
   "title": "Palindrome Pointers: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "When it is non-alphanumeric under the stated ASCII normalization",
+      "Whenever it differs from its opposite byte",
+      "Whenever the byte is uppercase"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n) time · O(1) space",
-    "exampleCode": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
-    "explanation": "Begin with the concrete question: Ignore punctuation and case; return whether the text is a palindrome. For the visible input `Never odd or even`, the stated result is `true`. Before reading code, name the smallest piece of information that must survive from one step to the next. Two positions move according to a monotone fact: after one comparison, some candidates can be ruled out permanently. Name that fact. That is the mental model for Palindrome Pointers; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Compare normalized symbols from the outside inward and skip irrelevant input. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use explicit bounds for both indices. If the algorithm mutates a vector, separate read and write positions so ownership stays clear. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test pointers meeting, crossing, duplicate values, and the smallest valid input; many off-by-one errors hide there. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only palindrome-pointers program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn ascii_palindrome(text: &str) -> bool {\n    assert!(text.is_ascii());\n    let bytes = text.as_bytes(); let (mut left, mut right) = (0, bytes.len());\n    while left < right {\n        if !bytes[left].is_ascii_alphanumeric() { left += 1; continue; }\n        if !bytes[right-1].is_ascii_alphanumeric() { right -= 1; continue; }\n        if !bytes[left].eq_ignore_ascii_case(&bytes[right-1]) { return false; }\n        left += 1; right -= 1;\n    }\n    true\n}\n\nfn main() {\n    let result = ascii_palindrome(\"Never odd or even\").to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "In Never odd or even, spaces are skipped and matching letters are compared without ASCII case. Each retained pair agrees. A mismatch in abca is decisive; skipping the mismatched letter itself would incorrectly change the task.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Ignore punctuation and case; return whether the text is a palindrome. The visible fixture is `Never odd or even` and its example result is `true`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Ignore punctuation and case; return whether the text is a palindrome. For the visible input `Never odd or even`, the stated result is `true`. Before reading code, name the smallest piece of information that must survive from one step to the next. Two positions move according to a monotone fact: after one comparison, some candidates can be ruled out permanently. Name that fact. That is the mental model for Palindrome Pointers; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Compare normalized symbols from the outside inward and skip irrelevant input. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test pointers meeting, crossing, duplicate values, and the smallest valid input; many off-by-one errors hide there. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "In Never odd or even, spaces are skipped and matching letters are compared without ASCII case. Each retained pair agrees. A mismatch in abca is decisive; skipping the mismatched letter itself would incorrectly change the task.",
+    "practiceCode": "fn ascii_palindrome(text: &str) -> bool {\n    assert!(text.is_ascii());\n    let bytes = text.as_bytes(); let (mut left, mut right) = (0, bytes.len());\n    while left < right {\n        if !bytes[left].is_ascii_alphanumeric() { left += 1; continue; }\n        if !bytes[right-1].is_ascii_alphanumeric() { right -= 1; continue; }\n        if !bytes[left].eq_ignore_ascii_case(&bytes[right-1]) { return false; }\n        left += 1; right -= 1;\n    }\n    true\n}\n\nfn main() {\n    let result = ascii_palindrome(\"Never odd or even\").to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "When may a palindrome pointer skip an input byte?",
+    "rule": "When it is non-alphanumeric under the stated ASCII normalization. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(1) space bound without looking at the code.",
     "summary": "Compare normalized symbols from the outside inward and skip irrelevant input.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-two-pointers-a.png",

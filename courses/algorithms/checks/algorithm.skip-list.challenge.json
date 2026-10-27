@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS skip-list\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"true\".to_string()",
-      "String::from(\"true\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.skip-list.challenge",
     "patternID": "skip-list",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return whether 19 is found after inserting the values.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Skip List\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Return whether 19 is found after inserting the values.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement skip-list\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "true",
+        "kind": "visible",
         "input": "[3,6,7,9,12,19,17,26,21,25]",
-        "kind": "visible"
+        "expectedAnswer": "true"
       },
       {
-        "expectedAnswer": "false",
+        "kind": "boundary",
         "input": "[3,6,7]",
-        "kind": "boundary"
+        "expectedAnswer": "false"
       },
       {
-        "expectedAnswer": "false",
-        "input": "\n[3,6,7]\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "[19]",
+        "expectedAnswer": "true"
       },
       {
-        "expectedAnswer": "true",
+        "kind": "adversarial",
+        "input": "[2,19,19,3]",
+        "expectedAnswer": "true"
+      },
+      {
+        "kind": "adversarial",
+        "input": "[1,2,3,4,5]",
+        "expectedAnswer": "false"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \n[3,6,7,9,12,19,17,26,21,25]\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "true"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\n[1,2,3,4,5]\n",
+        "expectedAnswer": "false"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"[3,6,7,9,12,19,17,26,21,25]\"#, r#\"true\"#),\n    (r#\"[3,6,7]\"#, r#\"false\"#),\n    (r#\"\n[3,6,7]\n\"#, r#\"false\"#),\n    (r#\"  \n[3,6,7,9,12,19,17,26,21,25]\n  \"#, r#\"true\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS skip-list\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"[3,6,7,9,12,19,17,26,21,25]\",\"true\"),\n        (\"[3,6,7]\",\"false\"),\n        (\"[19]\",\"true\"),\n        (\"[2,19,19,3]\",\"true\"),\n        (\"[1,2,3,4,5]\",\"false\"),\n        (\"  \\n[3,6,7,9,12,19,17,26,21,25]\\n  \",\"true\"),\n        (\"\\n[1,2,3,4,5]\\n\",\"false\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS skip-list\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS skip-list\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"true\".to_string()",
-      "String::from(\"true\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

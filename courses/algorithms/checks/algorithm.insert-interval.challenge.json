@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS insert-interval\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"1-2,3-10,12-16\".to_string()",
-      "String::from(\"1-2,3-10,12-16\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.insert-interval.challenge",
     "patternID": "insert-interval",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Insert [4,8] and return merged intervals.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Insert into Sorted Intervals\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Insert [4,8] and return merged intervals.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement insert-interval\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "1-2,3-10,12-16",
+        "kind": "visible",
         "input": "[(1,2),(3,5),(6,7),(8,10),(12,16)]",
-        "kind": "visible"
+        "expectedAnswer": "1-2,3-10,12-16"
       },
       {
-        "expectedAnswer": "1-3,4-8,9-10",
+        "kind": "boundary",
         "input": "[(1,3),(9,10)]",
-        "kind": "boundary"
+        "expectedAnswer": "1-3,4-8,9-10"
       },
       {
-        "expectedAnswer": "1-3,4-8,9-10",
-        "input": "\n[(1,3),(9,10)]\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "[(1,2),(9,10)]",
+        "expectedAnswer": "1-2,4-8,9-10"
       },
       {
-        "expectedAnswer": "1-2,3-10,12-16",
+        "kind": "adversarial",
+        "input": "[(1,5),(9,11)]",
+        "expectedAnswer": "1-8,9-11"
+      },
+      {
+        "kind": "adversarial",
+        "input": "[(2,3),(5,6)]",
+        "expectedAnswer": "2-3,4-8"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \n[(1,2),(3,5),(6,7),(8,10),(12,16)]\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "1-2,3-10,12-16"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\n[(2,3),(5,6)]\n",
+        "expectedAnswer": "2-3,4-8"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"[(1,2),(3,5),(6,7),(8,10),(12,16)]\"#, r#\"1-2,3-10,12-16\"#),\n    (r#\"[(1,3),(9,10)]\"#, r#\"1-3,4-8,9-10\"#),\n    (r#\"\n[(1,3),(9,10)]\n\"#, r#\"1-3,4-8,9-10\"#),\n    (r#\"  \n[(1,2),(3,5),(6,7),(8,10),(12,16)]\n  \"#, r#\"1-2,3-10,12-16\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS insert-interval\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"[(1,2),(3,5),(6,7),(8,10),(12,16)]\",\"1-2,3-10,12-16\"),\n        (\"[(1,3),(9,10)]\",\"1-3,4-8,9-10\"),\n        (\"[(1,2),(9,10)]\",\"1-2,4-8,9-10\"),\n        (\"[(1,5),(9,11)]\",\"1-8,9-11\"),\n        (\"[(2,3),(5,6)]\",\"2-3,4-8\"),\n        (\"  \\n[(1,2),(3,5),(6,7),(8,10),(12,16)]\\n  \",\"1-2,3-10,12-16\"),\n        (\"\\n[(2,3),(5,6)]\\n\",\"2-3,4-8\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS insert-interval\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS insert-interval\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"1-2,3-10,12-16\".to_string()",
-      "String::from(\"1-2,3-10,12-16\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

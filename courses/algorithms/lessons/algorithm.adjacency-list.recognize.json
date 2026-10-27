@@ -7,44 +7,44 @@
     "expectedAnswer": "0,1,4",
     "idea": "Store only existing neighbors so traversal cost follows vertices plus edges.",
     "patternID": "adjacency-list",
-    "rustSketch": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn neighbors(n:usize,edges:&[(usize,usize)],query:usize)->Vec<usize> {\n    let mut graph=vec![Vec::new();n];\n    for &(a,b) in edges { graph[a].push(b); graph[b].push(a); }\n    graph[query].sort_unstable(); graph[query].clone()\n}\n\nfn main() {\n    let result = csv(neighbors(5,&[(0,2),(1,2),(2,4)],2));\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Build an undirected adjacency list and return sorted neighbors of node 2.",
     "useCases": "sparse graphs, networks, dependency relationships",
     "visibleInput": "n=5 edges=(0,2),(1,2),(2,4)"
   },
   "concept": "sparse graphs, networks, dependency relationships",
-  "contentDigest": "808900cb072c7462af8649a0d1f5dbc1171c171677af3e93ea81339ba5bd40ff",
+  "contentDigest": "6e299d5febb9eefa9d2fef3e71a627b4d61293b47f6ab8d2a45c1fed8c2568ad",
   "depth": {
     "connections": [
       {
-        "concept": "Store only existing neighbors so traversal cost follows vertices plus edges.",
         "direction": "previous",
-        "title": "Adjacency List: Mental Model"
+        "title": "Adjacency List: Mental Model",
+        "concept": "Store only existing neighbors so traversal cost follows vertices plus edges."
       },
       {
-        "concept": "Build an undirected adjacency list and return sorted neighbors of node 2.",
         "direction": "next",
-        "title": "Challenge: Adjacency List"
+        "title": "Challenge: Adjacency List",
+        "concept": "Build an undirected adjacency list and return sorted neighbors of node 2."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "The input graph is undirected. Edges (0,2),(1,2),(2,4) contribute 0,1,4 to node 2's list, then its report is sorted. A node with no incident edge has an empty neighbor list. Parallel edges would be separate entries if allowed.",
+    "misconception": "“Every Rust graph must be bidirectional”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `n=5 edges=(0,2),(1,2),(2,4)`, write the state before the first update. Explain how it represents this claim: Store only existing neighbors so traversal cost follows vertices plus edges. A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal."
+        "title": "Concrete transition",
+        "detail": "Edges (0,2),(1,2),(2,4) contribute 0,1,4 to node 2's list, then its report is sorted. A node with no incident edge has an empty neighbor list. Parallel edges would be separate entries if allowed."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `0,1,4`. An adjacency list and `VecDeque` make breadth-first work explicit. Mark before enqueuing to avoid duplicate frontier entries."
+        "title": "Independent second fixture",
+        "detail": "Input `n=3 edges=(0,1)` produces An empty output string. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. Defend the O(V+E) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `n=3 edges=(1,2)` produces `1`. The input graph is undirected. The stated work bound is O(V+E) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `n=5 edges=(0,2),(1,2),(2,4)` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Adjacency List survives, which state must be updated, and whether the O(V+E) space bound still holds. Choose a representation for the operations first; when traversing, DFS explores depth and BFS follows equal-cost layers. Directed edges and disconnected components change the plan."
+    "transferChallenge": "Compare the visible input `n=5 edges=(0,2),(1,2),(2,4)` with `n=4 edges=(0,2),(1,2),(2,3)`. Predict why their results are `0,1,4` and `0,1,3`. Then change one legal value and explain whether the same invariant, the input graph is undirected, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.adjacency-list.recognize",
@@ -54,21 +54,21 @@
   "title": "Adjacency List: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "sparse graphs, networks, dependency relationships",
-      "Only problems with exactly one input value"
+      "`0`",
+      "An empty output string",
+      "`not a valid result`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Adjacency List",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Adjacency List",
-    "explanation": "A problem is a good match for Adjacency List when it asks for sparse graphs, networks, dependency relationships. Here the concrete task is: Build an undirected adjacency list and return sorted neighbors of node 2. The visible input `n=5 edges=(0,2),(1,2),(2,4)` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Choose a representation for the operations first; when traversing, DFS explores depth and BFS follows equal-cost layers. Directed edges and disconnected components change the plan. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Store only existing neighbors so traversal cost follows vertices plus edges. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(V+E) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `0,1,4` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. An adjacency list and `VecDeque` make breadth-first work explicit. Mark before enqueuing to avoid duplicate frontier entries. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: sparse graphs, networks, dependency relationships.",
-    "practiceCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only adjacency-list program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn neighbors(n:usize,edges:&[(usize,usize)],query:usize)->Vec<usize> {\n    let mut graph=vec![Vec::new();n];\n    for &(a,b) in edges { graph[a].push(b); graph[b].push(a); }\n    graph[query].sort_unstable(); graph[query].clone()\n}\n\nfn main() {\n    let result = csv(neighbors(5,&[(0,2),(1,2),(2,4)],2));\n    println!(\"{result}\");\n}\n",
+    "explanation": "Edges (0,2),(1,2),(2,4) contribute 0,1,4 to node 2's list, then its report is sorted. A node with no incident edge has an empty neighbor list. Parallel edges would be separate entries if allowed.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Build an undirected adjacency list and return sorted neighbors of node 2. The visible fixture is `n=5 edges=(0,2),(1,2),(2,4)` and its example result is `0,1,4`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Adjacency List when it asks for sparse graphs, networks, dependency relationships. Here the concrete task is: Build an undirected adjacency list and return sorted neighbors of node 2. The visible input `n=5 edges=(0,2),(1,2),(2,4)` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Choose a representation for the operations first; when traversing, DFS explores depth and BFS follows equal-cost layers. Directed edges and disconnected components change the plan. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Store only existing neighbors so traversal cost follows vertices plus edges. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(V+E) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `0,1,4` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. An adjacency list and `VecDeque` make breadth-first work explicit. Mark before enqueuing to avoid duplicate frontier entries. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is An empty output string. The input graph is undirected. Compare this independent fixture with the worked trace: Edges (0,2),(1,2),(2,4) contribute 0,1,4 to node 2's list, then its report is sorted. A node with no incident edge has an empty neighbor list. Parallel edges would be separate entries if allowed.",
+    "practiceCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn neighbors(n:usize,edges:&[(usize,usize)],query:usize)->Vec<usize> {\n    let mut graph=vec![Vec::new();n];\n    for &(a,b) in edges { graph[a].push(b); graph[b].push(a); }\n    graph[query].sort_unstable(); graph[query].clone()\n}\n\nfn main() {\n    let result = csv(neighbors(5,&[(0,2),(1,2),(2,4)],2));\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Adjacency List on input `n=3 edges=(0,1)`. Which result follows from the documented contract?",
+    "rule": "The input graph is undirected. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Adjacency List.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-graph-traversal-a.png",

@@ -7,44 +7,44 @@
     "expectedAnswer": "7",
     "idea": "Store partial sums in power-of-two ranges and move indexes by their lowest set bit.",
     "patternID": "fenwick-tree",
-    "rustSketch": "fn prefix(values: &[i64]) -> Vec<i64> {\n    let mut sums = vec![0; values.len() + 1];\n    for i in 0..values.len() { sums[i + 1] = sums[i] + values[i]; }\n    sums\n}",
+    "rustSketch": "fn fenwick_prefix(n: usize, adds: &[(usize, i64)], query: usize) -> i64 {\n    let mut bit = vec![0; n+1];\n    for &(index, value) in adds {\n        assert!(index > 0);\n        let mut i = index;\n        while i <= n { bit[i] += value; i += i & i.wrapping_neg(); }\n    }\n    let (mut i, mut sum) = (query, 0);\n    while i > 0 { sum += bit[i]; i &= i - 1; }\n    sum\n}\n\nfn main() {\n    let result = fenwick_prefix(4,&[(1,3),(2,4),(4,8)],4).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Apply the 1-indexed add operations and return the prefix sum through query.",
     "useCases": "dynamic prefix sums, frequency tables, inversion counts",
     "visibleInput": "n=5 adds=(1,5),(3,2),(4,4) query=3"
   },
   "concept": "Apply the 1-indexed add operations and return the prefix sum through query.",
-  "contentDigest": "ce4e34e20137f3bef081eaa6086c70694e385b76297031b42f1ccea68ae9dfcc",
+  "contentDigest": "87a98157cae2dc4def5fa3976966f46ee689f21989f97d749c65543e00f9a1b2",
   "depth": {
     "connections": [
       {
-        "concept": "dynamic prefix sums, frequency tables, inversion counts",
         "direction": "previous",
-        "title": "Fenwick Tree: When to Use It"
+        "title": "Fenwick Tree: When to Use It",
+        "concept": "dynamic prefix sums, frequency tables, inversion counts"
       },
       {
-        "concept": "Represent intervals as a binary tree so a query visits only canonical covering nodes.",
         "direction": "next",
-        "title": "Segment Tree: Mental Model"
+        "title": "Segment Tree: Mental Model",
+        "concept": "Represent intervals as a binary tree so a query visits only canonical covering nodes."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "The size of the node's lowest-set-bit range. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“The index of the tree's root for every node”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `n=5 adds=(1,5),(3,2),(4,4) query=3`, write the state before the first update. Explain how it represents this claim: Store partial sums in power-of-two ranges and move indexes by their lowest set bit. A range method summarizes intervals so the same information is not recomputed. A static prefix table and an updateable tree make different tradeoffs; define endpoint conventions first."
+        "title": "Pattern-specific invariant",
+        "detail": "The size of the node's lowest-set-bit range. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Allocate an extra prefix slot when a zero-length prefix simplifies indexing, and use a numeric type large enough for accumulated values."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `n=4 adds=(1,3),(2,4),(4,8) query=4` and computes `15`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test the first and last position, an empty range where permitted, and the boundary immediately after an update. Defend the O(log n) update/query · O(n) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `n=3 adds=(2,5),(2,-2) query=3`, the independently calculated result is `3`. The complexity discussion uses O(log n) update/query · O(n) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `n=5 adds=(1,5),(3,2),(4,4) query=3` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Fenwick Tree survives, which state must be updated, and whether the O(log n) update/query · O(n) space bound still holds. Precomputation pays when many ranges are queried. If values change between queries, an updateable structure may be needed; for one small query, a direct walk is simpler."
+    "transferChallenge": "Change the independent fixture `n=4 adds=(1,3),(2,4),(4,8) query=4` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `n=5 adds=(1,5),(3,2),(4,4) query=3`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.fenwick-tree.challenge",
@@ -54,19 +54,19 @@
   "title": "Challenge: Fenwick Tree",
   "writing": {
     "answers": [
-      "O(log n) update/query · O(n) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`3`",
+      "`4`",
+      "`2`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Apply the 1-indexed add operations and return the prefix sum through query.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Fenwick Tree\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Apply the 1-indexed add operations and return the prefix sum through query. On input `n=5 adds=(1,5),(3,2),(4,4) query=3`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Store partial sums in power-of-two ranges and move indexes by their lowest set bit. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A range method summarizes intervals so the same information is not recomputed. A static prefix table and an updateable tree make different tradeoffs; define endpoint conventions first. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Allocate an extra prefix slot when a zero-length prefix simplifies indexing, and use a numeric type large enough for accumulated values. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(log n) update/query · O(n) space; explain which operation dominates it and how many times the input can trigger that operation. Test the first and last position, an empty range where permitted, and the boundary immediately after an update. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(log n) update/query · O(n) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Apply the 1-indexed add operations and return the prefix sum through query.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Fenwick Tree\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS fenwick-tree, and your explanation still meets O(log n) update/query · O(n) space.",
+    "exampleCaption": "Complete std-only fenwick-tree program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn fenwick_prefix(n: usize, adds: &[(usize, i64)], query: usize) -> i64 {\n    let mut bit = vec![0; n+1];\n    for &(index, value) in adds {\n        assert!(index > 0);\n        let mut i = index;\n        while i <= n { bit[i] += value; i += i & i.wrapping_neg(); }\n    }\n    let (mut i, mut sum) = (query, 0);\n    while i > 0 { sum += bit[i]; i &= i - 1; }\n    sum\n}\n\nfn main() {\n    let result = fenwick_prefix(4,&[(1,3),(2,4),(4,8)],4).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "The size of the node's lowest-set-bit range. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `n=4 adds=(1,3),(2,4),(4,8) query=4`, the worked program returns `15`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `n=5 adds=(1,5),(3,2),(4,4) query=3`; predict that result before opening the answer reveal. The precise contract is: Apply the 1-indexed add operations and return the prefix sum through query.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Apply the 1-indexed add operations and return the prefix sum through query. On input `n=5 adds=(1,5),(3,2),(4,4) query=3`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Store partial sums in power-of-two ranges and move indexes by their lowest set bit. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A range method summarizes intervals so the same information is not recomputed. A static prefix table and an updateable tree make different tradeoffs; define endpoint conventions first. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(log n) update/query · O(n) space; explain which operation dominates it and how many times the input can trigger that operation. Test the first and last position, an empty range where permitted, and the boundary immediately after an update. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `3`. The size of the node's lowest-set-bit range. Compare this independent fixture with the worked trace: Adding 5 at index 1 visits 1,2,4; adding 2 at 3 visits 3,4. Querying prefix 3 visits 3 then 2, collecting 2+5=7. Indexes are one-based, and an update at zero would not advance.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Apply the 1-indexed add operations and return the prefix sum through query.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement fenwick-tree\")\n}\n",
+    "question": "Boundary check for fenwick-tree: with input `n=3 adds=(2,5),(2,-2) query=3`, what result should solve return?",
+    "rule": "The size of the node's lowest-set-bit range. Apply the 1-indexed add operations and return the prefix sum through query.",
+    "success": "The private harness prints PASS fenwick-tree. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Apply the 1-indexed add operations and return the prefix sum through query.",
     "task": "Apply the 1-indexed add operations and return the prefix sum through query."
   },

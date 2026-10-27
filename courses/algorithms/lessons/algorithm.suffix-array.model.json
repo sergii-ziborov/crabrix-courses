@@ -2,12 +2,12 @@
   "algorithm": {
     "categoryID": "strings-tries",
     "categoryTitle": "Tries & String Matching",
-    "complexity": "O(n log^2 n) simple · O(n log n) tuned",
+    "complexity": "O(n log^2 n) comparison-sort doubling · O(n) auxiliary space",
     "difficulty": "hard",
     "expectedAnswer": "5,3,1,0,4,2",
     "idea": "Sort suffix ranks by doubling compared prefix length until every suffix has a unique rank.",
     "patternID": "suffix-array",
-    "rustSketch": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn suffix_array(text:&str)->Vec<usize> {\n    let n=text.len(); let mut order:Vec<_>=(0..n).collect(); let mut rank:Vec<i32>=text.bytes().map(i32::from).collect(); let mut width=1;\n    while width<n {\n        order.sort_unstable_by_key(|&i|(rank[i],rank.get(i+width).copied().unwrap_or(-1)));\n        let mut next=vec![0;n];\n        for i in 1..n {\n            let (a,b)=(order[i-1],order[i]); let key=|j:usize|(rank[j],rank.get(j+width).copied().unwrap_or(-1));\n            next[b]=next[a]+i32::from(key(a)!=key(b));\n        }\n        rank=next; if n==0 || rank[order[n-1]]==n as i32-1 { break; } width*=2;\n    }\n    order // comparison-sort doubling: O(n log² n), byte indexes\n}\n\nfn main() {\n    let result = csv(suffix_array(\"banana\"));\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return suffix starting indexes in lexicographic order.",
     "useCases": "substring order, repeated substrings, offline text indexes",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Return matched pattern count including overlaps.",
         "direction": "previous",
-        "title": "Challenge: Aho–Corasick"
+        "title": "Challenge: Aho–Corasick",
+        "concept": "Parse lowercase ASCII text and nonempty lowercase ASCII patterns. Count every pattern occurrence, including overlaps and simultaneous suffix matches."
       },
       {
-        "concept": "substring order, repeated substrings, offline text indexes",
         "direction": "next",
-        "title": "Suffix Array: When to Use It"
+        "title": "Suffix Array: When to Use It",
+        "concept": "substring order, repeated substrings, offline text indexes"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "Two width-k ranks identify a width-2k comparison key. For banana, suffix order is a,ana,anana,banana,na,nana at indexes 5,3,1,0,4,2. Rank pairs refine ties each doubling round. This comparison-sort implementation costs O(n log² n), rather than claiming radix-sort bounds it does not implement.",
+    "misconception": "“Doubling removes half of the suffixes”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `banana`, write the state before the first update. Explain how it represents this claim: Sort suffix ranks by doubling compared prefix length until every suffix has a unique rank. `String` algorithms compare symbols or prefixes, but a Rust `String` is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters."
+        "title": "Concrete transition",
+        "detail": "For banana, suffix order is a,ana,anana,banana,na,nana at indexes 5,3,1,0,4,2. Rank pairs refine ties each doubling round. This comparison-sort implementation costs O(n log² n), rather than claiming radix-sort bounds it does not implement."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `5,3,1,0,4,2`. Use bytes only when the input contract permits byte-wise matching. Never index a `String` as though every character occupied one byte."
+        "title": "Independent second fixture",
+        "detail": "Input `a` produces `0`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Defend the O(n log^2 n) simple · O(n log n) tuned bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `abacaba` produces `6,4,0,2,5,1,3`. Two width-k ranks identify a width-2k comparison key. The stated work bound is O(n log^2 n) comparison-sort doubling · O(n) auxiliary space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `banana` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Suffix Array survives, which state must be updated, and whether the O(n log^2 n) simple · O(n log n) tuned bound still holds. Look for repeated prefix queries or pattern matching before choosing a trie or preprocessing; a one-off short search may not need either."
+    "transferChallenge": "Compare the visible input `banana` with `abcde`. Predict why their results are `5,3,1,0,4,2` and `0,1,2,3,4`. Then change one legal value and explain whether the same invariant, two width-k ranks identify a width-2k comparison key, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.suffix-array.model",
@@ -54,21 +54,21 @@
   "title": "Suffix Array: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "Two width-k ranks identify a width-2k comparison key",
+      "Doubling removes half of the suffixes",
+      "Suffixes are ordered only by their first byte"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n log^2 n) simple · O(n log n) tuned",
-    "exampleCode": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
-    "explanation": "Begin with the concrete question: Return suffix starting indexes in lexicographic order. For the visible input `banana`, the stated result is `5,3,1,0,4,2`. Before reading code, name the smallest piece of information that must survive from one step to the next. `String` algorithms compare symbols or prefixes, but a Rust `String` is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters. That is the mental model for Suffix Array; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Sort suffix ranks by doubling compared prefix length until every suffix has a unique rank. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use bytes only when the input contract permits byte-wise matching. Never index a `String` as though every character occupied one byte. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n log^2 n) simple · O(n log n) tuned. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
-    "success": "You can explain the invariant, termination condition, and O(n log^2 n) simple · O(n log n) tuned bound without looking at the code.",
+    "exampleCaption": "Complete std-only suffix-array program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn suffix_array(text:&str)->Vec<usize> {\n    let n=text.len(); let mut order:Vec<_>=(0..n).collect(); let mut rank:Vec<i32>=text.bytes().map(i32::from).collect(); let mut width=1;\n    while width<n {\n        order.sort_unstable_by_key(|&i|(rank[i],rank.get(i+width).copied().unwrap_or(-1)));\n        let mut next=vec![0;n];\n        for i in 1..n {\n            let (a,b)=(order[i-1],order[i]); let key=|j:usize|(rank[j],rank.get(j+width).copied().unwrap_or(-1));\n            next[b]=next[a]+i32::from(key(a)!=key(b));\n        }\n        rank=next; if n==0 || rank[order[n-1]]==n as i32-1 { break; } width*=2;\n    }\n    order // comparison-sort doubling: O(n log² n), byte indexes\n}\n\nfn main() {\n    let result = csv(suffix_array(\"banana\"));\n    println!(\"{result}\");\n}\n",
+    "explanation": "For banana, suffix order is a,ana,anana,banana,na,nana at indexes 5,3,1,0,4,2. Rank pairs refine ties each doubling round. This comparison-sort implementation costs O(n log² n), rather than claiming radix-sort bounds it does not implement.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return suffix starting indexes in lexicographic order. The visible fixture is `banana` and its example result is `5,3,1,0,4,2`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return suffix starting indexes in lexicographic order. For the visible input `banana`, the stated result is `5,3,1,0,4,2`. Before reading code, name the smallest piece of information that must survive from one step to the next. `String` algorithms compare symbols or prefixes, but a Rust `String` is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters. That is the mental model for Suffix Array; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Sort suffix ranks by doubling compared prefix length until every suffix has a unique rank. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n log^2 n) comparison-sort doubling · O(n) auxiliary space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "For banana, suffix order is a,ana,anana,banana,na,nana at indexes 5,3,1,0,4,2. Rank pairs refine ties each doubling round. This comparison-sort implementation costs O(n log² n), rather than claiming radix-sort bounds it does not implement.",
+    "practiceCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn suffix_array(text:&str)->Vec<usize> {\n    let n=text.len(); let mut order:Vec<_>=(0..n).collect(); let mut rank:Vec<i32>=text.bytes().map(i32::from).collect(); let mut width=1;\n    while width<n {\n        order.sort_unstable_by_key(|&i|(rank[i],rank.get(i+width).copied().unwrap_or(-1)));\n        let mut next=vec![0;n];\n        for i in 1..n {\n            let (a,b)=(order[i-1],order[i]); let key=|j:usize|(rank[j],rank.get(j+width).copied().unwrap_or(-1));\n            next[b]=next[a]+i32::from(key(a)!=key(b));\n        }\n        rank=next; if n==0 || rank[order[n-1]]==n as i32-1 { break; } width*=2;\n    }\n    order // comparison-sort doubling: O(n log² n), byte indexes\n}\n\nfn main() {\n    let result = csv(suffix_array(\"banana\"));\n    println!(\"{result}\");\n}\n",
+    "question": "Why double the ranked prefix width in suffix-array construction?",
+    "rule": "Two width-k ranks identify a width-2k comparison key. State the input preconditions before applying this invariant.",
+    "success": "You can explain the invariant, termination condition, and O(n log^2 n) comparison-sort doubling · O(n) auxiliary space bound without looking at the code.",
     "summary": "Sort suffix ranks by doubling compared prefix length until every suffix has a unique rank.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-strings-tries-b.png",

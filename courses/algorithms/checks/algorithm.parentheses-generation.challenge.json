@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS parentheses-generation\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"((()));(()());(())();()(());()()()\".to_string()",
-      "String::from(\"((()));(()());(())();()(());()()()\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.parentheses-generation.challenge",
     "patternID": "parentheses-generation",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return valid sequences for three pairs in lexicographic order.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Valid Parentheses Generation\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Return valid sequences for three pairs in lexicographic order.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement parentheses-generation\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "((()));(()());(())();()(());()()()",
+        "kind": "visible",
         "input": "n=3",
-        "kind": "visible"
+        "expectedAnswer": "((()));(()());(())();()(());()()()"
       },
       {
-        "expectedAnswer": "()",
+        "kind": "boundary",
         "input": "n=1",
-        "kind": "boundary"
+        "expectedAnswer": "()"
       },
       {
-        "expectedAnswer": "()",
-        "input": "\nn=1\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "n=0",
+        "expectedAnswer": ""
       },
       {
-        "expectedAnswer": "((()));(()());(())();()(());()()()",
+        "kind": "adversarial",
+        "input": "n=2",
+        "expectedAnswer": "(());()()"
+      },
+      {
+        "kind": "adversarial",
+        "input": "n=4",
+        "expectedAnswer": "(((())));((()()));((())());((()))();(()(()));(()()());(()())();(())(());(())()();()((()));()(()());()(())();()()(());()()()()"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \nn=3\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "((()));(()());(())();()(());()()()"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\nn=4\n",
+        "expectedAnswer": "(((())));((()()));((())());((()))();(()(()));(()()());(()())();(())(());(())()();()((()));()(()());()(())();()()(());()()()()"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"n=3\"#, r#\"((()));(()());(())();()(());()()()\"#),\n    (r#\"n=1\"#, r#\"()\"#),\n    (r#\"\nn=1\n\"#, r#\"()\"#),\n    (r#\"  \nn=3\n  \"#, r#\"((()));(()());(())();()(());()()()\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS parentheses-generation\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"n=3\",\"((()));(()());(())();()(());()()()\"),\n        (\"n=1\",\"()\"),\n        (\"n=0\",\"\"),\n        (\"n=2\",\"(());()()\"),\n        (\"n=4\",\"(((())));((()()));((())());((()))();(()(()));(()()());(()())();(())(());(())()();()((()));()(()());()(())();()()(());()()()()\"),\n        (\"  \\nn=3\\n  \",\"((()));(()());(())();()(());()()()\"),\n        (\"\\nn=4\\n\",\"(((())));((()()));((())());((()))();(()(()));(()()());(()())();(())(());(())()();()((()));()(()());()(())();()()(());()()()()\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS parentheses-generation\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS parentheses-generation\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"((()));(()());(())();()(());()()()\".to_string()",
-      "String::from(\"((()));(()());(())();()(());()()()\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

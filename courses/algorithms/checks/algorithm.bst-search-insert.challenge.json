@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS bst-search-insert\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"1,2,3,4,5,7\".to_string()",
-      "String::from(\"1,2,3,4,5,7\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.bst-search-insert.challenge",
     "patternID": "bst-search-insert",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Insert 5 and return inorder values.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement BST Search and Insert\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Parse the level-order BST, insert 5 (equal keys go right), then return inorder values.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement bst-search-insert\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "1,2,3,4,5,7",
+        "kind": "visible",
         "input": "BST=[4,2,7,1,3]",
-        "kind": "visible"
+        "expectedAnswer": "1,2,3,4,5,7"
       },
       {
-        "expectedAnswer": "1,2,3,5",
+        "kind": "boundary",
         "input": "BST=[2,1,3]",
-        "kind": "boundary"
+        "expectedAnswer": "1,2,3,5"
       },
       {
-        "expectedAnswer": "1,2,3,5",
-        "input": "\nBST=[2,1,3]\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "BST=[7,3,9]",
+        "expectedAnswer": "3,5,7,9"
       },
       {
-        "expectedAnswer": "1,2,3,4,5,7",
+        "kind": "adversarial",
+        "input": "BST=[5,2,8]",
+        "expectedAnswer": "2,5,5,8"
+      },
+      {
+        "kind": "adversarial",
+        "input": "BST=[9,4,12,1,7]",
+        "expectedAnswer": "1,4,5,7,9,12"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \nBST=[4,2,7,1,3]\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "1,2,3,4,5,7"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\nBST=[9,4,12,1,7]\n",
+        "expectedAnswer": "1,4,5,7,9,12"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"BST=[4,2,7,1,3]\"#, r#\"1,2,3,4,5,7\"#),\n    (r#\"BST=[2,1,3]\"#, r#\"1,2,3,5\"#),\n    (r#\"\nBST=[2,1,3]\n\"#, r#\"1,2,3,5\"#),\n    (r#\"  \nBST=[4,2,7,1,3]\n  \"#, r#\"1,2,3,4,5,7\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS bst-search-insert\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"BST=[4,2,7,1,3]\",\"1,2,3,4,5,7\"),\n        (\"BST=[2,1,3]\",\"1,2,3,5\"),\n        (\"BST=[7,3,9]\",\"3,5,7,9\"),\n        (\"BST=[5,2,8]\",\"2,5,5,8\"),\n        (\"BST=[9,4,12,1,7]\",\"1,4,5,7,9,12\"),\n        (\"  \\nBST=[4,2,7,1,3]\\n  \",\"1,2,3,4,5,7\"),\n        (\"\\nBST=[9,4,12,1,7]\\n\",\"1,4,5,7,9,12\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS bst-search-insert\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS bst-search-insert\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"1,2,3,4,5,7\".to_string()",
-      "String::from(\"1,2,3,4,5,7\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

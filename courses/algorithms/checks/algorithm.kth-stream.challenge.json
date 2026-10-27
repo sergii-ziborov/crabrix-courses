@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS kth-stream\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"4,4,5\".to_string()",
-      "String::from(\"4,4,5\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.kth-stream.challenge",
     "patternID": "kth-stream",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // With k=3, return the kth largest after adding 4, 5, 8, 2, 10.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Kth Statistic in a Stream\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // With k=3, return the kth largest after adding 4, 5, 8, 2, 10.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement kth-stream\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "4,4,5",
+        "kind": "visible",
         "input": "stream=[4,5,8,2,10]",
-        "kind": "visible"
+        "expectedAnswer": "4,4,5"
       },
       {
-        "expectedAnswer": "7,7",
+        "kind": "boundary",
         "input": "stream=[9,8,7,6]",
-        "kind": "boundary"
+        "expectedAnswer": "7,7"
       },
       {
-        "expectedAnswer": "7,7",
-        "input": "\nstream=[9,8,7,6]\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "[1,2,3,4,5,6,7]",
+        "expectedAnswer": "1,2,3,4,5"
       },
       {
-        "expectedAnswer": "4,4,5",
+        "kind": "adversarial",
+        "input": "[3,3,3,3,3,3,3]",
+        "expectedAnswer": "3,3,3,3,3"
+      },
+      {
+        "kind": "adversarial",
+        "input": "[8,7,6,5,4,3,2]",
+        "expectedAnswer": "6,6,6,6,6"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \nstream=[4,5,8,2,10]\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "4,4,5"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\n[8,7,6,5,4,3,2]\n",
+        "expectedAnswer": "6,6,6,6,6"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"stream=[4,5,8,2,10]\"#, r#\"4,4,5\"#),\n    (r#\"stream=[9,8,7,6]\"#, r#\"7,7\"#),\n    (r#\"\nstream=[9,8,7,6]\n\"#, r#\"7,7\"#),\n    (r#\"  \nstream=[4,5,8,2,10]\n  \"#, r#\"4,4,5\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS kth-stream\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"stream=[4,5,8,2,10]\",\"4,4,5\"),\n        (\"stream=[9,8,7,6]\",\"7,7\"),\n        (\"[1,2,3,4,5,6,7]\",\"1,2,3,4,5\"),\n        (\"[3,3,3,3,3,3,3]\",\"3,3,3,3,3\"),\n        (\"[8,7,6,5,4,3,2]\",\"6,6,6,6,6\"),\n        (\"  \\nstream=[4,5,8,2,10]\\n  \",\"4,4,5\"),\n        (\"\\n[8,7,6,5,4,3,2]\\n\",\"6,6,6,6,6\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS kth-stream\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS kth-stream\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"4,4,5\".to_string()",
-      "String::from(\"4,4,5\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

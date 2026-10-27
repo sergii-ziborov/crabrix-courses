@@ -1,6 +1,6 @@
 {
   "concept": "Track a compile-time state with no stored value",
-  "contentDigest": "8045cc2157cdc8a8f2c30e4b97156d09d412369da1120239ad7205661358a57d",
+  "contentDigest": "3f6d81de0871884ddf5437bb42fbf313919fd85b7eadb55c8910a21461e89c6d",
   "depth": {
     "connections": [
       {
@@ -10,7 +10,7 @@
       }
     ],
     "correction": "PhantomData tells the type system that a zero-sized marker matters to ownership or state.",
-    "misconception": "“One pointer”",
+    "misconception": "“One pointer, regardless of T”",
     "traceSteps": [
       {
         "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
@@ -35,17 +35,17 @@
   "title": "Phantom Types",
   "writing": {
     "answers": [
-      "Usually zero",
-      "One pointer",
-      "The size of State"
+      "Size zero and alignment one for every T",
+      "One pointer, regardless of T",
+      "The same size and alignment as T"
     ],
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "use std::marker::PhantomData;\nstruct Ready;\nstruct Job<State> {\n    id: u32,\n    state: PhantomData<State>,\n}",
-    "explanation": "PhantomData tells the type system that a zero-sized marker matters to ownership or state. It enables APIs where illegal transitions have no callable method, without adding runtime storage.\n\n`PhantomData<T>` is a zero-sized marker that tells the compiler a type is logically related to `T` even when it stores no `T` value. In `Job<State>`, the state appears only at the type level. `Job<Ready>` and `Job<Running>` can have the same runtime fields but expose different methods. A transition can consume one state and return another, so calling a `finish` method on a job that was never started becomes a compile-time error.\n\nThe marker has no runtime payload, but it is not decorative. It affects how the compiler reasons about ownership, variance, drop checking, and automatic traits in more advanced code. That is why the choice of marker type matters in low-level APIs. In a beginner typestate design, the central idea is simpler: the state is represented by a type rather than a boolean field that every method must check at runtime.\n\nSketch a `start(self) -> Job<Running>` method defined only for `Job<Ready>`, then a `finish(self) -> Job<Done>` defined only for `Job<Running>`. Try calling `finish` on the original ready job and inspect the method-not-found error. Notice that each transition consumes its old state, preventing two parallel versions of the same logical job from being used accidentally. Use this pattern when invalid transitions are costly enough to justify the extra types; a small ordinary enum may be clearer for a simple runtime choice.",
-    "feedback": "Correct: Usually zero.",
+    "explanation": "PhantomData tells the type system that a zero-sized marker matters to ownership or state. It enables APIs where illegal transitions have no callable method, without adding runtime storage.\n\n`PhantomData<T>` is a zero-sized marker that tells the compiler a type is logically related to `T` even when it stores no `T` value. In `Job<State>`, the state appears only at the type level. `Job<Ready>` and `Job<Running>` can have the same runtime fields but expose different methods. A transition can consume one state and return another, so calling a `finish` method on a job that was never started becomes a compile-time error.\n\nPhantomData<T> itself has guaranteed size zero and alignment one for every T. The containing structure still follows its own layout rules. PhantomData<T> itself has guaranteed size zero and alignment one for every T. The containing structure still follows its own layout rules. The marker has no runtime payload, but it is not decorative. It affects how the compiler reasons about ownership, variance, drop checking, and automatic traits in more advanced code. That is why the choice of marker type matters in low-level APIs. In a beginner typestate design, the central idea is simpler: the state is represented by a type rather than a boolean field that every method must check at runtime.\n\nSketch a `start(self) -> Job<Running>` method defined only for `Job<Ready>`, then a `finish(self) -> Job<Done>` defined only for `Job<Running>`. Try calling `finish` on the original ready job and inspect the method-not-found error. Notice that each transition consumes its old state, preventing two parallel versions of the same logical job from being used accidentally. Use this pattern when invalid transitions are costly enough to justify the extra types; a small ordinary enum may be clearer for a simple runtime choice.",
+    "feedback": "PhantomData<T> is guaranteed to have size 0 and alignment 1 for every T. Its ownership, variance and auto-trait effects still matter; the containing structure has its own layout.",
     "practiceCode": "use std::marker::PhantomData;\nstruct Ready;\nstruct Job<State> {\n    id: u32,\n    state: PhantomData<State>,\n}",
-    "question": "How many bytes does PhantomData add?",
+    "question": "What layout is guaranteed for PhantomData<T> itself?",
     "rule": "PhantomData tells the type system that a zero-sized marker matters to ownership or state.",
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Track a compile-time state with no stored value.",

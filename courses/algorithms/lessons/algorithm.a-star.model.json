@@ -2,49 +2,49 @@
   "algorithm": {
     "categoryID": "weighted-graphs",
     "categoryTitle": "Shortest Paths, MST & Flow",
-    "complexity": "O(E) worst · frontier depends on heuristic",
+    "complexity": "O((V+E) log V) on this finite four-neighbor grid with consistent heuristic",
     "difficulty": "hard",
     "expectedAnswer": "5",
     "idea": "Prioritize distance-so-far plus an admissible estimate that never overstates remaining cost.",
     "patternID": "a-star",
-    "rustSketch": "// Dijkstra invariant:\n// when the smallest tentative distance is popped and is current,\n// no later non-negative path can improve that node.",
+    "rustSketch": "fn grid_a_star(rows:usize,cols:usize,start:(usize,usize),goal:(usize,usize))->usize {\n    let heuristic=|(r,c):(usize,usize)|r.abs_diff(goal.0)+c.abs_diff(goal.1);\n    let mut distance=vec![vec![usize::MAX;cols];rows]; distance[start.0][start.1]=0;\n    let mut heap=std::collections::BinaryHeap::from([std::cmp::Reverse((heuristic(start),0,start))]);\n    while let Some(std::cmp::Reverse((_,cost,(r,c))))=heap.pop() {\n        if cost!=distance[r][c] { continue; } if (r,c)==goal { return cost; }\n        for (dr,dc) in [(-1,0),(1,0),(0,-1),(0,1)] {\n            let (nr,nc)=(r as isize+dr,c as isize+dc);\n            if nr<0 || nc<0 || nr>=rows as isize || nc>=cols as isize { continue; }\n            let next=(nr as usize,nc as usize);\n            if cost+1<distance[next.0][next.1] { distance[next.0][next.1]=cost+1; heap.push(std::cmp::Reverse((cost+1+heuristic(next),cost+1,next))); }\n        }\n    }\n    unreachable!(\"empty grid has a path\")\n}\n\nfn main() {\n    let result = grid_a_star(4,4,(0,0),(3,2)).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "On a 4x4 empty grid, return shortest moves from (0,0) to (3,2) using Manhattan heuristic.",
     "useCases": "goal-directed pathfinding with useful geometry",
     "visibleInput": "start=0,0 goal=3,2"
   },
   "concept": "Prioritize distance-so-far plus an admissible estimate that never overstates remaining cost.",
-  "contentDigest": "38a6d586e42534eaaf5c06e2b4c1fe788c0319df4c0028c5ee5f4ea4229e8bb5",
+  "contentDigest": "c047163b406aca45491b3880e97c43869a3fe6434e8b14025fa0f1bf0f48db9d",
   "depth": {
     "connections": [
       {
-        "concept": "Return shortest distance from 0 to 2.",
         "direction": "previous",
-        "title": "Challenge: Floyd–Warshall"
+        "title": "Challenge: Floyd–Warshall",
+        "concept": "Return shortest distance from 0 to 2."
       },
       {
-        "concept": "goal-directed pathfinding with useful geometry",
         "direction": "next",
-        "title": "A* Search: When to Use It"
+        "title": "A* Search: When to Use It",
+        "concept": "goal-directed pathfinding with useful geometry"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "It never exceeds the remaining number of unit orthogonal moves. From (0,0) to (3,2), Manhattan distance is 5. Each legal move changes only one coordinate by one, so a five-move path reaches that bound. The heap ranks g+h while recorded distances track only g; stale entries are skipped.",
+    "misconception": "“It counts diagonal moves as free”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `start=0,0 goal=3,2`, write the state before the first update. Explain how it represents this claim: Prioritize distance-so-far plus an admissible estimate that never overstates remaining cost. Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state."
+        "title": "Concrete transition",
+        "detail": "From (0,0) to (3,2), Manhattan distance is 5. Each legal move changes only one coordinate by one, so a five-move path reaches that bound. The heap ranks g+h while recorded distances track only g; stale entries are skipped."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `5`. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic."
+        "title": "Independent second fixture",
+        "detail": "Input `start=0,0 goal=0,0` produces `0`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Defend the O(E) worst · frontier depends on heuristic bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `start=1,1 goal=2,3` produces `3`. It never exceeds the remaining number of unit orthogonal moves. The stated work bound is O((V+E) log V) on this finite four-neighbor grid with consistent heuristic. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `start=0,0 goal=3,2` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from A* Search survives, which state must be updated, and whether the O(E) worst · frontier depends on heuristic bound still holds. Inspect weight signs and graph direction: non-negative shortest paths, negative edges, and zero-one weights support different algorithms."
+    "transferChallenge": "Compare the visible input `start=0,0 goal=3,2` with `start=3,3 goal=0,0`. Predict why their results are `5` and `6`. Then change one legal value and explain whether the same invariant, it never exceeds the remaining number of unit orthogonal moves, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.a-star.model",
@@ -54,21 +54,21 @@
   "title": "A* Search: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "It never exceeds the remaining number of unit orthogonal moves",
+      "It counts diagonal moves as free",
+      "Any heuristic guarantees shortest paths"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(E) worst · frontier depends on heuristic",
-    "exampleCode": "// Dijkstra invariant:\n// when the smallest tentative distance is popped and is current,\n// no later non-negative path can improve that node.",
-    "explanation": "Begin with the concrete question: On a 4x4 empty grid, return shortest moves from (0,0) to (3,2) using Manhattan heuristic. For the visible input `start=0,0 goal=3,2`, the stated result is `5`. Before reading code, name the smallest piece of information that must survive from one step to the next. Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state. That is the mental model for A* Search; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Prioritize distance-so-far plus an admissible estimate that never overstates remaining cost. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is an invariant note rather than a complete program. Turn it into explicit state and transitions before coding. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(E) worst · frontier depends on heuristic. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "// Dijkstra invariant:\n// when the smallest tentative distance is popped and is current,\n// no later non-negative path can improve that node.",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
-    "success": "You can explain the invariant, termination condition, and O(E) worst · frontier depends on heuristic bound without looking at the code.",
+    "exampleCaption": "Complete std-only a-star program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn grid_a_star(rows:usize,cols:usize,start:(usize,usize),goal:(usize,usize))->usize {\n    let heuristic=|(r,c):(usize,usize)|r.abs_diff(goal.0)+c.abs_diff(goal.1);\n    let mut distance=vec![vec![usize::MAX;cols];rows]; distance[start.0][start.1]=0;\n    let mut heap=std::collections::BinaryHeap::from([std::cmp::Reverse((heuristic(start),0,start))]);\n    while let Some(std::cmp::Reverse((_,cost,(r,c))))=heap.pop() {\n        if cost!=distance[r][c] { continue; } if (r,c)==goal { return cost; }\n        for (dr,dc) in [(-1,0),(1,0),(0,-1),(0,1)] {\n            let (nr,nc)=(r as isize+dr,c as isize+dc);\n            if nr<0 || nc<0 || nr>=rows as isize || nc>=cols as isize { continue; }\n            let next=(nr as usize,nc as usize);\n            if cost+1<distance[next.0][next.1] { distance[next.0][next.1]=cost+1; heap.push(std::cmp::Reverse((cost+1+heuristic(next),cost+1,next))); }\n        }\n    }\n    unreachable!(\"empty grid has a path\")\n}\n\nfn main() {\n    let result = grid_a_star(4,4,(0,0),(3,2)).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "From (0,0) to (3,2), Manhattan distance is 5. Each legal move changes only one coordinate by one, so a five-move path reaches that bound. The heap ranks g+h while recorded distances track only g; stale entries are skipped.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: On a 4x4 empty grid, return shortest moves from (0,0) to (3,2) using Manhattan heuristic. The visible fixture is `start=0,0 goal=3,2` and its example result is `5`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: On a 4x4 empty grid, return shortest moves from (0,0) to (3,2) using Manhattan heuristic. For the visible input `start=0,0 goal=3,2`, the stated result is `5`. Before reading code, name the smallest piece of information that must survive from one step to the next. Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state. That is the mental model for A* Search; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Prioritize distance-so-far plus an admissible estimate that never overstates remaining cost. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O((V+E) log V) on this finite four-neighbor grid with consistent heuristic. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "From (0,0) to (3,2), Manhattan distance is 5. Each legal move changes only one coordinate by one, so a five-move path reaches that bound. The heap ranks g+h while recorded distances track only g; stale entries are skipped.",
+    "practiceCode": "fn grid_a_star(rows:usize,cols:usize,start:(usize,usize),goal:(usize,usize))->usize {\n    let heuristic=|(r,c):(usize,usize)|r.abs_diff(goal.0)+c.abs_diff(goal.1);\n    let mut distance=vec![vec![usize::MAX;cols];rows]; distance[start.0][start.1]=0;\n    let mut heap=std::collections::BinaryHeap::from([std::cmp::Reverse((heuristic(start),0,start))]);\n    while let Some(std::cmp::Reverse((_,cost,(r,c))))=heap.pop() {\n        if cost!=distance[r][c] { continue; } if (r,c)==goal { return cost; }\n        for (dr,dc) in [(-1,0),(1,0),(0,-1),(0,1)] {\n            let (nr,nc)=(r as isize+dr,c as isize+dc);\n            if nr<0 || nc<0 || nr>=rows as isize || nc>=cols as isize { continue; }\n            let next=(nr as usize,nc as usize);\n            if cost+1<distance[next.0][next.1] { distance[next.0][next.1]=cost+1; heap.push(std::cmp::Reverse((cost+1+heuristic(next),cost+1,next))); }\n        }\n    }\n    unreachable!(\"empty grid has a path\")\n}\n\nfn main() {\n    let result = grid_a_star(4,4,(0,0),(3,2)).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Why is Manhattan distance admissible on the empty four-neighbor grid?",
+    "rule": "It never exceeds the remaining number of unit orthogonal moves. State the input preconditions before applying this invariant.",
+    "success": "You can explain the invariant, termination condition, and O((V+E) log V) on this finite four-neighbor grid with consistent heuristic bound without looking at the code.",
     "summary": "Prioritize distance-so-far plus an admissible estimate that never overstates remaining cost.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-weighted-graphs-b.png",

@@ -7,7 +7,7 @@
     "expectedAnswer": "true",
     "idea": "Track reachable totals and update backward so every item is used at most once.",
     "patternID": "subset-sum",
-    "rustSketch": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
+    "rustSketch": "fn subset_sum(values:&[usize],target:usize)->bool {\n    let mut reachable=vec![false;target+1]; reachable[0]=true;\n    for &x in values { for sum in (x..=target).rev() { reachable[sum]|=reachable[sum-x]; } } reachable[target]\n}\n\nfn main() {\n    let result = subset_sum(&[5,5],11).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Return whether some subset sums to 11.",
     "useCases": "partition checks and bounded target reachability",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "partition checks and bounded target reachability",
         "direction": "previous",
-        "title": "Subset Sum DP: When to Use It"
+        "title": "Subset Sum DP: When to Use It",
+        "concept": "partition checks and bounded target reachability"
       },
       {
-        "concept": "Match equal symbols diagonally; otherwise discard one suffix boundary and keep the better result.",
         "direction": "next",
-        "title": "Longest Common Subsequence: Mental Model"
+        "title": "Longest Common Subsequence: Mental Model",
+        "concept": "Match equal symbols diagonally; otherwise discard one suffix boundary and keep the better result."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "It prevents taking the current item multiple times. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“It requires every value to be used”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[2,3,7,8,10]`, write the state before the first update. Explain how it represents this claim: Track reachable totals and update backward so every item is used at most once. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit."
+        "title": "Pattern-specific invariant",
+        "detail": "It prevents taking the current item multiple times. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Index tables consistently where the state is tabular. Compress dimensions only after the full recurrence and its dependency order are clear."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `[5,5]` and computes `false`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Defend the O(n*target) time · O(target) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `[1,2,3]`, the independently calculated result is `false`. The complexity discussion uses O(n*target) time · O(target) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `[2,3,7,8,10]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Subset Sum DP survives, which state must be updated, and whether the O(n*target) time · O(target) space bound still holds. Write the dependency arrows before choosing loop order; a recurrence that reads the future cannot be filled left to right without adjustment."
+    "transferChallenge": "Change the independent fixture `[5,5]` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `[2,3,7,8,10]`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.subset-sum.challenge",
@@ -54,19 +54,19 @@
   "title": "Challenge: Subset Sum DP",
   "writing": {
     "answers": [
-      "O(n*target) time · O(target) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`true`",
+      "`false`",
+      "The valid input necessarily panics"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return whether some subset sums to 11.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Subset Sum DP\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Return whether some subset sums to 11. On input `[2,3,7,8,10]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Track reachable totals and update backward so every item is used at most once. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Index tables consistently where the state is tabular. Compress dimensions only after the full recurrence and its dependency order are clear. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n*target) time · O(target) space; explain which operation dominates it and how many times the input can trigger that operation. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(n*target) time · O(target) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return whether some subset sums to 11.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Subset Sum DP\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS subset-sum, and your explanation still meets O(n*target) time · O(target) space.",
+    "exampleCaption": "Complete std-only subset-sum program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn subset_sum(values:&[usize],target:usize)->bool {\n    let mut reachable=vec![false;target+1]; reachable[0]=true;\n    for &x in values { for sum in (x..=target).rev() { reachable[sum]|=reachable[sum-x]; } } reachable[target]\n}\n\nfn main() {\n    let result = subset_sum(&[5,5],11).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "It prevents taking the current item multiple times. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `[5,5]`, the worked program returns `false`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `[2,3,7,8,10]`; predict that result before opening the answer reveal. The precise contract is: Return whether some subset sums to 11.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Return whether some subset sums to 11. On input `[2,3,7,8,10]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Track reachable totals and update backward so every item is used at most once. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(n*target) time · O(target) space; explain which operation dominates it and how many times the input can trigger that operation. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `true`. It prevents taking the current item multiple times. Compare this independent fixture with the worked trace: For [2,3,7,8,10] and target 11, selecting 3 and 8 is sufficient. When processing value 3, descending sums may use states from earlier items but not a newly created state that already used this same 3.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return whether some subset sums to 11.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement subset-sum\")\n}\n",
+    "question": "Boundary check for subset-sum: with input `[4,7,8]`, what result should solve return?",
+    "rule": "It prevents taking the current item multiple times. Return whether some subset sums to 11.",
+    "success": "The private harness prints PASS subset-sum. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Return whether some subset sums to 11.",
     "task": "Return whether some subset sums to 11."
   },

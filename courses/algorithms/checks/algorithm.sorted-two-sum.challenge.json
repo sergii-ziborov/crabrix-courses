@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS sorted-two-sum\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"1,5\".to_string()",
-      "String::from(\"1,5\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.sorted-two-sum.challenge",
     "patternID": "sorted-two-sum",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return one-based indexes of the pair summing to 17.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Sorted Two-Sum\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // For sorted values, return one-based indexes of any two distinct positions summing to 17. Return -1,-1 if no pair exists.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement sorted-two-sum\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "1,5",
+        "kind": "visible",
         "input": "[2,3,7,11,15]",
-        "kind": "visible"
+        "expectedAnswer": "1,5"
       },
       {
-        "expectedAnswer": "2,3",
+        "kind": "boundary",
         "input": "[1,8,9]",
-        "kind": "boundary"
+        "expectedAnswer": "2,3"
       },
       {
-        "expectedAnswer": "2,3",
-        "input": "\n[1,8,9]\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "[1,2,15,16]",
+        "expectedAnswer": "1,4"
       },
       {
-        "expectedAnswer": "1,5",
+        "kind": "adversarial",
+        "input": "[8,9]",
+        "expectedAnswer": "1,2"
+      },
+      {
+        "kind": "adversarial",
+        "input": "[2,5,12,20]",
+        "expectedAnswer": "2,3"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \n[2,3,7,11,15]\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "1,5"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\n[2,5,12,20]\n",
+        "expectedAnswer": "2,3"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"[2,3,7,11,15]\"#, r#\"1,5\"#),\n    (r#\"[1,8,9]\"#, r#\"2,3\"#),\n    (r#\"\n[1,8,9]\n\"#, r#\"2,3\"#),\n    (r#\"  \n[2,3,7,11,15]\n  \"#, r#\"1,5\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS sorted-two-sum\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(input: &str, actual: &str, _expected: &str) -> bool {\n    let parts: Vec<_> = input.split(|c: char| !c.is_ascii_digit() && c != '-').filter(|x| !x.is_empty()).collect();\n    let mut values: Vec<i64> = match parts.iter().map(|x| x.parse()).collect() { Ok(v) => v, Err(_) => return false };\n    let target = 17;\n    let pair: Vec<i64> = match actual.split(',').map(str::trim).map(str::parse).collect() { Ok(v) => v, Err(_) => return false };\n    if pair.len() != 2 { return false; }\n    if pair == [-1,-1] { return !(0..values.len()).any(|i| (i+1..values.len()).any(|j| values[i]+values[j] == target)); }\n    let (a,b) = (pair[0]-1,pair[1]-1);\n    a >= 0 && b >= 0 && a != b && (a as usize) < values.len() && (b as usize) < values.len() && values[a as usize]+values[b as usize] == target\n}\n\nfn main() {\n    let cases = [\n        (\"[2,3,7,11,15]\",\"1,5\"),\n        (\"[1,8,9]\",\"2,3\"),\n        (\"[1,2,15,16]\",\"1,4\"),\n        (\"[8,9]\",\"1,2\"),\n        (\"[2,5,12,20]\",\"2,3\"),\n        (\"  \\n[2,3,7,11,15]\\n  \",\"1,5\"),\n        (\"\\n[2,5,12,20]\\n\",\"2,3\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS sorted-two-sum\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS sorted-two-sum\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"1,5\".to_string()",
-      "String::from(\"1,5\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

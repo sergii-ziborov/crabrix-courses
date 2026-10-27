@@ -7,44 +7,44 @@
     "expectedAnswer": "1,1,1,2,1,4,6",
     "idea": "Pop smaller candidates so unresolved values remain in decreasing order.",
     "patternID": "monotonic-decreasing-stack",
-    "rustSketch": "fn balanced(text: &str) -> bool {\n    let mut stack = Vec::new();\n    for ch in text.chars() {\n        match ch {\n            '(' | '[' | '{' => stack.push(ch),\n            ')' => if stack.pop() != Some('(') { return false; },\n            ']' => if stack.pop() != Some('[') { return false; },\n            '}' => if stack.pop() != Some('{') { return false; },\n            _ => {}\n        }\n    }\n    stack.is_empty()\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn stock_spans(prices:&[i32])->Vec<usize> {\n    let mut stack:Vec<(i32,usize)>=Vec::new(); let mut result=Vec::new();\n    for &price in prices {\n        let mut span=1; // include today\n        while stack.last().is_some_and(|&(p,_)|p<=price) { span+=stack.pop().unwrap().1; }\n        stack.push((price,span)); result.push(span);\n    }\n    result\n}\n\nfn main() {\n    let result = csv(stock_spans(&[10,20,15]));\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
-    "task": "Return the number of consecutive earlier days with price less than or equal to today.",
+    "task": "Return the stock span for every day: the length of the consecutive block ending today whose earlier prices are no greater than today. Include today itself.",
     "useCases": "stock span, next greater, visibility",
     "visibleInput": "[100,80,60,70,60,75,85]"
   },
-  "concept": "Return the number of consecutive earlier days with price less than or equal to today.",
+  "concept": "Return the stock span for every day: the length of the consecutive block ending today whose earlier prices are no greater than today. Include today itself.",
   "contentDigest": "c1204dd333497a579a2f23c7a4cf7e612ba1186cdddf023ac26c3c9ac1e57a10",
   "depth": {
     "connections": [
       {
-        "concept": "stock span, next greater, visibility",
         "direction": "previous",
-        "title": "Monotonic Decreasing Stack: When to Use It"
+        "title": "Monotonic Decreasing Stack: When to Use It",
+        "concept": "stock span, next greater, visibility"
       },
       {
-        "concept": "Traverse indexes twice while storing each unresolved position only once.",
         "direction": "next",
-        "title": "Circular Monotonic Stack: Mental Model"
+        "title": "Circular Monotonic Stack: Mental Model",
+        "concept": "Traverse indexes twice while storing each unresolved position only once."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "That entire consecutive block is also no greater than today's price. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“Only the popped day's single position can be included”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[100,80,60,70,60,75,85]`, write the state before the first update. Explain how it represents this claim: Pop smaller candidates so unresolved values remain in decreasing order. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs."
+        "title": "Pattern-specific invariant",
+        "detail": "That entire consecutive block is also no greater than today's price. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. `Vec` works as a stack; `VecDeque` supplies efficient operations at both ends. Avoid removing from the front of a `Vec` in a long loop."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `[10,20,15]` and computes `1,2,1`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Defend the O(n) time · O(n) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `[8,7,6,5,4,3,2]`, the independently calculated result is `1,1,1,1,1,1,1`. The complexity discussion uses O(n) time · O(n) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `[100,80,60,70,60,75,85]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Monotonic Decreasing Stack survives, which state must be updated, and whether the O(n) time · O(n) space bound still holds. Look for nested structure, next-greater relationships, or ordered processing. A plain scan is enough when no unresolved state must be retained."
+    "transferChallenge": "Change the independent fixture `[10,20,15]` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `[100,80,60,70,60,75,85]`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.monotonic-decreasing-stack.challenge",
@@ -54,21 +54,21 @@
   "title": "Challenge: Monotonic Decreasing Stack",
   "writing": {
     "answers": [
-      "O(n) time · O(n) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`1,1,1,1,1,1,1`",
+      "`1,1,1,1,1,1`",
+      "`2,1,1,1,1,1,1`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return the number of consecutive earlier days with price less than or equal to today.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Monotonic Decreasing Stack\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Return the number of consecutive earlier days with price less than or equal to today. On input `[100,80,60,70,60,75,85]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Pop smaller candidates so unresolved values remain in decreasing order. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. `Vec` works as a stack; `VecDeque` supplies efficient operations at both ends. Avoid removing from the front of a `Vec` in a long loop. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(n) space; explain which operation dominates it and how many times the input can trigger that operation. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(n) time · O(n) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return the number of consecutive earlier days with price less than or equal to today.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Monotonic Decreasing Stack\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS monotonic-decreasing-stack, and your explanation still meets O(n) time · O(n) space.",
-    "summary": "Return the number of consecutive earlier days with price less than or equal to today.",
-    "task": "Return the number of consecutive earlier days with price less than or equal to today."
+    "exampleCaption": "Complete std-only monotonic-decreasing-stack program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn stock_spans(prices:&[i32])->Vec<usize> {\n    let mut stack:Vec<(i32,usize)>=Vec::new(); let mut result=Vec::new();\n    for &price in prices {\n        let mut span=1; // include today\n        while stack.last().is_some_and(|&(p,_)|p<=price) { span+=stack.pop().unwrap().1; }\n        stack.push((price,span)); result.push(span);\n    }\n    result\n}\n\nfn main() {\n    let result = csv(stock_spans(&[10,20,15]));\n    println!(\"{result}\");\n}\n",
+    "explanation": "That entire consecutive block is also no greater than today's price. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `[10,20,15]`, the worked program returns `1,2,1`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `[100,80,60,70,60,75,85]`; predict that result before opening the answer reveal. The precise contract is: Return the stock span for every day: the length of the consecutive block ending today whose earlier prices are no greater than today. Include today itself.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Return the stock span for every day: the length of the consecutive block ending today whose earlier prices are no greater than today. Include today itself. On input `[100,80,60,70,60,75,85]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Pop smaller candidates so unresolved values remain in decreasing order. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(n) space; explain which operation dominates it and how many times the input can trigger that operation. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `1,1,1,1,1,1,1`. That entire consecutive block is also no greater than today's price. Compare this independent fixture with the worked trace: At price 75, the block ending at 60 contributes 1 and the block ending at 70 contributes 2, so today's span is 4. At 85, the absorbed block plus earlier 80 gives span 6. Every span includes today.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return the stock span for every day: the length of the consecutive block ending today whose earlier prices are no greater than today. Include today itself.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement monotonic-decreasing-stack\")\n}\n",
+    "question": "Boundary check for monotonic-decreasing-stack: with input `[8,7,6,5,4,3,2]`, what result should solve return?",
+    "rule": "That entire consecutive block is also no greater than today's price. Return the stock span for every day: the length of the consecutive block ending today whose earlier prices are no greater than today. Include today itself.",
+    "success": "The private harness prints PASS monotonic-decreasing-stack. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
+    "summary": "Return the stock span for every day: the length of the consecutive block ending today whose earlier prices are no greater than today. Include today itself.",
+    "task": "Return the stock span for every day: the length of the consecutive block ending today whose earlier prices are no greater than today. Include today itself."
   },
   "illustration": {
     "path": "media/algorithms-stacks-queues-b.png",

@@ -7,7 +7,7 @@
     "expectedAnswer": "1",
     "idea": "Push zero-cost edges to the deque front and unit-cost edges to the back.",
     "patternID": "zero-one-bfs",
-    "rustSketch": "// Dijkstra invariant:\n// when the smallest tentative distance is popped and is current,\n// no later non-negative path can improve that node.",
+    "rustSketch": "fn zero_one_distance(graph:&[Vec<(usize,i64)>],start:usize,goal:usize)->i64 {\n    let mut distance=vec![i64::MAX;graph.len()]; distance[start]=0;\n    let mut deque=std::collections::VecDeque::from([(start,0)]);\n    while let Some((v,cost))=deque.pop_front() {\n        if distance[v]!=cost { continue; }\n        for &(u,w) in &graph[v] {\n            assert!(w==0 || w==1);\n            if cost+w<distance[u] {\n                distance[u]=cost+w;\n                if w==0 { deque.push_front((u,cost)); } else { deque.push_back((u,cost+1)); }\n            }\n        }\n    }\n    if distance[goal]==i64::MAX { -1 } else { distance[goal] }\n}\n\nfn main() {\n    let result = zero_one_distance(&[vec![(1,0),(2,1)],vec![(0,0),(2,0)],vec![(0,1),(1,0),(3,1)],vec![(2,1)]],0,3).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return minimum cost from 0 to 3.",
     "useCases": "shortest paths with weights only 0 or 1",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Return shortest distances from node 0.",
         "direction": "previous",
-        "title": "Challenge: Dijkstra"
+        "title": "Challenge: Dijkstra",
+        "concept": "Return shortest distances from node 0."
       },
       {
-        "concept": "shortest paths with weights only 0 or 1",
         "direction": "next",
-        "title": "0–1 BFS: When to Use It"
+        "title": "0–1 BFS: When to Use It",
+        "concept": "shortest paths with weights only 0 or 1"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "It stays in the current distance layer. From 0, the zero-cost route through 1 reaches 2 at cost 0. The edge 2-3 has weight 1, so the final answer is 1. The front/back discipline works only when every edge weight is 0 or 1.",
+    "misconception": "“Zero-weight edges must be ignored”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `edges=0-1:0,0-2:1,1-2:0,2-3:1`, write the state before the first update. Explain how it represents this claim: Push zero-cost edges to the deque front and unit-cost edges to the back. Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state."
+        "title": "Concrete transition",
+        "detail": "From 0, the zero-cost route through 1 reaches 2 at cost 0. The edge 2-3 has weight 1, so the final answer is 1. The front/back discipline works only when every edge weight is 0 or 1."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `1`. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic."
+        "title": "Independent second fixture",
+        "detail": "Input `edges=0-1:0,1-3:0` produces `0`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Defend the O(V+E) time · O(V) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `edges=0-1:1,1-2:1,2-3:1` produces `3`. It stays in the current distance layer. The stated work bound is O(V+E) time · O(V) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `edges=0-1:0,0-2:1,1-2:0,2-3:1` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from 0–1 BFS survives, which state must be updated, and whether the O(V+E) time · O(V) space bound still holds. Inspect weight signs and graph direction: non-negative shortest paths, negative edges, and zero-one weights support different algorithms."
+    "transferChallenge": "Compare the visible input `edges=0-1:0,0-2:1,1-2:0,2-3:1` with `edges=0-3:1,0-1:0,1-3:0`. Predict why their results are `1` and `0`. Then change one legal value and explain whether the same invariant, it stays in the current distance layer, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.zero-one-bfs.model",
@@ -54,21 +54,21 @@
   "title": "0–1 BFS: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "It stays in the current distance layer",
+      "Zero-weight edges must be ignored",
+      "Every edge belongs at the back regardless of weight"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(V+E) time · O(V) space",
-    "exampleCode": "// Dijkstra invariant:\n// when the smallest tentative distance is popped and is current,\n// no later non-negative path can improve that node.",
-    "explanation": "Begin with the concrete question: Return minimum cost from 0 to 3. For the visible input `edges=0-1:0,0-2:1,1-2:0,2-3:1`, the stated result is `1`. Before reading code, name the smallest piece of information that must survive from one step to the next. Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state. That is the mental model for 0–1 BFS; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Push zero-cost edges to the deque front and unit-cost edges to the back. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is an invariant note rather than a complete program. Turn it into explicit state and transitions before coding. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(V+E) time · O(V) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "// Dijkstra invariant:\n// when the smallest tentative distance is popped and is current,\n// no later non-negative path can improve that node.",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only zero-one-bfs program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn zero_one_distance(graph:&[Vec<(usize,i64)>],start:usize,goal:usize)->i64 {\n    let mut distance=vec![i64::MAX;graph.len()]; distance[start]=0;\n    let mut deque=std::collections::VecDeque::from([(start,0)]);\n    while let Some((v,cost))=deque.pop_front() {\n        if distance[v]!=cost { continue; }\n        for &(u,w) in &graph[v] {\n            assert!(w==0 || w==1);\n            if cost+w<distance[u] {\n                distance[u]=cost+w;\n                if w==0 { deque.push_front((u,cost)); } else { deque.push_back((u,cost+1)); }\n            }\n        }\n    }\n    if distance[goal]==i64::MAX { -1 } else { distance[goal] }\n}\n\nfn main() {\n    let result = zero_one_distance(&[vec![(1,0),(2,1)],vec![(0,0),(2,0)],vec![(0,1),(1,0),(3,1)],vec![(2,1)]],0,3).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "From 0, the zero-cost route through 1 reaches 2 at cost 0. The edge 2-3 has weight 1, so the final answer is 1. The front/back discipline works only when every edge weight is 0 or 1.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return minimum cost from 0 to 3. The visible fixture is `edges=0-1:0,0-2:1,1-2:0,2-3:1` and its example result is `1`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return minimum cost from 0 to 3. For the visible input `edges=0-1:0,0-2:1,1-2:0,2-3:1`, the stated result is `1`. Before reading code, name the smallest piece of information that must survive from one step to the next. Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state. That is the mental model for 0–1 BFS; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Push zero-cost edges to the deque front and unit-cost edges to the back. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(V+E) time · O(V) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "From 0, the zero-cost route through 1 reaches 2 at cost 0. The edge 2-3 has weight 1, so the final answer is 1. The front/back discipline works only when every edge weight is 0 or 1.",
+    "practiceCode": "fn zero_one_distance(graph:&[Vec<(usize,i64)>],start:usize,goal:usize)->i64 {\n    let mut distance=vec![i64::MAX;graph.len()]; distance[start]=0;\n    let mut deque=std::collections::VecDeque::from([(start,0)]);\n    while let Some((v,cost))=deque.pop_front() {\n        if distance[v]!=cost { continue; }\n        for &(u,w) in &graph[v] {\n            assert!(w==0 || w==1);\n            if cost+w<distance[u] {\n                distance[u]=cost+w;\n                if w==0 { deque.push_front((u,cost)); } else { deque.push_back((u,cost+1)); }\n            }\n        }\n    }\n    if distance[goal]==i64::MAX { -1 } else { distance[goal] }\n}\n\nfn main() {\n    let result = zero_one_distance(&[vec![(1,0),(2,1)],vec![(0,0),(2,0)],vec![(0,1),(1,0),(3,1)],vec![(2,1)]],0,3).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Why push a relaxed zero-weight edge to the deque front?",
+    "rule": "It stays in the current distance layer. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(V+E) time · O(V) space bound without looking at the code.",
     "summary": "Push zero-cost edges to the deque front and unit-cost edges to the back.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-weighted-graphs-a.png",

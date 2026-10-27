@@ -7,44 +7,44 @@
     "expectedAnswer": "3",
     "idea": "Remember the latest or earliest position associated with each value.",
     "patternID": "index-map",
-    "rustSketch": "use std::collections::HashMap;\nfn counts(values: &[i32]) -> HashMap<i32, usize> {\n    let mut map = HashMap::new();\n    for &value in values { *map.entry(value).or_insert(0) += 1; }\n    map\n}",
+    "rustSketch": "fn nearest_repeat(values: &[i32]) -> Option<usize> {\n    let mut last = std::collections::HashMap::new();\n    let mut best = None;\n    for (i, &x) in values.iter().enumerate() {\n        if let Some(j) = last.insert(x, i) {\n            best = Some(best.map_or(i - j, |old: usize| old.min(i - j)));\n        }\n    }\n    best\n}\n\nfn main() {\n    let result = nearest_repeat(&[1,2,3,2]).map_or(\"-1\".into(),|i|i.to_string());\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Return the shortest distance between equal values.",
     "useCases": "distance between repeats, sparse lookup, reconciliation",
     "visibleInput": "[5, 1, 9, 5, 1]"
   },
   "concept": "Return the shortest distance between equal values.",
-  "contentDigest": "5b4cace441501b9b707784bb7539039bcfa0d83955c47530412b0ccb140ab3b2",
+  "contentDigest": "de83b9ea6553d6131f2df61a8d585c7e6614dcebc02d360f0e85ad5e23cfe320",
   "depth": {
     "connections": [
       {
-        "concept": "distance between repeats, sparse lookup, reconciliation",
         "direction": "previous",
-        "title": "Value-to-Index Map: When to Use It"
+        "title": "Value-to-Index Map: When to Use It",
+        "concept": "distance between repeats, sparse lookup, reconciliation"
       },
       {
-        "concept": "Replace large ordered values with dense ranks while preserving comparisons.",
         "direction": "next",
-        "title": "Coordinate Compression: Mental Model"
+        "title": "Coordinate Compression: Mental Model",
+        "concept": "Replace large ordered values with dense ranks while preserving comparisons."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "The latest equal predecessor gives the shortest new distance. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“The earliest occurrence always gives the smallest distance”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[5, 1, 9, 5, 1]`, write the state before the first update. Explain how it represents this claim: Remember the latest or earliest position associated with each value. A key-derived representation lets later work reuse an earlier fact. It may be a set, a map from keys to state, compressed ranks, or a rolling fingerprint; name which one this pattern uses."
+        "title": "Pattern-specific invariant",
+        "detail": "The latest equal predecessor gives the shortest new distance. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. In Rust, use `HashSet` for presence and `HashMap` for associated state. Compression and rolling hashes need their own arrays or arithmetic; do not force every hashing pattern into a map."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `[1, 2, 3, 2]` and computes `2`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check missing keys, repeated keys, and collisions conceptually; expected constant-time operations are not a worst-case promise. Defend the O(n) expected time · O(k) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `[8,7,6,5,4,3,2]`, the independently calculated result is `-1`. The complexity discussion uses O(n) expected time · O(k) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `[5, 1, 9, 5, 1]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Value-to-Index Map survives, which state must be updated, and whether the O(n) expected time · O(k) space bound still holds. Look for repeated membership, grouping, or a reusable key representation. A sorted structure may be preferable when deterministic order is part of the requirement."
+    "transferChallenge": "Change the independent fixture `[1, 2, 3, 2]` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `[5, 1, 9, 5, 1]`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.index-map.challenge",
@@ -54,19 +54,19 @@
   "title": "Challenge: Value-to-Index Map",
   "writing": {
     "answers": [
-      "O(n) expected time · O(k) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`-1`",
+      "`0`",
+      "`-2`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return the shortest distance between equal values.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Value-to-Index Map\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Return the shortest distance between equal values. On input `[5, 1, 9, 5, 1]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Remember the latest or earliest position associated with each value. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A key-derived representation lets later work reuse an earlier fact. It may be a set, a map from keys to state, compressed ranks, or a rolling fingerprint; name which one this pattern uses. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. In Rust, use `HashSet` for presence and `HashMap` for associated state. Compression and rolling hashes need their own arrays or arithmetic; do not force every hashing pattern into a map. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n) expected time · O(k) space; explain which operation dominates it and how many times the input can trigger that operation. Check missing keys, repeated keys, and collisions conceptually; expected constant-time operations are not a worst-case promise. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(n) expected time · O(k) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return the shortest distance between equal values.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Value-to-Index Map\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS index-map, and your explanation still meets O(n) expected time · O(k) space.",
+    "exampleCaption": "Complete std-only index-map program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn nearest_repeat(values: &[i32]) -> Option<usize> {\n    let mut last = std::collections::HashMap::new();\n    let mut best = None;\n    for (i, &x) in values.iter().enumerate() {\n        if let Some(j) = last.insert(x, i) {\n            best = Some(best.map_or(i - j, |old: usize| old.min(i - j)));\n        }\n    }\n    best\n}\n\nfn main() {\n    let result = nearest_repeat(&[1,2,3,2]).map_or(\"-1\".into(),|i|i.to_string());\n    println!(\"{result}\");\n}\n",
+    "explanation": "The latest equal predecessor gives the shortest new distance. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `[1, 2, 3, 2]`, the worked program returns `2`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `[5, 1, 9, 5, 1]`; predict that result before opening the answer reveal. The precise contract is: Return the shortest distance between equal values.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Return the shortest distance between equal values. On input `[5, 1, 9, 5, 1]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Remember the latest or earliest position associated with each value. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A key-derived representation lets later work reuse an earlier fact. It may be a set, a map from keys to state, compressed ranks, or a rolling fingerprint; name which one this pattern uses. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(n) expected time · O(k) space; explain which operation dominates it and how many times the input can trigger that operation. Check missing keys, repeated keys, and collisions conceptually; expected constant-time operations are not a worst-case promise. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `-1`. The latest equal predecessor gives the shortest new distance. Compare this independent fixture with the worked trace: In [5,1,9,5,1], the repeated 5 at index 3 has distance 3, and the repeated 1 at index 4 also has distance 3. Replacing each last index matters for later repeats; with no repeated value the result is -1.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return the shortest distance between equal values.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement index-map\")\n}\n",
+    "question": "Boundary check for index-map: with input `[8,7,6,5,4,3,2]`, what result should solve return?",
+    "rule": "The latest equal predecessor gives the shortest new distance. Return the shortest distance between equal values.",
+    "success": "The private harness prints PASS index-map. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Return the shortest distance between equal values.",
     "task": "Return the shortest distance between equal values."
   },

@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS fast-power\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"323\".to_string()",
-      "String::from(\"323\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.fast-power.challenge",
     "patternID": "fast-power",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return 3^13 modulo 1000.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Binary Exponentiation\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Parse base, exp and a positive mod; return base^exp modulo mod, including exp=0.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement fast-power\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "323",
+        "kind": "visible",
         "input": "base=3 exp=13 mod=1000",
-        "kind": "visible"
+        "expectedAnswer": "323"
       },
       {
-        "expectedAnswer": "6",
+        "kind": "boundary",
         "input": "base=2 exp=5 mod=13",
-        "kind": "boundary"
+        "expectedAnswer": "6"
       },
       {
-        "expectedAnswer": "6",
-        "input": "\nbase=2 exp=5 mod=13\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "base=7 exp=0 mod=11",
+        "expectedAnswer": "1"
       },
       {
-        "expectedAnswer": "323",
+        "kind": "adversarial",
+        "input": "base=5 exp=3 mod=13",
+        "expectedAnswer": "8"
+      },
+      {
+        "kind": "adversarial",
+        "input": "base=2 exp=10 mod=17",
+        "expectedAnswer": "4"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \nbase=3 exp=13 mod=1000\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "323"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\nbase=2 exp=10 mod=17\n",
+        "expectedAnswer": "4"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"base=3 exp=13 mod=1000\"#, r#\"323\"#),\n    (r#\"base=2 exp=5 mod=13\"#, r#\"6\"#),\n    (r#\"\nbase=2 exp=5 mod=13\n\"#, r#\"6\"#),\n    (r#\"  \nbase=3 exp=13 mod=1000\n  \"#, r#\"323\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS fast-power\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"base=3 exp=13 mod=1000\",\"323\"),\n        (\"base=2 exp=5 mod=13\",\"6\"),\n        (\"base=7 exp=0 mod=11\",\"1\"),\n        (\"base=5 exp=3 mod=13\",\"8\"),\n        (\"base=2 exp=10 mod=17\",\"4\"),\n        (\"  \\nbase=3 exp=13 mod=1000\\n  \",\"323\"),\n        (\"\\nbase=2 exp=10 mod=17\\n\",\"4\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS fast-power\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS fast-power\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"323\".to_string()",
-      "String::from(\"323\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

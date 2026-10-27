@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS list-intersection\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"8\".to_string()",
-      "String::from(\"8\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.list-intersection.challenge",
     "patternID": "list-intersection",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return the first shared node value.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Pointer-Switch Intersection\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Parse a_prefix, b_prefix and shared integer arrays. Build separate prefix nodes and attach both to the same shared tail. Return the first shared node value, or none when shared is empty. Equal values in separate prefixes do not identify shared nodes.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement list-intersection\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "8",
-        "input": "A=4->1->8->4->5; B=5->6->1->8->4->5",
-        "kind": "visible"
+        "kind": "visible",
+        "input": "a_prefix=[4,1]; b_prefix=[5,6,1]; shared=[8,4,5]",
+        "expectedAnswer": "8"
       },
       {
-        "expectedAnswer": "9",
-        "input": "A=1->9; B=2->9",
-        "kind": "boundary"
+        "kind": "boundary",
+        "input": "a_prefix=[1]; b_prefix=[2]; shared=[9]",
+        "expectedAnswer": "9"
       },
       {
-        "expectedAnswer": "9",
-        "input": "\nA=1->9; B=2->9\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "a_prefix=[1]; b_prefix=[1]; shared=[]",
+        "expectedAnswer": "none"
       },
       {
-        "expectedAnswer": "8",
-        "input": "  \nA=4->1->8->4->5; B=5->6->1->8->4->5\n  ",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "a_prefix=[]; b_prefix=[2]; shared=[7,8]",
+        "expectedAnswer": "7"
+      },
+      {
+        "kind": "adversarial",
+        "input": "a_prefix=[8,4]; b_prefix=[8]; shared=[4,5]",
+        "expectedAnswer": "4"
+      },
+      {
+        "kind": "normalisation",
+        "input": "  \na_prefix=[4,1]; b_prefix=[5,6,1]; shared=[8,4,5]\n  ",
+        "expectedAnswer": "8"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\na_prefix=[8,4]; b_prefix=[8]; shared=[4,5]\n",
+        "expectedAnswer": "4"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"A=4->1->8->4->5; B=5->6->1->8->4->5\"#, r#\"8\"#),\n    (r#\"A=1->9; B=2->9\"#, r#\"9\"#),\n    (r#\"\nA=1->9; B=2->9\n\"#, r#\"9\"#),\n    (r#\"  \nA=4->1->8->4->5; B=5->6->1->8->4->5\n  \"#, r#\"8\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS list-intersection\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"a_prefix=[4,1]; b_prefix=[5,6,1]; shared=[8,4,5]\",\"8\"),\n        (\"a_prefix=[1]; b_prefix=[2]; shared=[9]\",\"9\"),\n        (\"a_prefix=[1]; b_prefix=[1]; shared=[]\",\"none\"),\n        (\"a_prefix=[]; b_prefix=[2]; shared=[7,8]\",\"7\"),\n        (\"a_prefix=[8,4]; b_prefix=[8]; shared=[4,5]\",\"4\"),\n        (\"  \\na_prefix=[4,1]; b_prefix=[5,6,1]; shared=[8,4,5]\\n  \",\"8\"),\n        (\"\\na_prefix=[8,4]; b_prefix=[8]; shared=[4,5]\\n\",\"4\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS list-intersection\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS list-intersection\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"8\".to_string()",
-      "String::from(\"8\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

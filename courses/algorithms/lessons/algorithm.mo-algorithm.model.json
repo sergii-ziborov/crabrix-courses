@@ -7,9 +7,9 @@
     "expectedAnswer": "3,4,4",
     "idea": "Order offline range queries so adjacent queries move their boundaries only a small distance.",
     "patternID": "mo-algorithm",
-    "rustSketch": "// Advanced structures start from the same discipline:\n// define the query monoid, update semantics, and the invariant that\n// makes each decomposition smaller than the original problem.",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn distinct_queries(values:&[i32],queries:&[(usize,usize)])->Vec<usize> {\n    let block=(values.len() as f64).sqrt().max(1.0) as usize;\n    let mut order:Vec<_>=(0..queries.len()).collect(); order.sort_by_key(|&i|{let (l,r)=queries[i]; (l/block,if l/block%2==0 {r as isize} else {-(r as isize)})});\n    let mut counts=std::collections::HashMap::<i32,usize>::new(); let (mut left,mut right,mut distinct)=(0,0,0); let mut out=vec![0;queries.len()];\n    fn change(counts:&mut std::collections::HashMap<i32,usize>,distinct:&mut usize,x:i32,add:bool) {\n        let count=counts.entry(x).or_default();\n        if add { if *count==0 {*distinct+=1;} *count+=1; } else { *count-=1; if *count==0 {*distinct-=1;} }\n    }\n    for i in order { let (l,r)=queries[i]; let end=r+1;\n        while left>l { left-=1; change(&mut counts,&mut distinct,values[left],true); }\n        while right<end { change(&mut counts,&mut distinct,values[right],true); right+=1; }\n        while left<l { change(&mut counts,&mut distinct,values[left],false); left+=1; }\n        while right>end { right-=1; change(&mut counts,&mut distinct,values[right],false); }\n        out[i]=distinct;\n    } out\n}\n\nfn main() {\n    let result = csv(distinct_queries(&[1,2,1,3,2,4],&[(0,3),(2,5),(0,5)]));\n    println!(\"{result}\");\n}\n",
     "stage": "model",
-    "task": "Return distinct counts for ranges [0,3], [2,5], [0,5].",
+    "task": "Return distinct-value counts for inclusive ranges [0,3], [2,5], [0,5], in that order; input contains at least six integers.",
     "useCases": "many immutable range queries with cheap add/remove",
     "visibleInput": "[1,2,1,3,2,4]"
   },
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Apply unions and checkpoint operations, then answer the connectivity query after rollback.",
         "direction": "previous",
-        "title": "Challenge: Rollback DSU"
+        "title": "Challenge: Rollback DSU",
+        "concept": "Apply unions and checkpoint operations, then answer the connectivity query after rollback."
       },
       {
-        "concept": "many immutable range queries with cheap add/remove",
         "direction": "next",
-        "title": "Mo's Algorithm: When to Use It"
+        "title": "Mo's Algorithm: When to Use It",
+        "concept": "many immutable range queries with cheap add/remove"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "Nearby query endpoints share most maintained window state. For [1,2,1,3,2,4], inclusive queries [0,3],[2,5],[0,5] contain 3,4,4 distinct values. Sort by left blocks and alternating right order, adjust one maintained interval, then write each answer back to its original query index.",
+    "misconception": "“Reordering changes the mathematical answer”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[1,2,1,3,2,4]`, write the state before the first update. Explain how it represents this claim: Order offline range queries so adjacent queries move their boundaries only a small distance. An advanced structure or offline query order packages an invariant across operations. Name what each node, block, or reordered query state stores."
+        "title": "Concrete transition",
+        "detail": "For [1,2,1,3,2,4], inclusive queries [0,3],[2,5],[0,5] contain 3,4,4 distinct values. Sort by left blocks and alternating right order, adjust one maintained interval, then write each answer back to its original query index."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `3,4,4`. Keep representation and operations separate in Rust. Verify a tiny instance against a straightforward reference implementation before optimizing."
+        "title": "Independent second fixture",
+        "detail": "Input `[1,2,3,4,5,6]` produces `4,4,6`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test empty ranges, repeated updates, undo operations where supported, and the exact boundary between adjacent blocks. Defend the O((n+q)*sqrt(n)) operations · O(state) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[9,8,9,8,9,8]` produces `2,2,2`. Nearby query endpoints share most maintained window state. The stated work bound is O((n+q)*sqrt(n)) operations · O(state) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[1,2,1,3,2,4]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Mo's Algorithm survives, which state must be updated, and whether the O((n+q)*sqrt(n)) operations · O(state) space bound still holds. Choose it when the required operation sequence, query volume, or substring structure exceeds a simple scan or prefix summary; compare the real time and memory limits first."
+    "transferChallenge": "Compare the visible input `[1,2,1,3,2,4]` with `[2,2,3,3,2,2]`. Predict why their results are `3,4,4` and `2,2,2`. Then change one legal value and explain whether the same invariant, nearby query endpoints share most maintained window state, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.mo-algorithm.model",
@@ -54,21 +54,21 @@
   "title": "Mo's Algorithm: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "Nearby query endpoints share most maintained window state",
+      "Reordering changes the mathematical answer",
+      "Queries must be sorted by their expected result"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O((n+q)*sqrt(n)) operations · O(state) space",
-    "exampleCode": "// Advanced structures start from the same discipline:\n// define the query monoid, update semantics, and the invariant that\n// makes each decomposition smaller than the original problem.",
-    "explanation": "Begin with the concrete question: Return distinct counts for ranges [0,3], [2,5], [0,5]. For the visible input `[1,2,1,3,2,4]`, the stated result is `3,4,4`. Before reading code, name the smallest piece of information that must survive from one step to the next. An advanced structure or offline query order packages an invariant across operations. Name what each node, block, or reordered query state stores. That is the mental model for Mo's Algorithm; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Order offline range queries so adjacent queries move their boundaries only a small distance. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is an invariant note rather than a complete program. Turn it into explicit state and transitions before coding. Keep representation and operations separate in Rust. Verify a tiny instance against a straightforward reference implementation before optimizing. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O((n+q)*sqrt(n)) operations · O(state) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test empty ranges, repeated updates, undo operations where supported, and the exact boundary between adjacent blocks. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "// Advanced structures start from the same discipline:\n// define the query monoid, update semantics, and the invariant that\n// makes each decomposition smaller than the original problem.",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only mo-algorithm program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn distinct_queries(values:&[i32],queries:&[(usize,usize)])->Vec<usize> {\n    let block=(values.len() as f64).sqrt().max(1.0) as usize;\n    let mut order:Vec<_>=(0..queries.len()).collect(); order.sort_by_key(|&i|{let (l,r)=queries[i]; (l/block,if l/block%2==0 {r as isize} else {-(r as isize)})});\n    let mut counts=std::collections::HashMap::<i32,usize>::new(); let (mut left,mut right,mut distinct)=(0,0,0); let mut out=vec![0;queries.len()];\n    fn change(counts:&mut std::collections::HashMap<i32,usize>,distinct:&mut usize,x:i32,add:bool) {\n        let count=counts.entry(x).or_default();\n        if add { if *count==0 {*distinct+=1;} *count+=1; } else { *count-=1; if *count==0 {*distinct-=1;} }\n    }\n    for i in order { let (l,r)=queries[i]; let end=r+1;\n        while left>l { left-=1; change(&mut counts,&mut distinct,values[left],true); }\n        while right<end { change(&mut counts,&mut distinct,values[right],true); right+=1; }\n        while left<l { change(&mut counts,&mut distinct,values[left],false); left+=1; }\n        while right>end { right-=1; change(&mut counts,&mut distinct,values[right],false); }\n        out[i]=distinct;\n    } out\n}\n\nfn main() {\n    let result = csv(distinct_queries(&[1,2,1,3,2,4],&[(0,3),(2,5),(0,5)]));\n    println!(\"{result}\");\n}\n",
+    "explanation": "For [1,2,1,3,2,4], inclusive queries [0,3],[2,5],[0,5] contain 3,4,4 distinct values. Sort by left blocks and alternating right order, adjust one maintained interval, then write each answer back to its original query index.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return distinct-value counts for inclusive ranges [0,3], [2,5], [0,5], in that order; input contains at least six integers. The visible fixture is `[1,2,1,3,2,4]` and its example result is `3,4,4`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return distinct-value counts for inclusive ranges [0,3], [2,5], [0,5], in that order; input contains at least six integers. For the visible input `[1,2,1,3,2,4]`, the stated result is `3,4,4`. Before reading code, name the smallest piece of information that must survive from one step to the next. An advanced structure or offline query order packages an invariant across operations. Name what each node, block, or reordered query state stores. That is the mental model for Mo's Algorithm; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Order offline range queries so adjacent queries move their boundaries only a small distance. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O((n+q)*sqrt(n)) operations · O(state) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test empty ranges, repeated updates, undo operations where supported, and the exact boundary between adjacent blocks. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "For [1,2,1,3,2,4], inclusive queries [0,3],[2,5],[0,5] contain 3,4,4 distinct values. Sort by left blocks and alternating right order, adjust one maintained interval, then write each answer back to its original query index.",
+    "practiceCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn distinct_queries(values:&[i32],queries:&[(usize,usize)])->Vec<usize> {\n    let block=(values.len() as f64).sqrt().max(1.0) as usize;\n    let mut order:Vec<_>=(0..queries.len()).collect(); order.sort_by_key(|&i|{let (l,r)=queries[i]; (l/block,if l/block%2==0 {r as isize} else {-(r as isize)})});\n    let mut counts=std::collections::HashMap::<i32,usize>::new(); let (mut left,mut right,mut distinct)=(0,0,0); let mut out=vec![0;queries.len()];\n    fn change(counts:&mut std::collections::HashMap<i32,usize>,distinct:&mut usize,x:i32,add:bool) {\n        let count=counts.entry(x).or_default();\n        if add { if *count==0 {*distinct+=1;} *count+=1; } else { *count-=1; if *count==0 {*distinct-=1;} }\n    }\n    for i in order { let (l,r)=queries[i]; let end=r+1;\n        while left>l { left-=1; change(&mut counts,&mut distinct,values[left],true); }\n        while right<end { change(&mut counts,&mut distinct,values[right],true); right+=1; }\n        while left<l { change(&mut counts,&mut distinct,values[left],false); left+=1; }\n        while right>end { right-=1; change(&mut counts,&mut distinct,values[right],false); }\n        out[i]=distinct;\n    } out\n}\n\nfn main() {\n    let result = csv(distinct_queries(&[1,2,1,3,2,4],&[(0,3),(2,5),(0,5)]));\n    println!(\"{result}\");\n}\n",
+    "question": "Why reorder static range queries in Mo's algorithm?",
+    "rule": "Nearby query endpoints share most maintained window state. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O((n+q)*sqrt(n)) operations · O(state) space bound without looking at the code.",
     "summary": "Order offline range queries so adjacent queries move their boundaries only a small distance.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-advanced-structures-b.png",

@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS kmp\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"10\".to_string()",
-      "String::from(\"10\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.kmp.challenge",
     "patternID": "kmp",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return the first pattern index in the text.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Knuth–Morris–Pratt\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Return the first pattern index in the text.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement kmp\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "10",
+        "kind": "visible",
         "input": "text=ababcabcabababd pattern=ababd",
-        "kind": "visible"
+        "expectedAnswer": "10"
       },
       {
-        "expectedAnswer": "0",
+        "kind": "boundary",
         "input": "text=aaaa pattern=aa",
-        "kind": "boundary"
+        "expectedAnswer": "0"
       },
       {
-        "expectedAnswer": "0",
-        "input": "\ntext=aaaa pattern=aa\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "text=abcabc pattern=bc",
+        "expectedAnswer": "1"
       },
       {
-        "expectedAnswer": "10",
+        "kind": "adversarial",
+        "input": "text=abc pattern=z",
+        "expectedAnswer": "-1"
+      },
+      {
+        "kind": "adversarial",
+        "input": "text=aaaaa pattern=aaa",
+        "expectedAnswer": "0"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \ntext=ababcabcabababd pattern=ababd\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "10"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\ntext=aaaaa pattern=aaa\n",
+        "expectedAnswer": "0"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"text=ababcabcabababd pattern=ababd\"#, r#\"10\"#),\n    (r#\"text=aaaa pattern=aa\"#, r#\"0\"#),\n    (r#\"\ntext=aaaa pattern=aa\n\"#, r#\"0\"#),\n    (r#\"  \ntext=ababcabcabababd pattern=ababd\n  \"#, r#\"10\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS kmp\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"text=ababcabcabababd pattern=ababd\",\"10\"),\n        (\"text=aaaa pattern=aa\",\"0\"),\n        (\"text=abcabc pattern=bc\",\"1\"),\n        (\"text=abc pattern=z\",\"-1\"),\n        (\"text=aaaaa pattern=aaa\",\"0\"),\n        (\"  \\ntext=ababcabcabababd pattern=ababd\\n  \",\"10\"),\n        (\"\\ntext=aaaaa pattern=aaa\\n\",\"0\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS kmp\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS kmp\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"10\".to_string()",
-      "String::from(\"10\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

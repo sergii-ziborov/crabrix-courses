@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS binary-search-answer\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"15\".to_string()",
-      "String::from(\"15\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.binary-search-answer.challenge",
     "patternID": "binary-search-answer",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Find the minimum daily capacity to ship weights in three days.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Binary Search on the Answer\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Parse positive weights and a positive days limit. Preserve input order and return the minimum daily capacity that ships all weights in at most that many days.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement binary-search-answer\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "15",
+        "kind": "visible",
         "input": "weights=[1,2,3,4,5,6,7,8,9,10] days=3",
-        "kind": "visible"
+        "expectedAnswer": "21"
       },
       {
-        "expectedAnswer": "3",
+        "kind": "boundary",
         "input": "weights=[1,2,3] days=3",
-        "kind": "boundary"
+        "expectedAnswer": "3"
       },
       {
-        "expectedAnswer": "3",
-        "input": "\nweights=[1,2,3] days=3\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "weights=[1,2,3,4] days=1",
+        "expectedAnswer": "10"
       },
       {
-        "expectedAnswer": "15",
+        "kind": "adversarial",
+        "input": "weights=[5,5,5] days=3",
+        "expectedAnswer": "5"
+      },
+      {
+        "kind": "adversarial",
+        "input": "weights=[3,2,2,4,1,4] days=3",
+        "expectedAnswer": "6"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \nweights=[1,2,3,4,5,6,7,8,9,10] days=3\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "21"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\nweights=[3,2,2,4,1,4] days=3\n",
+        "expectedAnswer": "6"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"weights=[1,2,3,4,5,6,7,8,9,10] days=3\"#, r#\"15\"#),\n    (r#\"weights=[1,2,3] days=3\"#, r#\"3\"#),\n    (r#\"\nweights=[1,2,3] days=3\n\"#, r#\"3\"#),\n    (r#\"  \nweights=[1,2,3,4,5,6,7,8,9,10] days=3\n  \"#, r#\"15\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS binary-search-answer\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"weights=[1,2,3,4,5,6,7,8,9,10] days=3\",\"21\"),\n        (\"weights=[1,2,3] days=3\",\"3\"),\n        (\"weights=[1,2,3,4] days=1\",\"10\"),\n        (\"weights=[5,5,5] days=3\",\"5\"),\n        (\"weights=[3,2,2,4,1,4] days=3\",\"6\"),\n        (\"  \\nweights=[1,2,3,4,5,6,7,8,9,10] days=3\\n  \",\"21\"),\n        (\"\\nweights=[3,2,2,4,1,4] days=3\\n\",\"6\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS binary-search-answer\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS binary-search-answer\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"15\".to_string()",
-      "String::from(\"15\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

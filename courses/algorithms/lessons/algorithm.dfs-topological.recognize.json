@@ -2,49 +2,49 @@
   "algorithm": {
     "categoryID": "graph-traversal",
     "categoryTitle": "DFS, BFS & Graph Traversal",
-    "complexity": "O(V+E) time · O(V) space",
+    "complexity": "O(V+E) traversal; neighbor sorting adds sum(deg log deg) · O(V+E) copied graph",
     "difficulty": "hard",
     "expectedAnswer": "1,0,2,3",
     "idea": "Append a node after all descendants; a gray-to-gray edge proves a directed cycle.",
     "patternID": "dfs-topological",
-    "rustSketch": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn dfs_topological(graph:&[Vec<usize>])->Vec<usize> {\n    fn visit(v:usize,g:&[Vec<usize>],color:&mut [u8],out:&mut Vec<usize>) {\n        assert_ne!(color[v],1,\"cycle\"); if color[v]==2 { return; } color[v]=1;\n        for &u in &g[v] { visit(u,g,color,out); } color[v]=2; out.push(v);\n    }\n    let mut sorted=graph.to_vec(); for ns in &mut sorted { ns.sort_unstable(); }\n    let mut color=vec![0;graph.len()]; let mut out=Vec::new();\n    for v in 0..graph.len() { if color[v]==0 { visit(v,&sorted,&mut color,&mut out); } }\n    out.reverse(); out\n}\n\nfn main() {\n    let result = csv(dfs_topological(&[vec![2],vec![2],vec![3],vec![]]));\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return reverse-postorder for ascending neighbors.",
     "useCases": "dependency ordering and cycle diagnosis",
     "visibleInput": "n=4 edges=0->2,1->2,2->3"
   },
   "concept": "dependency ordering and cycle diagnosis",
-  "contentDigest": "e86a4af619c9e7e4cbf866f6c8e1c1ec8b5a4e7f28f7c3b3c7a8f454884a6efd",
+  "contentDigest": "e066bdbcc305e30da2317c2d121e980ac1c822f0838fa3dccaafd3b09f717681",
   "depth": {
     "connections": [
       {
-        "concept": "Append a node after all descendants; a gray-to-gray edge proves a directed cycle.",
         "direction": "previous",
-        "title": "DFS Topological Sort: Mental Model"
+        "title": "DFS Topological Sort: Mental Model",
+        "concept": "Append a node after all descendants; a gray-to-gray edge proves a directed cycle."
       },
       {
-        "concept": "Return reverse-postorder for ascending neighbors.",
         "direction": "next",
-        "title": "Challenge: DFS Topological Sort"
+        "title": "Challenge: DFS Topological Sort",
+        "concept": "Return reverse-postorder for ascending neighbors."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "Each dependency's traversal finishes before its predecessor is appended. With edges 0→2,1→2,2→3, ascending DFS finishes 3,2,0,1. Reversing yields 1,0,2,3. The outer vertex order and neighbor order are explicit, so the expected report is reproducible.",
+    "misconception": "“DFS discovery order is always topological”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `n=4 edges=0->2,1->2,2->3`, write the state before the first update. Explain how it represents this claim: Append a node after all descendants; a gray-to-gray edge proves a directed cycle. A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal."
+        "title": "Concrete transition",
+        "detail": "With edges 0→2,1→2,2→3, ascending DFS finishes 3,2,0,1. Reversing yields 1,0,2,3. The outer vertex order and neighbor order are explicit, so the expected report is reproducible."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `1,0,2,3`. An adjacency list and `VecDeque` make breadth-first work explicit. Mark before enqueuing to avoid duplicate frontier entries."
+        "title": "Independent second fixture",
+        "detail": "Input `n=3 edges=0->1,1->2` produces `0,1,2`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. Defend the O(V+E) time · O(V) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `n=3 edges=2->0` produces `2,1,0`. Each dependency's traversal finishes before its predecessor is appended. The stated work bound is O(V+E) traversal; neighbor sorting adds sum(deg log deg) · O(V+E) copied graph. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `n=4 edges=0->2,1->2,2->3` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from DFS Topological Sort survives, which state must be updated, and whether the O(V+E) time · O(V) space bound still holds. Choose a representation for the operations first; when traversing, DFS explores depth and BFS follows equal-cost layers. Directed edges and disconnected components change the plan."
+    "transferChallenge": "Compare the visible input `n=4 edges=0->2,1->2,2->3` with `n=4 edges=0->3,1->3,2->3`. Predict why their results are `1,0,2,3` and `2,1,0,3`. Then change one legal value and explain whether the same invariant, each dependency's traversal finishes before its predecessor is appended, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.dfs-topological.recognize",
@@ -54,21 +54,21 @@
   "title": "DFS Topological Sort: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "dependency ordering and cycle diagnosis",
-      "Only problems with exactly one input value"
+      "`1,2`",
+      "`0,1,2`",
+      "`1,1,2`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for DFS Topological Sort",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: DFS Topological Sort",
-    "explanation": "A problem is a good match for DFS Topological Sort when it asks for dependency ordering and cycle diagnosis. Here the concrete task is: Return reverse-postorder for ascending neighbors. The visible input `n=4 edges=0->2,1->2,2->3` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Choose a representation for the operations first; when traversing, DFS explores depth and BFS follows equal-cost layers. Directed edges and disconnected components change the plan. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Append a node after all descendants; a gray-to-gray edge proves a directed cycle. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(V+E) time · O(V) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `1,0,2,3` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. An adjacency list and `VecDeque` make breadth-first work explicit. Mark before enqueuing to avoid duplicate frontier entries. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: dependency ordering and cycle diagnosis.",
-    "practiceCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only dfs-topological program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn dfs_topological(graph:&[Vec<usize>])->Vec<usize> {\n    fn visit(v:usize,g:&[Vec<usize>],color:&mut [u8],out:&mut Vec<usize>) {\n        assert_ne!(color[v],1,\"cycle\"); if color[v]==2 { return; } color[v]=1;\n        for &u in &g[v] { visit(u,g,color,out); } color[v]=2; out.push(v);\n    }\n    let mut sorted=graph.to_vec(); for ns in &mut sorted { ns.sort_unstable(); }\n    let mut color=vec![0;graph.len()]; let mut out=Vec::new();\n    for v in 0..graph.len() { if color[v]==0 { visit(v,&sorted,&mut color,&mut out); } }\n    out.reverse(); out\n}\n\nfn main() {\n    let result = csv(dfs_topological(&[vec![2],vec![2],vec![3],vec![]]));\n    println!(\"{result}\");\n}\n",
+    "explanation": "With edges 0→2,1→2,2→3, ascending DFS finishes 3,2,0,1. Reversing yields 1,0,2,3. The outer vertex order and neighbor order are explicit, so the expected report is reproducible.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return reverse-postorder for ascending neighbors. The visible fixture is `n=4 edges=0->2,1->2,2->3` and its example result is `1,0,2,3`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for DFS Topological Sort when it asks for dependency ordering and cycle diagnosis. Here the concrete task is: Return reverse-postorder for ascending neighbors. The visible input `n=4 edges=0->2,1->2,2->3` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Choose a representation for the operations first; when traversing, DFS explores depth and BFS follows equal-cost layers. Directed edges and disconnected components change the plan. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Append a node after all descendants; a gray-to-gray edge proves a directed cycle. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(V+E) traversal; neighbor sorting adds sum(deg log deg) · O(V+E) copied graph; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `1,0,2,3` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. An adjacency list and `VecDeque` make breadth-first work explicit. Mark before enqueuing to avoid duplicate frontier entries. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `0,1,2`. Each dependency's traversal finishes before its predecessor is appended. Compare this independent fixture with the worked trace: With edges 0→2,1→2,2→3, ascending DFS finishes 3,2,0,1. Reversing yields 1,0,2,3. The outer vertex order and neighbor order are explicit, so the expected report is reproducible.",
+    "practiceCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn dfs_topological(graph:&[Vec<usize>])->Vec<usize> {\n    fn visit(v:usize,g:&[Vec<usize>],color:&mut [u8],out:&mut Vec<usize>) {\n        assert_ne!(color[v],1,\"cycle\"); if color[v]==2 { return; } color[v]=1;\n        for &u in &g[v] { visit(u,g,color,out); } color[v]=2; out.push(v);\n    }\n    let mut sorted=graph.to_vec(); for ns in &mut sorted { ns.sort_unstable(); }\n    let mut color=vec![0;graph.len()]; let mut out=Vec::new();\n    for v in 0..graph.len() { if color[v]==0 { visit(v,&sorted,&mut color,&mut out); } }\n    out.reverse(); out\n}\n\nfn main() {\n    let result = csv(dfs_topological(&[vec![2],vec![2],vec![3],vec![]]));\n    println!(\"{result}\");\n}\n",
+    "question": "Trace DFS Topological Sort on input `n=3 edges=0->1,1->2`. Which result follows from the documented contract?",
+    "rule": "Each dependency's traversal finishes before its predecessor is appended. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing DFS Topological Sort.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-graph-traversal-b.png",

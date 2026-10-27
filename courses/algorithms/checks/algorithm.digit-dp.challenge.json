@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS digit-dp\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"3\".to_string()",
-      "String::from(\"3\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.digit-dp.challenge",
     "patternID": "digit-dp",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Count integers from 0 through 25 whose digit sum is 5.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Digit DP\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Parse bound and sum. Count integers from 0 through bound inclusive whose decimal digit sum is sum; zero has digit sum zero.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement digit-dp\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "3",
+        "kind": "visible",
         "input": "bound=25 sum=5",
-        "kind": "visible"
+        "expectedAnswer": "3"
       },
       {
-        "expectedAnswer": "1",
+        "kind": "boundary",
         "input": "bound=9 sum=5",
-        "kind": "boundary"
+        "expectedAnswer": "1"
       },
       {
-        "expectedAnswer": "1",
-        "input": "\nbound=9 sum=5\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "bound=0 sum=0",
+        "expectedAnswer": "1"
       },
       {
-        "expectedAnswer": "3",
+        "kind": "adversarial",
+        "input": "bound=99 sum=1",
+        "expectedAnswer": "2"
+      },
+      {
+        "kind": "adversarial",
+        "input": "bound=100 sum=2",
+        "expectedAnswer": "3"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \nbound=25 sum=5\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "3"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\nbound=100 sum=2\n",
+        "expectedAnswer": "3"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"bound=25 sum=5\"#, r#\"3\"#),\n    (r#\"bound=9 sum=5\"#, r#\"1\"#),\n    (r#\"\nbound=9 sum=5\n\"#, r#\"1\"#),\n    (r#\"  \nbound=25 sum=5\n  \"#, r#\"3\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS digit-dp\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"bound=25 sum=5\",\"3\"),\n        (\"bound=9 sum=5\",\"1\"),\n        (\"bound=0 sum=0\",\"1\"),\n        (\"bound=99 sum=1\",\"2\"),\n        (\"bound=100 sum=2\",\"3\"),\n        (\"  \\nbound=25 sum=5\\n  \",\"3\"),\n        (\"\\nbound=100 sum=2\\n\",\"3\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS digit-dp\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS digit-dp\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"3\".to_string()",
-      "String::from(\"3\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

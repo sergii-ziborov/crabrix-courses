@@ -2,49 +2,49 @@
   "algorithm": {
     "categoryID": "linked-lists",
     "categoryTitle": "Linked List Techniques",
-    "complexity": "O(n) time · O(n) map or O(1) interleaving",
+    "complexity": "O(n) time · O(n) separate index-arena storage",
     "difficulty": "hard",
     "expectedAnswer": "7:null,13:0,11:1",
     "idea": "Map old nodes to new nodes or interleave copies so arbitrary links can be reconstructed.",
     "patternID": "copy-random-list",
-    "rustSketch": "// Conceptual ownership-safe reversal:\n// while let Some(mut node) = head.take() {\n//     head = node.next.take();\n//     node.next = reversed;\n//     reversed = Some(node);\n// }",
+    "rustSketch": "#[derive(Clone,Debug,PartialEq)]\nstruct RandomNode { value:i32, next:Option<usize>, random:Option<usize> }\nfn deep_copy(arena:&[RandomNode])->Vec<RandomNode> {\n    // Index edges refer within this arena. Cloning all records allocates a\n    // separate arena; identical indexes now refer to the copied nodes.\n    arena.to_vec()\n}\nfn copied_pairs(values:&[i32],random:&[Option<usize>])->String {\n    let original:Vec<_>=values.iter().enumerate().map(|(i,&value)|RandomNode{\n        value,next:(i+1<values.len()).then_some(i+1),random:random[i]\n    }).collect();\n    let mut copy=deep_copy(&original); assert_eq!(original,copy);\n    let out=copy.iter().map(|n|format!(\"{}:{}\",n.value,n.random.map_or(\"null\".into(),|i|i.to_string()))).collect::<Vec<_>>().join(\",\");\n    if !copy.is_empty() { copy[0].value+=1; assert_ne!(original[0].value,copy[0].value); } out\n}\n\nfn main() {\n    let result = copied_pairs(&[7,13,11],&[None,Some(0),Some(1)]);\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return copied values with random target indexes.",
     "useCases": "deep copy of graphs shaped like a list",
     "visibleInput": "values=[7,13,11] random=[null,0,1]"
   },
   "concept": "Map old nodes to new nodes or interleave copies so arbitrary links can be reconstructed.",
-  "contentDigest": "a1028fb68e7b6fafc654b8d694a14c6ae551161bef254b29aee2904f150a3cbf",
+  "contentDigest": "6ba0402dabea962fb55e0fe4a1911fbc3cc28dbc49ec7803db7477a1ffc7b3b8",
   "depth": {
     "connections": [
       {
-        "concept": "Reorder first, last, second, second-last and so on.",
         "direction": "previous",
-        "title": "Challenge: Reorder by Split, Reverse, Merge"
+        "title": "Challenge: Reorder by Split, Reverse, Merge",
+        "concept": "Reorder first, last, second, second-last and so on."
       },
       {
-        "concept": "deep copy of graphs shaped like a list",
         "direction": "next",
-        "title": "Copy with Random Links: When to Use It"
+        "title": "Copy with Random Links: When to Use It",
+        "concept": "deep copy of graphs shaped like a list"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "Copied indexes now refer to corresponding nodes in a separate arena. Values [7,13,11] with random indexes [null,0,1] are copied into new storage with the same internal index graph. Mutating the copied first value leaves the original first value unchanged, demonstrating separate node storage.",
+    "misconception": "“The copied records still point into the original allocation”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `values=[7,13,11] random=[null,0,1]`, write the state before the first update. Explain how it represents this claim: Map old nodes to new nodes or interleave copies so arbitrary links can be reconstructed. A list algorithm changes relationships between nodes, not just values. Draw the next pointers before and after each mutation."
+        "title": "Concrete transition",
+        "detail": "Values [7,13,11] with random indexes [null,0,1] are copied into new storage with the same internal index graph. Mutating the copied first value leaves the original first value unchanged, demonstrating separate node storage."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `7:null,13:0,11:1`. Rust ownership makes linked structures explicit: use the provided node type, take links carefully, and preserve access to the remaining chain."
+        "title": "Independent second fixture",
+        "detail": "Input `values=[1,2] random=[1,0]` produces `1:1,2:0`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check an empty list, one node, a head or tail change, and cycles when the problem allows them. Defend the O(n) time · O(n) map or O(1) interleaving bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `values=[3,4,5] random=[2,null,0]` produces `3:2,4:null,5:0`. Copied indexes now refer to corresponding nodes in a separate arena. The stated work bound is O(n) time · O(n) separate index-arena storage. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `values=[7,13,11] random=[null,0,1]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Copy with Random Links survives, which state must be updated, and whether the O(n) time · O(n) map or O(1) interleaving bound still holds. Look for tasks where node identity or one-way traversal matters. An indexed vector solution can hide the pointer constraint rather than solve it."
+    "transferChallenge": "Compare the visible input `values=[7,13,11] random=[null,0,1]` with `values=[9] random=[0]`. Predict why their results are `7:null,13:0,11:1` and `9:0`. Then change one legal value and explain whether the same invariant, copied indexes now refer to corresponding nodes in a separate arena, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.copy-random-list.model",
@@ -54,21 +54,21 @@
   "title": "Copy with Random Links: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "Copied indexes now refer to corresponding nodes in a separate arena",
+      "The copied records still point into the original allocation",
+      "Random links must be deleted during every copy"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n) time · O(n) map or O(1) interleaving",
-    "exampleCode": "// Conceptual ownership-safe reversal:\n// while let Some(mut node) = head.take() {\n//     head = node.next.take();\n//     node.next = reversed;\n//     reversed = Some(node);\n// }",
-    "explanation": "Begin with the concrete question: Return copied values with random target indexes. For the visible input `values=[7,13,11] random=[null,0,1]`, the stated result is `7:null,13:0,11:1`. Before reading code, name the smallest piece of information that must survive from one step to the next. A list algorithm changes relationships between nodes, not just values. Draw the next pointers before and after each mutation. That is the mental model for Copy with Random Links; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Map old nodes to new nodes or interleave copies so arbitrary links can be reconstructed. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is an invariant note rather than a complete program. Turn it into explicit state and transitions before coding. Rust ownership makes linked structures explicit: use the provided node type, take links carefully, and preserve access to the remaining chain. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n) time · O(n) map or O(1) interleaving. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check an empty list, one node, a head or tail change, and cycles when the problem allows them. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "// Conceptual ownership-safe reversal:\n// while let Some(mut node) = head.take() {\n//     head = node.next.take();\n//     node.next = reversed;\n//     reversed = Some(node);\n// }",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
-    "success": "You can explain the invariant, termination condition, and O(n) time · O(n) map or O(1) interleaving bound without looking at the code.",
+    "exampleCaption": "Complete std-only copy-random-list program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "#[derive(Clone,Debug,PartialEq)]\nstruct RandomNode { value:i32, next:Option<usize>, random:Option<usize> }\nfn deep_copy(arena:&[RandomNode])->Vec<RandomNode> {\n    // Index edges refer within this arena. Cloning all records allocates a\n    // separate arena; identical indexes now refer to the copied nodes.\n    arena.to_vec()\n}\nfn copied_pairs(values:&[i32],random:&[Option<usize>])->String {\n    let original:Vec<_>=values.iter().enumerate().map(|(i,&value)|RandomNode{\n        value,next:(i+1<values.len()).then_some(i+1),random:random[i]\n    }).collect();\n    let mut copy=deep_copy(&original); assert_eq!(original,copy);\n    let out=copy.iter().map(|n|format!(\"{}:{}\",n.value,n.random.map_or(\"null\".into(),|i|i.to_string()))).collect::<Vec<_>>().join(\",\");\n    if !copy.is_empty() { copy[0].value+=1; assert_ne!(original[0].value,copy[0].value); } out\n}\n\nfn main() {\n    let result = copied_pairs(&[7,13,11],&[None,Some(0),Some(1)]);\n    println!(\"{result}\");\n}\n",
+    "explanation": "Values [7,13,11] with random indexes [null,0,1] are copied into new storage with the same internal index graph. Mutating the copied first value leaves the original first value unchanged, demonstrating separate node storage.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return copied values with random target indexes. The visible fixture is `values=[7,13,11] random=[null,0,1]` and its example result is `7:null,13:0,11:1`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return copied values with random target indexes. For the visible input `values=[7,13,11] random=[null,0,1]`, the stated result is `7:null,13:0,11:1`. Before reading code, name the smallest piece of information that must survive from one step to the next. A list algorithm changes relationships between nodes, not just values. Draw the next pointers before and after each mutation. That is the mental model for Copy with Random Links; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Map old nodes to new nodes or interleave copies so arbitrary links can be reconstructed. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n) time · O(n) separate index-arena storage. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check an empty list, one node, a head or tail change, and cycles when the problem allows them. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "Values [7,13,11] with random indexes [null,0,1] are copied into new storage with the same internal index graph. Mutating the copied first value leaves the original first value unchanged, demonstrating separate node storage.",
+    "practiceCode": "#[derive(Clone,Debug,PartialEq)]\nstruct RandomNode { value:i32, next:Option<usize>, random:Option<usize> }\nfn deep_copy(arena:&[RandomNode])->Vec<RandomNode> {\n    // Index edges refer within this arena. Cloning all records allocates a\n    // separate arena; identical indexes now refer to the copied nodes.\n    arena.to_vec()\n}\nfn copied_pairs(values:&[i32],random:&[Option<usize>])->String {\n    let original:Vec<_>=values.iter().enumerate().map(|(i,&value)|RandomNode{\n        value,next:(i+1<values.len()).then_some(i+1),random:random[i]\n    }).collect();\n    let mut copy=deep_copy(&original); assert_eq!(original,copy);\n    let out=copy.iter().map(|n|format!(\"{}:{}\",n.value,n.random.map_or(\"null\".into(),|i|i.to_string()))).collect::<Vec<_>>().join(\",\");\n    if !copy.is_empty() { copy[0].value+=1; assert_ne!(original[0].value,copy[0].value); } out\n}\n\nfn main() {\n    let result = copied_pairs(&[7,13,11],&[None,Some(0),Some(1)]);\n    println!(\"{result}\");\n}\n",
+    "question": "Why can copying an entire index-based arena preserve its random links?",
+    "rule": "Copied indexes now refer to corresponding nodes in a separate arena. State the input preconditions before applying this invariant.",
+    "success": "You can explain the invariant, termination condition, and O(n) time · O(n) separate index-arena storage bound without looking at the code.",
     "summary": "Map old nodes to new nodes or interleave copies so arbitrary links can be reconstructed.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-linked-lists-b.png",

@@ -7,7 +7,7 @@
     "expectedAnswer": "a3b2c1a4",
     "idea": "Group maximal adjacent equal symbols and emit the symbol with its run length.",
     "patternID": "run-length-encoding",
-    "rustSketch": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "rustSketch": "fn run_lengths(text:&str)->String {\n    let mut chars=text.chars(); let Some(mut previous)=chars.next() else { return String::new(); };\n    let mut length=1; let mut out=String::new();\n    for current in chars {\n        if current==previous { length+=1; } else { out.push(previous); out.push_str(&length.to_string()); previous=current; length=1; }\n    }\n    out.push(previous); out.push_str(&length.to_string()); out\n}\n\nfn main() {\n    let result = run_lengths(\"aaabbcaaaa\").to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Encode consecutive characters as character followed by count.",
     "useCases": "compression, repeated-span summaries, token runs",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Return true after ignoring non-alphanumeric ASCII and case.",
         "direction": "previous",
-        "title": "Challenge: String Two Pointers"
+        "title": "Challenge: String Two Pointers",
+        "concept": "Return true after ignoring non-alphanumeric ASCII and case."
       },
       {
-        "concept": "compression, repeated-span summaries, token runs",
         "direction": "next",
-        "title": "Run-Length Encoding: When to Use It"
+        "title": "Run-Length Encoding: When to Use It",
+        "concept": "compression, repeated-span summaries, token runs"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "The next character differs or the input ends. For aaabbcaaaa, completed runs are a×3,b×2,c×1,a×4, producing a3b2c1a4. Separate a runs stay separate. The final pending run must also be emitted after iteration; this is not global character-frequency counting.",
+    "misconception": "“The total frequency of that character becomes known”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `aaabbcaaaa`, write the state before the first update. Explain how it represents this claim: Group maximal adjacent equal symbols and emit the symbol with its run length. `String` algorithms compare symbols or prefixes, but a Rust `String` is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters."
+        "title": "Concrete transition",
+        "detail": "For aaabbcaaaa, completed runs are a×3,b×2,c×1,a×4, producing a3b2c1a4. Separate a runs stay separate. The final pending run must also be emitted after iteration; this is not global character-frequency counting."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `a3b2c1a4`. Use bytes only when the input contract permits byte-wise matching. Never index a `String` as though every character occupied one byte."
+        "title": "Independent second fixture",
+        "detail": "Input `a` produces `a1`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Defend the O(n) time · O(n) output bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `abbba` produces `a1b3a1`. The next character differs or the input ends. The stated work bound is O(n) time · O(n) output. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `aaabbcaaaa` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Run-Length Encoding survives, which state must be updated, and whether the O(n) time · O(n) output bound still holds. Look for repeated prefix queries or pattern matching before choosing a trie or preprocessing; a one-off short search may not need either."
+    "transferChallenge": "Compare the visible input `aaabbcaaaa` with `aaa`. Predict why their results are `a3b2c1a4` and `a3`. Then change one legal value and explain whether the same invariant, the next character differs or the input ends, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.run-length-encoding.model",
@@ -54,21 +54,21 @@
   "title": "Run-Length Encoding: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "The next character differs or the input ends",
+      "The total frequency of that character becomes known",
+      "The character appears anywhere again later"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n) time · O(n) output",
-    "exampleCode": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
-    "explanation": "Begin with the concrete question: Encode consecutive characters as character followed by count. For the visible input `aaabbcaaaa`, the stated result is `a3b2c1a4`. Before reading code, name the smallest piece of information that must survive from one step to the next. `String` algorithms compare symbols or prefixes, but a Rust `String` is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters. That is the mental model for Run-Length Encoding; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Group maximal adjacent equal symbols and emit the symbol with its run length. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use bytes only when the input contract permits byte-wise matching. Never index a `String` as though every character occupied one byte. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n) time · O(n) output. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only run-length-encoding program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn run_lengths(text:&str)->String {\n    let mut chars=text.chars(); let Some(mut previous)=chars.next() else { return String::new(); };\n    let mut length=1; let mut out=String::new();\n    for current in chars {\n        if current==previous { length+=1; } else { out.push(previous); out.push_str(&length.to_string()); previous=current; length=1; }\n    }\n    out.push(previous); out.push_str(&length.to_string()); out\n}\n\nfn main() {\n    let result = run_lengths(\"aaabbcaaaa\").to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "For aaabbcaaaa, completed runs are a×3,b×2,c×1,a×4, producing a3b2c1a4. Separate a runs stay separate. The final pending run must also be emitted after iteration; this is not global character-frequency counting.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Encode consecutive characters as character followed by count. The visible fixture is `aaabbcaaaa` and its example result is `a3b2c1a4`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Encode consecutive characters as character followed by count. For the visible input `aaabbcaaaa`, the stated result is `a3b2c1a4`. Before reading code, name the smallest piece of information that must survive from one step to the next. `String` algorithms compare symbols or prefixes, but a Rust `String` is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters. That is the mental model for Run-Length Encoding; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Group maximal adjacent equal symbols and emit the symbol with its run length. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n) time · O(n) output. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "For aaabbcaaaa, completed runs are a×3,b×2,c×1,a×4, producing a3b2c1a4. Separate a runs stay separate. The final pending run must also be emitted after iteration; this is not global character-frequency counting.",
+    "practiceCode": "fn run_lengths(text:&str)->String {\n    let mut chars=text.chars(); let Some(mut previous)=chars.next() else { return String::new(); };\n    let mut length=1; let mut out=String::new();\n    for current in chars {\n        if current==previous { length+=1; } else { out.push(previous); out.push_str(&length.to_string()); previous=current; length=1; }\n    }\n    out.push(previous); out.push_str(&length.to_string()); out\n}\n\nfn main() {\n    let result = run_lengths(\"aaabbcaaaa\").to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "What event causes a completed run to be emitted?",
+    "rule": "The next character differs or the input ends. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(n) output bound without looking at the code.",
     "summary": "Group maximal adjacent equal symbols and emit the symbol with its run length.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-strings-tries-a.png",

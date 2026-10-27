@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS rolling-fingerprint\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"11\".to_string()",
-      "String::from(\"11\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.rolling-fingerprint.challenge",
     "patternID": "rolling-fingerprint",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Using base 10 and modulus 101, return the hash of digits 3,1,4.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Rolling Fingerprint\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Parse digits in 0..9. Fold hash=(hash*10+digit)%101 from initial zero and return the final hash; leading zeros are allowed.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement rolling-fingerprint\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "11",
+        "kind": "visible",
         "input": "digits=[3,1,4]",
-        "kind": "visible"
+        "expectedAnswer": "11"
       },
       {
-        "expectedAnswer": "99",
+        "kind": "boundary",
         "input": "digits=[9,9]",
-        "kind": "boundary"
+        "expectedAnswer": "99"
       },
       {
-        "expectedAnswer": "99",
-        "input": "\ndigits=[9,9]\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "digits=[1,0,1]",
+        "expectedAnswer": "0"
       },
       {
-        "expectedAnswer": "11",
+        "kind": "adversarial",
+        "input": "digits=[0]",
+        "expectedAnswer": "0"
+      },
+      {
+        "kind": "adversarial",
+        "input": "digits=[9,9,9]",
+        "expectedAnswer": "90"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \ndigits=[3,1,4]\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "11"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\ndigits=[9,9,9]\n",
+        "expectedAnswer": "90"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"digits=[3,1,4]\"#, r#\"11\"#),\n    (r#\"digits=[9,9]\"#, r#\"99\"#),\n    (r#\"\ndigits=[9,9]\n\"#, r#\"99\"#),\n    (r#\"  \ndigits=[3,1,4]\n  \"#, r#\"11\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS rolling-fingerprint\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"digits=[3,1,4]\",\"11\"),\n        (\"digits=[9,9]\",\"99\"),\n        (\"digits=[1,0,1]\",\"0\"),\n        (\"digits=[0]\",\"0\"),\n        (\"digits=[9,9,9]\",\"90\"),\n        (\"  \\ndigits=[3,1,4]\\n  \",\"11\"),\n        (\"\\ndigits=[9,9,9]\\n\",\"90\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS rolling-fingerprint\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS rolling-fingerprint\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"11\".to_string()",
-      "String::from(\"11\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

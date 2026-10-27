@@ -7,7 +7,7 @@
     "expectedAnswer": "true",
     "idea": "During traversal ignore the edge back to the parent; any other seen neighbor closes a cycle.",
     "patternID": "undirected-cycle",
-    "rustSketch": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "rustSketch": "fn has_cycle(graph:&[Vec<usize>])->bool {\n    fn visit(v:usize,parent:usize,g:&[Vec<usize>],seen:&mut [bool])->bool {\n        seen[v]=true;\n        for &u in &g[v] { if u!=parent && (seen[u] || visit(u,v,g,seen)) { return true; } }\n        false\n    }\n    // Simple undirected graph: parallel edges require edge IDs instead.\n    let mut seen=vec![false;graph.len()];\n    (0..graph.len()).any(|v|!seen[v] && visit(v,graph.len(),graph,&mut seen))\n}\n\nfn main() {\n    let result = has_cycle(&[vec![1],vec![0,2],vec![1]]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Return true when the undirected graph contains a cycle.",
     "useCases": "valid-tree checks and redundant connections",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "valid-tree checks and redundant connections",
         "direction": "previous",
-        "title": "Undirected Cycle Detection: When to Use It"
+        "title": "Undirected Cycle Detection: When to Use It",
+        "concept": "valid-tree checks and redundant connections"
       },
       {
-        "concept": "Repeatedly remove zero-indegree nodes and decrement dependents; leftovers prove a cycle.",
         "direction": "next",
-        "title": "Kahn Topological Sort: Mental Model"
+        "title": "Kahn Topological Sort: Mental Model",
+        "concept": "Repeatedly remove zero-indegree nodes and decrement dependents; leftovers prove a cycle."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "That edge is the reverse view of the tree edge just followed. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“Parent nodes may never belong to a cycle”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `edges=(0,1),(1,2),(2,0),(2,3)`, write the state before the first update. Explain how it represents this claim: During traversal ignore the edge back to the parent; any other seen neighbor closes a cycle. A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal."
+        "title": "Pattern-specific invariant",
+        "detail": "That edge is the reverse view of the tree edge just followed. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. An adjacency list and `VecDeque` make breadth-first work explicit. Mark before enqueuing to avoid duplicate frontier entries."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `edges=(0,1),(1,2)` and computes `false`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. Defend the O(V+E) time · O(V) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `edges=(0,1)`, the independently calculated result is `false`. The complexity discussion uses O(V+E) time · O(V) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `edges=(0,1),(1,2),(2,0),(2,3)` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Undirected Cycle Detection survives, which state must be updated, and whether the O(V+E) time · O(V) space bound still holds. Choose a representation for the operations first; when traversing, DFS explores depth and BFS follows equal-cost layers. Directed edges and disconnected components change the plan."
+    "transferChallenge": "Change the independent fixture `edges=(0,1),(1,2)` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `edges=(0,1),(1,2),(2,0),(2,3)`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.undirected-cycle.challenge",
@@ -54,19 +54,19 @@
   "title": "Challenge: Undirected Cycle Detection",
   "writing": {
     "answers": [
-      "O(V+E) time · O(V) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`false`",
+      "`true`",
+      "The valid input necessarily panics"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return true when the undirected graph contains a cycle.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Undirected Cycle Detection\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Return true when the undirected graph contains a cycle. On input `edges=(0,1),(1,2),(2,0),(2,3)`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: During traversal ignore the edge back to the parent; any other seen neighbor closes a cycle. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. An adjacency list and `VecDeque` make breadth-first work explicit. Mark before enqueuing to avoid duplicate frontier entries. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(V+E) time · O(V) space; explain which operation dominates it and how many times the input can trigger that operation. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(V+E) time · O(V) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return true when the undirected graph contains a cycle.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Undirected Cycle Detection\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS undirected-cycle, and your explanation still meets O(V+E) time · O(V) space.",
+    "exampleCaption": "Complete std-only undirected-cycle program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn has_cycle(graph:&[Vec<usize>])->bool {\n    fn visit(v:usize,parent:usize,g:&[Vec<usize>],seen:&mut [bool])->bool {\n        seen[v]=true;\n        for &u in &g[v] { if u!=parent && (seen[u] || visit(u,v,g,seen)) { return true; } }\n        false\n    }\n    // Simple undirected graph: parallel edges require edge IDs instead.\n    let mut seen=vec![false;graph.len()];\n    (0..graph.len()).any(|v|!seen[v] && visit(v,graph.len(),graph,&mut seen))\n}\n\nfn main() {\n    let result = has_cycle(&[vec![1],vec![0,2],vec![1]]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "That edge is the reverse view of the tree edge just followed. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `edges=(0,1),(1,2)`, the worked program returns `false`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `edges=(0,1),(1,2),(2,0),(2,3)`; predict that result before opening the answer reveal. The precise contract is: Return true when the undirected graph contains a cycle.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Return true when the undirected graph contains a cycle. On input `edges=(0,1),(1,2),(2,0),(2,3)`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: During traversal ignore the edge back to the parent; any other seen neighbor closes a cycle. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(V+E) time · O(V) space; explain which operation dominates it and how many times the input can trigger that operation. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `false`. That edge is the reverse view of the tree edge just followed. Compare this independent fixture with the worked trace: In triangle 0-1-2-0, DFS ignores each immediate parent edge but finds an already seen non-parent vertex on the remaining edge. A star has no such edge. This implementation's contract excludes parallel edges and self-loops.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return true when the undirected graph contains a cycle.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement undirected-cycle\")\n}\n",
+    "question": "Boundary check for undirected-cycle: with input `edges=(0,1)`, what result should solve return?",
+    "rule": "That edge is the reverse view of the tree edge just followed. Return true when the undirected graph contains a cycle.",
+    "success": "The private harness prints PASS undirected-cycle. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Return true when the undirected graph contains a cycle.",
     "task": "Return true when the undirected graph contains a cycle."
   },

@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS floyd-state-cycle\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"1\".to_string()",
-      "String::from(\"1\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.floyd-state-cycle.challenge",
     "patternID": "floyd-state-cycle",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Given next indexes, return the first value in the cycle reached from index 0.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Floyd State Cycle Detection\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Given next indexes, return the first value in the cycle reached from index 0.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement floyd-state-cycle\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "1",
+        "kind": "visible",
         "input": "next=[1,2,3,1]",
-        "kind": "visible"
+        "expectedAnswer": "1"
       },
       {
-        "expectedAnswer": "0",
+        "kind": "boundary",
         "input": "next=[1,2,0]",
-        "kind": "boundary"
+        "expectedAnswer": "0"
       },
       {
-        "expectedAnswer": "0",
-        "input": "\nnext=[1,2,0]\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "next=[0]",
+        "expectedAnswer": "0"
       },
       {
-        "expectedAnswer": "1",
+        "kind": "adversarial",
+        "input": "next=[1,2,3,3]",
+        "expectedAnswer": "3"
+      },
+      {
+        "kind": "adversarial",
+        "input": "next=[1,0]",
+        "expectedAnswer": "0"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \nnext=[1,2,3,1]\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "1"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\nnext=[1,0]\n",
+        "expectedAnswer": "0"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"next=[1,2,3,1]\"#, r#\"1\"#),\n    (r#\"next=[1,2,0]\"#, r#\"0\"#),\n    (r#\"\nnext=[1,2,0]\n\"#, r#\"0\"#),\n    (r#\"  \nnext=[1,2,3,1]\n  \"#, r#\"1\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS floyd-state-cycle\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"next=[1,2,3,1]\",\"1\"),\n        (\"next=[1,2,0]\",\"0\"),\n        (\"next=[0]\",\"0\"),\n        (\"next=[1,2,3,3]\",\"3\"),\n        (\"next=[1,0]\",\"0\"),\n        (\"  \\nnext=[1,2,3,1]\\n  \",\"1\"),\n        (\"\\nnext=[1,0]\\n\",\"0\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS floyd-state-cycle\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS floyd-state-cycle\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"1\".to_string()",
-      "String::from(\"1\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

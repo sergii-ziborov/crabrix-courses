@@ -1,6 +1,6 @@
 {
   "concept": "Expect a future to be dropped at any await point",
-  "contentDigest": "dc1702e602a1100b5e35ddc2cc5632df63bc06503fbc4d5160707d37acb72d26",
+  "contentDigest": "4ad3fd86c62c5ffa409b1fe766bda35435dabb538be4cf3c3a58103e5b564468",
   "depth": {
     "connections": [
       {
@@ -15,19 +15,19 @@
       }
     ],
     "correction": "Selecting or timing out a future may drop it before completion.",
-    "misconception": "“Only at return”",
+    "misconception": "“Only reaching the end of the async body”",
     "traceSteps": [
       {
-        "detail": "Name each task or thread, the state it can reach, and every point where work can wait, race, block, or be cancelled.",
-        "title": "Draw the event timeline"
+        "title": "Construct without running",
+        "detail": "Creating the async block captures references but does not execute saved.set(true). Dropping it now would leave both flags false."
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "title": "Poll until pending",
+        "detail": "The explicit first poll sets saved=true and reaches pending().await, returning Poll::Pending before the acknowledgement."
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "title": "Drop the owned future",
+        "detail": "Dropping operation cancels the remaining future. The previous saved effect remains true and acknowledged stays false; dropping a runtime task handle has separate semantics."
       }
     ],
     "transferChallenge": "Add a second worker or cancellation point. Draw two possible event orders and state the invariant that both orders must preserve. Keep the focus on expect a future to be dropped at any `await` point."
@@ -40,21 +40,21 @@
   "title": "Cancellation Safety",
   "writing": {
     "answers": [
-      "At an await suspension",
-      "Only at return",
-      "Before async fn starts"
+      "Dropping that future; its body may not have started or may have suspended",
+      "Only reaching the end of the async body",
+      "Dropping any runtime join handle always cancels its task"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "The example makes the contract visible in code.",
-    "exampleCode": "async fn save_then_ack() {\n    save_record().await;\n    // Cancellation here means saved,\n    // but not acknowledged.\n    send_ack().await;\n}",
-    "explanation": "Selecting or timing out a future may drop it before completion. Keep partial state consistent across `await` points, or wrap the operation so retrying cannot duplicate or lose external effects.\n\nAn `async` operation may be cancelled when its future is dropped, often after it has yielded at an `.await`. Work already completed before that point remains completed. A dropped future does not reverse a file write, database transaction, sent message, or charge to an external service. This creates a gap between “the caller did not receive a result” and “nothing happened.” Retry logic must account for that gap.\n\nConsider `save_record().await` followed by `send_ack().await`. If the task stops between the two awaits, the record exists but the acknowledgement may not. Repeating the whole operation could create a duplicate record. Give each request a stable identifier and design the save as idempotent, or use a transaction/outbox pattern when the storage and notification must coordinate. Store enough progress that a restarted worker can decide what remains. A timeout tells the caller how long it waited, not whether the remote side performed the action.\n\nDraw cancellation points on a three-step operation: prepare, commit, notify. At each point, list which externally visible effects already happened and what a retry would do. Test by injecting cancellation after the commit boundary. A guard can release an in-process mutex when dropped, but it cannot roll back arbitrary external effects. For spawned tasks, also check the runtime's ownership rules: dropping a handle may detach rather than cancel. Define both the cancellation path and the normal completion path before selecting a timeout or `select!` branch.",
-    "feedback": "Correct: At an `await` suspension.",
+    "exampleCaption": "One explicit poll saves state and then suspends. Dropping the future cancels the remaining acknowledgement, while saved=true remains observable.",
+    "exampleCode": "use std::{cell::Cell, future::Future, task::{Context, Poll, Waker}};\nfn main() {\n    let saved = Cell::new(false);\n    let acknowledged = Cell::new(false);\n    let mut operation = Box::pin(async {\n        saved.set(true);\n        std::future::pending::<()>().await;\n        acknowledged.set(true);\n    });\n    let mut cx = Context::from_waker(Waker::noop());\n    assert!(matches!(operation.as_mut().poll(&mut cx), Poll::Pending));\n    drop(operation);\n    assert!(saved.get());\n    assert!(!acknowledged.get());\n    println!(\"saved={} acknowledged={}\", saved.get(), acknowledged.get());\n}",
+    "explanation": "Selecting or timing out a future may drop it before completion. Keep partial state consistent across `await` points, or wrap the operation so retrying cannot duplicate or lose external effects.\n\nAn owned future can be cancelled by dropping it before its first poll, before its body has run, or between polls after it has suspended. Work already completed before that point remains completed. A dropped future does not reverse a file write, database transaction, sent message, or charge to an external service. This creates a gap between “the caller did not receive a result” and “nothing happened.” Retry logic must account for that gap.\n\nConsider `save_record().await` followed by `send_ack().await`. If the task stops between the two awaits, the record exists but the acknowledgement may not. Repeating the whole operation could create a duplicate record. Give each request a stable identifier and design the save as idempotent, or use a transaction/outbox pattern when the storage and notification must coordinate. Store enough progress that a restarted worker can decide what remains. A timeout tells the caller how long it waited, not whether the remote side performed the action.\n\nDraw cancellation points on a three-step operation: prepare, commit, notify. At each point, list which externally visible effects already happened and what a retry would do. Test by injecting cancellation after the commit boundary. A guard can release an in-process mutex when dropped, but it cannot roll back arbitrary external effects. For spawned tasks, also check the runtime's ownership rules: dropping a handle may detach rather than cancel. Define both the cancellation path and the normal completion path before selecting a timeout or `select!` branch.",
+    "feedback": "A future can be dropped before its first poll or between polls. Dropping a task handle has separate runtime-specific semantics and may detach its task. Cancellation does not undo effects already performed.",
     "practiceCode": "async fn save_then_ack() {\n    save_record().await;\n    // Cancellation here means saved,\n    // but not acknowledged.\n    send_ack().await;\n}",
-    "question": "When may cancellation occur?",
+    "question": "What cancels an ordinary owned future, including one that has not been polled?",
     "rule": "Selecting or timing out a future may drop it before completion.",
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Expect a future to be dropped at any `await` point.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Run the complete example and predict saved=true acknowledged=false. Then move drop before the first poll and predict that neither effect occurs. Relate this local demonstration to idempotent external operations."
   },
   "illustration": {
     "path": "media/async-cancellation.png",

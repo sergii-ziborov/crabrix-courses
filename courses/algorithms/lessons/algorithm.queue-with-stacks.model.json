@@ -7,7 +7,7 @@
     "expectedAnswer": "8",
     "idea": "Reverse the input stack into an output stack only when the output side is empty.",
     "patternID": "queue-with-stacks",
-    "rustSketch": "fn balanced(text: &str) -> bool {\n    let mut stack = Vec::new();\n    for ch in text.chars() {\n        match ch {\n            '(' | '[' | '{' => stack.push(ch),\n            ')' => if stack.pop() != Some('(') { return false; },\n            ']' => if stack.pop() != Some('[') { return false; },\n            '}' => if stack.pop() != Some('{') { return false; },\n            _ => {}\n        }\n    }\n    stack.is_empty()\n}",
+    "rustSketch": "fn queue_front(operations:&[&str])->i32 {\n    let (mut incoming,mut outgoing)=(Vec::new(),Vec::new());\n    for op in operations {\n        if let Some(value)=op.strip_prefix(\"enqueue\") { incoming.push(value.parse::<i32>().unwrap()); continue; }\n        if outgoing.is_empty() { while let Some(x)=incoming.pop() { outgoing.push(x); } }\n        if *op==\"dequeue\" { outgoing.pop().unwrap(); }\n    }\n    *outgoing.last().unwrap()\n}\n\nfn main() {\n    let result = queue_front(&[\"enqueue3\",\"enqueue5\",\"enqueue8\",\"dequeue\",\"dequeue\",\"enqueue2\",\"front\"]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Execute the space-separated queue operations and return the value produced by front.",
     "useCases": "amortised FIFO from LIFO primitives",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "After push 5, push 2, push 4, pop, return the minimum.",
         "direction": "previous",
-        "title": "Challenge: Min Stack"
+        "title": "Challenge: Min Stack",
+        "concept": "After push 5, push 2, push 4, pop, return the minimum."
       },
       {
-        "concept": "amortised FIFO from LIFO primitives",
         "direction": "next",
-        "title": "Queue from Two Stacks: When to Use It"
+        "title": "Queue from Two Stacks: When to Use It",
+        "concept": "amortised FIFO from LIFO primitives"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "Reversing a whole batch restores FIFO order without disturbing older items. Enqueue 3,5,8 into incoming. Its transfer produces outgoing top 3; two dequeues remove 3 and 5. Enqueuing 2 remains in incoming while outgoing top 8 is still the correct front.",
+    "misconception": "“Every dequeue must transfer all items twice”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `enqueue3 enqueue5 enqueue8 dequeue dequeue enqueue2 front`, write the state before the first update. Explain how it represents this claim: Reverse the input stack into an output stack only when the output side is empty. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs."
+        "title": "Concrete transition",
+        "detail": "Enqueue 3,5,8 into incoming. Its transfer produces outgoing top 3; two dequeues remove 3 and 5. Enqueuing 2 remains in incoming while outgoing top 8 is still the correct front."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `8`. `Vec` works as a stack; `VecDeque` supplies efficient operations at both ends. Avoid removing from the front of a `Vec` in a long loop."
+        "title": "Independent second fixture",
+        "detail": "Input `enqueue9 front` produces `9`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Defend the O(1) amortised operation · O(n) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `enqueue4 enqueue5 enqueue6 dequeue front` produces `5`. Reversing a whole batch restores FIFO order without disturbing older items. The stated work bound is O(1) amortised operation · O(n) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `enqueue3 enqueue5 enqueue8 dequeue dequeue enqueue2 front` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Queue from Two Stacks survives, which state must be updated, and whether the O(1) amortised operation · O(n) space bound still holds. Look for nested structure, next-greater relationships, or ordered processing. A plain scan is enough when no unresolved state must be retained."
+    "transferChallenge": "Compare the visible input `enqueue3 enqueue5 enqueue8 dequeue dequeue enqueue2 front` with `enqueue1 enqueue2 dequeue enqueue3 front`. Predict why their results are `8` and `2`. Then change one legal value and explain whether the same invariant, reversing a whole batch restores fifo order without disturbing older items, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.queue-with-stacks.model",
@@ -54,21 +54,21 @@
   "title": "Queue from Two Stacks: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "Reversing a whole batch restores FIFO order without disturbing older items",
+      "Every dequeue must transfer all items twice",
+      "Incoming and outgoing items may be arbitrarily interleaved"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(1) amortised operation · O(n) space",
-    "exampleCode": "fn balanced(text: &str) -> bool {\n    let mut stack = Vec::new();\n    for ch in text.chars() {\n        match ch {\n            '(' | '[' | '{' => stack.push(ch),\n            ')' => if stack.pop() != Some('(') { return false; },\n            ']' => if stack.pop() != Some('[') { return false; },\n            '}' => if stack.pop() != Some('{') { return false; },\n            _ => {}\n        }\n    }\n    stack.is_empty()\n}",
-    "explanation": "Begin with the concrete question: Execute the space-separated queue operations and return the value produced by front. For the visible input `enqueue3 enqueue5 enqueue8 dequeue dequeue enqueue2 front`, the stated result is `8`. Before reading code, name the smallest piece of information that must survive from one step to the next. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs. That is the mental model for Queue from Two Stacks; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Reverse the input stack into an output stack only when the output side is empty. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. `Vec` works as a stack; `VecDeque` supplies efficient operations at both ends. Avoid removing from the front of a `Vec` in a long loop. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(1) amortised operation · O(n) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn balanced(text: &str) -> bool {\n    let mut stack = Vec::new();\n    for ch in text.chars() {\n        match ch {\n            '(' | '[' | '{' => stack.push(ch),\n            ')' => if stack.pop() != Some('(') { return false; },\n            ']' => if stack.pop() != Some('[') { return false; },\n            '}' => if stack.pop() != Some('{') { return false; },\n            _ => {}\n        }\n    }\n    stack.is_empty()\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only queue-with-stacks program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn queue_front(operations:&[&str])->i32 {\n    let (mut incoming,mut outgoing)=(Vec::new(),Vec::new());\n    for op in operations {\n        if let Some(value)=op.strip_prefix(\"enqueue\") { incoming.push(value.parse::<i32>().unwrap()); continue; }\n        if outgoing.is_empty() { while let Some(x)=incoming.pop() { outgoing.push(x); } }\n        if *op==\"dequeue\" { outgoing.pop().unwrap(); }\n    }\n    *outgoing.last().unwrap()\n}\n\nfn main() {\n    let result = queue_front(&[\"enqueue3\",\"enqueue5\",\"enqueue8\",\"dequeue\",\"dequeue\",\"enqueue2\",\"front\"]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "Enqueue 3,5,8 into incoming. Its transfer produces outgoing top 3; two dequeues remove 3 and 5. Enqueuing 2 remains in incoming while outgoing top 8 is still the correct front.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Execute the space-separated queue operations and return the value produced by front. The visible fixture is `enqueue3 enqueue5 enqueue8 dequeue dequeue enqueue2 front` and its example result is `8`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Execute the space-separated queue operations and return the value produced by front. For the visible input `enqueue3 enqueue5 enqueue8 dequeue dequeue enqueue2 front`, the stated result is `8`. Before reading code, name the smallest piece of information that must survive from one step to the next. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs. That is the mental model for Queue from Two Stacks; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Reverse the input stack into an output stack only when the output side is empty. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(1) amortised operation · O(n) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "Enqueue 3,5,8 into incoming. Its transfer produces outgoing top 3; two dequeues remove 3 and 5. Enqueuing 2 remains in incoming while outgoing top 8 is still the correct front.",
+    "practiceCode": "fn queue_front(operations:&[&str])->i32 {\n    let (mut incoming,mut outgoing)=(Vec::new(),Vec::new());\n    for op in operations {\n        if let Some(value)=op.strip_prefix(\"enqueue\") { incoming.push(value.parse::<i32>().unwrap()); continue; }\n        if outgoing.is_empty() { while let Some(x)=incoming.pop() { outgoing.push(x); } }\n        if *op==\"dequeue\" { outgoing.pop().unwrap(); }\n    }\n    *outgoing.last().unwrap()\n}\n\nfn main() {\n    let result = queue_front(&[\"enqueue3\",\"enqueue5\",\"enqueue8\",\"dequeue\",\"dequeue\",\"enqueue2\",\"front\"]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Why transfer incoming items only when the outgoing stack is empty?",
+    "rule": "Reversing a whole batch restores FIFO order without disturbing older items. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(1) amortised operation · O(n) space bound without looking at the code.",
     "summary": "Reverse the input stack into an output stack only when the output side is empty.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-stacks-queues-a.png",

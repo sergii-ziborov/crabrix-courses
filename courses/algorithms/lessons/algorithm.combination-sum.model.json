@@ -7,44 +7,44 @@
     "expectedAnswer": "2,2,3;7",
     "idea": "Choose a candidate again or move forward while pruning when the remaining target is negative.",
     "patternID": "combination-sum",
-    "rustSketch": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn semicolon<T:std::fmt::Display>(a:Vec<Vec<T>>)->String { a.into_iter().map(csv).collect::<Vec<_>>().join(\";\") }\nfn combinations_sum(candidates:&[i32],target:i32)->Vec<Vec<i32>> {\n    fn visit(a:&[i32],start:usize,left:i32,path:&mut Vec<i32>,out:&mut Vec<Vec<i32>>) {\n        if left==0 { out.push(path.clone()); return; }\n        for i in start..a.len() { if a[i]>left { break; } path.push(a[i]); visit(a,i,left-a[i],path,out); path.pop(); }\n    }\n    let mut a=candidates.to_vec(); assert!(a.iter().all(|&x|x>0)); a.sort_unstable(); a.dedup();\n    let mut out=Vec::new(); visit(&a,0,target,&mut Vec::new(),&mut out); out\n}\n\nfn main() {\n    let result = semicolon(combinations_sum(&[2,3,6,7],7));\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return unique nondecreasing combinations summing to 7.",
     "useCases": "unbounded sum construction and coin-like enumeration",
     "visibleInput": "candidates=[2,3,6,7]"
   },
   "concept": "Choose a candidate again or move forward while pruning when the remaining target is negative.",
-  "contentDigest": "eb635b79706ca530a982407e6937884d84897fe900b2ba245258e88973269115",
+  "contentDigest": "30930f558ec5dcc50e6d267d5cff222a1a1bbb43b9950d4e53b68ddb3afe544a",
   "depth": {
     "connections": [
       {
-        "concept": "Return all size-two combinations in lexicographic order.",
         "direction": "previous",
-        "title": "Challenge: Combination Backtracking"
+        "title": "Challenge: Combination Backtracking",
+        "concept": "Return all size-two combinations in lexicographic order."
       },
       {
-        "concept": "unbounded sum construction and coin-like enumeration",
         "direction": "next",
-        "title": "Combination Sum: When to Use It"
+        "title": "Combination Sum: When to Use It",
+        "concept": "unbounded sum construction and coin-like enumeration"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "The task allows that candidate to be used repeatedly. Candidates [2,3,6,7] can make [2,2,3] and [7] for target 7. Positive candidate values ensure remaining target decreases. A nondecreasing candidate index avoids reporting the same value combination in different orders.",
+    "misconception": "“Every candidate must be consumed exactly once”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `candidates=[2,3,6,7]`, write the state before the first update. Explain how it represents this claim: Choose a candidate again or move forward while pruning when the remaining target is negative. Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains."
+        "title": "Concrete transition",
+        "detail": "Candidates [2,3,6,7] can make [2,2,3] and [7] for target 7. Positive candidate values ensure remaining target decreases. A nondecreasing candidate index avoids reporting the same value combination in different orders."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `2,2,3;7`. For recursive search, push a choice, recurse, then undo it; for meet-in-the-middle, collect each half before matching them. In Rust, clone a path only when storing a completed answer."
+        "title": "Independent second fixture",
+        "detail": "Input `candidates=[1,7]` produces `1,1,1,1,1,1,1;7`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. Defend the Exponential worst case · O(target) depth bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `candidates=[2,5]` produces `2,5`. The task allows that candidate to be used repeatedly. The stated work bound is Exponential worst case · O(target) depth. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `candidates=[2,3,6,7]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Combination Sum survives, which state must be updated, and whether the Exponential worst case · O(target) depth bound still holds. Use pruning when partial choices can already be ruled out. Meet-in-the-middle instead trades two exhaustive half-enumerations for a smaller search space."
+    "transferChallenge": "Compare the visible input `candidates=[2,3,6,7]` with `candidates=[4,5]`. Predict why their results are `2,2,3;7` and An empty output string. Then change one legal value and explain whether the same invariant, the task allows that candidate to be used repeatedly, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.combination-sum.model",
@@ -54,21 +54,21 @@
   "title": "Combination Sum: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "The task allows that candidate to be used repeatedly",
+      "Every candidate must be consumed exactly once",
+      "Repeating an index ensures each output is duplicated"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target Exponential worst case · O(target) depth",
-    "exampleCode": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
-    "explanation": "Begin with the concrete question: Return unique nondecreasing combinations summing to 7. For the visible input `candidates=[2,3,6,7]`, the stated result is `2,2,3;7`. Before reading code, name the smallest piece of information that must survive from one step to the next. Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains. That is the mental model for Combination Sum; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Choose a candidate again or move forward while pruning when the remaining target is negative. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. For recursive search, push a choice, recurse, then undo it; for meet-in-the-middle, collect each half before matching them. In Rust, clone a path only when storing a completed answer. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, Exponential worst case · O(target) depth. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only combination-sum program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn semicolon<T:std::fmt::Display>(a:Vec<Vec<T>>)->String { a.into_iter().map(csv).collect::<Vec<_>>().join(\";\") }\nfn combinations_sum(candidates:&[i32],target:i32)->Vec<Vec<i32>> {\n    fn visit(a:&[i32],start:usize,left:i32,path:&mut Vec<i32>,out:&mut Vec<Vec<i32>>) {\n        if left==0 { out.push(path.clone()); return; }\n        for i in start..a.len() { if a[i]>left { break; } path.push(a[i]); visit(a,i,left-a[i],path,out); path.pop(); }\n    }\n    let mut a=candidates.to_vec(); assert!(a.iter().all(|&x|x>0)); a.sort_unstable(); a.dedup();\n    let mut out=Vec::new(); visit(&a,0,target,&mut Vec::new(),&mut out); out\n}\n\nfn main() {\n    let result = semicolon(combinations_sum(&[2,3,6,7],7));\n    println!(\"{result}\");\n}\n",
+    "explanation": "Candidates [2,3,6,7] can make [2,2,3] and [7] for target 7. Positive candidate values ensure remaining target decreases. A nondecreasing candidate index avoids reporting the same value combination in different orders.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return unique nondecreasing combinations summing to 7. The visible fixture is `candidates=[2,3,6,7]` and its example result is `2,2,3;7`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return unique nondecreasing combinations summing to 7. For the visible input `candidates=[2,3,6,7]`, the stated result is `2,2,3;7`. Before reading code, name the smallest piece of information that must survive from one step to the next. Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains. That is the mental model for Combination Sum; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Choose a candidate again or move forward while pruning when the remaining target is negative. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, Exponential worst case · O(target) depth. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "Candidates [2,3,6,7] can make [2,2,3] and [7] for target 7. Positive candidate values ensure remaining target decreases. A nondecreasing candidate index avoids reporting the same value combination in different orders.",
+    "practiceCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn semicolon<T:std::fmt::Display>(a:Vec<Vec<T>>)->String { a.into_iter().map(csv).collect::<Vec<_>>().join(\";\") }\nfn combinations_sum(candidates:&[i32],target:i32)->Vec<Vec<i32>> {\n    fn visit(a:&[i32],start:usize,left:i32,path:&mut Vec<i32>,out:&mut Vec<Vec<i32>>) {\n        if left==0 { out.push(path.clone()); return; }\n        for i in start..a.len() { if a[i]>left { break; } path.push(a[i]); visit(a,i,left-a[i],path,out); path.pop(); }\n    }\n    let mut a=candidates.to_vec(); assert!(a.iter().all(|&x|x>0)); a.sort_unstable(); a.dedup();\n    let mut out=Vec::new(); visit(&a,0,target,&mut Vec::new(),&mut out); out\n}\n\nfn main() {\n    let result = semicolon(combinations_sum(&[2,3,6,7],7));\n    println!(\"{result}\");\n}\n",
+    "question": "Why recurse from the same candidate index after choosing a value?",
+    "rule": "The task allows that candidate to be used repeatedly. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and Exponential worst case · O(target) depth bound without looking at the code.",
     "summary": "Choose a candidate again or move forward while pruning when the remaining target is negative.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-backtracking-a.png",

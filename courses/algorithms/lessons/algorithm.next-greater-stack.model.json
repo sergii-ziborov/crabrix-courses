@@ -7,7 +7,7 @@
     "expectedAnswer": "4,2,4,-1,-1",
     "idea": "Keep unresolved indexes in decreasing value order and resolve them when a larger value appears.",
     "patternID": "next-greater-stack",
-    "rustSketch": "fn balanced(text: &str) -> bool {\n    let mut stack = Vec::new();\n    for ch in text.chars() {\n        match ch {\n            '(' | '[' | '{' => stack.push(ch),\n            ')' => if stack.pop() != Some('(') { return false; },\n            ']' => if stack.pop() != Some('[') { return false; },\n            '}' => if stack.pop() != Some('{') { return false; },\n            _ => {}\n        }\n    }\n    stack.is_empty()\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn next_greater(values:&[i32])->Vec<i32> {\n    let mut result=vec![-1;values.len()]; let mut unresolved=Vec::new();\n    for (i,&x) in values.iter().enumerate() {\n        while unresolved.last().is_some_and(|&j|values[j]<x) { result[unresolved.pop().unwrap()]=x; }\n        unresolved.push(i);\n    }\n    result\n}\n\nfn main() {\n    let result = csv(next_greater(&[2,1,2,4,3]));\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return the next greater value to the right, or -1.",
     "useCases": "next warmer day, next greater price, span queries",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Execute the space-separated queue operations and return the value produced by front.",
         "direction": "previous",
-        "title": "Challenge: Queue from Two Stacks"
+        "title": "Challenge: Queue from Two Stacks",
+        "concept": "Execute the space-separated queue operations and return the value produced by front."
       },
       {
-        "concept": "next warmer day, next greater price, span queries",
         "direction": "next",
-        "title": "Next Greater Element: When to Use It"
+        "title": "Next Greater Element: When to Use It",
+        "concept": "next warmer day, next greater price, span queries"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "It is the first larger value encountered to their right. For [2,1,2,4,3], the second 2 resolves index 1 to 2. Value 4 then resolves both earlier unresolved 2s to 4. Indexes of 4 and final 3 remain unresolved and receive -1.",
+    "misconception": "“The popped indexes belong to already sorted input”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[2,1,2,4,3]`, write the state before the first update. Explain how it represents this claim: Keep unresolved indexes in decreasing value order and resolve them when a larger value appears. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs."
+        "title": "Concrete transition",
+        "detail": "For [2,1,2,4,3], the second 2 resolves index 1 to 2. Value 4 then resolves both earlier unresolved 2s to 4. Indexes of 4 and final 3 remain unresolved and receive -1."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `4,2,4,-1,-1`. `Vec` works as a stack; `VecDeque` supplies efficient operations at both ends. Avoid removing from the front of a `Vec` in a long loop."
+        "title": "Independent second fixture",
+        "detail": "Input `[1,2,3,4,5,6,7]` produces `2,3,4,5,6,7,-1`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Defend the O(n) time · O(n) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[8,7,6,5,4,3,2]` produces `-1,-1,-1,-1,-1,-1,-1`. It is the first larger value encountered to their right. The stated work bound is O(n) time · O(n) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[2,1,2,4,3]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Next Greater Element survives, which state must be updated, and whether the O(n) time · O(n) space bound still holds. Look for nested structure, next-greater relationships, or ordered processing. A plain scan is enough when no unresolved state must be retained."
+    "transferChallenge": "Compare the visible input `[2,1,2,4,3]` with `[3,3,3,3,3,3,3]`. Predict why their results are `4,2,4,-1,-1` and `-1,-1,-1,-1,-1,-1,-1`. Then change one legal value and explain whether the same invariant, it is the first larger value encountered to their right, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.next-greater-stack.model",
@@ -54,21 +54,21 @@
   "title": "Next Greater Element: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "It is the first larger value encountered to their right",
+      "The popped indexes belong to already sorted input",
+      "A later value can always replace their answer"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n) time · O(n) space",
-    "exampleCode": "fn balanced(text: &str) -> bool {\n    let mut stack = Vec::new();\n    for ch in text.chars() {\n        match ch {\n            '(' | '[' | '{' => stack.push(ch),\n            ')' => if stack.pop() != Some('(') { return false; },\n            ']' => if stack.pop() != Some('[') { return false; },\n            '}' => if stack.pop() != Some('{') { return false; },\n            _ => {}\n        }\n    }\n    stack.is_empty()\n}",
-    "explanation": "Begin with the concrete question: Return the next greater value to the right, or -1. For the visible input `[2,1,2,4,3]`, the stated result is `4,2,4,-1,-1`. Before reading code, name the smallest piece of information that must survive from one step to the next. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs. That is the mental model for Next Greater Element; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Keep unresolved indexes in decreasing value order and resolve them when a larger value appears. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. `Vec` works as a stack; `VecDeque` supplies efficient operations at both ends. Avoid removing from the front of a `Vec` in a long loop. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n) time · O(n) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn balanced(text: &str) -> bool {\n    let mut stack = Vec::new();\n    for ch in text.chars() {\n        match ch {\n            '(' | '[' | '{' => stack.push(ch),\n            ')' => if stack.pop() != Some('(') { return false; },\n            ']' => if stack.pop() != Some('[') { return false; },\n            '}' => if stack.pop() != Some('{') { return false; },\n            _ => {}\n        }\n    }\n    stack.is_empty()\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only next-greater-stack program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn next_greater(values:&[i32])->Vec<i32> {\n    let mut result=vec![-1;values.len()]; let mut unresolved=Vec::new();\n    for (i,&x) in values.iter().enumerate() {\n        while unresolved.last().is_some_and(|&j|values[j]<x) { result[unresolved.pop().unwrap()]=x; }\n        unresolved.push(i);\n    }\n    result\n}\n\nfn main() {\n    let result = csv(next_greater(&[2,1,2,4,3]));\n    println!(\"{result}\");\n}\n",
+    "explanation": "For [2,1,2,4,3], the second 2 resolves index 1 to 2. Value 4 then resolves both earlier unresolved 2s to 4. Indexes of 4 and final 3 remain unresolved and receive -1.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the next greater value to the right, or -1. The visible fixture is `[2,1,2,4,3]` and its example result is `4,2,4,-1,-1`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return the next greater value to the right, or -1. For the visible input `[2,1,2,4,3]`, the stated result is `4,2,4,-1,-1`. Before reading code, name the smallest piece of information that must survive from one step to the next. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs. That is the mental model for Next Greater Element; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Keep unresolved indexes in decreasing value order and resolve them when a larger value appears. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n) time · O(n) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "For [2,1,2,4,3], the second 2 resolves index 1 to 2. Value 4 then resolves both earlier unresolved 2s to 4. Indexes of 4 and final 3 remain unresolved and receive -1.",
+    "practiceCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn next_greater(values:&[i32])->Vec<i32> {\n    let mut result=vec![-1;values.len()]; let mut unresolved=Vec::new();\n    for (i,&x) in values.iter().enumerate() {\n        while unresolved.last().is_some_and(|&j|values[j]<x) { result[unresolved.pop().unwrap()]=x; }\n        unresolved.push(i);\n    }\n    result\n}\n\nfn main() {\n    let result = csv(next_greater(&[2,1,2,4,3]));\n    println!(\"{result}\");\n}\n",
+    "question": "When a larger value arrives, why can popped indexes receive their final next-greater answer?",
+    "rule": "It is the first larger value encountered to their right. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(n) space bound without looking at the code.",
     "summary": "Keep unresolved indexes in decreasing value order and resolve them when a larger value appears.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-stacks-queues-a.png",

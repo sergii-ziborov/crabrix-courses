@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS same-direction\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"7,5,9\".to_string()",
-      "String::from(\"7,5,9\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.same-direction.challenge",
     "patternID": "same-direction",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Remove values below 5 stably and return the kept prefix.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Same-Direction Pointers\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Remove values below 5 stably and return the kept prefix.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement same-direction\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "7,5,9",
+        "kind": "visible",
         "input": "[7,2,5,4,9]",
-        "kind": "visible"
+        "expectedAnswer": "7,5,9"
       },
       {
-        "expectedAnswer": "6,5",
+        "kind": "boundary",
         "input": "[1,6,5]",
-        "kind": "boundary"
+        "expectedAnswer": "6,5"
       },
       {
-        "expectedAnswer": "6,5",
-        "input": "\n[1,6,5]\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "[1,2,3,4,5,6,7]",
+        "expectedAnswer": "5,6,7"
       },
       {
-        "expectedAnswer": "7,5,9",
+        "kind": "adversarial",
+        "input": "[3,3,3,3,3,3,3]",
+        "expectedAnswer": ""
+      },
+      {
+        "kind": "adversarial",
+        "input": "[8,7,6,5,4,3,2]",
+        "expectedAnswer": "8,7,6,5"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \n[7,2,5,4,9]\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "7,5,9"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\n[8,7,6,5,4,3,2]\n",
+        "expectedAnswer": "8,7,6,5"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"[7,2,5,4,9]\"#, r#\"7,5,9\"#),\n    (r#\"[1,6,5]\"#, r#\"6,5\"#),\n    (r#\"\n[1,6,5]\n\"#, r#\"6,5\"#),\n    (r#\"  \n[7,2,5,4,9]\n  \"#, r#\"7,5,9\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS same-direction\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"[7,2,5,4,9]\",\"7,5,9\"),\n        (\"[1,6,5]\",\"6,5\"),\n        (\"[1,2,3,4,5,6,7]\",\"5,6,7\"),\n        (\"[3,3,3,3,3,3,3]\",\"\"),\n        (\"[8,7,6,5,4,3,2]\",\"8,7,6,5\"),\n        (\"  \\n[7,2,5,4,9]\\n  \",\"7,5,9\"),\n        (\"\\n[8,7,6,5,4,3,2]\\n\",\"8,7,6,5\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS same-direction\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS same-direction\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"7,5,9\".to_string()",
-      "String::from(\"7,5,9\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

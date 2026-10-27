@@ -7,44 +7,44 @@
     "expectedAnswer": "5",
     "idea": "Expand the smaller frontier from each endpoint until the visited sets meet.",
     "patternID": "bidirectional-bfs",
-    "rustSketch": "// Dijkstra invariant:\n// when the smallest tentative distance is popped and is current,\n// no later non-negative path can improve that node.",
+    "rustSketch": "fn ladder_length(start:&str,goal:&str,words:&[&str])->usize {\n    use std::collections::{HashMap,HashSet};\n    let mut front=HashSet::from([start.to_owned()]); let mut back=HashSet::from([goal.to_owned()]);\n    let mut left=HashMap::from([(start.to_owned(),1)]); let mut right=HashMap::from([(goal.to_owned(),1)]);\n    while !front.is_empty() && !back.is_empty() {\n        if front.len()>back.len() { std::mem::swap(&mut front,&mut back); std::mem::swap(&mut left,&mut right); }\n        let mut next=HashSet::new(); let mut best=usize::MAX;\n        for word in &front {\n            if let Some(&d)=right.get(word) { best=best.min(left[word]+d-1); }\n            for &candidate in words {\n                if candidate.len()!=word.len() || word.bytes().zip(candidate.bytes()).filter(|(a,b)|a!=b).count()!=1 { continue; }\n                let d=left[word]+1;\n                if let Some(&other)=right.get(candidate) { best=best.min(d+other-1); }\n                if !left.contains_key(candidate) { left.insert(candidate.to_owned(),d); next.insert(candidate.to_owned()); }\n            }\n        }\n        if best!=usize::MAX { return best; } front=next;\n    }\n    0\n}\n\nfn main() {\n    let result = ladder_length(\"hit\",\"cog\",&[\"hot\",\"dot\",\"dog\",\"lot\",\"log\",\"cog\"]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return word-ladder length changing one letter at a time.",
     "useCases": "unweighted shortest paths with one source and one target",
     "visibleInput": "hit -> cog via [hot,dot,dog,lot,log,cog]"
   },
   "concept": "Expand the smaller frontier from each endpoint until the visited sets meet.",
-  "contentDigest": "79b2d528bb6db73ef3aca3c6cc662cd1bdefa494b144dc06632bd42ad25ae23b",
+  "contentDigest": "4bd75b01a941d91175474558cd75a7f9a54069ab12434c62a7e9a07bcfc29257",
   "depth": {
     "connections": [
       {
-        "concept": "On a 4x4 empty grid, return shortest moves from (0,0) to (3,2) using Manhattan heuristic.",
         "direction": "previous",
-        "title": "Challenge: A* Search"
+        "title": "Challenge: A* Search",
+        "concept": "On a 4x4 empty grid, return shortest moves from (0,0) to (3,2) using Manhattan heuristic."
       },
       {
-        "concept": "unweighted shortest paths with one source and one target",
         "direction": "next",
-        "title": "Bidirectional BFS: When to Use It"
+        "title": "Bidirectional BFS: When to Use It",
+        "concept": "unweighted shortest paths with one source and one target"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "Layer distances remain meaningful when the two searches meet. The ladder hit→hot→dot→dog→cog contains 5 words and 4 transformations. Search from both endpoints and expand the smaller frontier layer, comparing meeting distances. No valid connecting sequence yields the explicit result 0.",
+    "misconception": "“A single arbitrary branch always gives the shortest ladder”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `hit -> cog via [hot,dot,dog,lot,log,cog]`, write the state before the first update. Explain how it represents this claim: Expand the smaller frontier from each endpoint until the visited sets meet. Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state."
+        "title": "Concrete transition",
+        "detail": "The ladder hit→hot→dot→dog→cog contains 5 words and 4 transformations. Search from both endpoints and expand the smaller frontier layer, comparing meeting distances. No valid connecting sequence yields the explicit result 0."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `5`. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic."
+        "title": "Independent second fixture",
+        "detail": "Input `cat -> dog via [cot,cog,dog]` produces `4`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Defend the O(b^(d/2)) frontier typical · O(V) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `aaa -> bbb via [aab,abb,bbb]` produces `4`. Layer distances remain meaningful when the two searches meet. The stated work bound is O(b^(d/2)) frontier typical · O(V) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `hit -> cog via [hot,dot,dog,lot,log,cog]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Bidirectional BFS survives, which state must be updated, and whether the O(b^(d/2)) frontier typical · O(V) space bound still holds. Inspect weight signs and graph direction: non-negative shortest paths, negative edges, and zero-one weights support different algorithms."
+    "transferChallenge": "Compare the visible input `hit -> cog via [hot,dot,dog,lot,log,cog]` with `hit -> cog via [hot,dot]`. Predict why their results are `5` and `0`. Then change one legal value and explain whether the same invariant, layer distances remain meaningful when the two searches meet, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.bidirectional-bfs.model",
@@ -54,21 +54,21 @@
   "title": "Bidirectional BFS: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "Layer distances remain meaningful when the two searches meet",
+      "A single arbitrary branch always gives the shortest ladder",
+      "The smaller frontier's words may be skipped"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(b^(d/2)) frontier typical · O(V) space",
-    "exampleCode": "// Dijkstra invariant:\n// when the smallest tentative distance is popped and is current,\n// no later non-negative path can improve that node.",
-    "explanation": "Begin with the concrete question: Return word-ladder length changing one letter at a time. For the visible input `hit -> cog via [hot,dot,dog,lot,log,cog]`, the stated result is `5`. Before reading code, name the smallest piece of information that must survive from one step to the next. Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state. That is the mental model for Bidirectional BFS; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Expand the smaller frontier from each endpoint until the visited sets meet. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is an invariant note rather than a complete program. Turn it into explicit state and transitions before coding. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(b^(d/2)) frontier typical · O(V) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "// Dijkstra invariant:\n// when the smallest tentative distance is popped and is current,\n// no later non-negative path can improve that node.",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only bidirectional-bfs program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn ladder_length(start:&str,goal:&str,words:&[&str])->usize {\n    use std::collections::{HashMap,HashSet};\n    let mut front=HashSet::from([start.to_owned()]); let mut back=HashSet::from([goal.to_owned()]);\n    let mut left=HashMap::from([(start.to_owned(),1)]); let mut right=HashMap::from([(goal.to_owned(),1)]);\n    while !front.is_empty() && !back.is_empty() {\n        if front.len()>back.len() { std::mem::swap(&mut front,&mut back); std::mem::swap(&mut left,&mut right); }\n        let mut next=HashSet::new(); let mut best=usize::MAX;\n        for word in &front {\n            if let Some(&d)=right.get(word) { best=best.min(left[word]+d-1); }\n            for &candidate in words {\n                if candidate.len()!=word.len() || word.bytes().zip(candidate.bytes()).filter(|(a,b)|a!=b).count()!=1 { continue; }\n                let d=left[word]+1;\n                if let Some(&other)=right.get(candidate) { best=best.min(d+other-1); }\n                if !left.contains_key(candidate) { left.insert(candidate.to_owned(),d); next.insert(candidate.to_owned()); }\n            }\n        }\n        if best!=usize::MAX { return best; } front=next;\n    }\n    0\n}\n\nfn main() {\n    let result = ladder_length(\"hit\",\"cog\",&[\"hot\",\"dot\",\"dog\",\"lot\",\"log\",\"cog\"]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "The ladder hit→hot→dot→dog→cog contains 5 words and 4 transformations. Search from both endpoints and expand the smaller frontier layer, comparing meeting distances. No valid connecting sequence yields the explicit result 0.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return word-ladder length changing one letter at a time. The visible fixture is `hit -> cog via [hot,dot,dog,lot,log,cog]` and its example result is `5`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return word-ladder length changing one letter at a time. For the visible input `hit -> cog via [hot,dot,dog,lot,log,cog]`, the stated result is `5`. Before reading code, name the smallest piece of information that must survive from one step to the next. Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state. That is the mental model for Bidirectional BFS; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Expand the smaller frontier from each endpoint until the visited sets meet. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(b^(d/2)) frontier typical · O(V) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "The ladder hit→hot→dot→dog→cog contains 5 words and 4 transformations. Search from both endpoints and expand the smaller frontier layer, comparing meeting distances. No valid connecting sequence yields the explicit result 0.",
+    "practiceCode": "fn ladder_length(start:&str,goal:&str,words:&[&str])->usize {\n    use std::collections::{HashMap,HashSet};\n    let mut front=HashSet::from([start.to_owned()]); let mut back=HashSet::from([goal.to_owned()]);\n    let mut left=HashMap::from([(start.to_owned(),1)]); let mut right=HashMap::from([(goal.to_owned(),1)]);\n    while !front.is_empty() && !back.is_empty() {\n        if front.len()>back.len() { std::mem::swap(&mut front,&mut back); std::mem::swap(&mut left,&mut right); }\n        let mut next=HashSet::new(); let mut best=usize::MAX;\n        for word in &front {\n            if let Some(&d)=right.get(word) { best=best.min(left[word]+d-1); }\n            for &candidate in words {\n                if candidate.len()!=word.len() || word.bytes().zip(candidate.bytes()).filter(|(a,b)|a!=b).count()!=1 { continue; }\n                let d=left[word]+1;\n                if let Some(&other)=right.get(candidate) { best=best.min(d+other-1); }\n                if !left.contains_key(candidate) { left.insert(candidate.to_owned(),d); next.insert(candidate.to_owned()); }\n            }\n        }\n        if best!=usize::MAX { return best; } front=next;\n    }\n    0\n}\n\nfn main() {\n    let result = ladder_length(\"hit\",\"cog\",&[\"hot\",\"dot\",\"dog\",\"lot\",\"log\",\"cog\"]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Why expand a complete layer from one word-ladder frontier?",
+    "rule": "Layer distances remain meaningful when the two searches meet. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(b^(d/2)) frontier typical · O(V) space bound without looking at the code.",
     "summary": "Expand the smaller frontier from each endpoint until the visited sets meet.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-weighted-graphs-b.png",

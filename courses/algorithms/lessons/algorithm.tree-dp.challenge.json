@@ -7,7 +7,7 @@
     "expectedAnswer": "7",
     "idea": "Return a compact choice summary from each subtree and combine children at their parent.",
     "patternID": "tree-dp",
-    "rustSketch": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
+    "rustSketch": "\ntype Tree=Option<Box<Node>>;\nstruct Node { value:i32, left:Tree, right:Tree }\nfn node(value:i32,left:Tree,right:Tree)->Tree { Some(Box::new(Node{value,left,right})) }\nfn tree_independent_sum(root:&Tree)->i32 {\n    fn states(root:&Tree)->(i32,i32) {\n        match root { None=>(0,0),Some(n)=>{\n            let (li,le)=states(&n.left); let (ri,re)=states(&n.right);\n            (n.value+le+re,li.max(le)+ri.max(re))\n        } }\n    }\n    let (included,excluded)=states(root); included.max(excluded)\n}\n\nfn main() {\n    let result = tree_independent_sum(&node(1,node(2,None,None),node(3,None,None))).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Return maximum sum of non-adjacent tree nodes.",
     "useCases": "independent sets, subtree counts, reroot-ready summaries",
@@ -18,33 +18,28 @@
   "depth": {
     "connections": [
       {
-        "concept": "independent sets, subtree counts, reroot-ready summaries",
         "direction": "previous",
-        "title": "Tree DP: When to Use It"
-      },
-      {
-        "concept": "Count the text unit the problem defines: bytes, Unicode scalar values, or grapheme clusters.",
-        "direction": "next",
-        "title": "Character Frequency: Mental Model"
+        "title": "Tree DP: When to Use It",
+        "concept": "independent sets, subtree counts, reroot-ready summaries"
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "Adjacent parent and child cannot both be selected. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“Including a parent excludes its entire descendant subtrees”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `tree=[3,2,3,null,3,null,1]`, write the state before the first update. Explain how it represents this claim: Return a compact choice summary from each subtree and combine children at their parent. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit."
+        "title": "Pattern-specific invariant",
+        "detail": "Adjacent parent and child cannot both be selected. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Index tables consistently where the state is tabular. Compress dimensions only after the full recurrence and its dependency order are clear."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `tree=[1,2,3]` and computes `5`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Defend the O(n) time · O(h) stack bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `[1,null,2,null,3]`, the independently calculated result is `4`. The complexity discussion uses O(n) time · O(h) stack. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `tree=[3,2,3,null,3,null,1]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Tree DP survives, which state must be updated, and whether the O(n) time · O(h) stack bound still holds. Write the dependency arrows before choosing loop order; a recurrence that reads the future cannot be filled left to right without adjustment."
+    "transferChallenge": "Change the independent fixture `tree=[1,2,3]` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `tree=[3,2,3,null,3,null,1]`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.tree-dp.challenge",
@@ -54,19 +49,19 @@
   "title": "Challenge: Tree DP",
   "writing": {
     "answers": [
-      "O(n) time · O(h) stack",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`4`",
+      "`5`",
+      "`3`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return maximum sum of non-adjacent tree nodes.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Tree DP\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Return maximum sum of non-adjacent tree nodes. On input `tree=[3,2,3,null,3,null,1]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Return a compact choice summary from each subtree and combine children at their parent. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Index tables consistently where the state is tabular. Compress dimensions only after the full recurrence and its dependency order are clear. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(h) stack; explain which operation dominates it and how many times the input can trigger that operation. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(n) time · O(h) stack; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return maximum sum of non-adjacent tree nodes.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Tree DP\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS tree-dp, and your explanation still meets O(n) time · O(h) stack.",
+    "exampleCaption": "Complete std-only tree-dp program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "\ntype Tree=Option<Box<Node>>;\nstruct Node { value:i32, left:Tree, right:Tree }\nfn node(value:i32,left:Tree,right:Tree)->Tree { Some(Box::new(Node{value,left,right})) }\nfn tree_independent_sum(root:&Tree)->i32 {\n    fn states(root:&Tree)->(i32,i32) {\n        match root { None=>(0,0),Some(n)=>{\n            let (li,le)=states(&n.left); let (ri,re)=states(&n.right);\n            (n.value+le+re,li.max(le)+ri.max(re))\n        } }\n    }\n    let (included,excluded)=states(root); included.max(excluded)\n}\n\nfn main() {\n    let result = tree_independent_sum(&node(1,node(2,None,None),node(3,None,None))).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "Adjacent parent and child cannot both be selected. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `tree=[1,2,3]`, the worked program returns `5`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `tree=[3,2,3,null,3,null,1]`; predict that result before opening the answer reveal. The precise contract is: Return maximum sum of non-adjacent tree nodes.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Return maximum sum of non-adjacent tree nodes. On input `tree=[3,2,3,null,3,null,1]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Return a compact choice summary from each subtree and combine children at their parent. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(h) stack; explain which operation dominates it and how many times the input can trigger that operation. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `4`. Adjacent parent and child cannot both be selected. Compare this independent fixture with the worked trace: For tree [3,2,3,null,3,null,1], choosing root 3 plus grandchildren 3 and 1 yields 7. Each subtree returns two values: included and excluded. Excluding a node permits the better state independently from each child.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return maximum sum of non-adjacent tree nodes.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement tree-dp\")\n}\n",
+    "question": "Boundary check for tree-dp: with input `[1,null,2,null,3]`, what result should solve return?",
+    "rule": "Adjacent parent and child cannot both be selected. Return maximum sum of non-adjacent tree nodes.",
+    "success": "The private harness prints PASS tree-dp. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Return maximum sum of non-adjacent tree nodes.",
     "task": "Return maximum sum of non-adjacent tree nodes."
   },

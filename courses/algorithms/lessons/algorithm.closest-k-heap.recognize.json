@@ -7,44 +7,44 @@
     "expectedAnswer": "-2:2,2:-2",
     "idea": "Keep the worst current winner at the root so a better candidate replaces it.",
     "patternID": "closest-k-heap",
-    "rustSketch": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "rustSketch": "fn closest(points:&[(i32,i32)],k:usize)->Vec<(i32,i32)> {\n    let mut heap=std::collections::BinaryHeap::new();\n    for &(x,y) in points {\n        let distance=i64::from(x)*i64::from(x)+i64::from(y)*i64::from(y);\n        heap.push((distance,x,y)); if heap.len()>k { heap.pop(); }\n    }\n    let mut selected=heap.into_vec(); selected.sort_unstable(); selected.into_iter().map(|(_,x,y)|(x,y)).collect()\n}\n\nfn main() {\n    let result = closest(&[(1,3),(-2,2),(2,-2),(5,1)],2).iter().map(|(x,y)|format!(\"{x}:{y}\")).collect::<Vec<_>>().join(\",\");\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return the two points closest to the origin, ordered by distance then coordinates.",
     "useCases": "nearest points, closest values, approximate neighbors",
     "visibleInput": "[(1,3),(-2,2),(2,-2),(5,1)]"
   },
   "concept": "nearest points, closest values, approximate neighbors",
-  "contentDigest": "2d61966165d5287cbd3e9adb2af14a398aad6389a3932d590bc0add64aa47d0e",
+  "contentDigest": "e1ab3e95d6744a832eaef601e1a810498cddad227d038301c71a9af11e96664d",
   "depth": {
     "connections": [
       {
-        "concept": "Keep the worst current winner at the root so a better candidate replaces it.",
         "direction": "previous",
-        "title": "Bounded Heap for K Closest: Mental Model"
+        "title": "Bounded Heap for K Closest: Mental Model",
+        "concept": "Keep the worst current winner at the root so a better candidate replaces it."
       },
       {
-        "concept": "Return the two points closest to the origin, ordered by distance then coordinates.",
         "direction": "next",
-        "title": "Challenge: Bounded Heap for K Closest"
+        "title": "Challenge: Bounded Heap for K Closest",
+        "concept": "Return the two points closest to the origin, ordered by distance then coordinates."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "Squaring preserves the ordering of nonnegative distances. Points (-2,2) and (2,-2) both have squared distance 8, smaller than (1,3) at 10. The explicit coordinate tie break orders -2:2 before 2:-2. A bounded max-heap discards the farthest retained candidate.",
+    "misconception": "“Squared distance always equals ordinary distance”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[(1,3),(-2,2),(2,-2),(5,1)]`, write the state before the first update. Explain how it represents this claim: Keep the worst current winner at the root so a better candidate replaces it. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded."
+        "title": "Concrete transition",
+        "detail": "Points (-2,2) and (2,-2) both have squared distance 8, smaller than (1,3) at 10. The explicit coordinate tie break orders -2:2 before 2:-2. A bounded max-heap discards the farthest retained candidate."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `-2:2,2:-2`. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data."
+        "title": "Independent second fixture",
+        "detail": "Input `[(0,0),(1,0),(0,1)]` produces `0:0,0:1`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Defend the O(n log k) time · O(k) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[(3,4),(0,2),(2,0)]` produces `0:2,2:0`. Squaring preserves the ordering of nonnegative distances. The stated work bound is O(n log k) time · O(k) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[(1,3),(-2,2),(2,-2),(5,1)]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Bounded Heap for K Closest survives, which state must be updated, and whether the O(n log k) time · O(k) space bound still holds. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work."
+    "transferChallenge": "Compare the visible input `[(1,3),(-2,2),(2,-2),(5,1)]` with `[(-1,0),(1,0),(2,0)]`. Predict why their results are `-2:2,2:-2` and `-1:0,1:0`. Then change one legal value and explain whether the same invariant, squaring preserves the ordering of nonnegative distances, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.closest-k-heap.recognize",
@@ -54,21 +54,21 @@
   "title": "Bounded Heap for K Closest: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "nearest points, closest values, approximate neighbors",
-      "Only problems with exactly one input value"
+      "`0:0,0:10`",
+      "`0:0,0:1`",
+      "`1:0,0:0`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Bounded Heap for K Closest",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Bounded Heap for K Closest",
-    "explanation": "A problem is a good match for Bounded Heap for K Closest when it asks for nearest points, closest values, approximate neighbors. Here the concrete task is: Return the two points closest to the origin, ordered by distance then coordinates. The visible input `[(1,3),(-2,2),(2,-2),(5,1)]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Keep the worst current winner at the root so a better candidate replaces it. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n log k) time · O(k) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `-2:2,2:-2` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: nearest points, closest values, approximate neighbors.",
-    "practiceCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only closest-k-heap program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn closest(points:&[(i32,i32)],k:usize)->Vec<(i32,i32)> {\n    let mut heap=std::collections::BinaryHeap::new();\n    for &(x,y) in points {\n        let distance=i64::from(x)*i64::from(x)+i64::from(y)*i64::from(y);\n        heap.push((distance,x,y)); if heap.len()>k { heap.pop(); }\n    }\n    let mut selected=heap.into_vec(); selected.sort_unstable(); selected.into_iter().map(|(_,x,y)|(x,y)).collect()\n}\n\nfn main() {\n    let result = closest(&[(1,3),(-2,2),(2,-2),(5,1)],2).iter().map(|(x,y)|format!(\"{x}:{y}\")).collect::<Vec<_>>().join(\",\");\n    println!(\"{result}\");\n}\n",
+    "explanation": "Points (-2,2) and (2,-2) both have squared distance 8, smaller than (1,3) at 10. The explicit coordinate tie break orders -2:2 before 2:-2. A bounded max-heap discards the farthest retained candidate.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the two points closest to the origin, ordered by distance then coordinates. The visible fixture is `[(1,3),(-2,2),(2,-2),(5,1)]` and its example result is `-2:2,2:-2`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Bounded Heap for K Closest when it asks for nearest points, closest values, approximate neighbors. Here the concrete task is: Return the two points closest to the origin, ordered by distance then coordinates. The visible input `[(1,3),(-2,2),(2,-2),(5,1)]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Keep the worst current winner at the root so a better candidate replaces it. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n log k) time · O(k) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `-2:2,2:-2` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `0:0,0:1`. Squaring preserves the ordering of nonnegative distances. Compare this independent fixture with the worked trace: Points (-2,2) and (2,-2) both have squared distance 8, smaller than (1,3) at 10. The explicit coordinate tie break orders -2:2 before 2:-2. A bounded max-heap discards the farthest retained candidate.",
+    "practiceCode": "fn closest(points:&[(i32,i32)],k:usize)->Vec<(i32,i32)> {\n    let mut heap=std::collections::BinaryHeap::new();\n    for &(x,y) in points {\n        let distance=i64::from(x)*i64::from(x)+i64::from(y)*i64::from(y);\n        heap.push((distance,x,y)); if heap.len()>k { heap.pop(); }\n    }\n    let mut selected=heap.into_vec(); selected.sort_unstable(); selected.into_iter().map(|(_,x,y)|(x,y)).collect()\n}\n\nfn main() {\n    let result = closest(&[(1,3),(-2,2),(2,-2),(5,1)],2).iter().map(|(x,y)|format!(\"{x}:{y}\")).collect::<Vec<_>>().join(\",\");\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Bounded Heap for K Closest on input `[(0,0),(1,0),(0,1)]`. Which result follows from the documented contract?",
+    "rule": "Squaring preserves the ordering of nonnegative distances. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Bounded Heap for K Closest.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-heaps-streaming-a.png",

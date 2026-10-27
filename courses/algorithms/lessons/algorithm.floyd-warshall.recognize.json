@@ -7,44 +7,44 @@
     "expectedAnswer": "5",
     "idea": "Allow intermediate vertices one by one and combine paths through the newly allowed vertex.",
     "patternID": "floyd-warshall",
-    "rustSketch": "// Dijkstra invariant:\n// when the smallest tentative distance is popped and is current,\n// no later non-negative path can improve that node.",
+    "rustSketch": "fn all_pairs(mut distance:Vec<Vec<i64>>)->Vec<Vec<i64>> {\n    let n=distance.len(); let infinity=999_999_999;\n    for k in 0..n { for i in 0..n { for j in 0..n {\n        if distance[i][k]!=infinity && distance[k][j]!=infinity {\n            distance[i][j]=distance[i][j].min(distance[i][k]+distance[k][j]);\n        }\n    } } }\n    distance\n}\n\nfn main() {\n    let result = all_pairs(vec![vec![0,3,10],vec![999999999,0,2],vec![999999999,999999999,0]])[0][2].to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return shortest distance from 0 to 2.",
     "useCases": "all-pairs shortest paths on small dense graphs",
     "visibleInput": "matrix=[[0,3,10],[inf,0,2],[inf,inf,0]]"
   },
   "concept": "all-pairs shortest paths on small dense graphs",
-  "contentDigest": "ff6281963cb673c5011bff53a647e77465dd7f4ba8da2e159eddc6584cd8830a",
+  "contentDigest": "9e6a032b83de851719a24e30b88f3b0f66ffd6157d229864418ac929e5c854b3",
   "depth": {
     "connections": [
       {
-        "concept": "Allow intermediate vertices one by one and combine paths through the newly allowed vertex.",
         "direction": "previous",
-        "title": "Floyd–Warshall: Mental Model"
+        "title": "Floyd–Warshall: Mental Model",
+        "concept": "Allow intermediate vertices one by one and combine paths through the newly allowed vertex."
       },
       {
-        "concept": "Return shortest distance from 0 to 2.",
         "direction": "next",
-        "title": "Challenge: Floyd–Warshall"
+        "title": "Challenge: Floyd–Warshall",
+        "concept": "Return shortest distance from 0 to 2."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "Paths whose internal vertices belong to the processed prefix. In the sample matrix, the direct 0→2 distance is 10. Allowing vertex 1 as an intermediate gives 0→1→2 with cost 3+2=5. Guard absent-edge sentinels before addition so infinity cannot become a fake path.",
+    "misconception": "“Only paths with exactly that many edges”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `matrix=[[0,3,10],[inf,0,2],[inf,inf,0]]`, write the state before the first update. Explain how it represents this claim: Allow intermediate vertices one by one and combine paths through the newly allowed vertex. Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state."
+        "title": "Concrete transition",
+        "detail": "In the sample matrix, the direct 0→2 distance is 10. Allowing vertex 1 as an intermediate gives 0→1→2 with cost 3+2=5. Guard absent-edge sentinels before addition so infinity cannot become a fake path."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `5`. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic."
+        "title": "Independent second fixture",
+        "detail": "Input `matrix=[[0,1,5],[inf,0,1],[inf,inf,0]]` produces `2`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Defend the O(V^3) time · O(V^2) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `matrix=[[0,2,8],[inf,0,3],[inf,inf,0]]` produces `5`. Paths whose internal vertices belong to the processed prefix. The stated work bound is O(V^3) time · O(V^2) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `matrix=[[0,3,10],[inf,0,2],[inf,inf,0]]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Floyd–Warshall survives, which state must be updated, and whether the O(V^3) time · O(V^2) space bound still holds. Inspect weight signs and graph direction: non-negative shortest paths, negative edges, and zero-one weights support different algorithms."
+    "transferChallenge": "Compare the visible input `matrix=[[0,3,10],[inf,0,2],[inf,inf,0]]` with `matrix=[[0,9,3],[inf,0,1],[inf,inf,0]]`. Predict why their results are `5` and `3`. Then change one legal value and explain whether the same invariant, paths whose internal vertices belong to the processed prefix, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.floyd-warshall.recognize",
@@ -54,21 +54,21 @@
   "title": "Floyd–Warshall: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "all-pairs shortest paths on small dense graphs",
-      "Only problems with exactly one input value"
+      "`3`",
+      "`2`",
+      "`1`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Floyd–Warshall",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Floyd–Warshall",
-    "explanation": "A problem is a good match for Floyd–Warshall when it asks for all-pairs shortest paths on small dense graphs. Here the concrete task is: Return shortest distance from 0 to 2. The visible input `matrix=[[0,3,10],[inf,0,2],[inf,inf,0]]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Inspect weight signs and graph direction: non-negative shortest paths, negative edges, and zero-one weights support different algorithms. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Allow intermediate vertices one by one and combine paths through the newly allowed vertex. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(V^3) time · O(V^2) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `5` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: all-pairs shortest paths on small dense graphs.",
-    "practiceCode": "// Dijkstra invariant:\n// when the smallest tentative distance is popped and is current,\n// no later non-negative path can improve that node.",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only floyd-warshall program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn all_pairs(mut distance:Vec<Vec<i64>>)->Vec<Vec<i64>> {\n    let n=distance.len(); let infinity=999_999_999;\n    for k in 0..n { for i in 0..n { for j in 0..n {\n        if distance[i][k]!=infinity && distance[k][j]!=infinity {\n            distance[i][j]=distance[i][j].min(distance[i][k]+distance[k][j]);\n        }\n    } } }\n    distance\n}\n\nfn main() {\n    let result = all_pairs(vec![vec![0,3,10],vec![999999999,0,2],vec![999999999,999999999,0]])[0][2].to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "In the sample matrix, the direct 0→2 distance is 10. Allowing vertex 1 as an intermediate gives 0→1→2 with cost 3+2=5. Guard absent-edge sentinels before addition so infinity cannot become a fake path.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return shortest distance from 0 to 2. The visible fixture is `matrix=[[0,3,10],[inf,0,2],[inf,inf,0]]` and its example result is `5`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Floyd–Warshall when it asks for all-pairs shortest paths on small dense graphs. Here the concrete task is: Return shortest distance from 0 to 2. The visible input `matrix=[[0,3,10],[inf,0,2],[inf,inf,0]]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Inspect weight signs and graph direction: non-negative shortest paths, negative edges, and zero-one weights support different algorithms. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Allow intermediate vertices one by one and combine paths through the newly allowed vertex. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(V^3) time · O(V^2) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `5` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `2`. Paths whose internal vertices belong to the processed prefix. Compare this independent fixture with the worked trace: In the sample matrix, the direct 0→2 distance is 10. Allowing vertex 1 as an intermediate gives 0→1→2 with cost 3+2=5. Guard absent-edge sentinels before addition so infinity cannot become a fake path.",
+    "practiceCode": "fn all_pairs(mut distance:Vec<Vec<i64>>)->Vec<Vec<i64>> {\n    let n=distance.len(); let infinity=999_999_999;\n    for k in 0..n { for i in 0..n { for j in 0..n {\n        if distance[i][k]!=infinity && distance[k][j]!=infinity {\n            distance[i][j]=distance[i][j].min(distance[i][k]+distance[k][j]);\n        }\n    } } }\n    distance\n}\n\nfn main() {\n    let result = all_pairs(vec![vec![0,3,10],vec![999999999,0,2],vec![999999999,999999999,0]])[0][2].to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Floyd–Warshall on input `matrix=[[0,1,5],[inf,0,1],[inf,inf,0]]`. Which result follows from the documented contract?",
+    "rule": "Paths whose internal vertices belong to the processed prefix. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Floyd–Warshall.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-weighted-graphs-b.png",

@@ -2,49 +2,49 @@
   "algorithm": {
     "categoryID": "math-bits",
     "categoryTitle": "Math, Bits & Combinatorics",
-    "complexity": "O(witnesses * log^3 n) basic modular cost",
+    "complexity": "Seven deterministic u64 bases; O(log n) modular multiplications per base using u128 products",
     "difficulty": "hard",
     "expectedAnswer": "true",
     "idea": "Write n-1 as d times a power of two and test whether modular powers witness compositeness.",
     "patternID": "miller-rabin",
-    "rustSketch": "fn gcd(mut a: u64, mut b: u64) -> u64 {\n    while b != 0 {\n        (a, b) = (b, a % b);\n    }\n    a\n}",
+    "rustSketch": "fn is_prime(n:u64)->bool {\n    fn power(mut a:u64,mut d:u64,n:u64)->u64 {\n        let mut result=1; while d>0 { if d&1==1 { result=(result as u128*a as u128%n as u128) as u64; } a=(a as u128*a as u128%n as u128) as u64; d>>=1; } result\n    }\n    if n<2 { return false; } for p in [2,3,5,7,11,13,17,19,23,29,31,37] { if n%p==0 { return n==p; } }\n    let shifts=(n-1).trailing_zeros(); let d=(n-1)>>shifts;\n    // These seven bases cover unsigned 64-bit integers; u128 avoids overflow.\n    for a in [2,325,9375,28178,450775,9780504,1795265022] {\n        if a%n==0 { continue; } let mut x=power(a%n,d,n); if x==1 || x==n-1 { continue; }\n        let mut witness=true; for _ in 1..shifts { x=(x as u128*x as u128%n as u128) as u64; if x==n-1 { witness=false; break; } }\n        if witness { return false; }\n    } true\n}\n\nfn main() {\n    let result = is_prime(2147483647).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
-    "task": "Using deterministic 64-bit witnesses, return whether 2,147,483,647 is prime.",
+    "task": "Parse unsigned n and return whether it is prime. The Rust example uses deterministic unsigned-64-bit witnesses; zero and one are not prime.",
     "useCases": "fast primality for large machine integers",
     "visibleInput": "n=2147483647"
   },
   "concept": "fast primality for large machine integers",
-  "contentDigest": "4d68fbf5499fd90ac0911420d3fb47ffaa6f5ae936b9b3425f44224dd25cb76e",
+  "contentDigest": "357c47c10a2df75e98238cb4d6bec0dbe301c2469348d077e9065854e0dd07fa",
   "depth": {
     "connections": [
       {
-        "concept": "Write n-1 as d times a power of two and test whether modular powers witness compositeness.",
         "direction": "previous",
-        "title": "Miller–Rabin Primality: Mental Model"
+        "title": "Miller–Rabin Primality: Mental Model",
+        "concept": "Write n-1 as d times a power of two and test whether modular powers witness compositeness."
       },
       {
-        "concept": "Using deterministic 64-bit witnesses, return whether 2,147,483,647 is prime.",
         "direction": "next",
-        "title": "Challenge: Miller–Rabin Primality"
+        "title": "Challenge: Miller–Rabin Primality",
+        "concept": "Parse unsigned n and return whether it is prime. The Rust example uses deterministic unsigned-64-bit witnesses; zero and one are not prime."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "The tested number is composite. For n=2147483647, the deterministic 64-bit base set passes every strong test, reporting true. Composite 561 is rejected. Decompose n-1 into odd d times a power of two, square residues, and use u128 modular products to avoid u64 overflow.",
+    "misconception": "“The tested number is definitely prime after one random base”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `n=2147483647`, write the state before the first update. Explain how it represents this claim: Write n-1 as d times a power of two and test whether modular powers witness compositeness. An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds."
+        "title": "Concrete transition",
+        "detail": "For n=2147483647, the deterministic 64-bit base set passes every strong test, reporting true. Composite 561 is rejected. Decompose n-1 into odd d times a power of two, square residues, and use u128 modular products to avoid u64 overflow."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `true`. Use explicit integer widths and checked arithmetic when input bounds require them. Distinguish bit positions from numeric values."
+        "title": "Independent second fixture",
+        "detail": "Input `n=1` produces `false`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Defend the O(witnesses * log^3 n) basic modular cost bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `n=561` produces `false`. The tested number is composite. The stated work bound is Seven deterministic u64 bases; O(log n) modular multiplications per base using u128 products. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `n=2147483647` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Miller–Rabin Primality survives, which state must be updated, and whether the O(witnesses * log^3 n) basic modular cost bound still holds. Check number size, sign, and modulus assumptions before using a shortcut; not every inverse or division exists."
+    "transferChallenge": "Compare the visible input `n=2147483647` with `n=97`. Predict why their results are `true` and `true`. Then change one legal value and explain whether the same invariant, the tested number is composite, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.miller-rabin.recognize",
@@ -54,21 +54,21 @@
   "title": "Miller–Rabin Primality: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "fast primality for large machine integers",
-      "Only problems with exactly one input value"
+      "`true`",
+      "`false`",
+      "The valid input necessarily panics"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Miller–Rabin Primality",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Miller–Rabin Primality",
-    "explanation": "A problem is a good match for Miller–Rabin Primality when it asks for fast primality for large machine integers. Here the concrete task is: Using deterministic 64-bit witnesses, return whether 2,147,483,647 is prime. The visible input `n=2147483647` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Check number size, sign, and modulus assumptions before using a shortcut; not every inverse or division exists. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Write n-1 as d times a power of two and test whether modular powers witness compositeness. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(witnesses * log^3 n) basic modular cost; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `true` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Use explicit integer widths and checked arithmetic when input bounds require them. Distinguish bit positions from numeric values. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: fast primality for large machine integers.",
-    "practiceCode": "fn gcd(mut a: u64, mut b: u64) -> u64 {\n    while b != 0 {\n        (a, b) = (b, a % b);\n    }\n    a\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only miller-rabin program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn is_prime(n:u64)->bool {\n    fn power(mut a:u64,mut d:u64,n:u64)->u64 {\n        let mut result=1; while d>0 { if d&1==1 { result=(result as u128*a as u128%n as u128) as u64; } a=(a as u128*a as u128%n as u128) as u64; d>>=1; } result\n    }\n    if n<2 { return false; } for p in [2,3,5,7,11,13,17,19,23,29,31,37] { if n%p==0 { return n==p; } }\n    let shifts=(n-1).trailing_zeros(); let d=(n-1)>>shifts;\n    // These seven bases cover unsigned 64-bit integers; u128 avoids overflow.\n    for a in [2,325,9375,28178,450775,9780504,1795265022] {\n        if a%n==0 { continue; } let mut x=power(a%n,d,n); if x==1 || x==n-1 { continue; }\n        let mut witness=true; for _ in 1..shifts { x=(x as u128*x as u128%n as u128) as u64; if x==n-1 { witness=false; break; } }\n        if witness { return false; }\n    } true\n}\n\nfn main() {\n    let result = is_prime(2147483647).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "For n=2147483647, the deterministic 64-bit base set passes every strong test, reporting true. Composite 561 is rejected. Decompose n-1 into odd d times a power of two, square residues, and use u128 modular products to avoid u64 overflow.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Parse unsigned n and return whether it is prime. The Rust example uses deterministic unsigned-64-bit witnesses; zero and one are not prime. The visible fixture is `n=2147483647` and its example result is `true`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Miller–Rabin Primality when it asks for fast primality for large machine integers. Here the concrete task is: Parse unsigned n and return whether it is prime. The Rust example uses deterministic unsigned-64-bit witnesses; zero and one are not prime. The visible input `n=2147483647` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Check number size, sign, and modulus assumptions before using a shortcut; not every inverse or division exists. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Write n-1 as d times a power of two and test whether modular powers witness compositeness. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is Seven deterministic u64 bases; O(log n) modular multiplications per base using u128 products; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `true` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Use explicit integer widths and checked arithmetic when input bounds require them. Distinguish bit positions from numeric values. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `false`. The tested number is composite. Compare this independent fixture with the worked trace: For n=2147483647, the deterministic 64-bit base set passes every strong test, reporting true. Composite 561 is rejected. Decompose n-1 into odd d times a power of two, square residues, and use u128 modular products to avoid u64 overflow.",
+    "practiceCode": "fn is_prime(n:u64)->bool {\n    fn power(mut a:u64,mut d:u64,n:u64)->u64 {\n        let mut result=1; while d>0 { if d&1==1 { result=(result as u128*a as u128%n as u128) as u64; } a=(a as u128*a as u128%n as u128) as u64; d>>=1; } result\n    }\n    if n<2 { return false; } for p in [2,3,5,7,11,13,17,19,23,29,31,37] { if n%p==0 { return n==p; } }\n    let shifts=(n-1).trailing_zeros(); let d=(n-1)>>shifts;\n    // These seven bases cover unsigned 64-bit integers; u128 avoids overflow.\n    for a in [2,325,9375,28178,450775,9780504,1795265022] {\n        if a%n==0 { continue; } let mut x=power(a%n,d,n); if x==1 || x==n-1 { continue; }\n        let mut witness=true; for _ in 1..shifts { x=(x as u128*x as u128%n as u128) as u64; if x==n-1 { witness=false; break; } }\n        if witness { return false; }\n    } true\n}\n\nfn main() {\n    let result = is_prime(2147483647).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Miller–Rabin Primality on input `n=1`. Which result follows from the documented contract?",
+    "rule": "The tested number is composite. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Miller–Rabin Primality.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-math-bits-b.png",

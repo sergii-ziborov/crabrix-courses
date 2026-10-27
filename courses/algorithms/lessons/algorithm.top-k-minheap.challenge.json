@@ -7,7 +7,7 @@
     "expectedAnswer": "9,8,7",
     "idea": "Keep a heap of only k winners and evict its smallest whenever it grows.",
     "patternID": "top-k-minheap",
-    "rustSketch": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn top_k(values:&[i32],k:usize)->Vec<i32> {\n    let mut heap=std::collections::BinaryHeap::new();\n    for &x in values { heap.push(std::cmp::Reverse(x)); if heap.len()>k { heap.pop(); } }\n    let mut out:Vec<_>=heap.into_iter().map(|std::cmp::Reverse(x)|x).collect(); out.sort_unstable_by(|a,b|b.cmp(a)); out\n}\n\nfn main() {\n    let result = csv(top_k(&[1,2,3,4],3));\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Return the three largest values in descending order.",
     "useCases": "largest k values and bounded leaderboards",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "largest k values and bounded leaderboards",
         "direction": "previous",
-        "title": "Top-K with a Min-Heap: When to Use It"
+        "title": "Top-K with a Min-Heap: When to Use It",
+        "concept": "largest k values and bounded leaderboards"
       },
       {
-        "concept": "Keep k candidates so the heap root is the kth largest value after every insertion.",
         "direction": "next",
-        "title": "Kth Statistic in a Stream: Mental Model"
+        "title": "Kth Statistic in a Stream: Mental Model",
+        "concept": "Keep k candidates so the heap root is the kth largest value after every insertion."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "Its smallest retained value is the one to discard when a larger candidate arrives. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“A max-heap of all inputs always uses only k slots”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[4,1,9,7,3,8]`, write the state before the first update. Explain how it represents this claim: Keep a heap of only k winners and evict its smallest whenever it grows. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded."
+        "title": "Pattern-specific invariant",
+        "detail": "Its smallest retained value is the one to discard when a larger candidate arrives. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `[1,2,3,4]` and computes `4,3,2`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Defend the O(n log k) time · O(k) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `[8,7,6,5,4,3,2]`, the independently calculated result is `8,7,6`. The complexity discussion uses O(n log k) time · O(k) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `[4,1,9,7,3,8]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Top-K with a Min-Heap survives, which state must be updated, and whether the O(n log k) time · O(k) space bound still holds. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work."
+    "transferChallenge": "Change the independent fixture `[1,2,3,4]` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `[4,1,9,7,3,8]`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.top-k-minheap.challenge",
@@ -54,19 +54,19 @@
   "title": "Challenge: Top-K with a Min-Heap",
   "writing": {
     "answers": [
-      "O(n log k) time · O(k) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`8,7,6`",
+      "`7,6`",
+      "`9,7,6`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return the three largest values in descending order.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Top-K with a Min-Heap\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Return the three largest values in descending order. On input `[4,1,9,7,3,8]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Keep a heap of only k winners and evict its smallest whenever it grows. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n log k) time · O(k) space; explain which operation dominates it and how many times the input can trigger that operation. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(n log k) time · O(k) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return the three largest values in descending order.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Top-K with a Min-Heap\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS top-k-minheap, and your explanation still meets O(n log k) time · O(k) space.",
+    "exampleCaption": "Complete std-only top-k-minheap program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn top_k(values:&[i32],k:usize)->Vec<i32> {\n    let mut heap=std::collections::BinaryHeap::new();\n    for &x in values { heap.push(std::cmp::Reverse(x)); if heap.len()>k { heap.pop(); } }\n    let mut out:Vec<_>=heap.into_iter().map(|std::cmp::Reverse(x)|x).collect(); out.sort_unstable_by(|a,b|b.cmp(a)); out\n}\n\nfn main() {\n    let result = csv(top_k(&[1,2,3,4],3));\n    println!(\"{result}\");\n}\n",
+    "explanation": "Its smallest retained value is the one to discard when a larger candidate arrives. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `[1,2,3,4]`, the worked program returns `4,3,2`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `[4,1,9,7,3,8]`; predict that result before opening the answer reveal. The precise contract is: Return the three largest values in descending order.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Return the three largest values in descending order. On input `[4,1,9,7,3,8]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Keep a heap of only k winners and evict its smallest whenever it grows. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(n log k) time · O(k) space; explain which operation dominates it and how many times the input can trigger that operation. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `8,7,6`. Its smallest retained value is the one to discard when a larger candidate arrives. Compare this independent fixture with the worked trace: With k=3, the heap retains the best three values seen so far. Reading [4,1,9,7,3,8] ultimately retains 7,8,9. Sorting just those retained values produces the required descending report 9,8,7.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return the three largest values in descending order.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement top-k-minheap\")\n}\n",
+    "question": "Boundary check for top-k-minheap: with input `[8,7,6,5,4,3,2]`, what result should solve return?",
+    "rule": "Its smallest retained value is the one to discard when a larger candidate arrives. Return the three largest values in descending order.",
+    "success": "The private harness prints PASS top-k-minheap. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Return the three largest values in descending order.",
     "task": "Return the three largest values in descending order."
   },

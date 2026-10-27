@@ -7,44 +7,44 @@
     "expectedAnswer": "49",
     "idea": "The shorter boundary limits area, so only moving that boundary can improve the result.",
     "patternID": "container-area",
-    "rustSketch": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
+    "rustSketch": "fn greatest_container(heights: &[i32]) -> i32 {\n    if heights.len()<2 { return 0; }\n    let (mut left,mut right,mut best)=(0,heights.len()-1,0);\n    while left<right {\n        best=best.max((right-left) as i32 * heights[left].min(heights[right]));\n        if heights[left]<=heights[right] { left+=1; } else { right-=1; }\n    }\n    best\n}\n\nfn main() {\n    let result = greatest_container(&[1,1]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Return the greatest area formed by two heights.",
     "useCases": "max area between ordered boundaries",
     "visibleInput": "[1,8,6,2,5,4,8,3,7]"
   },
   "concept": "Return the greatest area formed by two heights.",
-  "contentDigest": "b9fb54ab30da82d6c92b100c33b7d57a90f00285dbef35a3ddba7bfedcf370b9",
+  "contentDigest": "db4bb37d1beccb6e78bc6860e93955b8a7946e444ddebfeeb21943c00097f7fb",
   "depth": {
     "connections": [
       {
-        "concept": "max area between ordered boundaries",
         "direction": "previous",
-        "title": "Container Area: When to Use It"
+        "title": "Container Area: When to Use It",
+        "concept": "max area between ordered boundaries"
       },
       {
-        "concept": "Fill free capacity from the end so unread source values are never overwritten.",
         "direction": "next",
-        "title": "Backward In-Place Merge: Mental Model"
+        "title": "Backward In-Place Merge: Mental Model",
+        "concept": "Fill free capacity from the end so unread source values are never overwritten."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "The shorter height limits area and a narrower pair with it cannot improve. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“The taller boundary always limits area”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[1,8,6,2,5,4,8,3,7]`, write the state before the first update. Explain how it represents this claim: The shorter boundary limits area, so only moving that boundary can improve the result. Two positions move according to a monotone fact: after one comparison, some candidates can be ruled out permanently. Name that fact."
+        "title": "Pattern-specific invariant",
+        "detail": "The shorter height limits area and a narrower pair with it cannot improve. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Use explicit bounds for both indices. If the algorithm mutates a vector, separate read and write positions so ownership stays clear."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `[1,1]` and computes `1`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test pointers meeting, crossing, duplicate values, and the smallest valid input; many off-by-one errors hide there. Defend the O(n) time · O(1) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `[8,7,6,5,4,3,2]`, the independently calculated result is `16`. The complexity discussion uses O(n) time · O(1) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `[1,8,6,2,5,4,8,3,7]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Container Area survives, which state must be updated, and whether the O(n) time · O(1) space bound still holds. Check whether the input is sorted, whether you may reorder it, and whether moving a pointer preserves the answer you seek."
+    "transferChallenge": "Change the independent fixture `[1,1]` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `[1,8,6,2,5,4,8,3,7]`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.container-area.challenge",
@@ -54,19 +54,19 @@
   "title": "Challenge: Container Area",
   "writing": {
     "answers": [
-      "O(n) time · O(1) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`16`",
+      "`17`",
+      "`15`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return the greatest area formed by two heights.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Container Area\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Return the greatest area formed by two heights. On input `[1,8,6,2,5,4,8,3,7]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: The shorter boundary limits area, so only moving that boundary can improve the result. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. Two positions move according to a monotone fact: after one comparison, some candidates can be ruled out permanently. Name that fact. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use explicit bounds for both indices. If the algorithm mutates a vector, separate read and write positions so ownership stays clear. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(1) space; explain which operation dominates it and how many times the input can trigger that operation. Test pointers meeting, crossing, duplicate values, and the smallest valid input; many off-by-one errors hide there. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(n) time · O(1) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return the greatest area formed by two heights.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Container Area\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS container-area, and your explanation still meets O(n) time · O(1) space.",
+    "exampleCaption": "Complete std-only container-area program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn greatest_container(heights: &[i32]) -> i32 {\n    if heights.len()<2 { return 0; }\n    let (mut left,mut right,mut best)=(0,heights.len()-1,0);\n    while left<right {\n        best=best.max((right-left) as i32 * heights[left].min(heights[right]));\n        if heights[left]<=heights[right] { left+=1; } else { right-=1; }\n    }\n    best\n}\n\nfn main() {\n    let result = greatest_container(&[1,1]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "The shorter height limits area and a narrower pair with it cannot improve. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `[1,1]`, the worked program returns `1`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `[1,8,6,2,5,4,8,3,7]`; predict that result before opening the answer reveal. The precise contract is: Return the greatest area formed by two heights.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Return the greatest area formed by two heights. On input `[1,8,6,2,5,4,8,3,7]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: The shorter boundary limits area, so only moving that boundary can improve the result. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. Two positions move according to a monotone fact: after one comparison, some candidates can be ruled out permanently. Name that fact. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(1) space; explain which operation dominates it and how many times the input can trigger that operation. Test pointers meeting, crossing, duplicate values, and the smallest valid input; many off-by-one errors hide there. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `16`. The shorter height limits area and a narrower pair with it cannot improve. Compare this independent fixture with the worked trace: For heights [1,8,6,2,5,4,8,3,7], the optimal endpoints at indexes 1 and 8 give width 7 and height 7, area 49. Pointer movement rules out dominated pairs instead of enumerating every combination.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return the greatest area formed by two heights.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement container-area\")\n}\n",
+    "question": "Boundary check for container-area: with input `[8,7,6,5,4,3,2]`, what result should solve return?",
+    "rule": "The shorter height limits area and a narrower pair with it cannot improve. Return the greatest area formed by two heights.",
+    "success": "The private harness prints PASS container-area. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Return the greatest area formed by two heights.",
     "task": "Return the greatest area formed by two heights."
   },

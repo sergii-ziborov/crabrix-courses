@@ -7,44 +7,44 @@
     "expectedAnswer": "2",
     "idea": "Sort by start time and reuse the room whose end time is smallest.",
     "patternID": "meeting-rooms-heap",
-    "rustSketch": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "rustSketch": "fn rooms(intervals:&[(i32,i32)])->usize {\n    let mut sorted=intervals.to_vec(); sorted.sort_unstable(); let mut ends=std::collections::BinaryHeap::new(); let mut best=0;\n    for (start,end) in sorted {\n        while ends.peek().is_some_and(|&std::cmp::Reverse(e)|e<=start) { ends.pop(); }\n        ends.push(std::cmp::Reverse(end)); best=best.max(ends.len());\n    }\n    best\n}\n\nfn main() {\n    let result = rooms(&[(0,30),(5,10),(15,20)]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return the minimum rooms required.",
     "useCases": "minimum concurrent resources and interval allocation",
     "visibleInput": "[(0,30),(5,10),(15,20)]"
   },
   "concept": "Sort by start time and reuse the room whose end time is smallest.",
-  "contentDigest": "7754b17e44d88a7ef2cab232b989941de17a95b4f35806e536418217e08ef669",
+  "contentDigest": "f1d4cad973803110c244aa235b040f41fa9b56cc45c65b28f311a6fbb82d3995",
   "depth": {
     "connections": [
       {
-        "concept": "Run shortest available job first and return completion order by job ID.",
         "direction": "previous",
-        "title": "Challenge: Priority Scheduling"
+        "title": "Challenge: Priority Scheduling",
+        "concept": "Parse unique job IDs with arrival t and positive duration d. Run the shortest available job nonpreemptively, breaking equal durations by smaller ID. Return completion order."
       },
       {
-        "concept": "minimum concurrent resources and interval allocation",
         "direction": "next",
-        "title": "Meeting Rooms Heap: When to Use It"
+        "title": "Meeting Rooms Heap: When to Use It",
+        "concept": "minimum concurrent resources and interval allocation"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "For a session starting at t under half-open interval semantics. For [(0,30),(5,10),(15,20)], one room remains occupied until 30. The second room ending at 10 is reusable at 15, so the peak is 2 rooms. Touching intervals [(1,2),(2,3)] need just one room.",
+    "misconception": "“Only after time t+1”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[(0,30),(5,10),(15,20)]`, write the state before the first update. Explain how it represents this claim: Sort by start time and reuse the room whose end time is smallest. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded."
+        "title": "Concrete transition",
+        "detail": "For [(0,30),(5,10),(15,20)], one room remains occupied until 30. The second room ending at 10 is reusable at 15, so the peak is 2 rooms. Touching intervals [(1,2),(2,3)] need just one room."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `2`. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data."
+        "title": "Independent second fixture",
+        "detail": "Input `[(0,1),(1,2),(2,3)]` produces `1`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Defend the O(n log n) time · O(n) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[(1,3),(1,3)]` produces `2`. For a session starting at t under half-open interval semantics. The stated work bound is O(n log n) time · O(n) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[(0,30),(5,10),(15,20)]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Meeting Rooms Heap survives, which state must be updated, and whether the O(n log n) time · O(n) space bound still holds. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work."
+    "transferChallenge": "Compare the visible input `[(0,30),(5,10),(15,20)]` with `[(0,5),(1,4),(2,3)]`. Predict why their results are `2` and `3`. Then change one legal value and explain whether the same invariant, for a session starting at t under half-open interval semantics, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.meeting-rooms-heap.model",
@@ -54,21 +54,21 @@
   "title": "Meeting Rooms Heap: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "For a session starting at t under half-open interval semantics",
+      "Only after time t+1",
+      "Never if the next session is in the same input file"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n log n) time · O(n) space",
-    "exampleCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
-    "explanation": "Begin with the concrete question: Return the minimum rooms required. For the visible input `[(0,30),(5,10),(15,20)]`, the stated result is `2`. Before reading code, name the smallest piece of information that must survive from one step to the next. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. That is the mental model for Meeting Rooms Heap; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Sort by start time and reuse the room whose end time is smallest. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n log n) time · O(n) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only meeting-rooms-heap program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn rooms(intervals:&[(i32,i32)])->usize {\n    let mut sorted=intervals.to_vec(); sorted.sort_unstable(); let mut ends=std::collections::BinaryHeap::new(); let mut best=0;\n    for (start,end) in sorted {\n        while ends.peek().is_some_and(|&std::cmp::Reverse(e)|e<=start) { ends.pop(); }\n        ends.push(std::cmp::Reverse(end)); best=best.max(ends.len());\n    }\n    best\n}\n\nfn main() {\n    let result = rooms(&[(0,30),(5,10),(15,20)]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "For [(0,30),(5,10),(15,20)], one room remains occupied until 30. The second room ending at 10 is reusable at 15, so the peak is 2 rooms. Touching intervals [(1,2),(2,3)] need just one room.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the minimum rooms required. The visible fixture is `[(0,30),(5,10),(15,20)]` and its example result is `2`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return the minimum rooms required. For the visible input `[(0,30),(5,10),(15,20)]`, the stated result is `2`. Before reading code, name the smallest piece of information that must survive from one step to the next. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. That is the mental model for Meeting Rooms Heap; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Sort by start time and reuse the room whose end time is smallest. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n log n) time · O(n) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "For [(0,30),(5,10),(15,20)], one room remains occupied until 30. The second room ending at 10 is reusable at 15, so the peak is 2 rooms. Touching intervals [(1,2),(2,3)] need just one room.",
+    "practiceCode": "fn rooms(intervals:&[(i32,i32)])->usize {\n    let mut sorted=intervals.to_vec(); sorted.sort_unstable(); let mut ends=std::collections::BinaryHeap::new(); let mut best=0;\n    for (start,end) in sorted {\n        while ends.peek().is_some_and(|&std::cmp::Reverse(e)|e<=start) { ends.pop(); }\n        ends.push(std::cmp::Reverse(end)); best=best.max(ends.len());\n    }\n    best\n}\n\nfn main() {\n    let result = rooms(&[(0,30),(5,10),(15,20)]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "When can a room ending at time t be reused?",
+    "rule": "For a session starting at t under half-open interval semantics. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(n log n) time · O(n) space bound without looking at the code.",
     "summary": "Sort by start time and reuse the room whose end time is smallest.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-heaps-streaming-b.png",

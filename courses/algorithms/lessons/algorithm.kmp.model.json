@@ -7,44 +7,44 @@
     "expectedAnswer": "10",
     "idea": "Use the pattern's border table to reuse matched-prefix knowledge after a mismatch.",
     "patternID": "kmp",
-    "rustSketch": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "rustSketch": "fn kmp_first(text:&str,pattern:&str)->i32 {\n    let (a,p)=(text.as_bytes(),pattern.as_bytes()); if p.is_empty() { return 0; }\n    let mut prefix=vec![0;p.len()];\n    for i in 1..p.len() { let mut j=prefix[i-1]; while j>0 && p[i]!=p[j] { j=prefix[j-1]; } if p[i]==p[j] { j+=1; } prefix[i]=j; }\n    let mut matched=0;\n    for (i,&c) in a.iter().enumerate() {\n        while matched>0 && c!=p[matched] { matched=prefix[matched-1]; }\n        if c==p[matched] { matched+=1; } if matched==p.len() { return (i+1-p.len()) as i32; }\n    }\n    -1 // byte offset; exercises use ASCII\n}\n\nfn main() {\n    let result = kmp_first(\"ababcabcabababd\",\"ababd\").to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return the first pattern index in the text.",
     "useCases": "linear exact substring search and border queries",
     "visibleInput": "text=ababcabcabababd pattern=ababd"
   },
   "concept": "Use the pattern's border table to reuse matched-prefix knowledge after a mismatch.",
-  "contentDigest": "39b30a89e633c0586f95f6b9529d197a7b79c100fd009dd03d50fd9268695add",
+  "contentDigest": "ee6c9820b45b6e95af1767e7a783cfb44b4fcb648d4bedff805d83860bb1d7dd",
   "depth": {
     "connections": [
       {
-        "concept": "Encode consecutive characters as character followed by count.",
         "direction": "previous",
-        "title": "Challenge: Run-Length Encoding"
+        "title": "Challenge: Run-Length Encoding",
+        "concept": "Encode consecutive characters as character followed by count."
       },
       {
-        "concept": "linear exact substring search and border queries",
         "direction": "next",
-        "title": "Knuth–Morris–Pratt: When to Use It"
+        "title": "Knuth–Morris–Pratt: When to Use It",
+        "concept": "linear exact substring search and border queries"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "A known proper prefix may already match the suffix just read. In text ababcabcabababd, partial matches reuse borders instead of rereading text. The pattern ababd finally starts at byte offset 10. The first-match contract returns immediately there; an absent pattern returns -1.",
+    "misconception": "“The text cursor must always restart at zero”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `text=ababcabcabababd pattern=ababd`, write the state before the first update. Explain how it represents this claim: Use the pattern's border table to reuse matched-prefix knowledge after a mismatch. `String` algorithms compare symbols or prefixes, but a Rust `String` is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters."
+        "title": "Concrete transition",
+        "detail": "In text ababcabcabababd, partial matches reuse borders instead of rereading text. The pattern ababd finally starts at byte offset 10. The first-match contract returns immediately there; an absent pattern returns -1."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `10`. Use bytes only when the input contract permits byte-wise matching. Never index a `String` as though every character occupied one byte."
+        "title": "Independent second fixture",
+        "detail": "Input `text=abcabc pattern=bc` produces `1`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Defend the O(n+m) time · O(m) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `text=aaaaa pattern=aaa` produces `0`. A known proper prefix may already match the suffix just read. The stated work bound is O(n+m) time · O(m) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `text=ababcabcabababd pattern=ababd` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Knuth–Morris–Pratt survives, which state must be updated, and whether the O(n+m) time · O(m) space bound still holds. Look for repeated prefix queries or pattern matching before choosing a trie or preprocessing; a one-off short search may not need either."
+    "transferChallenge": "Compare the visible input `text=ababcabcabababd pattern=ababd` with `text=abc pattern=z`. Predict why their results are `10` and `-1`. Then change one legal value and explain whether the same invariant, a known proper prefix may already match the suffix just read, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.kmp.model",
@@ -54,21 +54,21 @@
   "title": "Knuth–Morris–Pratt: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "A known proper prefix may already match the suffix just read",
+      "The text cursor must always restart at zero",
+      "The pattern must be sorted before searching"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n+m) time · O(m) space",
-    "exampleCode": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
-    "explanation": "Begin with the concrete question: Return the first pattern index in the text. For the visible input `text=ababcabcabababd pattern=ababd`, the stated result is `10`. Before reading code, name the smallest piece of information that must survive from one step to the next. `String` algorithms compare symbols or prefixes, but a Rust `String` is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters. That is the mental model for Knuth–Morris–Pratt; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Use the pattern's border table to reuse matched-prefix knowledge after a mismatch. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use bytes only when the input contract permits byte-wise matching. Never index a `String` as though every character occupied one byte. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n+m) time · O(m) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only kmp program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn kmp_first(text:&str,pattern:&str)->i32 {\n    let (a,p)=(text.as_bytes(),pattern.as_bytes()); if p.is_empty() { return 0; }\n    let mut prefix=vec![0;p.len()];\n    for i in 1..p.len() { let mut j=prefix[i-1]; while j>0 && p[i]!=p[j] { j=prefix[j-1]; } if p[i]==p[j] { j+=1; } prefix[i]=j; }\n    let mut matched=0;\n    for (i,&c) in a.iter().enumerate() {\n        while matched>0 && c!=p[matched] { matched=prefix[matched-1]; }\n        if c==p[matched] { matched+=1; } if matched==p.len() { return (i+1-p.len()) as i32; }\n    }\n    -1 // byte offset; exercises use ASCII\n}\n\nfn main() {\n    let result = kmp_first(\"ababcabcabababd\",\"ababd\").to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "In text ababcabcabababd, partial matches reuse borders instead of rereading text. The pattern ababd finally starts at byte offset 10. The first-match contract returns immediately there; an absent pattern returns -1.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the first pattern index in the text. The visible fixture is `text=ababcabcabababd pattern=ababd` and its example result is `10`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return the first pattern index in the text. For the visible input `text=ababcabcabababd pattern=ababd`, the stated result is `10`. Before reading code, name the smallest piece of information that must survive from one step to the next. `String` algorithms compare symbols or prefixes, but a Rust `String` is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters. That is the mental model for Knuth–Morris–Pratt; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Use the pattern's border table to reuse matched-prefix knowledge after a mismatch. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n+m) time · O(m) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "In text ababcabcabababd, partial matches reuse borders instead of rereading text. The pattern ababd finally starts at byte offset 10. The first-match contract returns immediately there; an absent pattern returns -1.",
+    "practiceCode": "fn kmp_first(text:&str,pattern:&str)->i32 {\n    let (a,p)=(text.as_bytes(),pattern.as_bytes()); if p.is_empty() { return 0; }\n    let mut prefix=vec![0;p.len()];\n    for i in 1..p.len() { let mut j=prefix[i-1]; while j>0 && p[i]!=p[j] { j=prefix[j-1]; } if p[i]==p[j] { j+=1; } prefix[i]=j; }\n    let mut matched=0;\n    for (i,&c) in a.iter().enumerate() {\n        while matched>0 && c!=p[matched] { matched=prefix[matched-1]; }\n        if c==p[matched] { matched+=1; } if matched==p.len() { return (i+1-p.len()) as i32; }\n    }\n    -1 // byte offset; exercises use ASCII\n}\n\nfn main() {\n    let result = kmp_first(\"ababcabcabababd\",\"ababd\").to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Why fall back through prefix links after a KMP mismatch?",
+    "rule": "A known proper prefix may already match the suffix just read. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(n+m) time · O(m) space bound without looking at the code.",
     "summary": "Use the pattern's border table to reuse matched-prefix knowledge after a mismatch.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-strings-tries-a.png",

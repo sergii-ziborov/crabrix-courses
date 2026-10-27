@@ -7,7 +7,7 @@
     "expectedAnswer": "8",
     "idea": "Carry the best value seen so far and update it from each element.",
     "patternID": "min-max-tracking",
-    "rustSketch": "fn scan(values: &[i32]) -> Option<usize> {\n    for (index, value) in values.iter().enumerate() {\n        if *value < 0 { return Some(index); }\n    }\n    None\n}",
+    "rustSketch": "fn spread(values: &[i32]) -> i32 {\n    assert!(!values.is_empty());\n    let (mut low, mut high) = (values[0], values[0]);\n    for &x in &values[1..] { low = low.min(x); high = high.max(x); }\n    high - low\n}\n\nfn main() {\n    let result = spread(&[8,3,11,6]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return max - min for the sensor readings.",
     "useCases": "extrema, record highs, cheapest or most expensive observation",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Carry the best value seen so far and update it from each element.",
         "direction": "previous",
-        "title": "Min/Max Tracking: Mental Model"
+        "title": "Min/Max Tracking: Mental Model",
+        "concept": "Carry the best value seen so far and update it from each element."
       },
       {
-        "concept": "Return max - min for the sensor readings.",
         "direction": "next",
-        "title": "Challenge: Min/Max Tracking"
+        "title": "Challenge: Min/Max Tracking",
+        "concept": "Return max - min for the sensor readings."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "Zero may lie outside the input and corrupt the reported range. For [8,3,11,6], start low=8 and high=8. Reading 3 changes low to 3; reading 11 changes high to 11. The final difference is 11-3=8, not the sum of the readings.",
+    "misconception": "“Zero would allocate another vector”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[8, 3, 11, 6]`, write the state before the first update. Explain how it represents this claim: Carry the best value seen so far and update it from each element. A scan turns a sequence into a small piece of state. Say what the state means after the first i elements, before you describe a loop body."
+        "title": "Concrete transition",
+        "detail": "For [8,3,11,6], start low=8 and high=8. Reading 3 changes low to 3; reading 11 changes high to 11. The final difference is 11-3=8, not the sum of the readings."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `8`. A borrowed slice and a for loop usually express the traversal clearly; distinguish an index you need to return from a value you merely read."
+        "title": "Independent second fixture",
+        "detail": "Input `[1,2,3,4,5,6,7]` produces `6`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Use an empty slice and a one-element slice as checks. Initial values must not silently assume that at least one item exists. Defend the O(n) time · O(1) extra space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[8,7,6,5,4,3,2]` produces `6`. Zero may lie outside the input and corrupt the reported range. The stated work bound is O(n) time · O(1) extra space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[8, 3, 11, 6]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Min/Max Tracking survives, which state must be updated, and whether the O(n) time · O(1) extra space bound still holds. Ask whether one pass is enough, whether order matters, and whether a later query will need information you already discarded."
+    "transferChallenge": "Compare the visible input `[8, 3, 11, 6]` with `[3,3,3,3,3,3,3]`. Predict why their results are `8` and `0`. Then change one legal value and explain whether the same invariant, zero may lie outside the input and corrupt the reported range, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.min-max-tracking.recognize",
@@ -54,21 +54,21 @@
   "title": "Min/Max Tracking: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "extrema, record highs, cheapest or most expensive observation",
-      "Only problems with exactly one input value"
+      "`7`",
+      "`6`",
+      "`5`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Min/Max Tracking",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Min/Max Tracking",
-    "explanation": "A problem is a good match for Min/Max Tracking when it asks for extrema, record highs, cheapest or most expensive observation. Here the concrete task is: Return max - min for the sensor readings. The visible input `[8, 3, 11, 6]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Ask whether one pass is enough, whether order matters, and whether a later query will need information you already discarded. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Carry the best value seen so far and update it from each element. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A scan turns a sequence into a small piece of state. Say what the state means after the first i elements, before you describe a loop body. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(1) extra space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `8` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Use an empty slice and a one-element slice as checks. Initial values must not silently assume that at least one item exists. A borrowed slice and a for loop usually express the traversal clearly; distinguish an index you need to return from a value you merely read. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: extrema, record highs, cheapest or most expensive observation.",
-    "practiceCode": "fn scan(values: &[i32]) -> Option<usize> {\n    for (index, value) in values.iter().enumerate() {\n        if *value < 0 { return Some(index); }\n    }\n    None\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only min-max-tracking program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn spread(values: &[i32]) -> i32 {\n    assert!(!values.is_empty());\n    let (mut low, mut high) = (values[0], values[0]);\n    for &x in &values[1..] { low = low.min(x); high = high.max(x); }\n    high - low\n}\n\nfn main() {\n    let result = spread(&[8,3,11,6]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "For [8,3,11,6], start low=8 and high=8. Reading 3 changes low to 3; reading 11 changes high to 11. The final difference is 11-3=8, not the sum of the readings.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return max - min for the sensor readings. The visible fixture is `[8, 3, 11, 6]` and its example result is `8`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Min/Max Tracking when it asks for extrema, record highs, cheapest or most expensive observation. Here the concrete task is: Return max - min for the sensor readings. The visible input `[8, 3, 11, 6]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Ask whether one pass is enough, whether order matters, and whether a later query will need information you already discarded. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Carry the best value seen so far and update it from each element. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A scan turns a sequence into a small piece of state. Say what the state means after the first i elements, before you describe a loop body. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(1) extra space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `8` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Use an empty slice and a one-element slice as checks. Initial values must not silently assume that at least one item exists. A borrowed slice and a for loop usually express the traversal clearly; distinguish an index you need to return from a value you merely read. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `6`. Zero may lie outside the input and corrupt the reported range. Compare this independent fixture with the worked trace: For [8,3,11,6], start low=8 and high=8. Reading 3 changes low to 3; reading 11 changes high to 11. The final difference is 11-3=8, not the sum of the readings.",
+    "practiceCode": "fn spread(values: &[i32]) -> i32 {\n    assert!(!values.is_empty());\n    let (mut low, mut high) = (values[0], values[0]);\n    for &x in &values[1..] { low = low.min(x); high = high.max(x); }\n    high - low\n}\n\nfn main() {\n    let result = spread(&[8,3,11,6]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Min/Max Tracking on input `[1,2,3,4,5,6,7]`. Which result follows from the documented contract?",
+    "rule": "Zero may lie outside the input and corrupt the reported range. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Min/Max Tracking.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-scans-a.png",

@@ -7,9 +7,9 @@
     "expectedAnswer": "11",
     "idea": "Update a window hash by removing the outgoing contribution and adding the incoming one.",
     "patternID": "rolling-fingerprint",
-    "rustSketch": "use std::collections::HashMap;\nfn counts(values: &[i32]) -> HashMap<i32, usize> {\n    let mut map = HashMap::new();\n    for &value in values { *map.entry(value).or_insert(0) += 1; }\n    map\n}",
+    "rustSketch": "fn digit_hash(digits: &[u64]) -> u64 {\n    let mut hash = 0;\n    for &digit in digits { assert!(digit < 10); hash = (hash * 10 + digit) % 101; }\n    hash // A fingerprint is not a collision-free identity.\n}\n\nfn main() {\n    let result = digit_hash(&[3,1,4]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
-    "task": "Using base 10 and modulus 101, return the hash of digits 3,1,4.",
+    "task": "Parse digits in 0..9. Fold hash=(hash*10+digit)%101 from initial zero and return the final hash; leading zeros are allowed.",
     "useCases": "substring search, duplicate blocks, content fingerprints",
     "visibleInput": "digits=[3,1,4]"
   },
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Update a window hash by removing the outgoing contribution and adding the incoming one.",
         "direction": "previous",
-        "title": "Rolling Fingerprint: Mental Model"
+        "title": "Rolling Fingerprint: Mental Model",
+        "concept": "Update a window hash by removing the outgoing contribution and adding the incoming one."
       },
       {
-        "concept": "Using base 10 and modulus 101, return the hash of digits 3,1,4.",
         "direction": "next",
-        "title": "Challenge: Rolling Fingerprint"
+        "title": "Challenge: Rolling Fingerprint",
+        "concept": "Parse digits in 0..9. Fold hash=(hash*10+digit)%101 from initial zero and return the final hash; leading zeros are allowed."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "Different digit sequences can have equal remainders. Start hash=0. Digits 3,1,4 produce states 3,31,11 because 314 mod 101=11. The digits [1,0,1] hash to 0, showing why hash equality alone must not stand in for content equality.",
+    "misconception": "“Taking a remainder makes every input unique”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `digits=[3,1,4]`, write the state before the first update. Explain how it represents this claim: Update a window hash by removing the outgoing contribution and adding the incoming one. A key-derived representation lets later work reuse an earlier fact. It may be a set, a map from keys to state, compressed ranks, or a rolling fingerprint; name which one this pattern uses."
+        "title": "Concrete transition",
+        "detail": "Start hash=0. Digits 3,1,4 produce states 3,31,11 because 314 mod 101=11. The digits [1,0,1] hash to 0, showing why hash equality alone must not stand in for content equality."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `11`. In Rust, use `HashSet` for presence and `HashMap` for associated state. Compression and rolling hashes need their own arrays or arithmetic; do not force every hashing pattern into a map."
+        "title": "Independent second fixture",
+        "detail": "Input `digits=[1,0,1]` produces `0`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check missing keys, repeated keys, and collisions conceptually; expected constant-time operations are not a worst-case promise. Defend the O(n) expected time · O(1) rolling state bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `digits=[9,9,9]` produces `90`. Different digit sequences can have equal remainders. The stated work bound is O(n) expected time · O(1) rolling state. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `digits=[3,1,4]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Rolling Fingerprint survives, which state must be updated, and whether the O(n) expected time · O(1) rolling state bound still holds. Look for repeated membership, grouping, or a reusable key representation. A sorted structure may be preferable when deterministic order is part of the requirement."
+    "transferChallenge": "Compare the visible input `digits=[3,1,4]` with `digits=[0]`. Predict why their results are `11` and `0`. Then change one legal value and explain whether the same invariant, different digit sequences can have equal remainders, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.rolling-fingerprint.recognize",
@@ -54,21 +54,21 @@
   "title": "Rolling Fingerprint: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "substring search, duplicate blocks, content fingerprints",
-      "Only problems with exactly one input value"
+      "`1`",
+      "`0`",
+      "`-1`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Rolling Fingerprint",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Rolling Fingerprint",
-    "explanation": "A problem is a good match for Rolling Fingerprint when it asks for substring search, duplicate blocks, content fingerprints. Here the concrete task is: Using base 10 and modulus 101, return the hash of digits 3,1,4. The visible input `digits=[3,1,4]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for repeated membership, grouping, or a reusable key representation. A sorted structure may be preferable when deterministic order is part of the requirement. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Update a window hash by removing the outgoing contribution and adding the incoming one. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A key-derived representation lets later work reuse an earlier fact. It may be a set, a map from keys to state, compressed ranks, or a rolling fingerprint; name which one this pattern uses. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) expected time · O(1) rolling state; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `11` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check missing keys, repeated keys, and collisions conceptually; expected constant-time operations are not a worst-case promise. In Rust, use `HashSet` for presence and `HashMap` for associated state. Compression and rolling hashes need their own arrays or arithmetic; do not force every hashing pattern into a map. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: substring search, duplicate blocks, content fingerprints.",
-    "practiceCode": "use std::collections::HashMap;\nfn counts(values: &[i32]) -> HashMap<i32, usize> {\n    let mut map = HashMap::new();\n    for &value in values { *map.entry(value).or_insert(0) += 1; }\n    map\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only rolling-fingerprint program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn digit_hash(digits: &[u64]) -> u64 {\n    let mut hash = 0;\n    for &digit in digits { assert!(digit < 10); hash = (hash * 10 + digit) % 101; }\n    hash // A fingerprint is not a collision-free identity.\n}\n\nfn main() {\n    let result = digit_hash(&[3,1,4]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "Start hash=0. Digits 3,1,4 produce states 3,31,11 because 314 mod 101=11. The digits [1,0,1] hash to 0, showing why hash equality alone must not stand in for content equality.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Parse digits in 0..9. Fold hash=(hash*10+digit)%101 from initial zero and return the final hash; leading zeros are allowed. The visible fixture is `digits=[3,1,4]` and its example result is `11`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Rolling Fingerprint when it asks for substring search, duplicate blocks, content fingerprints. Here the concrete task is: Parse digits in 0..9. Fold hash=(hash*10+digit)%101 from initial zero and return the final hash; leading zeros are allowed. The visible input `digits=[3,1,4]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for repeated membership, grouping, or a reusable key representation. A sorted structure may be preferable when deterministic order is part of the requirement. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Update a window hash by removing the outgoing contribution and adding the incoming one. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A key-derived representation lets later work reuse an earlier fact. It may be a set, a map from keys to state, compressed ranks, or a rolling fingerprint; name which one this pattern uses. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) expected time · O(1) rolling state; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `11` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check missing keys, repeated keys, and collisions conceptually; expected constant-time operations are not a worst-case promise. In Rust, use `HashSet` for presence and `HashMap` for associated state. Compression and rolling hashes need their own arrays or arithmetic; do not force every hashing pattern into a map. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `0`. Different digit sequences can have equal remainders. Compare this independent fixture with the worked trace: Start hash=0. Digits 3,1,4 produce states 3,31,11 because 314 mod 101=11. The digits [1,0,1] hash to 0, showing why hash equality alone must not stand in for content equality.",
+    "practiceCode": "fn digit_hash(digits: &[u64]) -> u64 {\n    let mut hash = 0;\n    for &digit in digits { assert!(digit < 10); hash = (hash * 10 + digit) % 101; }\n    hash // A fingerprint is not a collision-free identity.\n}\n\nfn main() {\n    let result = digit_hash(&[3,1,4]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Rolling Fingerprint on input `digits=[1,0,1]`. Which result follows from the documented contract?",
+    "rule": "Different digit sequences can have equal remainders. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Rolling Fingerprint.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-hashing-b.png",

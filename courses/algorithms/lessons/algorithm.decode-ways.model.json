@@ -7,44 +7,44 @@
     "expectedAnswer": "3",
     "idea": "Count valid one-symbol and two-symbol predecessors while rejecting leading zero states.",
     "patternID": "decode-ways",
-    "rustSketch": "fn ways(n: usize) -> usize {\n    let (mut previous, mut current) = (1, 1);\n    for _ in 0..n {\n        (previous, current) = (current, previous + current);\n    }\n    previous\n}",
+    "rustSketch": "fn decodings(text:&str)->u64 {\n    assert!(text.bytes().all(|c|c.is_ascii_digit())); let a=text.as_bytes(); let (mut before,mut current)=(1,1);\n    for i in 0..a.len() {\n        let mut next=if a[i]!=b'0' { current } else { 0 };\n        if i>0 && (a[i-1]==b'1' || a[i-1]==b'2' && a[i]<=b'6') { next+=before; }\n        before=current; current=next;\n    } current\n}\n\nfn main() {\n    let result = decodings(\"226\").to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return the number of valid A=1 through Z=26 decodings.",
     "useCases": "encoded strings with local validity rules",
     "visibleInput": "226"
   },
   "concept": "Count valid one-symbol and two-symbol predecessors while rejecting leading zero states.",
-  "contentDigest": "45eddb31ec4d07e8759f217f0400d697bb53f89ddacc3bc2be4e938129c472e5",
+  "contentDigest": "d2820a767fb4fb8248aaf54400c169b447b9484b48540106bad3e56fdcc9668b",
   "depth": {
     "connections": [
       {
-        "concept": "Return whether the text can be segmented into dictionary words.",
         "direction": "previous",
-        "title": "Challenge: Word Break DP"
+        "title": "Challenge: Word Break DP",
+        "concept": "Return whether the text can be segmented into dictionary words."
       },
       {
-        "concept": "encoded strings with local validity rules",
         "direction": "next",
-        "title": "Decode Ways DP: When to Use It"
+        "title": "Decode Ways DP: When to Use It",
+        "concept": "encoded strings with local validity rules"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "Valid letter codes are 1 through 26. String 226 splits as 2-2-6,22-6,2-26, giving 3. String 06 begins with an invalid zero and gives 0. String 10 is valid only as the two-digit code 10, so it has one decoding.",
+    "misconception": "“Zero always means an extra optional letter”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `226`, write the state before the first update. Explain how it represents this claim: Count valid one-symbol and two-symbol predecessors while rejecting leading zero states. A one-dimensional DP state summarizes a prefix or a single parameter. Define its meaning before writing a recurrence."
+        "title": "Concrete transition",
+        "detail": "String 226 splits as 2-2-6,22-6,2-26, giving 3. String 06 begins with an invalid zero and gives 0. String 10 is valid only as the two-digit code 10, so it has one decoding."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `3`. Use `Option` or a safe sentinel for unreachable states, and choose an iteration direction that matches the recurrence's dependencies."
+        "title": "Independent second fixture",
+        "detail": "Input `0` produces `0`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test the base state, the first transition, impossible states, and whether an in-place update accidentally reuses an item twice. Defend the O(n) time · O(1) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `1111` produces `5`. Valid letter codes are 1 through 26. The stated work bound is O(n) time · O(1) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `226` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Decode Ways DP survives, which state must be updated, and whether the O(n) time · O(1) space bound still holds. Choose a recurrence when subproblems overlap. `Some` patterns summarize a frontier instead of a full DP table; either representation needs an invariant, and any greedy shortcut needs proof."
+    "transferChallenge": "Compare the visible input `226` with `10`. Predict why their results are `3` and `1`. Then change one legal value and explain whether the same invariant, valid letter codes are 1 through 26, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.decode-ways.model",
@@ -54,21 +54,21 @@
   "title": "Decode Ways DP: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "Valid letter codes are 1 through 26",
+      "Zero always means an extra optional letter",
+      "Every pair ending in zero is invalid"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n) time · O(1) space",
-    "exampleCode": "fn ways(n: usize) -> usize {\n    let (mut previous, mut current) = (1, 1);\n    for _ in 0..n {\n        (previous, current) = (current, previous + current);\n    }\n    previous\n}",
-    "explanation": "Begin with the concrete question: Return the number of valid A=1 through Z=26 decodings. For the visible input `226`, the stated result is `3`. Before reading code, name the smallest piece of information that must survive from one step to the next. A one-dimensional DP state summarizes a prefix or a single parameter. Define its meaning before writing a recurrence. That is the mental model for Decode Ways DP; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Count valid one-symbol and two-symbol predecessors while rejecting leading zero states. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use `Option` or a safe sentinel for unreachable states, and choose an iteration direction that matches the recurrence's dependencies. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test the base state, the first transition, impossible states, and whether an in-place update accidentally reuses an item twice. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn ways(n: usize) -> usize {\n    let (mut previous, mut current) = (1, 1);\n    for _ in 0..n {\n        (previous, current) = (current, previous + current);\n    }\n    previous\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only decode-ways program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn decodings(text:&str)->u64 {\n    assert!(text.bytes().all(|c|c.is_ascii_digit())); let a=text.as_bytes(); let (mut before,mut current)=(1,1);\n    for i in 0..a.len() {\n        let mut next=if a[i]!=b'0' { current } else { 0 };\n        if i>0 && (a[i-1]==b'1' || a[i-1]==b'2' && a[i]<=b'6') { next+=before; }\n        before=current; current=next;\n    } current\n}\n\nfn main() {\n    let result = decodings(\"226\").to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "String 226 splits as 2-2-6,22-6,2-26, giving 3. String 06 begins with an invalid zero and gives 0. String 10 is valid only as the two-digit code 10, so it has one decoding.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the number of valid A=1 through Z=26 decodings. The visible fixture is `226` and its example result is `3`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return the number of valid A=1 through Z=26 decodings. For the visible input `226`, the stated result is `3`. Before reading code, name the smallest piece of information that must survive from one step to the next. A one-dimensional DP state summarizes a prefix or a single parameter. Define its meaning before writing a recurrence. That is the mental model for Decode Ways DP; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Count valid one-symbol and two-symbol predecessors while rejecting leading zero states. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test the base state, the first transition, impossible states, and whether an in-place update accidentally reuses an item twice. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "String 226 splits as 2-2-6,22-6,2-26, giving 3. String 06 begins with an invalid zero and gives 0. String 10 is valid only as the two-digit code 10, so it has one decoding.",
+    "practiceCode": "fn decodings(text:&str)->u64 {\n    assert!(text.bytes().all(|c|c.is_ascii_digit())); let a=text.as_bytes(); let (mut before,mut current)=(1,1);\n    for i in 0..a.len() {\n        let mut next=if a[i]!=b'0' { current } else { 0 };\n        if i>0 && (a[i-1]==b'1' || a[i-1]==b'2' && a[i]<=b'6') { next+=before; }\n        before=current; current=next;\n    } current\n}\n\nfn main() {\n    let result = decodings(\"226\").to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Why can a zero digit not form a one-digit decoding?",
+    "rule": "Valid letter codes are 1 through 26. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(1) space bound without looking at the code.",
     "summary": "Count valid one-symbol and two-symbol predecessors while rejecting leading zero states.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-dynamic-1d-b.png",

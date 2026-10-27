@@ -7,44 +7,44 @@
     "expectedAnswer": "4500",
     "idea": "Try every final split of an interval and combine left cost, right cost, and multiplication cost.",
     "patternID": "matrix-chain",
-    "rustSketch": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
+    "rustSketch": "fn matrix_chain(dimensions:&[i64])->i64 {\n    assert!(dimensions.len()>=2); let n=dimensions.len()-1; let mut dp=vec![vec![0;n];n];\n    for length in 2..=n { for i in 0..=n-length { let j=i+length-1; dp[i][j]=i64::MAX;\n        for k in i..j { dp[i][j]=dp[i][j].min(dp[i][k]+dp[k+1][j]+dimensions[i]*dimensions[k+1]*dimensions[j+1]); }\n    } } dp[0][n-1]\n}\n\nfn main() {\n    let result = matrix_chain(&[10,30,5,60]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return minimum scalar multiplications.",
     "useCases": "optimal parenthesisation and associative operation planning",
     "visibleInput": "dimensions=[10,30,5,60]"
   },
   "concept": "Try every final split of an interval and combine left cost, right cost, and multiplication cost.",
-  "contentDigest": "0c459b45037cd43f2895362c921d6960463d10f0add2ef3134505bef19b36162",
+  "contentDigest": "7fb9368e312cf38563e6d82b0aaa751b31f9d71738dd3e51b7d04b8911356e5e",
   "depth": {
     "connections": [
       {
-        "concept": "Return the longest palindromic subsequence length.",
         "direction": "previous",
-        "title": "Challenge: Longest Palindromic Subsequence"
+        "title": "Challenge: Longest Palindromic Subsequence",
+        "concept": "Return the longest palindromic subsequence length."
       },
       {
-        "concept": "optimal parenthesisation and associative operation planning",
         "direction": "next",
-        "title": "Matrix Chain DP: When to Use It"
+        "title": "Matrix Chain DP: When to Use It",
+        "concept": "optimal parenthesisation and associative operation planning"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "Different parenthesizations change intermediate multiplication dimensions. For dimensions [10,30,5,60], multiplying the first pair costs 1500, then multiplying its 10×5 result by 5×60 costs 3000, total 4500. The alternative parenthesization costs more; matrix order itself stays fixed.",
+    "misconception": "“Matrix order may be arbitrarily sorted”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `dimensions=[10,30,5,60]`, write the state before the first update. Explain how it represents this claim: Try every final split of an interval and combine left cost, right cost, and multiplication cost. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit."
+        "title": "Concrete transition",
+        "detail": "For dimensions [10,30,5,60], multiplying the first pair costs 1500, then multiplying its 10×5 result by 5×60 costs 3000, total 4500. The alternative parenthesization costs more; matrix order itself stays fixed."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `4500`. Index tables consistently where the state is tabular. Compress dimensions only after the full recurrence and its dependency order are clear."
+        "title": "Independent second fixture",
+        "detail": "Input `dimensions=[2,3]` produces `0`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Defend the O(n^3) time · O(n^2) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `dimensions=[5,10,3]` produces `150`. Different parenthesizations change intermediate multiplication dimensions. The stated work bound is O(n^3) time · O(n^2) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `dimensions=[10,30,5,60]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Matrix Chain DP survives, which state must be updated, and whether the O(n^3) time · O(n^2) space bound still holds. Write the dependency arrows before choosing loop order; a recurrence that reads the future cannot be filled left to right without adjustment."
+    "transferChallenge": "Compare the visible input `dimensions=[10,30,5,60]` with `dimensions=[2,3,4,5]`. Predict why their results are `4500` and `64`. Then change one legal value and explain whether the same invariant, different parenthesizations change intermediate multiplication dimensions, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.matrix-chain.model",
@@ -54,21 +54,21 @@
   "title": "Matrix Chain DP: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "Different parenthesizations change intermediate multiplication dimensions",
+      "Matrix order may be arbitrarily sorted",
+      "Multiplying matrices is commutative"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n^3) time · O(n^2) space",
-    "exampleCode": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
-    "explanation": "Begin with the concrete question: Return minimum scalar multiplications. For the visible input `dimensions=[10,30,5,60]`, the stated result is `4500`. Before reading code, name the smallest piece of information that must survive from one step to the next. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit. That is the mental model for Matrix Chain DP; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Try every final split of an interval and combine left cost, right cost, and multiplication cost. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Index tables consistently where the state is tabular. Compress dimensions only after the full recurrence and its dependency order are clear. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n^3) time · O(n^2) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only matrix-chain program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn matrix_chain(dimensions:&[i64])->i64 {\n    assert!(dimensions.len()>=2); let n=dimensions.len()-1; let mut dp=vec![vec![0;n];n];\n    for length in 2..=n { for i in 0..=n-length { let j=i+length-1; dp[i][j]=i64::MAX;\n        for k in i..j { dp[i][j]=dp[i][j].min(dp[i][k]+dp[k+1][j]+dimensions[i]*dimensions[k+1]*dimensions[j+1]); }\n    } } dp[0][n-1]\n}\n\nfn main() {\n    let result = matrix_chain(&[10,30,5,60]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "For dimensions [10,30,5,60], multiplying the first pair costs 1500, then multiplying its 10×5 result by 5×60 costs 3000, total 4500. The alternative parenthesization costs more; matrix order itself stays fixed.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return minimum scalar multiplications. The visible fixture is `dimensions=[10,30,5,60]` and its example result is `4500`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return minimum scalar multiplications. For the visible input `dimensions=[10,30,5,60]`, the stated result is `4500`. Before reading code, name the smallest piece of information that must survive from one step to the next. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit. That is the mental model for Matrix Chain DP; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Try every final split of an interval and combine left cost, right cost, and multiplication cost. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n^3) time · O(n^2) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "For dimensions [10,30,5,60], multiplying the first pair costs 1500, then multiplying its 10×5 result by 5×60 costs 3000, total 4500. The alternative parenthesization costs more; matrix order itself stays fixed.",
+    "practiceCode": "fn matrix_chain(dimensions:&[i64])->i64 {\n    assert!(dimensions.len()>=2); let n=dimensions.len()-1; let mut dp=vec![vec![0;n];n];\n    for length in 2..=n { for i in 0..=n-length { let j=i+length-1; dp[i][j]=i64::MAX;\n        for k in i..j { dp[i][j]=dp[i][j].min(dp[i][k]+dp[k+1][j]+dimensions[i]*dimensions[k+1]*dimensions[j+1]); }\n    } } dp[0][n-1]\n}\n\nfn main() {\n    let result = matrix_chain(&[10,30,5,60]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Why does matrix-chain DP try each split between matrices?",
+    "rule": "Different parenthesizations change intermediate multiplication dimensions. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(n^3) time · O(n^2) space bound without looking at the code.",
     "summary": "Try every final split of an interval and combine left cost, right cost, and multiplication cost.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-dynamic-2d-b.png",

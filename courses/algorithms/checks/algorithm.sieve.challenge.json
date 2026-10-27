@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS sieve\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"2,3,5,7,11,13,17,19,23,29\".to_string()",
-      "String::from(\"2,3,5,7,11,13,17,19,23,29\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.sieve.challenge",
     "patternID": "sieve",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return primes not exceeding 30.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Sieve of Eratosthenes\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Parse n and return primes not exceeding n in ascending order, as comma-separated integers.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement sieve\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "2,3,5,7,11,13,17,19,23,29",
+        "kind": "visible",
         "input": "n=30",
-        "kind": "visible"
+        "expectedAnswer": "2,3,5,7,11,13,17,19,23,29"
       },
       {
-        "expectedAnswer": "2,3,5,7",
+        "kind": "boundary",
         "input": "n=10",
-        "kind": "boundary"
+        "expectedAnswer": "2,3,5,7"
       },
       {
-        "expectedAnswer": "2,3,5,7",
-        "input": "\nn=10\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "n=1",
+        "expectedAnswer": ""
       },
       {
-        "expectedAnswer": "2,3,5,7,11,13,17,19,23,29",
+        "kind": "adversarial",
+        "input": "n=2",
+        "expectedAnswer": "2"
+      },
+      {
+        "kind": "adversarial",
+        "input": "n=20",
+        "expectedAnswer": "2,3,5,7,11,13,17,19"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \nn=30\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "2,3,5,7,11,13,17,19,23,29"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\nn=20\n",
+        "expectedAnswer": "2,3,5,7,11,13,17,19"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"n=30\"#, r#\"2,3,5,7,11,13,17,19,23,29\"#),\n    (r#\"n=10\"#, r#\"2,3,5,7\"#),\n    (r#\"\nn=10\n\"#, r#\"2,3,5,7\"#),\n    (r#\"  \nn=30\n  \"#, r#\"2,3,5,7,11,13,17,19,23,29\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS sieve\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"n=30\",\"2,3,5,7,11,13,17,19,23,29\"),\n        (\"n=10\",\"2,3,5,7\"),\n        (\"n=1\",\"\"),\n        (\"n=2\",\"2\"),\n        (\"n=20\",\"2,3,5,7,11,13,17,19\"),\n        (\"  \\nn=30\\n  \",\"2,3,5,7,11,13,17,19,23,29\"),\n        (\"\\nn=20\\n\",\"2,3,5,7,11,13,17,19\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS sieve\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS sieve\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"2,3,5,7,11,13,17,19,23,29\".to_string()",
-      "String::from(\"2,3,5,7,11,13,17,19,23,29\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

@@ -7,44 +7,44 @@
     "expectedAnswer": "3",
     "idea": "Combine child evidence; the first node reached from both targets is their lowest shared ancestor.",
     "patternID": "lowest-common-ancestor",
-    "rustSketch": "fn height(node: Option<&Node>) -> usize {\n    match node {\n        None => 0,\n        Some(node) => 1 + height(node.left.as_deref()).max(height(node.right.as_deref())),\n    }\n}",
+    "rustSketch": "\ntype Tree=Option<Box<Node>>;\nstruct Node { value:i32, left:Tree, right:Tree }\nfn node(value:i32,left:Tree,right:Tree)->Tree { Some(Box::new(Node{value,left,right})) }\nfn ancestor(root:&Tree,a:i32,b:i32)->Option<i32> {\n    // Contract: both distinct target values exist in the tree and are unique.\n    match root {\n        None=>None,\n        Some(n) if n.value==a || n.value==b=>Some(n.value),\n        Some(n)=>match (ancestor(&n.left,a,b),ancestor(&n.right,a,b)) {\n            (Some(_),Some(_))=>Some(n.value),(left,right)=>left.or(right)\n        }\n    }\n}\n\nfn main() {\n    let result = ancestor(&node(3,node(5,node(6,None,None),node(2,node(7,None,None),node(4,None,None))),node(1,node(0,None,None),node(8,None,None))),5,1).unwrap().to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
-    "task": "Return the lowest common ancestor of values 5 and 1.",
+    "task": "Parse a binary tree with unique values containing both 5 and 1; return their lowest common ancestor value.",
     "useCases": "hierarchy relationships and path convergence",
     "visibleInput": "tree=[3,5,1,6,2,0,8,null,null,7,4]"
   },
   "concept": "hierarchy relationships and path convergence",
-  "contentDigest": "55997b1a96c73c52f77d82a296e2a021c6dd022d70320b710ab592e4da125853",
+  "contentDigest": "b9269977152aa9e3ba2f56298f0f7739da257f4642ccb48ee406479b227effc4",
   "depth": {
     "connections": [
       {
-        "concept": "Combine child evidence; the first node reached from both targets is their lowest shared ancestor.",
         "direction": "previous",
-        "title": "Lowest Common Ancestor: Mental Model"
+        "title": "Lowest Common Ancestor: Mental Model",
+        "concept": "Combine child evidence; the first node reached from both targets is their lowest shared ancestor."
       },
       {
-        "concept": "Return the lowest common ancestor of values 5 and 1.",
         "direction": "next",
-        "title": "Challenge: Lowest Common Ancestor"
+        "title": "Challenge: Lowest Common Ancestor",
+        "concept": "Parse a binary tree with unique values containing both 5 and 1; return their lowest common ancestor value."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "The current node is the lowest common ancestor. In the sample, target 5 is in the root's left subtree and target 1 is in its right subtree, so root 3 is their LCA. If one target is itself an ancestor of the other, returning that target is correct under the both-present contract.",
+    "misconception": "“The two targets are equal”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `tree=[3,5,1,6,2,0,8,null,null,7,4]`, write the state before the first update. Explain how it represents this claim: Combine child evidence; the first node reached from both targets is their lowest shared ancestor. A tree result is built from a node and its children. Decide whether information flows downward, upward, or in level order."
+        "title": "Concrete transition",
+        "detail": "In the sample, target 5 is in the root's left subtree and target 1 is in its right subtree, so root 3 is their LCA. If one target is itself an ancestor of the other, returning that target is correct under the both-present contract."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `3`. Use references for read-only traversals and make the stack or queue explicit when recursion depth might be large."
+        "title": "Independent second fixture",
+        "detail": "Input `tree=[5,null,1]` produces `5`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test a missing root, a leaf, a skewed tree, and equal or duplicate values when ordering rules depend on them. Defend the O(n) time · O(h) stack bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `tree=[9,5,null,1]` produces `5`. The current node is the lowest common ancestor. The stated work bound is O(n) time · O(h) stack. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `tree=[3,5,1,6,2,0,8,null,null,7,4]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Lowest Common Ancestor survives, which state must be updated, and whether the O(n) time · O(h) stack bound still holds. Look for hierarchy and parent-child structure; a plain sequence algorithm loses the branching relationships."
+    "transferChallenge": "Compare the visible input `tree=[3,5,1,6,2,0,8,null,null,7,4]` with `tree=[2,5,1]`. Predict why their results are `3` and `2`. Then change one legal value and explain whether the same invariant, the current node is the lowest common ancestor, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.lowest-common-ancestor.recognize",
@@ -54,21 +54,21 @@
   "title": "Lowest Common Ancestor: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "hierarchy relationships and path convergence",
-      "Only problems with exactly one input value"
+      "`6`",
+      "`5`",
+      "`4`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Lowest Common Ancestor",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Lowest Common Ancestor",
-    "explanation": "A problem is a good match for Lowest Common Ancestor when it asks for hierarchy relationships and path convergence. Here the concrete task is: Return the lowest common ancestor of values 5 and 1. The visible input `tree=[3,5,1,6,2,0,8,null,null,7,4]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for hierarchy and parent-child structure; a plain sequence algorithm loses the branching relationships. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Combine child evidence; the first node reached from both targets is their lowest shared ancestor. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A tree result is built from a node and its children. Decide whether information flows downward, upward, or in level order. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(h) stack; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `3` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test a missing root, a leaf, a skewed tree, and equal or duplicate values when ordering rules depend on them. Use references for read-only traversals and make the stack or queue explicit when recursion depth might be large. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: hierarchy relationships and path convergence.",
-    "practiceCode": "fn height(node: Option<&Node>) -> usize {\n    match node {\n        None => 0,\n        Some(node) => 1 + height(node.left.as_deref()).max(height(node.right.as_deref())),\n    }\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only lowest-common-ancestor program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "\ntype Tree=Option<Box<Node>>;\nstruct Node { value:i32, left:Tree, right:Tree }\nfn node(value:i32,left:Tree,right:Tree)->Tree { Some(Box::new(Node{value,left,right})) }\nfn ancestor(root:&Tree,a:i32,b:i32)->Option<i32> {\n    // Contract: both distinct target values exist in the tree and are unique.\n    match root {\n        None=>None,\n        Some(n) if n.value==a || n.value==b=>Some(n.value),\n        Some(n)=>match (ancestor(&n.left,a,b),ancestor(&n.right,a,b)) {\n            (Some(_),Some(_))=>Some(n.value),(left,right)=>left.or(right)\n        }\n    }\n}\n\nfn main() {\n    let result = ancestor(&node(3,node(5,node(6,None,None),node(2,node(7,None,None),node(4,None,None))),node(1,node(0,None,None),node(8,None,None))),5,1).unwrap().to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "In the sample, target 5 is in the root's left subtree and target 1 is in its right subtree, so root 3 is their LCA. If one target is itself an ancestor of the other, returning that target is correct under the both-present contract.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Parse a binary tree with unique values containing both 5 and 1; return their lowest common ancestor value. The visible fixture is `tree=[3,5,1,6,2,0,8,null,null,7,4]` and its example result is `3`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Lowest Common Ancestor when it asks for hierarchy relationships and path convergence. Here the concrete task is: Parse a binary tree with unique values containing both 5 and 1; return their lowest common ancestor value. The visible input `tree=[3,5,1,6,2,0,8,null,null,7,4]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for hierarchy and parent-child structure; a plain sequence algorithm loses the branching relationships. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Combine child evidence; the first node reached from both targets is their lowest shared ancestor. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A tree result is built from a node and its children. Decide whether information flows downward, upward, or in level order. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(h) stack; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `3` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test a missing root, a leaf, a skewed tree, and equal or duplicate values when ordering rules depend on them. Use references for read-only traversals and make the stack or queue explicit when recursion depth might be large. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `5`. The current node is the lowest common ancestor. Compare this independent fixture with the worked trace: In the sample, target 5 is in the root's left subtree and target 1 is in its right subtree, so root 3 is their LCA. If one target is itself an ancestor of the other, returning that target is correct under the both-present contract.",
+    "practiceCode": "\ntype Tree=Option<Box<Node>>;\nstruct Node { value:i32, left:Tree, right:Tree }\nfn node(value:i32,left:Tree,right:Tree)->Tree { Some(Box::new(Node{value,left,right})) }\nfn ancestor(root:&Tree,a:i32,b:i32)->Option<i32> {\n    // Contract: both distinct target values exist in the tree and are unique.\n    match root {\n        None=>None,\n        Some(n) if n.value==a || n.value==b=>Some(n.value),\n        Some(n)=>match (ancestor(&n.left,a,b),ancestor(&n.right,a,b)) {\n            (Some(_),Some(_))=>Some(n.value),(left,right)=>left.or(right)\n        }\n    }\n}\n\nfn main() {\n    let result = ancestor(&node(3,node(5,node(6,None,None),node(2,node(7,None,None),node(4,None,None))),node(1,node(0,None,None),node(8,None,None))),5,1).unwrap().to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Lowest Common Ancestor on input `tree=[5,null,1]`. Which result follows from the documented contract?",
+    "rule": "The current node is the lowest common ancestor. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Lowest Common Ancestor.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-trees-b.png",

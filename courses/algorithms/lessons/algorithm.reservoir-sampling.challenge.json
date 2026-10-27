@@ -2,49 +2,49 @@
   "algorithm": {
     "categoryID": "scans",
     "categoryTitle": "Linear Scans & State",
-    "complexity": "O(n) time · O(k) space",
+    "complexity": "O(n) time · O(1) reservoir state for k=1",
     "difficulty": "medium",
     "expectedAnswer": "40",
     "idea": "Replace a fixed reservoir with decreasing probability while streaming unknown-length input.",
     "patternID": "reservoir-sampling",
-    "rustSketch": "fn scan(values: &[i32]) -> Option<usize> {\n    for (index, value) in values.iter().enumerate() {\n        if *value < 0 { return Some(index); }\n    }\n    None\n}",
+    "rustSketch": "fn reservoir(values: &[i32], choices: &[usize]) -> Option<i32> {\n    assert_eq!(values.len(), choices.len());\n    let mut selected = None;\n    for (i, (&value, &choice)) in values.iter().zip(choices).enumerate() {\n        assert!(choice <= i); // choice is uniform in 0..=i in a random run\n        if choice == i { selected = Some(value); }\n    }\n    selected\n}\n\nfn main() {\n    let result = reservoir(&[5,6,7],&[0,0,2]).map_or(\"none\".into(),|x|x.to_string());\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
-    "task": "For deterministic random choices [0,1,1,3], return the final one-item reservoir while scanning four values.",
+    "task": "Parse equally sized values and choices arrays. At zero-based index i, choices[i] is in 0..=i; replace the one-item reservoir exactly when choices[i] == i. Return the selected value, or none for empty arrays.",
     "useCases": "uniform sampling from streams and files too large for memory",
     "visibleInput": "values=[10,20,30,40]; choices=[0,1,1,3]"
   },
-  "concept": "For deterministic random choices [0,1,1,3], return the final one-item reservoir while scanning four values.",
+  "concept": "Parse equally sized values and choices arrays. At zero-based index i, choices[i] is in 0..=i; replace the one-item reservoir exactly when choices[i] == i. Return the selected value, or none for empty arrays.",
   "contentDigest": "b65346bc9e7946c92442f75c364c8324ef6f91fffd476cc8ad5dac39dc4d6baa",
   "depth": {
     "connections": [
       {
-        "concept": "uniform sampling from streams and files too large for memory",
         "direction": "previous",
-        "title": "Reservoir Sampling: When to Use It"
+        "title": "Reservoir Sampling: When to Use It",
+        "concept": "uniform sampling from streams and files too large for memory"
       },
       {
-        "concept": "Advance one state once and another twice; their meeting proves a cycle without a visited set.",
         "direction": "next",
-        "title": "Floyd State Cycle Detection: Mental Model"
+        "title": "Floyd State Cycle Detection: Mental Model",
+        "concept": "Advance one state once and another twice; their meeting proves a cycle without a visited set."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "When the supplied uniform choice in 0..=i equals i. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“Whenever the new value is larger”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `values=[10,20,30,40]; choices=[0,1,1,3]`, write the state before the first update. Explain how it represents this claim: Replace a fixed reservoir with decreasing probability while streaming unknown-length input. A scan turns a sequence into a small piece of state. Say what the state means after the first i elements, before you describe a loop body."
+        "title": "Pattern-specific invariant",
+        "detail": "When the supplied uniform choice in 0..=i equals i. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. A borrowed slice and a for loop usually express the traversal clearly; distinguish an index you need to return from a value you merely read."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `values=[5,6,7]; choices=[0,0,2]` and computes `7`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Use an empty slice and a one-element slice as checks. Initial values must not silently assume that at least one item exists. Defend the O(n) time · O(k) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `values=[8,7,6]; choices=[0,1,0]`, the independently calculated result is `7`. The complexity discussion uses O(n) time · O(1) reservoir state for k=1. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `values=[10,20,30,40]; choices=[0,1,1,3]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Reservoir Sampling survives, which state must be updated, and whether the O(n) time · O(k) space bound still holds. Ask whether one pass is enough, whether order matters, and whether a later query will need information you already discarded."
+    "transferChallenge": "Change the independent fixture `values=[5,6,7]; choices=[0,0,2]` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `values=[10,20,30,40]; choices=[0,1,1,3]`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.reservoir-sampling.challenge",
@@ -54,21 +54,21 @@
   "title": "Challenge: Reservoir Sampling",
   "writing": {
     "answers": [
-      "O(n) time · O(k) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`7`",
+      "`8`",
+      "`6`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // For deterministic random choices [0,1,1,3], return the final one-item reservoir while scanning four values.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Reservoir Sampling\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: For deterministic random choices [0,1,1,3], return the final one-item reservoir while scanning four values. On input `values=[10,20,30,40]; choices=[0,1,1,3]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Replace a fixed reservoir with decreasing probability while streaming unknown-length input. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A scan turns a sequence into a small piece of state. Say what the state means after the first i elements, before you describe a loop body. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. A borrowed slice and a for loop usually express the traversal clearly; distinguish an index you need to return from a value you merely read. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(k) space; explain which operation dominates it and how many times the input can trigger that operation. Use an empty slice and a one-element slice as checks. Initial values must not silently assume that at least one item exists. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(n) time · O(k) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // For deterministic random choices [0,1,1,3], return the final one-item reservoir while scanning four values.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Reservoir Sampling\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS reservoir-sampling, and your explanation still meets O(n) time · O(k) space.",
-    "summary": "For deterministic random choices [0,1,1,3], return the final one-item reservoir while scanning four values.",
-    "task": "For deterministic random choices [0,1,1,3], return the final one-item reservoir while scanning four values."
+    "exampleCaption": "Complete std-only reservoir-sampling program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn reservoir(values: &[i32], choices: &[usize]) -> Option<i32> {\n    assert_eq!(values.len(), choices.len());\n    let mut selected = None;\n    for (i, (&value, &choice)) in values.iter().zip(choices).enumerate() {\n        assert!(choice <= i); // choice is uniform in 0..=i in a random run\n        if choice == i { selected = Some(value); }\n    }\n    selected\n}\n\nfn main() {\n    let result = reservoir(&[5,6,7],&[0,0,2]).map_or(\"none\".into(),|x|x.to_string());\n    println!(\"{result}\");\n}\n",
+    "explanation": "When the supplied uniform choice in 0..=i equals i. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `values=[5,6,7]; choices=[0,0,2]`, the worked program returns `7`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `values=[10,20,30,40]; choices=[0,1,1,3]`; predict that result before opening the answer reveal. The precise contract is: Parse equally sized values and choices arrays. At zero-based index i, choices[i] is in 0..=i; replace the one-item reservoir exactly when choices[i] == i. Return the selected value, or none for empty arrays.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Parse equally sized values and choices arrays. At zero-based index i, choices[i] is in 0..=i; replace the one-item reservoir exactly when choices[i] == i. Return the selected value, or none for empty arrays. On input `values=[10,20,30,40]; choices=[0,1,1,3]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Replace a fixed reservoir with decreasing probability while streaming unknown-length input. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A scan turns a sequence into a small piece of state. Say what the state means after the first i elements, before you describe a loop body. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(1) reservoir state for k=1; explain which operation dominates it and how many times the input can trigger that operation. Use an empty slice and a one-element slice as checks. Initial values must not silently assume that at least one item exists. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `7`. When the supplied uniform choice in 0..=i equals i. Compare this independent fixture with the worked trace: With choices [0,1,1,3], index 0 selects 10, index 1 selects 20, index 2 retains 20, and index 3 selects 40. Each index i replaces with probability 1/(i+1); the exact replacement rule is now explicit.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Parse equally sized values and choices arrays. At zero-based index i, choices[i] is in 0..=i; replace the one-item reservoir exactly when choices[i] == i. Return the selected value, or none for empty arrays.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement reservoir-sampling\")\n}\n",
+    "question": "Boundary check for reservoir-sampling: with input `values=[8,7,6]; choices=[0,1,0]`, what result should solve return?",
+    "rule": "When the supplied uniform choice in 0..=i equals i. Parse equally sized values and choices arrays. At zero-based index i, choices[i] is in 0..=i; replace the one-item reservoir exactly when choices[i] == i. Return the selected value, or none for empty arrays.",
+    "success": "The private harness prints PASS reservoir-sampling. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
+    "summary": "Parse equally sized values and choices arrays. At zero-based index i, choices[i] is in 0..=i; replace the one-item reservoir exactly when choices[i] == i. Return the selected value, or none for empty arrays.",
+    "task": "Parse equally sized values and choices arrays. At zero-based index i, choices[i] is in 0..=i; replace the one-item reservoir exactly when choices[i] == i. Return the selected value, or none for empty arrays."
   },
   "illustration": {
     "path": "media/algorithms-scans-b.png",

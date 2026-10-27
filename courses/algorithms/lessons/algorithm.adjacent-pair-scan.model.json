@@ -7,44 +7,44 @@
     "expectedAnswer": "2",
     "idea": "Compare each item with its predecessor while keeping only local context.",
     "patternID": "adjacent-pair-scan",
-    "rustSketch": "fn scan(values: &[i32]) -> Option<usize> {\n    for (index, value) in values.iter().enumerate() {\n        if *value < 0 { return Some(index); }\n    }\n    None\n}",
+    "rustSketch": "fn decreases(values: &[i32]) -> usize {\n    values.windows(2).filter(|pair| pair[1] < pair[0]).count()\n}\n\nfn main() {\n    let result = decreases(&[3,5,4,4,1]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Count positions where a reading is lower than the reading immediately before it.",
     "useCases": "trend changes, runs, inversions, boundary detection",
     "visibleInput": "[3, 5, 4, 4, 1]"
   },
   "concept": "Compare each item with its predecessor while keeping only local context.",
-  "contentDigest": "3f8fbb93d40dc4a736ed931d066ec6cec45276eb6706300586a21a2a841fcf1a",
+  "contentDigest": "09c1e674144d2556e944d6e34a263780d42556cdf87d6c3bbe2488be0e2a3ae6",
   "depth": {
     "connections": [
       {
-        "concept": "Return the alternating sum a0 - a1 + a2 - a3 and so on.",
         "direction": "previous",
-        "title": "Challenge: Running Accumulator"
+        "title": "Challenge: Running Accumulator",
+        "concept": "Return the alternating sum a0 - a1 + a2 - a3 and so on."
       },
       {
-        "concept": "trend changes, runs, inversions, boundary detection",
         "direction": "next",
-        "title": "Adjacent Pair Scan: When to Use It"
+        "title": "Adjacent Pair Scan: When to Use It",
+        "concept": "trend changes, runs, inversions, boundary detection"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "Each position is compared with its immediate predecessor. Pairs (3,5), (5,4), (4,4), (4,1) contribute 0,1,0,1. Equal neighboring readings do not count. Four comparisons produce 2 decreases for five readings.",
+    "misconception": "“Only disjoint pairs can be compared safely”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[3, 5, 4, 4, 1]`, write the state before the first update. Explain how it represents this claim: Compare each item with its predecessor while keeping only local context. A scan turns a sequence into a small piece of state. Say what the state means after the first i elements, before you describe a loop body."
+        "title": "Concrete transition",
+        "detail": "Pairs (3,5), (5,4), (4,4), (4,1) contribute 0,1,0,1. Equal neighboring readings do not count. Four comparisons produce 2 decreases for five readings."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `2`. A borrowed slice and a for loop usually express the traversal clearly; distinguish an index you need to return from a value you merely read."
+        "title": "Independent second fixture",
+        "detail": "Input `[1,2,3,4,5,6,7]` produces `0`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Use an empty slice and a one-element slice as checks. Initial values must not silently assume that at least one item exists. Defend the O(n) time · O(1) extra space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[8,7,6,5,4,3,2]` produces `6`. Each position is compared with its immediate predecessor. The stated work bound is O(n) time · O(1) extra space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[3, 5, 4, 4, 1]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Adjacent Pair Scan survives, which state must be updated, and whether the O(n) time · O(1) extra space bound still holds. Ask whether one pass is enough, whether order matters, and whether a later query will need information you already discarded."
+    "transferChallenge": "Compare the visible input `[3, 5, 4, 4, 1]` with `[3,3,3,3,3,3,3]`. Predict why their results are `2` and `0`. Then change one legal value and explain whether the same invariant, each position is compared with its immediate predecessor, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.adjacent-pair-scan.model",
@@ -54,21 +54,21 @@
   "title": "Adjacent Pair Scan: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "Each position is compared with its immediate predecessor",
+      "Only disjoint pairs can be compared safely",
+      "The whole prefix must be sorted after each comparison"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n) time · O(1) extra space",
-    "exampleCode": "fn scan(values: &[i32]) -> Option<usize> {\n    for (index, value) in values.iter().enumerate() {\n        if *value < 0 { return Some(index); }\n    }\n    None\n}",
-    "explanation": "Begin with the concrete question: Count positions where a reading is lower than the reading immediately before it. For the visible input `[3, 5, 4, 4, 1]`, the stated result is `2`. Before reading code, name the smallest piece of information that must survive from one step to the next. A scan turns a sequence into a small piece of state. Say what the state means after the first i elements, before you describe a loop body. That is the mental model for Adjacent Pair Scan; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Compare each item with its predecessor while keeping only local context. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. A borrowed slice and a for loop usually express the traversal clearly; distinguish an index you need to return from a value you merely read. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n) time · O(1) extra space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Use an empty slice and a one-element slice as checks. Initial values must not silently assume that at least one item exists. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn scan(values: &[i32]) -> Option<usize> {\n    for (index, value) in values.iter().enumerate() {\n        if *value < 0 { return Some(index); }\n    }\n    None\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only adjacent-pair-scan program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn decreases(values: &[i32]) -> usize {\n    values.windows(2).filter(|pair| pair[1] < pair[0]).count()\n}\n\nfn main() {\n    let result = decreases(&[3,5,4,4,1]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "Pairs (3,5), (5,4), (4,4), (4,1) contribute 0,1,0,1. Equal neighboring readings do not count. Four comparisons produce 2 decreases for five readings.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Count positions where a reading is lower than the reading immediately before it. The visible fixture is `[3, 5, 4, 4, 1]` and its example result is `2`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Count positions where a reading is lower than the reading immediately before it. For the visible input `[3, 5, 4, 4, 1]`, the stated result is `2`. Before reading code, name the smallest piece of information that must survive from one step to the next. A scan turns a sequence into a small piece of state. Say what the state means after the first i elements, before you describe a loop body. That is the mental model for Adjacent Pair Scan; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Compare each item with its predecessor while keeping only local context. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n) time · O(1) extra space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Use an empty slice and a one-element slice as checks. Initial values must not silently assume that at least one item exists. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "Pairs (3,5), (5,4), (4,4), (4,1) contribute 0,1,0,1. Equal neighboring readings do not count. Four comparisons produce 2 decreases for five readings.",
+    "practiceCode": "fn decreases(values: &[i32]) -> usize {\n    values.windows(2).filter(|pair| pair[1] < pair[0]).count()\n}\n\nfn main() {\n    let result = decreases(&[3,5,4,4,1]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Why does the adjacent-decrease task inspect overlapping pairs?",
+    "rule": "Each position is compared with its immediate predecessor. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(1) extra space bound without looking at the code.",
     "summary": "Compare each item with its predecessor while keeping only local context.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-scans-a.png",

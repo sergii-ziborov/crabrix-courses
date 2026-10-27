@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS matrix-chain\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"4500\".to_string()",
-      "String::from(\"4500\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.matrix-chain.challenge",
     "patternID": "matrix-chain",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return minimum scalar multiplications.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Matrix Chain DP\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Return minimum scalar multiplications.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement matrix-chain\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "4500",
+        "kind": "visible",
         "input": "dimensions=[10,30,5,60]",
-        "kind": "visible"
+        "expectedAnswer": "4500"
       },
       {
-        "expectedAnswer": "6000",
+        "kind": "boundary",
         "input": "dimensions=[10,20,30]",
-        "kind": "boundary"
+        "expectedAnswer": "6000"
       },
       {
-        "expectedAnswer": "6000",
-        "input": "\ndimensions=[10,20,30]\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "dimensions=[2,3]",
+        "expectedAnswer": "0"
       },
       {
-        "expectedAnswer": "4500",
+        "kind": "adversarial",
+        "input": "dimensions=[2,3,4,5]",
+        "expectedAnswer": "64"
+      },
+      {
+        "kind": "adversarial",
+        "input": "dimensions=[5,10,3]",
+        "expectedAnswer": "150"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \ndimensions=[10,30,5,60]\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "4500"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\ndimensions=[5,10,3]\n",
+        "expectedAnswer": "150"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"dimensions=[10,30,5,60]\"#, r#\"4500\"#),\n    (r#\"dimensions=[10,20,30]\"#, r#\"6000\"#),\n    (r#\"\ndimensions=[10,20,30]\n\"#, r#\"6000\"#),\n    (r#\"  \ndimensions=[10,30,5,60]\n  \"#, r#\"4500\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS matrix-chain\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"dimensions=[10,30,5,60]\",\"4500\"),\n        (\"dimensions=[10,20,30]\",\"6000\"),\n        (\"dimensions=[2,3]\",\"0\"),\n        (\"dimensions=[2,3,4,5]\",\"64\"),\n        (\"dimensions=[5,10,3]\",\"150\"),\n        (\"  \\ndimensions=[10,30,5,60]\\n  \",\"4500\"),\n        (\"\\ndimensions=[5,10,3]\\n\",\"150\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS matrix-chain\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS matrix-chain\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"4500\".to_string()",
-      "String::from(\"4500\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

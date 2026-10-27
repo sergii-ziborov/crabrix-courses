@@ -2,49 +2,49 @@
   "algorithm": {
     "categoryID": "dynamic-2d",
     "categoryTitle": "2D & Advanced Dynamic Programming",
-    "complexity": "O(n*m) time · O(min(n,m)) space possible",
+    "complexity": "O(n*m) time · O(n*m) table in this example",
     "difficulty": "medium",
     "expectedAnswer": "3",
     "idea": "Match equal symbols diagonally; otherwise discard one suffix boundary and keep the better result.",
     "patternID": "longest-common-subsequence",
-    "rustSketch": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
+    "rustSketch": "fn lcs(a:&str,b:&str)->usize {\n    assert!(a.is_ascii() && b.is_ascii()); let mut dp=vec![vec![0;b.len()+1];a.len()+1];\n    for (i,x) in a.bytes().enumerate() { for (j,y) in b.bytes().enumerate() {\n        dp[i+1][j+1]=if x==y { dp[i][j]+1 } else { dp[i][j+1].max(dp[i+1][j]) };\n    } } dp[a.len()][b.len()]\n}\n\nfn main() {\n    let result = lcs(\"abcde\",\"ace\").to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return the LCS length.",
     "useCases": "diffs, sequence similarity, deletion distance",
     "visibleInput": "abcde and ace"
   },
   "concept": "Match equal symbols diagonally; otherwise discard one suffix boundary and keep the better result.",
-  "contentDigest": "91c47c591cdf49e07ce0aed3dd2fa5cbec8eb7fe0ed350dd246347a055f55b72",
+  "contentDigest": "04eb6e42a6eed65f5261e5fc5c8f8400e215960b11c554d9b18f665fdedea243",
   "depth": {
     "connections": [
       {
-        "concept": "Return whether some subset sums to 11.",
         "direction": "previous",
-        "title": "Challenge: Subset Sum DP"
+        "title": "Challenge: Subset Sum DP",
+        "concept": "Return whether some subset sums to 11."
       },
       {
-        "concept": "diffs, sequence similarity, deletion distance",
         "direction": "next",
-        "title": "Longest Common Subsequence: When to Use It"
+        "title": "Longest Common Subsequence: When to Use It",
+        "concept": "diffs, sequence similarity, deletion distance"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "A common subsequence may skip characters without requiring adjacency. For abcde and ace, matching a,c,e extends diagonal states to length 3. Letters b and d can be skipped. At mismatches, take the better result from removing one side's final character, rather than resetting length to zero.",
+    "misconception": "“A subsequence must be a contiguous substring”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `abcde and ace`, write the state before the first update. Explain how it represents this claim: Match equal symbols diagonally; otherwise discard one suffix boundary and keep the better result. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit."
+        "title": "Concrete transition",
+        "detail": "For abcde and ace, matching a,c,e extends diagonal states to length 3. Letters b and d can be skipped. At mismatches, take the better result from removing one side's final character, rather than resetting length to zero."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `3`. Index tables consistently where the state is tabular. Compress dimensions only after the full recurrence and its dependency order are clear."
+        "title": "Independent second fixture",
+        "detail": "Input `abc and abc` produces `3`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Defend the O(n*m) time · O(min(n,m)) space possible bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `aaab and ab` produces `2`. A common subsequence may skip characters without requiring adjacency. The stated work bound is O(n*m) time · O(n*m) table in this example. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `abcde and ace` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Longest Common Subsequence survives, which state must be updated, and whether the O(n*m) time · O(min(n,m)) space possible bound still holds. Write the dependency arrows before choosing loop order; a recurrence that reads the future cannot be filled left to right without adjustment."
+    "transferChallenge": "Compare the visible input `abcde and ace` with `abc and cab`. Predict why their results are `3` and `2`. Then change one legal value and explain whether the same invariant, a common subsequence may skip characters without requiring adjacency, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.longest-common-subsequence.model",
@@ -54,21 +54,21 @@
   "title": "Longest Common Subsequence: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "A common subsequence may skip characters without requiring adjacency",
+      "A subsequence must be a contiguous substring",
+      "Every mismatch contributes one to the LCS"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n*m) time · O(min(n,m)) space possible",
-    "exampleCode": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
-    "explanation": "Begin with the concrete question: Return the LCS length. For the visible input `abcde and ace`, the stated result is `3`. Before reading code, name the smallest piece of information that must survive from one step to the next. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit. That is the mental model for Longest Common Subsequence; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Match equal symbols diagonally; otherwise discard one suffix boundary and keep the better result. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Index tables consistently where the state is tabular. Compress dimensions only after the full recurrence and its dependency order are clear. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n*m) time · O(min(n,m)) space possible. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
-    "success": "You can explain the invariant, termination condition, and O(n*m) time · O(min(n,m)) space possible bound without looking at the code.",
+    "exampleCaption": "Complete std-only longest-common-subsequence program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn lcs(a:&str,b:&str)->usize {\n    assert!(a.is_ascii() && b.is_ascii()); let mut dp=vec![vec![0;b.len()+1];a.len()+1];\n    for (i,x) in a.bytes().enumerate() { for (j,y) in b.bytes().enumerate() {\n        dp[i+1][j+1]=if x==y { dp[i][j]+1 } else { dp[i][j+1].max(dp[i+1][j]) };\n    } } dp[a.len()][b.len()]\n}\n\nfn main() {\n    let result = lcs(\"abcde\",\"ace\").to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "For abcde and ace, matching a,c,e extends diagonal states to length 3. Letters b and d can be skipped. At mismatches, take the better result from removing one side's final character, rather than resetting length to zero.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the LCS length. The visible fixture is `abcde and ace` and its example result is `3`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return the LCS length. For the visible input `abcde and ace`, the stated result is `3`. Before reading code, name the smallest piece of information that must survive from one step to the next. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit. That is the mental model for Longest Common Subsequence; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Match equal symbols diagonally; otherwise discard one suffix boundary and keep the better result. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n*m) time · O(n*m) table in this example. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "For abcde and ace, matching a,c,e extends diagonal states to length 3. Letters b and d can be skipped. At mismatches, take the better result from removing one side's final character, rather than resetting length to zero.",
+    "practiceCode": "fn lcs(a:&str,b:&str)->usize {\n    assert!(a.is_ascii() && b.is_ascii()); let mut dp=vec![vec![0;b.len()+1];a.len()+1];\n    for (i,x) in a.bytes().enumerate() { for (j,y) in b.bytes().enumerate() {\n        dp[i+1][j+1]=if x==y { dp[i][j]+1 } else { dp[i][j+1].max(dp[i+1][j]) };\n    } } dp[a.len()][b.len()]\n}\n\nfn main() {\n    let result = lcs(\"abcde\",\"ace\").to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Why may mismatching LCS characters discard either final character?",
+    "rule": "A common subsequence may skip characters without requiring adjacency. State the input preconditions before applying this invariant.",
+    "success": "You can explain the invariant, termination condition, and O(n*m) time · O(n*m) table in this example bound without looking at the code.",
     "summary": "Match equal symbols diagonally; otherwise discard one suffix boundary and keep the better result.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-dynamic-2d-a.png",

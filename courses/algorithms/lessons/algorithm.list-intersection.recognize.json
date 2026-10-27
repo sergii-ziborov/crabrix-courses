@@ -7,44 +7,44 @@
     "expectedAnswer": "8",
     "idea": "Switch each pointer to the other head so both traverse equal combined distance.",
     "patternID": "list-intersection",
-    "rustSketch": "// Conceptual ownership-safe reversal:\n// while let Some(mut node) = head.take() {\n//     head = node.next.take();\n//     node.next = reversed;\n//     reversed = Some(node);\n// }",
+    "rustSketch": "\ntype SharedLink=Option<std::rc::Rc<SharedNode>>;\nstruct SharedNode { value:i32, next:SharedLink }\nfn shared_list(prefix:&[i32],tail:SharedLink)->SharedLink {\n    prefix.iter().rev().fold(tail,|next,&value|Some(std::rc::Rc::new(SharedNode{value,next})))\n}\nfn intersection(a:&SharedLink,b:&SharedLink)->Option<i32> {\n    fn equal(a:&SharedLink,b:&SharedLink)->bool {\n        match (a,b) { (None,None)=>true, (Some(x),Some(y))=>std::rc::Rc::ptr_eq(x,y), _=>false }\n    }\n    let (mut p,mut q)=(a.clone(),b.clone());\n    while !equal(&p,&q) {\n        p=match p { Some(n)=>n.next.clone(), None=>b.clone() };\n        q=match q { Some(n)=>n.next.clone(), None=>a.clone() };\n    }\n    p.map(|n|n.value)\n}\n\nfn main() {\n    let result = { let tail=shared_list(&[8,4,5],None); let a=shared_list(&[4,1],tail.clone()); let b=shared_list(&[5,6,1],tail); intersection(&a,&b).map_or(\"none\".into(),|x|x.to_string()) };\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
-    "task": "Return the first shared node value.",
+    "task": "Parse a_prefix, b_prefix and shared integer arrays. Build separate prefix nodes and attach both to the same shared tail. Return the first shared node value, or none when shared is empty. Equal values in separate prefixes do not identify shared nodes.",
     "useCases": "shared-tail intersection without lengths",
-    "visibleInput": "A=4->1->8->4->5; B=5->6->1->8->4->5"
+    "visibleInput": "a_prefix=[4,1]; b_prefix=[5,6,1]; shared=[8,4,5]"
   },
   "concept": "shared-tail intersection without lengths",
-  "contentDigest": "c021eb08472b34fa2b332facd8f62a434d5aeabaa8d9b0093970e6abc6f23658",
+  "contentDigest": "a366e4e0d19d5a4e6e8a2c0c7fce9d82d02b94d1b99205184d58d6dc3156c4b3",
   "depth": {
     "connections": [
       {
-        "concept": "Switch each pointer to the other head so both traverse equal combined distance.",
         "direction": "previous",
-        "title": "Pointer-Switch Intersection: Mental Model"
+        "title": "Pointer-Switch Intersection: Mental Model",
+        "concept": "Switch each pointer to the other head so both traverse equal combined distance."
       },
       {
-        "concept": "Return the first shared node value.",
         "direction": "next",
-        "title": "Challenge: Pointer-Switch Intersection"
+        "title": "Challenge: Pointer-Switch Intersection",
+        "concept": "Parse a_prefix, b_prefix and shared integer arrays. Build separate prefix nodes and attach both to the same shared tail. Return the first shared node value, or none when shared is empty. Equal values in separate prefixes do not identify shared nodes."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "They are the same node allocation, not merely equal values. Build a_prefix=[4,1] and b_prefix=[5,6,1] as separate nodes, then attach both to shared=[8,4,5]. Pointer identities first agree at 8. Equal-valued private prefixes remain distinct; an empty shared tail means no intersection.",
+    "misconception": "“Their integer values compare equal”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `A=4->1->8->4->5; B=5->6->1->8->4->5`, write the state before the first update. Explain how it represents this claim: Switch each pointer to the other head so both traverse equal combined distance. A list algorithm changes relationships between nodes, not just values. Draw the next pointers before and after each mutation."
+        "title": "Concrete transition",
+        "detail": "Build a_prefix=[4,1] and b_prefix=[5,6,1] as separate nodes, then attach both to shared=[8,4,5]. Pointer identities first agree at 8. Equal-valued private prefixes remain distinct; an empty shared tail means no intersection."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `8`. Rust ownership makes linked structures explicit: use the provided node type, take links carefully, and preserve access to the remaining chain."
+        "title": "Independent second fixture",
+        "detail": "Input `a_prefix=[1]; b_prefix=[1]; shared=[]` produces `none`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check an empty list, one node, a head or tail change, and cycles when the problem allows them. Defend the O(n+m) time · O(1) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `a_prefix=[8,4]; b_prefix=[8]; shared=[4,5]` produces `4`. They are the same node allocation, not merely equal values. The stated work bound is O(n+m) time · O(1) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `A=4->1->8->4->5; B=5->6->1->8->4->5` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Pointer-Switch Intersection survives, which state must be updated, and whether the O(n+m) time · O(1) space bound still holds. Look for tasks where node identity or one-way traversal matters. An indexed vector solution can hide the pointer constraint rather than solve it."
+    "transferChallenge": "Compare the visible input `a_prefix=[4,1]; b_prefix=[5,6,1]; shared=[8,4,5]` with `a_prefix=[]; b_prefix=[2]; shared=[7,8]`. Predict why their results are `8` and `7`. Then change one legal value and explain whether the same invariant, they are the same node allocation, not merely equal values, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.list-intersection.recognize",
@@ -54,21 +54,21 @@
   "title": "Pointer-Switch Intersection: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "shared-tail intersection without lengths",
-      "Only problems with exactly one input value"
+      "`none0`",
+      "`none`",
+      "`enon`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Pointer-Switch Intersection",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Pointer-Switch Intersection",
-    "explanation": "A problem is a good match for Pointer-Switch Intersection when it asks for shared-tail intersection without lengths. Here the concrete task is: Return the first shared node value. The visible input `A=4->1->8->4->5; B=5->6->1->8->4->5` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for tasks where node identity or one-way traversal matters. An indexed vector solution can hide the pointer constraint rather than solve it. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Switch each pointer to the other head so both traverse equal combined distance. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A list algorithm changes relationships between nodes, not just values. Draw the next pointers before and after each mutation. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n+m) time · O(1) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `8` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check an empty list, one node, a head or tail change, and cycles when the problem allows them. Rust ownership makes linked structures explicit: use the provided node type, take links carefully, and preserve access to the remaining chain. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: shared-tail intersection without lengths.",
-    "practiceCode": "// Conceptual ownership-safe reversal:\n// while let Some(mut node) = head.take() {\n//     head = node.next.take();\n//     node.next = reversed;\n//     reversed = Some(node);\n// }",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only list-intersection program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "\ntype SharedLink=Option<std::rc::Rc<SharedNode>>;\nstruct SharedNode { value:i32, next:SharedLink }\nfn shared_list(prefix:&[i32],tail:SharedLink)->SharedLink {\n    prefix.iter().rev().fold(tail,|next,&value|Some(std::rc::Rc::new(SharedNode{value,next})))\n}\nfn intersection(a:&SharedLink,b:&SharedLink)->Option<i32> {\n    fn equal(a:&SharedLink,b:&SharedLink)->bool {\n        match (a,b) { (None,None)=>true, (Some(x),Some(y))=>std::rc::Rc::ptr_eq(x,y), _=>false }\n    }\n    let (mut p,mut q)=(a.clone(),b.clone());\n    while !equal(&p,&q) {\n        p=match p { Some(n)=>n.next.clone(), None=>b.clone() };\n        q=match q { Some(n)=>n.next.clone(), None=>a.clone() };\n    }\n    p.map(|n|n.value)\n}\n\nfn main() {\n    let result = { let tail=shared_list(&[8,4,5],None); let a=shared_list(&[4,1],tail.clone()); let b=shared_list(&[5,6,1],tail); intersection(&a,&b).map_or(\"none\".into(),|x|x.to_string()) };\n    println!(\"{result}\");\n}\n",
+    "explanation": "Build a_prefix=[4,1] and b_prefix=[5,6,1] as separate nodes, then attach both to shared=[8,4,5]. Pointer identities first agree at 8. Equal-valued private prefixes remain distinct; an empty shared tail means no intersection.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Parse a_prefix, b_prefix and shared integer arrays. Build separate prefix nodes and attach both to the same shared tail. Return the first shared node value, or none when shared is empty. Equal values in separate prefixes do not identify shared nodes. The visible fixture is `a_prefix=[4,1]; b_prefix=[5,6,1]; shared=[8,4,5]` and its example result is `8`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Pointer-Switch Intersection when it asks for shared-tail intersection without lengths. Here the concrete task is: Parse a_prefix, b_prefix and shared integer arrays. Build separate prefix nodes and attach both to the same shared tail. Return the first shared node value, or none when shared is empty. Equal values in separate prefixes do not identify shared nodes. The visible input `a_prefix=[4,1]; b_prefix=[5,6,1]; shared=[8,4,5]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for tasks where node identity or one-way traversal matters. An indexed vector solution can hide the pointer constraint rather than solve it. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Switch each pointer to the other head so both traverse equal combined distance. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A list algorithm changes relationships between nodes, not just values. Draw the next pointers before and after each mutation. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n+m) time · O(1) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `8` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check an empty list, one node, a head or tail change, and cycles when the problem allows them. Rust ownership makes linked structures explicit: use the provided node type, take links carefully, and preserve access to the remaining chain. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `none`. They are the same node allocation, not merely equal values. Compare this independent fixture with the worked trace: Build a_prefix=[4,1] and b_prefix=[5,6,1] as separate nodes, then attach both to shared=[8,4,5]. Pointer identities first agree at 8. Equal-valued private prefixes remain distinct; an empty shared tail means no intersection.",
+    "practiceCode": "\ntype SharedLink=Option<std::rc::Rc<SharedNode>>;\nstruct SharedNode { value:i32, next:SharedLink }\nfn shared_list(prefix:&[i32],tail:SharedLink)->SharedLink {\n    prefix.iter().rev().fold(tail,|next,&value|Some(std::rc::Rc::new(SharedNode{value,next})))\n}\nfn intersection(a:&SharedLink,b:&SharedLink)->Option<i32> {\n    fn equal(a:&SharedLink,b:&SharedLink)->bool {\n        match (a,b) { (None,None)=>true, (Some(x),Some(y))=>std::rc::Rc::ptr_eq(x,y), _=>false }\n    }\n    let (mut p,mut q)=(a.clone(),b.clone());\n    while !equal(&p,&q) {\n        p=match p { Some(n)=>n.next.clone(), None=>b.clone() };\n        q=match q { Some(n)=>n.next.clone(), None=>a.clone() };\n    }\n    p.map(|n|n.value)\n}\n\nfn main() {\n    let result = { let tail=shared_list(&[8,4,5],None); let a=shared_list(&[4,1],tail.clone()); let b=shared_list(&[5,6,1],tail); intersection(&a,&b).map_or(\"none\".into(),|x|x.to_string()) };\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Pointer-Switch Intersection on input `a_prefix=[1]; b_prefix=[1]; shared=[]`. Which result follows from the documented contract?",
+    "rule": "They are the same node allocation, not merely equal values. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Pointer-Switch Intersection.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-linked-lists-b.png",

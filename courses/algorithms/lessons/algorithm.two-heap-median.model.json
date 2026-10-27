@@ -7,7 +7,7 @@
     "expectedAnswer": "5,3.5,5,4.5",
     "idea": "Keep the lower half in a max-heap and upper half in a min-heap with sizes differing by at most one.",
     "patternID": "two-heap-median",
-    "rustSketch": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn stream_medians(values:&[i32])->Vec<f64> {\n    let mut low=std::collections::BinaryHeap::new(); let mut high=std::collections::BinaryHeap::new(); let mut out=Vec::new();\n    for &x in values {\n        if low.peek().is_none_or(|&m|x<=m) { low.push(x); } else { high.push(std::cmp::Reverse(x)); }\n        if low.len()>high.len()+1 { high.push(std::cmp::Reverse(low.pop().unwrap())); }\n        if high.len()>low.len() { low.push(high.pop().unwrap().0); }\n        out.push(if low.len()==high.len() { (*low.peek().unwrap() as f64+high.peek().unwrap().0 as f64)/2.0 } else { *low.peek().unwrap() as f64 });\n    }\n    out\n}\n\nfn main() {\n    let result = csv(stream_medians(&[5,2,10,4]));\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return medians after inserting 5, 2, 10, 4.",
     "useCases": "online medians and percentile pivots",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Return the two points closest to the origin, ordered by distance then coordinates.",
         "direction": "previous",
-        "title": "Challenge: Bounded Heap for K Closest"
+        "title": "Challenge: Bounded Heap for K Closest",
+        "concept": "Return the two points closest to the origin, ordered by distance then coordinates."
       },
       {
-        "concept": "online medians and percentile pivots",
         "direction": "next",
-        "title": "Median from Two Heaps: When to Use It"
+        "title": "Median from Two Heaps: When to Use It",
+        "concept": "online medians and percentile pivots"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "The lower half has either the same size as the upper half or one extra item. For [5,2,10,4], medians are 5,3.5,5,4.5. Rebalance after each insertion so the lower maximum and upper minimum border the middle; promote to f64 before adding the two middle values.",
+    "misconception": "“Both heaps must contain every observation”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[5,2,10,4]`, write the state before the first update. Explain how it represents this claim: Keep the lower half in a max-heap and upper half in a min-heap with sizes differing by at most one. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded."
+        "title": "Concrete transition",
+        "detail": "For [5,2,10,4], medians are 5,3.5,5,4.5. Rebalance after each insertion so the lower maximum and upper minimum border the middle; promote to f64 before adding the two middle values."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `5,3.5,5,4.5`. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data."
+        "title": "Independent second fixture",
+        "detail": "Input `[1,2,3,4,5,6,7]` produces `1,1.5,2,2.5,3,3.5,4`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Defend the O(log n) insert · O(1) median · O(n) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[8,7,6,5,4,3,2]` produces `8,7.5,7,6.5,6,5.5,5`. The lower half has either the same size as the upper half or one extra item. The stated work bound is O(log n) insert · O(1) median · O(n) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[5,2,10,4]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Median from Two Heaps survives, which state must be updated, and whether the O(log n) insert · O(1) median · O(n) space bound still holds. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work."
+    "transferChallenge": "Compare the visible input `[5,2,10,4]` with `[3,3,3,3,3,3,3]`. Predict why their results are `5,3.5,5,4.5` and `3,3,3,3,3,3,3`. Then change one legal value and explain whether the same invariant, the lower half has either the same size as the upper half or one extra item, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.two-heap-median.model",
@@ -54,21 +54,21 @@
   "title": "Median from Two Heaps: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "The lower half has either the same size as the upper half or one extra item",
+      "Both heaps must contain every observation",
+      "The upper heap must always contain exactly one item"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(log n) insert · O(1) median · O(n) space",
-    "exampleCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
-    "explanation": "Begin with the concrete question: Return medians after inserting 5, 2, 10, 4. For the visible input `[5,2,10,4]`, the stated result is `5,3.5,5,4.5`. Before reading code, name the smallest piece of information that must survive from one step to the next. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. That is the mental model for Median from Two Heaps; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Keep the lower half in a max-heap and upper half in a min-heap with sizes differing by at most one. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(log n) insert · O(1) median · O(n) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only two-heap-median program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn stream_medians(values:&[i32])->Vec<f64> {\n    let mut low=std::collections::BinaryHeap::new(); let mut high=std::collections::BinaryHeap::new(); let mut out=Vec::new();\n    for &x in values {\n        if low.peek().is_none_or(|&m|x<=m) { low.push(x); } else { high.push(std::cmp::Reverse(x)); }\n        if low.len()>high.len()+1 { high.push(std::cmp::Reverse(low.pop().unwrap())); }\n        if high.len()>low.len() { low.push(high.pop().unwrap().0); }\n        out.push(if low.len()==high.len() { (*low.peek().unwrap() as f64+high.peek().unwrap().0 as f64)/2.0 } else { *low.peek().unwrap() as f64 });\n    }\n    out\n}\n\nfn main() {\n    let result = csv(stream_medians(&[5,2,10,4]));\n    println!(\"{result}\");\n}\n",
+    "explanation": "For [5,2,10,4], medians are 5,3.5,5,4.5. Rebalance after each insertion so the lower maximum and upper minimum border the middle; promote to f64 before adding the two middle values.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return medians after inserting 5, 2, 10, 4. The visible fixture is `[5,2,10,4]` and its example result is `5,3.5,5,4.5`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return medians after inserting 5, 2, 10, 4. For the visible input `[5,2,10,4]`, the stated result is `5,3.5,5,4.5`. Before reading code, name the smallest piece of information that must survive from one step to the next. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. That is the mental model for Median from Two Heaps; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Keep the lower half in a max-heap and upper half in a min-heap with sizes differing by at most one. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(log n) insert · O(1) median · O(n) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "For [5,2,10,4], medians are 5,3.5,5,4.5. Rebalance after each insertion so the lower maximum and upper minimum border the middle; promote to f64 before adding the two middle values.",
+    "practiceCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn stream_medians(values:&[i32])->Vec<f64> {\n    let mut low=std::collections::BinaryHeap::new(); let mut high=std::collections::BinaryHeap::new(); let mut out=Vec::new();\n    for &x in values {\n        if low.peek().is_none_or(|&m|x<=m) { low.push(x); } else { high.push(std::cmp::Reverse(x)); }\n        if low.len()>high.len()+1 { high.push(std::cmp::Reverse(low.pop().unwrap())); }\n        if high.len()>low.len() { low.push(high.pop().unwrap().0); }\n        out.push(if low.len()==high.len() { (*low.peek().unwrap() as f64+high.peek().unwrap().0 as f64)/2.0 } else { *low.peek().unwrap() as f64 });\n    }\n    out\n}\n\nfn main() {\n    let result = csv(stream_medians(&[5,2,10,4]));\n    println!(\"{result}\");\n}\n",
+    "question": "What size invariant keeps the streaming median accessible at heap tops?",
+    "rule": "The lower half has either the same size as the upper half or one extra item. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(log n) insert · O(1) median · O(n) space bound without looking at the code.",
     "summary": "Keep the lower half in a max-heap and upper half in a min-heap with sizes differing by at most one.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-heaps-streaming-b.png",

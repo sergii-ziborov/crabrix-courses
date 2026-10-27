@@ -7,44 +7,44 @@
     "expectedAnswer": "9",
     "idea": "Add the entering item and remove the leaving item instead of recomputing each range.",
     "patternID": "fixed-window",
-    "rustSketch": "fn best_k(values: &[i32], k: usize) -> i32 {\n    let mut sum: i32 = values[..k].iter().sum();\n    let mut best = sum;\n    for right in k..values.len() {\n        sum += values[right] - values[right - k];\n        best = best.max(sum);\n    }\n    best\n}",
+    "rustSketch": "fn greatest_k_sum(values: &[i32], k: usize) -> i32 {\n    assert!(k>0 && k<=values.len());\n    let mut sum: i32=values[..k].iter().sum(); let mut best=sum;\n    for i in k..values.len() { sum+=values[i]-values[i-k]; best=best.max(sum); }\n    best\n}\n\nfn main() {\n    let result = greatest_k_sum(&[1,1,1,5],3).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Return the greatest sum of any three adjacent values.",
     "useCases": "fixed-length sums, averages, local scores",
     "visibleInput": "[2,1,5,1,3,2]"
   },
   "concept": "Return the greatest sum of any three adjacent values.",
-  "contentDigest": "e1c1d30cfb8e584b7a09a3095f13c579b9f9b68d9e15f2c41cc3a16e259b0a09",
+  "contentDigest": "f1c46345b38f9053900773ddd704de31e0cf7f4be7c7e98392df68948af36fd3",
   "depth": {
     "connections": [
       {
-        "concept": "fixed-length sums, averages, local scores",
         "direction": "previous",
-        "title": "Fixed-Size Window: When to Use It"
+        "title": "Fixed-Size Window: When to Use It",
+        "concept": "fixed-length sums, averages, local scores"
       },
       {
-        "concept": "Expand until a constraint fails, then shrink until it is valid again.",
         "direction": "next",
-        "title": "Variable-Size Window: Mental Model"
+        "title": "Variable-Size Window: Mental Model",
+        "concept": "Expand until a constraint fails, then shrink until it is valid again."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "The state must describe exactly k adjacent elements. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“Every old window sum must be discarded and recomputed”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[2,1,5,1,3,2]`, write the state before the first update. Explain how it represents this claim: Add the entering item and remove the leaving item instead of recomputing each range. A window is a contiguous interval with a maintained summary. Describe what entering the right edge adds and what leaving the left edge removes."
+        "title": "Pattern-specific invariant",
+        "detail": "The state must describe exactly k adjacent elements. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Represent bounds as a half-open range when possible. Keep counts and the window length in sync when shrinking it."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `[1,1,1,5]` and computes `7`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test an empty window, a window spanning the whole input, and a case where the left edge must advance several times. Defend the O(n) time · O(1) extra space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `[8,7,6,5,4,3,2]`, the independently calculated result is `21`. The complexity discussion uses O(n) time · O(1) extra space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `[2,1,5,1,3,2]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Fixed-Size Window survives, which state must be updated, and whether the O(n) time · O(1) extra space bound still holds. Choose this family when a valid window can be repaired by moving one boundary; non-monotone constraints may need a different method."
+    "transferChallenge": "Change the independent fixture `[1,1,1,5]` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `[2,1,5,1,3,2]`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.fixed-window.challenge",
@@ -54,19 +54,19 @@
   "title": "Challenge: Fixed-Size Window",
   "writing": {
     "answers": [
-      "O(n) time · O(1) extra space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`21`",
+      "`22`",
+      "`20`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return the greatest sum of any three adjacent values.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Fixed-Size Window\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Return the greatest sum of any three adjacent values. On input `[2,1,5,1,3,2]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Add the entering item and remove the leaving item instead of recomputing each range. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A window is a contiguous interval with a maintained summary. Describe what entering the right edge adds and what leaving the left edge removes. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Represent bounds as a half-open range when possible. Keep counts and the window length in sync when shrinking it. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(1) extra space; explain which operation dominates it and how many times the input can trigger that operation. Test an empty window, a window spanning the whole input, and a case where the left edge must advance several times. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(n) time · O(1) extra space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return the greatest sum of any three adjacent values.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Fixed-Size Window\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS fixed-window, and your explanation still meets O(n) time · O(1) extra space.",
+    "exampleCaption": "Complete std-only fixed-window program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn greatest_k_sum(values: &[i32], k: usize) -> i32 {\n    assert!(k>0 && k<=values.len());\n    let mut sum: i32=values[..k].iter().sum(); let mut best=sum;\n    for i in k..values.len() { sum+=values[i]-values[i-k]; best=best.max(sum); }\n    best\n}\n\nfn main() {\n    let result = greatest_k_sum(&[1,1,1,5],3).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "The state must describe exactly k adjacent elements. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `[1,1,1,5]`, the worked program returns `7`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `[2,1,5,1,3,2]`; predict that result before opening the answer reveal. The precise contract is: Return the greatest sum of any three adjacent values.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Return the greatest sum of any three adjacent values. On input `[2,1,5,1,3,2]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Add the entering item and remove the leaving item instead of recomputing each range. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A window is a contiguous interval with a maintained summary. Describe what entering the right edge adds and what leaving the left edge removes. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(1) extra space; explain which operation dominates it and how many times the input can trigger that operation. Test an empty window, a window spanning the whole input, and a case where the left edge must advance several times. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `21`. The state must describe exactly k adjacent elements. Compare this independent fixture with the worked trace: With k=3 on [2,1,5,1,3,2], the sums are 8,7,9,6. Moving from 7 to 9 removes 1 and adds 3. The greatest sum is 9; initializing best to zero would fail all-negative legal inputs.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return the greatest sum of any three adjacent values.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement fixed-window\")\n}\n",
+    "question": "Boundary check for fixed-window: with input `[8,7,6,5,4,3,2]`, what result should solve return?",
+    "rule": "The state must describe exactly k adjacent elements. Return the greatest sum of any three adjacent values.",
+    "success": "The private harness prints PASS fixed-window. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Return the greatest sum of any three adjacent values.",
     "task": "Return the greatest sum of any three adjacent values."
   },

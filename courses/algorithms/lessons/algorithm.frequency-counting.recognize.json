@@ -7,44 +7,44 @@
     "expectedAnswer": "4",
     "idea": "Turn repeated observations into counts keyed by the observed value.",
     "patternID": "frequency-counting",
-    "rustSketch": "fn scan(values: &[i32]) -> Option<usize> {\n    for (index, value) in values.iter().enumerate() {\n        if *value < 0 { return Some(index); }\n    }\n    None\n}",
+    "rustSketch": "fn mode(values: &[i32]) -> i32 {\n    let mut counts = std::collections::HashMap::new();\n    for &x in values { *counts.entry(x).or_insert(0) += 1; }\n    *counts.iter().min_by_key(|&(x, count)| (-*count, *x)).unwrap().0\n}\n\nfn main() {\n    let result = mode(&[4,2,4,3,2,4]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return the value that occurs most often; break ties by the smaller value.",
     "useCases": "duplicates, histograms, modes, inventory totals",
     "visibleInput": "[4, 2, 4, 3, 2, 4]"
   },
   "concept": "duplicates, histograms, modes, inventory totals",
-  "contentDigest": "039106f0e27dc0c4201505a4d505c540eed3d691f67910e6931651cde0b4b9b4",
+  "contentDigest": "d5614ed20303aa21680a1146575a449311df0f2d74ba964ca510295ce2fc0847",
   "depth": {
     "connections": [
       {
-        "concept": "Turn repeated observations into counts keyed by the observed value.",
         "direction": "previous",
-        "title": "Frequency Counting: Mental Model"
+        "title": "Frequency Counting: Mental Model",
+        "concept": "Turn repeated observations into counts keyed by the observed value."
       },
       {
-        "concept": "Return the value that occurs most often; break ties by the smaller value.",
         "direction": "next",
-        "title": "Challenge: Frequency Counting"
+        "title": "Challenge: Frequency Counting",
+        "concept": "Return the value that occurs most often; break ties by the smaller value."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "Compare descending count, then ascending value. The six readings produce counts 4→3, 2→2, 3→1. The candidate 4 wins by count. On [3,2,3,2], counts tie at 2 and the smaller value 2 wins regardless of map iteration order.",
+    "misconception": "“Return whichever HashMap entry happens to appear first”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[4, 2, 4, 3, 2, 4]`, write the state before the first update. Explain how it represents this claim: Turn repeated observations into counts keyed by the observed value. A scan turns a sequence into a small piece of state. Say what the state means after the first i elements, before you describe a loop body."
+        "title": "Concrete transition",
+        "detail": "The six readings produce counts 4→3, 2→2, 3→1. The candidate 4 wins by count. On [3,2,3,2], counts tie at 2 and the smaller value 2 wins regardless of map iteration order."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `4`. A borrowed slice and a for loop usually express the traversal clearly; distinguish an index you need to return from a value you merely read."
+        "title": "Independent second fixture",
+        "detail": "Input `[1,2,3,4,5,6,7]` produces `1`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Use an empty slice and a one-element slice as checks. Initial values must not silently assume that at least one item exists. Defend the O(n) expected time · O(k) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[8,7,6,5,4,3,2]` produces `2`. Compare descending count, then ascending value. The stated work bound is O(n) expected time · O(k) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[4, 2, 4, 3, 2, 4]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Frequency Counting survives, which state must be updated, and whether the O(n) expected time · O(k) space bound still holds. Ask whether one pass is enough, whether order matters, and whether a later query will need information you already discarded."
+    "transferChallenge": "Compare the visible input `[4, 2, 4, 3, 2, 4]` with `[3,3,3,3,3,3,3]`. Predict why their results are `4` and `3`. Then change one legal value and explain whether the same invariant, compare descending count, then ascending value, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.frequency-counting.recognize",
@@ -54,21 +54,21 @@
   "title": "Frequency Counting: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "duplicates, histograms, modes, inventory totals",
-      "Only problems with exactly one input value"
+      "`2`",
+      "`1`",
+      "`0`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Frequency Counting",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Frequency Counting",
-    "explanation": "A problem is a good match for Frequency Counting when it asks for duplicates, histograms, modes, inventory totals. Here the concrete task is: Return the value that occurs most often; break ties by the smaller value. The visible input `[4, 2, 4, 3, 2, 4]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Ask whether one pass is enough, whether order matters, and whether a later query will need information you already discarded. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Turn repeated observations into counts keyed by the observed value. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A scan turns a sequence into a small piece of state. Say what the state means after the first i elements, before you describe a loop body. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) expected time · O(k) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `4` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Use an empty slice and a one-element slice as checks. Initial values must not silently assume that at least one item exists. A borrowed slice and a for loop usually express the traversal clearly; distinguish an index you need to return from a value you merely read. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: duplicates, histograms, modes, inventory totals.",
-    "practiceCode": "fn scan(values: &[i32]) -> Option<usize> {\n    for (index, value) in values.iter().enumerate() {\n        if *value < 0 { return Some(index); }\n    }\n    None\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only frequency-counting program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn mode(values: &[i32]) -> i32 {\n    let mut counts = std::collections::HashMap::new();\n    for &x in values { *counts.entry(x).or_insert(0) += 1; }\n    *counts.iter().min_by_key(|&(x, count)| (-*count, *x)).unwrap().0\n}\n\nfn main() {\n    let result = mode(&[4,2,4,3,2,4]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "The six readings produce counts 4→3, 2→2, 3→1. The candidate 4 wins by count. On [3,2,3,2], counts tie at 2 and the smaller value 2 wins regardless of map iteration order.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the value that occurs most often; break ties by the smaller value. The visible fixture is `[4, 2, 4, 3, 2, 4]` and its example result is `4`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Frequency Counting when it asks for duplicates, histograms, modes, inventory totals. Here the concrete task is: Return the value that occurs most often; break ties by the smaller value. The visible input `[4, 2, 4, 3, 2, 4]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Ask whether one pass is enough, whether order matters, and whether a later query will need information you already discarded. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Turn repeated observations into counts keyed by the observed value. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A scan turns a sequence into a small piece of state. Say what the state means after the first i elements, before you describe a loop body. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) expected time · O(k) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `4` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Use an empty slice and a one-element slice as checks. Initial values must not silently assume that at least one item exists. A borrowed slice and a for loop usually express the traversal clearly; distinguish an index you need to return from a value you merely read. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `1`. Compare descending count, then ascending value. Compare this independent fixture with the worked trace: The six readings produce counts 4→3, 2→2, 3→1. The candidate 4 wins by count. On [3,2,3,2], counts tie at 2 and the smaller value 2 wins regardless of map iteration order.",
+    "practiceCode": "fn mode(values: &[i32]) -> i32 {\n    let mut counts = std::collections::HashMap::new();\n    for &x in values { *counts.entry(x).or_insert(0) += 1; }\n    *counts.iter().min_by_key(|&(x, count)| (-*count, *x)).unwrap().0\n}\n\nfn main() {\n    let result = mode(&[4,2,4,3,2,4]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Frequency Counting on input `[1,2,3,4,5,6,7]`. Which result follows from the documented contract?",
+    "rule": "Compare descending count, then ascending value. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Frequency Counting.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-scans-a.png",

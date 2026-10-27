@@ -7,44 +7,44 @@
     "expectedAnswer": "323",
     "idea": "Square the base and consume exponent bits so only logarithmically many multiplications occur.",
     "patternID": "fast-power",
-    "rustSketch": "fn gcd(mut a: u64, mut b: u64) -> u64 {\n    while b != 0 {\n        (a, b) = (b, a % b);\n    }\n    a\n}",
+    "rustSketch": "fn mod_power(mut base:u64,mut exponent:u64,modulus:u64)->u64 {\n    assert!(modulus>0); let mut result=1%modulus; base%=modulus;\n    while exponent>0 {\n        if exponent&1==1 { result=(result as u128*base as u128%modulus as u128) as u64; }\n        base=(base as u128*base as u128%modulus as u128) as u64; exponent>>=1;\n    } result\n}\n\nfn main() {\n    let result = mod_power(2,5,13).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
-    "task": "Return 3^13 modulo 1000.",
+    "task": "Parse base, exp and a positive mod; return base^exp modulo mod, including exp=0.",
     "useCases": "large powers, modular arithmetic, repeated transforms",
     "visibleInput": "base=3 exp=13 mod=1000"
   },
-  "concept": "Return 3^13 modulo 1000.",
-  "contentDigest": "f18f9bb4eaa0403b5013226406482643199d4aaaedcd93f754d57b97a9c71c9e",
+  "concept": "Parse base, exp and a positive mod; return base^exp modulo mod, including exp=0.",
+  "contentDigest": "43c318b3b6fb7825c230f1b4a53c168ef9d93cdfaefbba6607c8d42c535b4a5c",
   "depth": {
     "connections": [
       {
-        "concept": "large powers, modular arithmetic, repeated transforms",
         "direction": "previous",
-        "title": "Binary Exponentiation: When to Use It"
+        "title": "Binary Exponentiation: When to Use It",
+        "concept": "large powers, modular arithmetic, repeated transforms"
       },
       {
-        "concept": "Use extended Euclid when gcd is one, or Fermat under a known prime modulus.",
         "direction": "next",
-        "title": "Modular Inverse: Mental Model"
+        "title": "Modular Inverse: Mental Model",
+        "concept": "Use extended Euclid when gcd is one, or Fermat under a known prime modulus."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "It processes one binary exponent bit per iteration. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“It changes the desired exponent into a square root”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `base=3 exp=13 mod=1000`, write the state before the first update. Explain how it represents this claim: Square the base and consume exponent bits so only logarithmically many multiplications occur. An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds."
+        "title": "Pattern-specific invariant",
+        "detail": "It processes one binary exponent bit per iteration. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Use explicit integer widths and checked arithmetic when input bounds require them. Distinguish bit positions from numeric values."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `base=2 exp=5 mod=13` and computes `6`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Defend the O(log exponent) time · O(1) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `base=2 exp=10 mod=17`, the independently calculated result is `4`. The complexity discussion uses O(log exponent) time · O(1) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `base=3 exp=13 mod=1000` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Binary Exponentiation survives, which state must be updated, and whether the O(log exponent) time · O(1) space bound still holds. Check number size, sign, and modulus assumptions before using a shortcut; not every inverse or division exists."
+    "transferChallenge": "Change the independent fixture `base=2 exp=5 mod=13` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `base=3 exp=13 mod=1000`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.fast-power.challenge",
@@ -54,21 +54,21 @@
   "title": "Challenge: Binary Exponentiation",
   "writing": {
     "answers": [
-      "O(log exponent) time · O(1) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`4`",
+      "`5`",
+      "`3`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return 3^13 modulo 1000.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Binary Exponentiation\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Return 3^13 modulo 1000. On input `base=3 exp=13 mod=1000`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Square the base and consume exponent bits so only logarithmically many multiplications occur. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use explicit integer widths and checked arithmetic when input bounds require them. Distinguish bit positions from numeric values. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(log exponent) time · O(1) space; explain which operation dominates it and how many times the input can trigger that operation. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(log exponent) time · O(1) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return 3^13 modulo 1000.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Binary Exponentiation\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS fast-power, and your explanation still meets O(log exponent) time · O(1) space.",
-    "summary": "Return 3^13 modulo 1000.",
-    "task": "Return 3^13 modulo 1000."
+    "exampleCaption": "Complete std-only fast-power program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn mod_power(mut base:u64,mut exponent:u64,modulus:u64)->u64 {\n    assert!(modulus>0); let mut result=1%modulus; base%=modulus;\n    while exponent>0 {\n        if exponent&1==1 { result=(result as u128*base as u128%modulus as u128) as u64; }\n        base=(base as u128*base as u128%modulus as u128) as u64; exponent>>=1;\n    } result\n}\n\nfn main() {\n    let result = mod_power(2,5,13).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "It processes one binary exponent bit per iteration. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `base=2 exp=5 mod=13`, the worked program returns `6`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `base=3 exp=13 mod=1000`; predict that result before opening the answer reveal. The precise contract is: Parse base, exp and a positive mod; return base^exp modulo mod, including exp=0.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Parse base, exp and a positive mod; return base^exp modulo mod, including exp=0. On input `base=3 exp=13 mod=1000`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Square the base and consume exponent bits so only logarithmically many multiplications occur. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(log exponent) time · O(1) space; explain which operation dominates it and how many times the input can trigger that operation. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `4`. It processes one binary exponent bit per iteration. Compare this independent fixture with the worked trace: For 3^13 mod 1000, exponent bits select powers 3,3^4 and 3^8. Multiplication and squaring are reduced modulo 1000; the final result is 323. u128 intermediates prevent overflow of two u64 factors before reduction.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Parse base, exp and a positive mod; return base^exp modulo mod, including exp=0.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement fast-power\")\n}\n",
+    "question": "Boundary check for fast-power: with input `base=2 exp=10 mod=17`, what result should solve return?",
+    "rule": "It processes one binary exponent bit per iteration. Parse base, exp and a positive mod; return base^exp modulo mod, including exp=0.",
+    "success": "The private harness prints PASS fast-power. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
+    "summary": "Parse base, exp and a positive mod; return base^exp modulo mod, including exp=0.",
+    "task": "Parse base, exp and a positive mod; return base^exp modulo mod, including exp=0."
   },
   "illustration": {
     "path": "media/algorithms-math-bits-a.png",

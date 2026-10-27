@@ -7,44 +7,39 @@
     "expectedAnswer": "true",
     "idea": "Push open delimiters and require every close to match the most recent open.",
     "patternID": "delimiter-stack",
-    "rustSketch": "fn balanced(text: &str) -> bool {\n    let mut stack = Vec::new();\n    for ch in text.chars() {\n        match ch {\n            '(' | '[' | '{' => stack.push(ch),\n            ')' => if stack.pop() != Some('(') { return false; },\n            ']' => if stack.pop() != Some('[') { return false; },\n            '}' => if stack.pop() != Some('{') { return false; },\n            _ => {}\n        }\n    }\n    stack.is_empty()\n}",
+    "rustSketch": "fn balanced(text:&str)->bool {\n    let mut stack=Vec::new();\n    for c in text.chars() {\n        match c {\n            '('|'['|'{' => stack.push(c),\n            ')'|']'|'}' => {\n                let expected=match c { ')'=>'(', ']'=>'[', _=>'{' };\n                if stack.pop()!=Some(expected) { return false; }\n            }\n            _=>{}\n        }\n    }\n    stack.is_empty()\n}\n\nfn main() {\n    let result = balanced(\"{[()()]}[]\").to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return true when the delimiters are correctly nested.",
     "useCases": "nested syntax, parsers, balanced scopes",
     "visibleInput": "{[()()]}[]"
   },
   "concept": "Push open delimiters and require every close to match the most recent open.",
-  "contentDigest": "92e6e2a758984b94ed898a35550891c148ae095e18390fb9dbe01db01f089b3a",
+  "contentDigest": "c874ba5fd4179bc6919f88fd70700d410a21be086bfd8d2aecd4b94f4d834be1",
   "depth": {
     "connections": [
       {
-        "concept": "Return medians for every odd window of length three.",
-        "direction": "previous",
-        "title": "Challenge: Sliding Median with Two Heaps"
-      },
-      {
-        "concept": "nested syntax, parsers, balanced scopes",
         "direction": "next",
-        "title": "Delimiter Stack: When to Use It"
+        "title": "Delimiter Stack: When to Use It",
+        "concept": "nested syntax, parsers, balanced scopes"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "Nested delimiters close in last-in-first-out order. For {[()()]}, push { then [, and pop each matching inner pair before closing ]. Input ([)] fails at ) because the stack top is [, even though each bracket count is balanced.",
+    "misconception": "“Any earlier opening bracket is sufficient”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `{[()()]}[]`, write the state before the first update. Explain how it represents this claim: Push open delimiters and require every close to match the most recent open. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs."
+        "title": "Concrete transition",
+        "detail": "For {[()()]}, push { then [, and pop each matching inner pair before closing ]. Input ([)] fails at ) because the stack top is [, even though each bracket count is balanced."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `true`. `Vec` works as a stack; `VecDeque` supplies efficient operations at both ends. Avoid removing from the front of a `Vec` in a long loop."
+        "title": "Independent second fixture",
+        "detail": "Input `((()))` produces `true`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Defend the O(n) time · O(n) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `(()` produces `false`. Nested delimiters close in last-in-first-out order. The stated work bound is O(n) time · O(n) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `{[()()]}[]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Delimiter Stack survives, which state must be updated, and whether the O(n) time · O(n) space bound still holds. Look for nested structure, next-greater relationships, or ordered processing. A plain scan is enough when no unresolved state must be retained."
+    "transferChallenge": "Compare the visible input `{[()()]}[]` with `([{}])`. Predict why their results are `true` and `true`. Then change one legal value and explain whether the same invariant, nested delimiters close in last-in-first-out order, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.delimiter-stack.model",
@@ -54,21 +49,21 @@
   "title": "Delimiter Stack: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "Nested delimiters close in last-in-first-out order",
+      "Any earlier opening bracket is sufficient",
+      "Equal counts alone prove correct nesting"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n) time · O(n) space",
-    "exampleCode": "fn balanced(text: &str) -> bool {\n    let mut stack = Vec::new();\n    for ch in text.chars() {\n        match ch {\n            '(' | '[' | '{' => stack.push(ch),\n            ')' => if stack.pop() != Some('(') { return false; },\n            ']' => if stack.pop() != Some('[') { return false; },\n            '}' => if stack.pop() != Some('{') { return false; },\n            _ => {}\n        }\n    }\n    stack.is_empty()\n}",
-    "explanation": "Begin with the concrete question: Return true when the delimiters are correctly nested. For the visible input `{[()()]}[]`, the stated result is `true`. Before reading code, name the smallest piece of information that must survive from one step to the next. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs. That is the mental model for Delimiter Stack; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Push open delimiters and require every close to match the most recent open. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. `Vec` works as a stack; `VecDeque` supplies efficient operations at both ends. Avoid removing from the front of a `Vec` in a long loop. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n) time · O(n) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn balanced(text: &str) -> bool {\n    let mut stack = Vec::new();\n    for ch in text.chars() {\n        match ch {\n            '(' | '[' | '{' => stack.push(ch),\n            ')' => if stack.pop() != Some('(') { return false; },\n            ']' => if stack.pop() != Some('[') { return false; },\n            '}' => if stack.pop() != Some('{') { return false; },\n            _ => {}\n        }\n    }\n    stack.is_empty()\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only delimiter-stack program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn balanced(text:&str)->bool {\n    let mut stack=Vec::new();\n    for c in text.chars() {\n        match c {\n            '('|'['|'{' => stack.push(c),\n            ')'|']'|'}' => {\n                let expected=match c { ')'=>'(', ']'=>'[', _=>'{' };\n                if stack.pop()!=Some(expected) { return false; }\n            }\n            _=>{}\n        }\n    }\n    stack.is_empty()\n}\n\nfn main() {\n    let result = balanced(\"{[()()]}[]\").to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "For {[()()]}, push { then [, and pop each matching inner pair before closing ]. Input ([)] fails at ) because the stack top is [, even though each bracket count is balanced.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return true when the delimiters are correctly nested. The visible fixture is `{[()()]}[]` and its example result is `true`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return true when the delimiters are correctly nested. For the visible input `{[()()]}[]`, the stated result is `true`. Before reading code, name the smallest piece of information that must survive from one step to the next. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs. That is the mental model for Delimiter Stack; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Push open delimiters and require every close to match the most recent open. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n) time · O(n) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "For {[()()]}, push { then [, and pop each matching inner pair before closing ]. Input ([)] fails at ) because the stack top is [, even though each bracket count is balanced.",
+    "practiceCode": "fn balanced(text:&str)->bool {\n    let mut stack=Vec::new();\n    for c in text.chars() {\n        match c {\n            '('|'['|'{' => stack.push(c),\n            ')'|']'|'}' => {\n                let expected=match c { ')'=>'(', ']'=>'[', _=>'{' };\n                if stack.pop()!=Some(expected) { return false; }\n            }\n            _=>{}\n        }\n    }\n    stack.is_empty()\n}\n\nfn main() {\n    let result = balanced(\"{[()()]}[]\").to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Why must a closing bracket match the most recently opened bracket?",
+    "rule": "Nested delimiters close in last-in-first-out order. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(n) space bound without looking at the code.",
     "summary": "Push open delimiters and require every close to match the most recent open.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-stacks-queues-a.png",

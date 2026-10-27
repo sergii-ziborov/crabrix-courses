@@ -7,44 +7,44 @@
     "expectedAnswer": "true",
     "idea": "Different pointer speeds meet inside a cycle but never in a finite acyclic list.",
     "patternID": "list-cycle",
-    "rustSketch": "// Conceptual ownership-safe reversal:\n// while let Some(mut node) = head.take() {\n//     head = node.next.take();\n//     node.next = reversed;\n//     reversed = Some(node);\n// }",
+    "rustSketch": "fn contains_cycle(next:&[Option<usize>])->bool {\n    // Arena indexes preserve node identity; None terminates a list.\n    let (mut slow,mut fast)=(Some(0),Some(0));\n    loop {\n        slow=slow.and_then(|i|next[i]); fast=fast.and_then(|i|next[i]).and_then(|i|next[i]);\n        if fast.is_none() { return false; } if slow==fast { return true; }\n    }\n}\n\nfn main() {\n    let result = contains_cycle(&[Some(1),Some(2),Some(3),Some(1)]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return true when the tail links back to node index 1.",
     "useCases": "cycle existence in pointer chains",
     "visibleInput": "values=[3,2,0,-4] tail->1"
   },
   "concept": "Different pointer speeds meet inside a cycle but never in a finite acyclic list.",
-  "contentDigest": "a8edbbbc4506820f384c0e6e229bc5f22908adfa3275e803a4d44f427e8f3587",
+  "contentDigest": "99e3f09a06d37f64fe4ea4637fc731387825a4e909649dd0f1d3d4280e0d7581",
   "depth": {
     "connections": [
       {
-        "concept": "Return the second middle value of an even-length list.",
         "direction": "previous",
-        "title": "Challenge: Middle by Slow/Fast"
+        "title": "Challenge: Middle by Slow/Fast",
+        "concept": "Return the second middle value of an even-length list."
       },
       {
-        "concept": "cycle existence in pointer chains",
         "direction": "next",
-        "title": "Linked Cycle Detection: When to Use It"
+        "title": "Linked Cycle Detection: When to Use It",
+        "concept": "cycle existence in pointer chains"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "Different nodes can contain equal values without forming a cycle. The arena for [3,2,0,-4] has successor indexes [1,2,3,1]. Fast and slow eventually visit the same index inside the cycle. An arena with duplicate values and a None tail is still acyclic.",
+    "misconception": "“Repeated values always imply a back edge”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `values=[3,2,0,-4] tail->1`, write the state before the first update. Explain how it represents this claim: Different pointer speeds meet inside a cycle but never in a finite acyclic list. A list algorithm changes relationships between nodes, not just values. Draw the next pointers before and after each mutation."
+        "title": "Concrete transition",
+        "detail": "The arena for [3,2,0,-4] has successor indexes [1,2,3,1]. Fast and slow eventually visit the same index inside the cycle. An arena with duplicate values and a None tail is still acyclic."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `true`. Rust ownership makes linked structures explicit: use the provided node type, take links carefully, and preserve access to the remaining chain."
+        "title": "Independent second fixture",
+        "detail": "Input `values=[5] tail->0` produces `true`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check an empty list, one node, a head or tail change, and cycles when the problem allows them. Defend the O(n) time · O(1) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `values=[1,2,3,4] tail->0` produces `true`. Different nodes can contain equal values without forming a cycle. The stated work bound is O(n) time · O(1) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `values=[3,2,0,-4] tail->1` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Linked Cycle Detection survives, which state must be updated, and whether the O(n) time · O(1) space bound still holds. Look for tasks where node identity or one-way traversal matters. An indexed vector solution can hide the pointer constraint rather than solve it."
+    "transferChallenge": "Compare the visible input `values=[3,2,0,-4] tail->1` with `values=[1] tail->none`. Predict why their results are `true` and `false`. Then change one legal value and explain whether the same invariant, different nodes can contain equal values without forming a cycle, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.list-cycle.model",
@@ -54,21 +54,21 @@
   "title": "Linked Cycle Detection: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "Different nodes can contain equal values without forming a cycle",
+      "Repeated values always imply a back edge",
+      "A cycle is a descending pair of values"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n) time · O(1) space",
-    "exampleCode": "// Conceptual ownership-safe reversal:\n// while let Some(mut node) = head.take() {\n//     head = node.next.take();\n//     node.next = reversed;\n//     reversed = Some(node);\n// }",
-    "explanation": "Begin with the concrete question: Return true when the tail links back to node index 1. For the visible input `values=[3,2,0,-4] tail->1`, the stated result is `true`. Before reading code, name the smallest piece of information that must survive from one step to the next. A list algorithm changes relationships between nodes, not just values. Draw the next pointers before and after each mutation. That is the mental model for Linked Cycle Detection; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Different pointer speeds meet inside a cycle but never in a finite acyclic list. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is an invariant note rather than a complete program. Turn it into explicit state and transitions before coding. Rust ownership makes linked structures explicit: use the provided node type, take links carefully, and preserve access to the remaining chain. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check an empty list, one node, a head or tail change, and cycles when the problem allows them. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "// Conceptual ownership-safe reversal:\n// while let Some(mut node) = head.take() {\n//     head = node.next.take();\n//     node.next = reversed;\n//     reversed = Some(node);\n// }",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only list-cycle program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn contains_cycle(next:&[Option<usize>])->bool {\n    // Arena indexes preserve node identity; None terminates a list.\n    let (mut slow,mut fast)=(Some(0),Some(0));\n    loop {\n        slow=slow.and_then(|i|next[i]); fast=fast.and_then(|i|next[i]).and_then(|i|next[i]);\n        if fast.is_none() { return false; } if slow==fast { return true; }\n    }\n}\n\nfn main() {\n    let result = contains_cycle(&[Some(1),Some(2),Some(3),Some(1)]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "The arena for [3,2,0,-4] has successor indexes [1,2,3,1]. Fast and slow eventually visit the same index inside the cycle. An arena with duplicate values and a None tail is still acyclic.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return true when the tail links back to node index 1. The visible fixture is `values=[3,2,0,-4] tail->1` and its example result is `true`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return true when the tail links back to node index 1. For the visible input `values=[3,2,0,-4] tail->1`, the stated result is `true`. Before reading code, name the smallest piece of information that must survive from one step to the next. A list algorithm changes relationships between nodes, not just values. Draw the next pointers before and after each mutation. That is the mental model for Linked Cycle Detection; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Different pointer speeds meet inside a cycle but never in a finite acyclic list. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check an empty list, one node, a head or tail change, and cycles when the problem allows them. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "The arena for [3,2,0,-4] has successor indexes [1,2,3,1]. Fast and slow eventually visit the same index inside the cycle. An arena with duplicate values and a None tail is still acyclic.",
+    "practiceCode": "fn contains_cycle(next:&[Option<usize>])->bool {\n    // Arena indexes preserve node identity; None terminates a list.\n    let (mut slow,mut fast)=(Some(0),Some(0));\n    loop {\n        slow=slow.and_then(|i|next[i]); fast=fast.and_then(|i|next[i]).and_then(|i|next[i]);\n        if fast.is_none() { return false; } if slow==fast { return true; }\n    }\n}\n\nfn main() {\n    let result = contains_cycle(&[Some(1),Some(2),Some(3),Some(1)]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Why compare node identities rather than stored values in cycle detection?",
+    "rule": "Different nodes can contain equal values without forming a cycle. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(1) space bound without looking at the code.",
     "summary": "Different pointer speeds meet inside a cycle but never in a finite acyclic list.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-linked-lists-a.png",

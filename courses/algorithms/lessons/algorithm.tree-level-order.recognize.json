@@ -7,7 +7,7 @@
     "expectedAnswer": "1,5,15",
     "idea": "Queue nodes and process exactly the current queue length to preserve level boundaries.",
     "patternID": "tree-level-order",
-    "rustSketch": "fn height(node: Option<&Node>) -> usize {\n    match node {\n        None => 0,\n        Some(node) => 1 + height(node.left.as_deref()).max(height(node.right.as_deref())),\n    }\n}",
+    "rustSketch": "\ntype Tree=Option<Box<Node>>;\nstruct Node { value:i32, left:Tree, right:Tree }\nfn node(value:i32,left:Tree,right:Tree)->Tree { Some(Box::new(Node{value,left,right})) }\nfn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn level_sums(root:&Tree)->Vec<i32> {\n    let mut queue=std::collections::VecDeque::new(); let mut out=Vec::new();\n    if let Some(n)=root { queue.push_back(n.as_ref()); }\n    while !queue.is_empty() {\n        let mut sum=0;\n        for _ in 0..queue.len() {\n            let n=queue.pop_front().unwrap(); sum+=n.value;\n            if let Some(left)=&n.left { queue.push_back(left); } if let Some(right)=&n.right { queue.push_back(right); }\n        }\n        out.push(sum);\n    }\n    out\n}\n\nfn main() {\n    let result = csv(level_sums(&node(1,node(2,node(4,None,None),node(5,None,None)),node(3,None,node(6,None,None)))));\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return level sums from root downward.",
     "useCases": "shortest unweighted depth and level summaries",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Queue nodes and process exactly the current queue length to preserve level boundaries.",
         "direction": "previous",
-        "title": "Level-Order BFS: Mental Model"
+        "title": "Level-Order BFS: Mental Model",
+        "concept": "Queue nodes and process exactly the current queue length to preserve level boundaries."
       },
       {
-        "concept": "Return level sums from root downward.",
         "direction": "next",
-        "title": "Challenge: Level-Order BFS"
+        "title": "Challenge: Level-Order BFS",
+        "concept": "Return level sums from root downward."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "Newly enqueued children belong to the next level. The sample levels contain [1], [2,3], and [4,5,6]. Their sums are 1,5,15. Reading the initial queue length confines each inner loop to one level even as children are enqueued.",
+    "misconception": "“Queue length is constant throughout traversal”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[1,2,3,4,5,null,6]`, write the state before the first update. Explain how it represents this claim: Queue nodes and process exactly the current queue length to preserve level boundaries. A tree result is built from a node and its children. Decide whether information flows downward, upward, or in level order."
+        "title": "Concrete transition",
+        "detail": "The sample levels contain [1], [2,3], and [4,5,6]. Their sums are 1,5,15. Reading the initial queue length confines each inner loop to one level even as children are enqueued."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `1,5,15`. Use references for read-only traversals and make the stack or queue explicit when recursion depth might be large."
+        "title": "Independent second fixture",
+        "detail": "Input `[1]` produces `1`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test a missing root, a leaf, a skewed tree, and equal or duplicate values when ordering rules depend on them. Defend the O(n) time · O(w) queue bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[1,null,2,null,3]` produces `1,2,3`. Newly enqueued children belong to the next level. The stated work bound is O(n) time · O(w) queue. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[1,2,3,4,5,null,6]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Level-Order BFS survives, which state must be updated, and whether the O(n) time · O(w) queue bound still holds. Look for hierarchy and parent-child structure; a plain sequence algorithm loses the branching relationships."
+    "transferChallenge": "Compare the visible input `[1,2,3,4,5,null,6]` with `[2,1,3]`. Predict why their results are `1,5,15` and `2,4`. Then change one legal value and explain whether the same invariant, newly enqueued children belong to the next level, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.tree-level-order.recognize",
@@ -54,21 +54,21 @@
   "title": "Level-Order BFS: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "shortest unweighted depth and level summaries",
-      "Only problems with exactly one input value"
+      "`2`",
+      "`1`",
+      "`0`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Level-Order BFS",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Level-Order BFS",
-    "explanation": "A problem is a good match for Level-Order BFS when it asks for shortest unweighted depth and level summaries. Here the concrete task is: Return level sums from root downward. The visible input `[1,2,3,4,5,null,6]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for hierarchy and parent-child structure; a plain sequence algorithm loses the branching relationships. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Queue nodes and process exactly the current queue length to preserve level boundaries. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A tree result is built from a node and its children. Decide whether information flows downward, upward, or in level order. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(w) queue; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `1,5,15` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test a missing root, a leaf, a skewed tree, and equal or duplicate values when ordering rules depend on them. Use references for read-only traversals and make the stack or queue explicit when recursion depth might be large. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: shortest unweighted depth and level summaries.",
-    "practiceCode": "fn height(node: Option<&Node>) -> usize {\n    match node {\n        None => 0,\n        Some(node) => 1 + height(node.left.as_deref()).max(height(node.right.as_deref())),\n    }\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only tree-level-order program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "\ntype Tree=Option<Box<Node>>;\nstruct Node { value:i32, left:Tree, right:Tree }\nfn node(value:i32,left:Tree,right:Tree)->Tree { Some(Box::new(Node{value,left,right})) }\nfn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn level_sums(root:&Tree)->Vec<i32> {\n    let mut queue=std::collections::VecDeque::new(); let mut out=Vec::new();\n    if let Some(n)=root { queue.push_back(n.as_ref()); }\n    while !queue.is_empty() {\n        let mut sum=0;\n        for _ in 0..queue.len() {\n            let n=queue.pop_front().unwrap(); sum+=n.value;\n            if let Some(left)=&n.left { queue.push_back(left); } if let Some(right)=&n.right { queue.push_back(right); }\n        }\n        out.push(sum);\n    }\n    out\n}\n\nfn main() {\n    let result = csv(level_sums(&node(1,node(2,node(4,None,None),node(5,None,None)),node(3,None,node(6,None,None)))));\n    println!(\"{result}\");\n}\n",
+    "explanation": "The sample levels contain [1], [2,3], and [4,5,6]. Their sums are 1,5,15. Reading the initial queue length confines each inner loop to one level even as children are enqueued.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return level sums from root downward. The visible fixture is `[1,2,3,4,5,null,6]` and its example result is `1,5,15`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Level-Order BFS when it asks for shortest unweighted depth and level summaries. Here the concrete task is: Return level sums from root downward. The visible input `[1,2,3,4,5,null,6]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for hierarchy and parent-child structure; a plain sequence algorithm loses the branching relationships. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Queue nodes and process exactly the current queue length to preserve level boundaries. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A tree result is built from a node and its children. Decide whether information flows downward, upward, or in level order. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(w) queue; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `1,5,15` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test a missing root, a leaf, a skewed tree, and equal or duplicate values when ordering rules depend on them. Use references for read-only traversals and make the stack or queue explicit when recursion depth might be large. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `1`. Newly enqueued children belong to the next level. Compare this independent fixture with the worked trace: The sample levels contain [1], [2,3], and [4,5,6]. Their sums are 1,5,15. Reading the initial queue length confines each inner loop to one level even as children are enqueued.",
+    "practiceCode": "\ntype Tree=Option<Box<Node>>;\nstruct Node { value:i32, left:Tree, right:Tree }\nfn node(value:i32,left:Tree,right:Tree)->Tree { Some(Box::new(Node{value,left,right})) }\nfn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn level_sums(root:&Tree)->Vec<i32> {\n    let mut queue=std::collections::VecDeque::new(); let mut out=Vec::new();\n    if let Some(n)=root { queue.push_back(n.as_ref()); }\n    while !queue.is_empty() {\n        let mut sum=0;\n        for _ in 0..queue.len() {\n            let n=queue.pop_front().unwrap(); sum+=n.value;\n            if let Some(left)=&n.left { queue.push_back(left); } if let Some(right)=&n.right { queue.push_back(right); }\n        }\n        out.push(sum);\n    }\n    out\n}\n\nfn main() {\n    let result = csv(level_sums(&node(1,node(2,node(4,None,None),node(5,None,None)),node(3,None,node(6,None,None)))));\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Level-Order BFS on input `[1]`. Which result follows from the documented contract?",
+    "rule": "Newly enqueued children belong to the next level. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Level-Order BFS.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-trees-a.png",

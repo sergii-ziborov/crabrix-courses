@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS reverse-k-group\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"3,2,1,6,5,4,7\".to_string()",
-      "String::from(\"3,2,1,6,5,4,7\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.reverse-k-group.challenge",
     "patternID": "reverse-k-group",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Reverse nodes in groups of three; leave a short suffix unchanged.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Reverse Nodes in K-Groups\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Reverse nodes in groups of three; leave a short suffix unchanged.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement reverse-k-group\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "3,2,1,6,5,4,7",
+        "kind": "visible",
         "input": "1->2->3->4->5->6->7",
-        "kind": "visible"
+        "expectedAnswer": "3,2,1,6,5,4,7"
       },
       {
-        "expectedAnswer": "1,2",
+        "kind": "boundary",
         "input": "1->2",
-        "kind": "boundary"
+        "expectedAnswer": "1,2"
       },
       {
-        "expectedAnswer": "1,2",
-        "input": "\n1->2\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "9->1->7",
+        "expectedAnswer": "7,1,9"
       },
       {
-        "expectedAnswer": "3,2,1,6,5,4,7",
+        "kind": "adversarial",
+        "input": "1->2->3->4->5->6",
+        "expectedAnswer": "3,2,1,6,5,4"
+      },
+      {
+        "kind": "adversarial",
+        "input": "3->3->1->4",
+        "expectedAnswer": "1,3,3,4"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \n1->2->3->4->5->6->7\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "3,2,1,6,5,4,7"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\n3->3->1->4\n",
+        "expectedAnswer": "1,3,3,4"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"1->2->3->4->5->6->7\"#, r#\"3,2,1,6,5,4,7\"#),\n    (r#\"1->2\"#, r#\"1,2\"#),\n    (r#\"\n1->2\n\"#, r#\"1,2\"#),\n    (r#\"  \n1->2->3->4->5->6->7\n  \"#, r#\"3,2,1,6,5,4,7\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS reverse-k-group\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"1->2->3->4->5->6->7\",\"3,2,1,6,5,4,7\"),\n        (\"1->2\",\"1,2\"),\n        (\"9->1->7\",\"7,1,9\"),\n        (\"1->2->3->4->5->6\",\"3,2,1,6,5,4\"),\n        (\"3->3->1->4\",\"1,3,3,4\"),\n        (\"  \\n1->2->3->4->5->6->7\\n  \",\"3,2,1,6,5,4,7\"),\n        (\"\\n3->3->1->4\\n\",\"1,3,3,4\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS reverse-k-group\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS reverse-k-group\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"3,2,1,6,5,4,7\".to_string()",
-      "String::from(\"3,2,1,6,5,4,7\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

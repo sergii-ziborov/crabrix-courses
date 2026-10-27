@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS sudoku\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"4\".to_string()",
-      "String::from(\"4\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.sudoku.challenge",
     "patternID": "sudoku",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return the missing digit in row 0 of the nearly solved grid.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Sudoku Constraint Search\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // row0 contains digits 1..9 with exactly one missing position written as a dot. Return that missing digit. The worked program demonstrates full-board backtracking on a valid 9x9 fixture; the challenge itself is this bounded row-completion case.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement sudoku\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "4",
+        "kind": "visible",
         "input": "row0=53.678912",
-        "kind": "visible"
+        "expectedAnswer": "4"
       },
       {
-        "expectedAnswer": "2",
+        "kind": "boundary",
         "input": "row0=53467891.",
-        "kind": "boundary"
+        "expectedAnswer": "2"
       },
       {
-        "expectedAnswer": "2",
-        "input": "\nrow0=53467891.\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "row0=.34678912",
+        "expectedAnswer": "5"
       },
       {
-        "expectedAnswer": "4",
+        "kind": "adversarial",
+        "input": "row0=534.78912",
+        "expectedAnswer": "6"
+      },
+      {
+        "kind": "adversarial",
+        "input": "row0=534678.12",
+        "expectedAnswer": "9"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \nrow0=53.678912\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "4"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\nrow0=534678.12\n",
+        "expectedAnswer": "9"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"row0=53.678912\"#, r#\"4\"#),\n    (r#\"row0=53467891.\"#, r#\"2\"#),\n    (r#\"\nrow0=53467891.\n\"#, r#\"2\"#),\n    (r#\"  \nrow0=53.678912\n  \"#, r#\"4\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS sudoku\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"row0=53.678912\",\"4\"),\n        (\"row0=53467891.\",\"2\"),\n        (\"row0=.34678912\",\"5\"),\n        (\"row0=534.78912\",\"6\"),\n        (\"row0=534678.12\",\"9\"),\n        (\"  \\nrow0=53.678912\\n  \",\"4\"),\n        (\"\\nrow0=534678.12\\n\",\"9\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS sudoku\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS sudoku\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"4\".to_string()",
-      "String::from(\"4\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

@@ -2,49 +2,49 @@
   "algorithm": {
     "categoryID": "hashing",
     "categoryTitle": "Hash Maps & Sets",
-    "complexity": "O(n) expected time · O(k) space",
+    "complexity": "O(n+m) time for lowercase ASCII · O(26) counters",
     "difficulty": "easy",
     "expectedAnswer": "true",
     "idea": "Map each key to its number of occurrences in one pass.",
     "patternID": "hash-frequency",
-    "rustSketch": "use std::collections::HashMap;\nfn counts(values: &[i32]) -> HashMap<i32, usize> {\n    let mut map = HashMap::new();\n    for &value in values { *map.entry(value).or_insert(0) += 1; }\n    map\n}",
+    "rustSketch": "fn anagrams(a: &str, b: &str) -> bool {\n    assert!(a.bytes().chain(b.bytes()).all(|c| c.is_ascii_lowercase()));\n    let mut counts = [0_i32; 26];\n    for c in a.bytes() { counts[(c - b'a') as usize] += 1; }\n    for c in b.bytes() { counts[(c - b'a') as usize] -= 1; }\n    counts.iter().all(|&n| n == 0)\n}\n\nfn main() {\n    let result = anagrams(\"rust\",\"tsur\").to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return true when the two lowercase words have identical character counts.",
     "useCases": "anagrams, top frequencies, multiset comparison",
     "visibleInput": "rust; tsur"
   },
   "concept": "Map each key to its number of occurrences in one pass.",
-  "contentDigest": "a771b962c3c2be2aba0b9ee981d20966e2355cf84cbed3690abf2f8ff372fa7d",
+  "contentDigest": "d265418fa15827b0ab7a79489d6d006e18e36e7acd045a9d47846110e6aa361d",
   "depth": {
     "connections": [
       {
-        "concept": "Return true when any badge ID occurs twice.",
         "direction": "previous",
-        "title": "Challenge: Hash Membership"
+        "title": "Challenge: Hash Membership",
+        "concept": "Return true when any badge ID occurs twice."
       },
       {
-        "concept": "anagrams, top frequencies, multiset comparison",
         "direction": "next",
-        "title": "Hash Frequency Map: When to Use It"
+        "title": "Hash Frequency Map: When to Use It",
+        "concept": "anagrams, top frequencies, multiset comparison"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "Equal lengths can still have different letter multiplicities. For rust and tsur, adding the first word and subtracting the second returns every count to zero. For abc and abd, c remains +1 and d becomes -1. The implementation accepts lowercase ASCII as its stated domain.",
+    "misconception": "“All equal-length words are anagrams”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `rust; tsur`, write the state before the first update. Explain how it represents this claim: Map each key to its number of occurrences in one pass. A key-derived representation lets later work reuse an earlier fact. It may be a set, a map from keys to state, compressed ranks, or a rolling fingerprint; name which one this pattern uses."
+        "title": "Concrete transition",
+        "detail": "For rust and tsur, adding the first word and subtracting the second returns every count to zero. For abc and abd, c remains +1 and d becomes -1. The implementation accepts lowercase ASCII as its stated domain."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `true`. In Rust, use `HashSet` for presence and `HashMap` for associated state. Compression and rolling hashes need their own arrays or arithmetic; do not force every hashing pattern into a map."
+        "title": "Independent second fixture",
+        "detail": "Input `aab; aba` produces `true`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check missing keys, repeated keys, and collisions conceptually; expected constant-time operations are not a worst-case promise. Defend the O(n) expected time · O(k) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `abcd; dcba` produces `true`. Equal lengths can still have different letter multiplicities. The stated work bound is O(n+m) time for lowercase ASCII · O(26) counters. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `rust; tsur` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Hash Frequency Map survives, which state must be updated, and whether the O(n) expected time · O(k) space bound still holds. Look for repeated membership, grouping, or a reusable key representation. A sorted structure may be preferable when deterministic order is part of the requirement."
+    "transferChallenge": "Compare the visible input `rust; tsur` with `a; aa`. Predict why their results are `true` and `false`. Then change one legal value and explain whether the same invariant, equal lengths can still have different letter multiplicities, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.hash-frequency.model",
@@ -54,21 +54,21 @@
   "title": "Hash Frequency Map: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "Equal lengths can still have different letter multiplicities",
+      "All equal-length words are anagrams",
+      "Alphabetical order must match between both words"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n) expected time · O(k) space",
-    "exampleCode": "use std::collections::HashMap;\nfn counts(values: &[i32]) -> HashMap<i32, usize> {\n    let mut map = HashMap::new();\n    for &value in values { *map.entry(value).or_insert(0) += 1; }\n    map\n}",
-    "explanation": "Begin with the concrete question: Return true when the two lowercase words have identical character counts. For the visible input `rust; tsur`, the stated result is `true`. Before reading code, name the smallest piece of information that must survive from one step to the next. A key-derived representation lets later work reuse an earlier fact. It may be a set, a map from keys to state, compressed ranks, or a rolling fingerprint; name which one this pattern uses. That is the mental model for Hash Frequency Map; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Map each key to its number of occurrences in one pass. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. In Rust, use `HashSet` for presence and `HashMap` for associated state. Compression and rolling hashes need their own arrays or arithmetic; do not force every hashing pattern into a map. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n) expected time · O(k) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check missing keys, repeated keys, and collisions conceptually; expected constant-time operations are not a worst-case promise. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "use std::collections::HashMap;\nfn counts(values: &[i32]) -> HashMap<i32, usize> {\n    let mut map = HashMap::new();\n    for &value in values { *map.entry(value).or_insert(0) += 1; }\n    map\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
-    "success": "You can explain the invariant, termination condition, and O(n) expected time · O(k) space bound without looking at the code.",
+    "exampleCaption": "Complete std-only hash-frequency program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn anagrams(a: &str, b: &str) -> bool {\n    assert!(a.bytes().chain(b.bytes()).all(|c| c.is_ascii_lowercase()));\n    let mut counts = [0_i32; 26];\n    for c in a.bytes() { counts[(c - b'a') as usize] += 1; }\n    for c in b.bytes() { counts[(c - b'a') as usize] -= 1; }\n    counts.iter().all(|&n| n == 0)\n}\n\nfn main() {\n    let result = anagrams(\"rust\",\"tsur\").to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "For rust and tsur, adding the first word and subtracting the second returns every count to zero. For abc and abd, c remains +1 and d becomes -1. The implementation accepts lowercase ASCII as its stated domain.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return true when the two lowercase words have identical character counts. The visible fixture is `rust; tsur` and its example result is `true`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return true when the two lowercase words have identical character counts. For the visible input `rust; tsur`, the stated result is `true`. Before reading code, name the smallest piece of information that must survive from one step to the next. A key-derived representation lets later work reuse an earlier fact. It may be a set, a map from keys to state, compressed ranks, or a rolling fingerprint; name which one this pattern uses. That is the mental model for Hash Frequency Map; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Map each key to its number of occurrences in one pass. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n+m) time for lowercase ASCII · O(26) counters. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check missing keys, repeated keys, and collisions conceptually; expected constant-time operations are not a worst-case promise. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "For rust and tsur, adding the first word and subtracting the second returns every count to zero. For abc and abd, c remains +1 and d becomes -1. The implementation accepts lowercase ASCII as its stated domain.",
+    "practiceCode": "fn anagrams(a: &str, b: &str) -> bool {\n    assert!(a.bytes().chain(b.bytes()).all(|c| c.is_ascii_lowercase()));\n    let mut counts = [0_i32; 26];\n    for c in a.bytes() { counts[(c - b'a') as usize] += 1; }\n    for c in b.bytes() { counts[(c - b'a') as usize] -= 1; }\n    counts.iter().all(|&n| n == 0)\n}\n\nfn main() {\n    let result = anagrams(\"rust\",\"tsur\").to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Why compare all 26 letter counts rather than only word length?",
+    "rule": "Equal lengths can still have different letter multiplicities. State the input preconditions before applying this invariant.",
+    "success": "You can explain the invariant, termination condition, and O(n+m) time for lowercase ASCII · O(26) counters bound without looking at the code.",
     "summary": "Map each key to its number of occurrences in one pass.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-hashing-a.png",

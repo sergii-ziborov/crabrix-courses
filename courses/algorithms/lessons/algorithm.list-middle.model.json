@@ -7,44 +7,44 @@
     "expectedAnswer": "4",
     "idea": "Move one pointer once and another twice so the slow pointer reaches the middle.",
     "patternID": "list-middle",
-    "rustSketch": "// Conceptual ownership-safe reversal:\n// while let Some(mut node) = head.take() {\n//     head = node.next.take();\n//     node.next = reversed;\n//     reversed = Some(node);\n// }",
+    "rustSketch": "\ntype Link=Option<Box<ListNode>>;\nstruct ListNode { value:i32, next:Link }\nfn list(values:&[i32])->Link {\n    values.iter().rev().fold(None,|next,&value|Some(Box::new(ListNode{value,next})))\n}\nfn list_values(head:&Link)->Vec<i32> {\n    let mut out=Vec::new(); let mut p=head.as_deref();\n    while let Some(n)=p { out.push(n.value); p=n.next.as_deref(); } out\n}\nfn list_middle(head:&Link)->i32 {\n    let (mut slow,mut fast)=(head.as_deref(),head.as_deref());\n    while let Some(next)=fast.and_then(|n|n.next.as_deref()) {\n        slow=slow.unwrap().next.as_deref(); fast=next.next.as_deref();\n    }\n    slow.expect(\"nonempty list\").value\n}\n\nfn main() {\n    let result = list_middle(&list(&[1,2,3,4,5,6])).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return the second middle value of an even-length list.",
     "useCases": "middle node and half splitting",
     "visibleInput": "1->2->3->4->5->6"
   },
   "concept": "Move one pointer once and another twice so the slow pointer reaches the middle.",
-  "contentDigest": "18a51b9f86483e8d41ff6590aaa8470cee87d2c59e46e727aebf5f53f6718ede",
+  "contentDigest": "a85c7edbcb7878a4e502bc8f5fd74b34988d279d2f86172d8c4d4fa906c281b3",
   "depth": {
     "connections": [
       {
-        "concept": "Return the node values after reversing the list.",
         "direction": "previous",
-        "title": "Challenge: Iterative List Reversal"
+        "title": "Challenge: Iterative List Reversal",
+        "concept": "Return the node values after reversing the list."
       },
       {
-        "concept": "middle node and half splitting",
         "direction": "next",
-        "title": "Middle by Slow/Fast: When to Use It"
+        "title": "Middle by Slow/Fast: When to Use It",
+        "concept": "middle node and half splitting"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "Each fast pair advances slow once and chooses the second even middle. For 1→2→3→4→5→6, slow advances to 2,3,4 while fast advances two links each round. The result is 4. A two-node list returns its second node, consistently with the stated convention.",
+    "misconception": "“A slow pointer must always point at an even value”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `1->2->3->4->5->6`, write the state before the first update. Explain how it represents this claim: Move one pointer once and another twice so the slow pointer reaches the middle. A list algorithm changes relationships between nodes, not just values. Draw the next pointers before and after each mutation."
+        "title": "Concrete transition",
+        "detail": "For 1→2→3→4→5→6, slow advances to 2,3,4 while fast advances two links each round. The result is 4. A two-node list returns its second node, consistently with the stated convention."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `4`. Rust ownership makes linked structures explicit: use the provided node type, take links carefully, and preserve access to the remaining chain."
+        "title": "Independent second fixture",
+        "detail": "Input `9->1->7` produces `1`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check an empty list, one node, a head or tail change, and cycles when the problem allows them. Defend the O(n) time · O(1) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `9->8->7->6->5->4->3` produces `6`. Each fast pair advances slow once and chooses the second even middle. The stated work bound is O(n) time · O(1) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `1->2->3->4->5->6` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Middle by Slow/Fast survives, which state must be updated, and whether the O(n) time · O(1) space bound still holds. Look for tasks where node identity or one-way traversal matters. An indexed vector solution can hide the pointer constraint rather than solve it."
+    "transferChallenge": "Compare the visible input `1->2->3->4->5->6` with `3->3->1->4`. Predict why their results are `4` and `1`. Then change one legal value and explain whether the same invariant, each fast pair advances slow once and chooses the second even middle, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.list-middle.model",
@@ -54,21 +54,21 @@
   "title": "Middle by Slow/Fast: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "Each fast pair advances slow once and chooses the second even middle",
+      "A slow pointer must always point at an even value",
+      "The last node is always the middle"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n) time · O(1) space",
-    "exampleCode": "// Conceptual ownership-safe reversal:\n// while let Some(mut node) = head.take() {\n//     head = node.next.take();\n//     node.next = reversed;\n//     reversed = Some(node);\n// }",
-    "explanation": "Begin with the concrete question: Return the second middle value of an even-length list. For the visible input `1->2->3->4->5->6`, the stated result is `4`. Before reading code, name the smallest piece of information that must survive from one step to the next. A list algorithm changes relationships between nodes, not just values. Draw the next pointers before and after each mutation. That is the mental model for Middle by Slow/Fast; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Move one pointer once and another twice so the slow pointer reaches the middle. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is an invariant note rather than a complete program. Turn it into explicit state and transitions before coding. Rust ownership makes linked structures explicit: use the provided node type, take links carefully, and preserve access to the remaining chain. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check an empty list, one node, a head or tail change, and cycles when the problem allows them. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "// Conceptual ownership-safe reversal:\n// while let Some(mut node) = head.take() {\n//     head = node.next.take();\n//     node.next = reversed;\n//     reversed = Some(node);\n// }",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only list-middle program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "\ntype Link=Option<Box<ListNode>>;\nstruct ListNode { value:i32, next:Link }\nfn list(values:&[i32])->Link {\n    values.iter().rev().fold(None,|next,&value|Some(Box::new(ListNode{value,next})))\n}\nfn list_values(head:&Link)->Vec<i32> {\n    let mut out=Vec::new(); let mut p=head.as_deref();\n    while let Some(n)=p { out.push(n.value); p=n.next.as_deref(); } out\n}\nfn list_middle(head:&Link)->i32 {\n    let (mut slow,mut fast)=(head.as_deref(),head.as_deref());\n    while let Some(next)=fast.and_then(|n|n.next.as_deref()) {\n        slow=slow.unwrap().next.as_deref(); fast=next.next.as_deref();\n    }\n    slow.expect(\"nonempty list\").value\n}\n\nfn main() {\n    let result = list_middle(&list(&[1,2,3,4,5,6])).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "For 1→2→3→4→5→6, slow advances to 2,3,4 while fast advances two links each round. The result is 4. A two-node list returns its second node, consistently with the stated convention.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the second middle value of an even-length list. The visible fixture is `1->2->3->4->5->6` and its example result is `4`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return the second middle value of an even-length list. For the visible input `1->2->3->4->5->6`, the stated result is `4`. Before reading code, name the smallest piece of information that must survive from one step to the next. A list algorithm changes relationships between nodes, not just values. Draw the next pointers before and after each mutation. That is the mental model for Middle by Slow/Fast; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Move one pointer once and another twice so the slow pointer reaches the middle. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check an empty list, one node, a head or tail change, and cycles when the problem allows them. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "For 1→2→3→4→5→6, slow advances to 2,3,4 while fast advances two links each round. The result is 4. A two-node list returns its second node, consistently with the stated convention.",
+    "practiceCode": "\ntype Link=Option<Box<ListNode>>;\nstruct ListNode { value:i32, next:Link }\nfn list(values:&[i32])->Link {\n    values.iter().rev().fold(None,|next,&value|Some(Box::new(ListNode{value,next})))\n}\nfn list_values(head:&Link)->Vec<i32> {\n    let mut out=Vec::new(); let mut p=head.as_deref();\n    while let Some(n)=p { out.push(n.value); p=n.next.as_deref(); } out\n}\nfn list_middle(head:&Link)->i32 {\n    let (mut slow,mut fast)=(head.as_deref(),head.as_deref());\n    while let Some(next)=fast.and_then(|n|n.next.as_deref()) {\n        slow=slow.unwrap().next.as_deref(); fast=next.next.as_deref();\n    }\n    slow.expect(\"nonempty list\").value\n}\n\nfn main() {\n    let result = list_middle(&list(&[1,2,3,4,5,6])).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Why advance the slow pointer while fast has a next node?",
+    "rule": "Each fast pair advances slow once and chooses the second even middle. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(1) space bound without looking at the code.",
     "summary": "Move one pointer once and another twice so the slow pointer reaches the middle.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-linked-lists-a.png",

@@ -7,44 +7,44 @@
     "expectedAnswer": "1,2;1,3;2,3",
     "idea": "Advance the start index so order does not create duplicate selections.",
     "patternID": "combinations",
-    "rustSketch": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn semicolon<T:std::fmt::Display>(a:Vec<Vec<T>>)->String { a.into_iter().map(csv).collect::<Vec<_>>().join(\";\") }\nfn combinations(values:&[i32],k:usize)->Vec<Vec<i32>> {\n    fn visit(a:&[i32],start:usize,k:usize,path:&mut Vec<i32>,out:&mut Vec<Vec<i32>>) {\n        if path.len()==k { out.push(path.clone()); return; }\n        for i in start..a.len() {\n            if a.len()-i<k-path.len() { break; }\n            path.push(a[i]); visit(a,i+1,k,path,out); path.pop();\n        }\n    }\n    let mut out=Vec::new(); visit(values,0,k,&mut Vec::new(),&mut out); out\n}\n\nfn main() {\n    let result = semicolon(combinations(&[1,2,3],2));\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return all size-two combinations in lexicographic order.",
     "useCases": "choose-k sets and teams",
     "visibleInput": "[1,2,3]"
   },
   "concept": "Advance the start index so order does not create duplicate selections.",
-  "contentDigest": "fb0bee2235172fea0741abdc87197bc1d17e2edd12ed78d263ff15f8c3916806",
+  "contentDigest": "4736a8923e4ba4729f1d2fdbf5c34d55cff470e7622987b3a268d722bdc348fb",
   "depth": {
     "connections": [
       {
-        "concept": "Return the number of permutations of four distinct items.",
         "direction": "previous",
-        "title": "Challenge: Permutation Backtracking"
+        "title": "Challenge: Permutation Backtracking",
+        "concept": "Return the number of permutations of all supplied distinct items, including one empty permutation for an empty list."
       },
       {
-        "concept": "choose-k sets and teams",
         "direction": "next",
-        "title": "Combination Backtracking: When to Use It"
+        "title": "Combination Backtracking: When to Use It",
+        "concept": "choose-k sets and teams"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "It prevents reuse and eliminates order-equivalent selections. For [1,2,3] with size 2, branches choose [1,2], [1,3], [2,3]. A later branch cannot produce [2,1]. When too few candidates remain, prune that branch before recursing.",
+    "misconception": "“It generates every permutation of the selected values”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[1,2,3]`, write the state before the first update. Explain how it represents this claim: Advance the start index so order does not create duplicate selections. Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains."
+        "title": "Concrete transition",
+        "detail": "For [1,2,3] with size 2, branches choose [1,2], [1,3], [2,3]. A later branch cannot produce [2,1]. When too few candidates remain, prune that branch before recursing."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `1,2;1,3;2,3`. For recursive search, push a choice, recurse, then undo it; for meet-in-the-middle, collect each half before matching them. In Rust, clone a path only when storing a completed answer."
+        "title": "Independent second fixture",
+        "detail": "Input `[3,4]` produces `3,4`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. Defend the O(C(n,k)*k) output-sensitive bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[5]` produces An empty output string. It prevents reuse and eliminates order-equivalent selections. The stated work bound is O(C(n,k)*k) output-sensitive. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[1,2,3]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Combination Backtracking survives, which state must be updated, and whether the O(C(n,k)*k) output-sensitive bound still holds. Use pruning when partial choices can already be ruled out. Meet-in-the-middle instead trades two exhaustive half-enumerations for a smaller search space."
+    "transferChallenge": "Compare the visible input `[1,2,3]` with `[1,2,3,4]`. Predict why their results are `1,2;1,3;2,3` and `1,2;1,3;1,4;2,3;2,4;3,4`. Then change one legal value and explain whether the same invariant, it prevents reuse and eliminates order-equivalent selections, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.combinations.model",
@@ -54,21 +54,21 @@
   "title": "Combination Backtracking: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "It prevents reuse and eliminates order-equivalent selections",
+      "It generates every permutation of the selected values",
+      "It forces chosen values to be consecutive"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(C(n,k)*k) output-sensitive",
-    "exampleCode": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
-    "explanation": "Begin with the concrete question: Return all size-two combinations in lexicographic order. For the visible input `[1,2,3]`, the stated result is `1,2;1,3;2,3`. Before reading code, name the smallest piece of information that must survive from one step to the next. Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains. That is the mental model for Combination Backtracking; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Advance the start index so order does not create duplicate selections. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. For recursive search, push a choice, recurse, then undo it; for meet-in-the-middle, collect each half before matching them. In Rust, clone a path only when storing a completed answer. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(C(n,k)*k) output-sensitive. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only combinations program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn semicolon<T:std::fmt::Display>(a:Vec<Vec<T>>)->String { a.into_iter().map(csv).collect::<Vec<_>>().join(\";\") }\nfn combinations(values:&[i32],k:usize)->Vec<Vec<i32>> {\n    fn visit(a:&[i32],start:usize,k:usize,path:&mut Vec<i32>,out:&mut Vec<Vec<i32>>) {\n        if path.len()==k { out.push(path.clone()); return; }\n        for i in start..a.len() {\n            if a.len()-i<k-path.len() { break; }\n            path.push(a[i]); visit(a,i+1,k,path,out); path.pop();\n        }\n    }\n    let mut out=Vec::new(); visit(values,0,k,&mut Vec::new(),&mut out); out\n}\n\nfn main() {\n    let result = semicolon(combinations(&[1,2,3],2));\n    println!(\"{result}\");\n}\n",
+    "explanation": "For [1,2,3] with size 2, branches choose [1,2], [1,3], [2,3]. A later branch cannot produce [2,1]. When too few candidates remain, prune that branch before recursing.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return all size-two combinations in lexicographic order. The visible fixture is `[1,2,3]` and its example result is `1,2;1,3;2,3`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return all size-two combinations in lexicographic order. For the visible input `[1,2,3]`, the stated result is `1,2;1,3;2,3`. Before reading code, name the smallest piece of information that must survive from one step to the next. Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains. That is the mental model for Combination Backtracking; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Advance the start index so order does not create duplicate selections. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(C(n,k)*k) output-sensitive. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "For [1,2,3] with size 2, branches choose [1,2], [1,3], [2,3]. A later branch cannot produce [2,1]. When too few candidates remain, prune that branch before recursing.",
+    "practiceCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn semicolon<T:std::fmt::Display>(a:Vec<Vec<T>>)->String { a.into_iter().map(csv).collect::<Vec<_>>().join(\";\") }\nfn combinations(values:&[i32],k:usize)->Vec<Vec<i32>> {\n    fn visit(a:&[i32],start:usize,k:usize,path:&mut Vec<i32>,out:&mut Vec<Vec<i32>>) {\n        if path.len()==k { out.push(path.clone()); return; }\n        for i in start..a.len() {\n            if a.len()-i<k-path.len() { break; }\n            path.push(a[i]); visit(a,i+1,k,path,out); path.pop();\n        }\n    }\n    let mut out=Vec::new(); visit(values,0,k,&mut Vec::new(),&mut out); out\n}\n\nfn main() {\n    let result = semicolon(combinations(&[1,2,3],2));\n    println!(\"{result}\");\n}\n",
+    "question": "Why advance the next candidate start to i+1 after choosing index i?",
+    "rule": "It prevents reuse and eliminates order-equivalent selections. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(C(n,k)*k) output-sensitive bound without looking at the code.",
     "summary": "Advance the start index so order does not create duplicate selections.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-backtracking-a.png",

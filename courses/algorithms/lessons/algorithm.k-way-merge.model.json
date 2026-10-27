@@ -7,44 +7,44 @@
     "expectedAnswer": "0,1,2,4,5,6,7,8,9",
     "idea": "Push one frontier item per sorted source and advance only the source that wins.",
     "patternID": "k-way-merge",
-    "rustSketch": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn merge_many(lists:&[Vec<i32>])->Vec<i32> {\n    let mut heap=std::collections::BinaryHeap::new(); let mut out=Vec::new();\n    for (i,list) in lists.iter().enumerate() { if let Some(&x)=list.first() { heap.push(std::cmp::Reverse((x,i,0))); } }\n    while let Some(std::cmp::Reverse((x,i,j)))=heap.pop() {\n        out.push(x); if let Some(&next)=lists[i].get(j+1) { heap.push(std::cmp::Reverse((next,i,j+1))); }\n    }\n    out\n}\n\nfn main() {\n    let result = csv(merge_many(&[vec![1,4,7],vec![2,5,8],vec![0,6,9]]));\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Merge the three sorted sequences.",
     "useCases": "merge sorted lists, files, and event streams",
     "visibleInput": "[1,4,7];[2,5,8];[0,6,9]"
   },
   "concept": "Push one frontier item per sorted source and advance only the source that wins.",
-  "contentDigest": "a9248d594f49a27a5731393093ac1578d20de6a6e5afa99fe21dcbc67bdecc17",
+  "contentDigest": "065074d7ff5290168f0c6f2f28fd5457441fc6bef0ea293eed4b162fdbd5f093",
   "depth": {
     "connections": [
       {
-        "concept": "With k=3, return the kth largest after adding 4, 5, 8, 2, 10.",
         "direction": "previous",
-        "title": "Challenge: Kth Statistic in a Stream"
+        "title": "Challenge: Kth Statistic in a Stream",
+        "concept": "With k=3, return the kth largest after adding 4, 5, 8, 2, 10."
       },
       {
-        "concept": "merge sorted lists, files, and event streams",
         "direction": "next",
-        "title": "K-Way Heap Merge: When to Use It"
+        "title": "K-Way Heap Merge: When to Use It",
+        "concept": "merge sorted lists, files, and event streams"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "No later item from that source can precede its current head. Source heads 1,2,0 yield 0 first; advance only its source to 6. The next heap heads 1,2,6 yield 1. Repeating merges [1,4,7], [2,5,8], [0,6,9] into 0,1,2,4,5,6,7,8,9.",
+    "misconception": "“Every source must be copied into the heap at once”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[1,4,7];[2,5,8];[0,6,9]`, write the state before the first update. Explain how it represents this claim: Push one frontier item per sorted source and advance only the source that wins. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded."
+        "title": "Concrete transition",
+        "detail": "Source heads 1,2,0 yield 0 first; advance only its source to 6. The next heap heads 1,2,6 yield 1. Repeating merges [1,4,7], [2,5,8], [0,6,9] into 0,1,2,4,5,6,7,8,9."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `0,1,2,4,5,6,7,8,9`. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data."
+        "title": "Independent second fixture",
+        "detail": "Input `[1];[1];[1]` produces `1,1,1`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Defend the O(N log k) time · O(k) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[1,2];[3,4]` produces `1,2,3,4`. No later item from that source can precede its current head. The stated work bound is O(N log k) time · O(k) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[1,4,7];[2,5,8];[0,6,9]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from K-Way Heap Merge survives, which state must be updated, and whether the O(N log k) time · O(k) space bound still holds. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work."
+    "transferChallenge": "Compare the visible input `[1,4,7];[2,5,8];[0,6,9]` with `[0,2];[1,3];[4,5]`. Predict why their results are `0,1,2,4,5,6,7,8,9` and `0,1,2,3,4,5`. Then change one legal value and explain whether the same invariant, no later item from that source can precede its current head, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.k-way-merge.model",
@@ -54,21 +54,21 @@
   "title": "K-Way Heap Merge: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "No later item from that source can precede its current head",
+      "Every source must be copied into the heap at once",
+      "A source's last value is always its next minimum"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(N log k) time · O(k) space",
-    "exampleCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
-    "explanation": "Begin with the concrete question: Merge the three sorted sequences. For the visible input `[1,4,7];[2,5,8];[0,6,9]`, the stated result is `0,1,2,4,5,6,7,8,9`. Before reading code, name the smallest piece of information that must survive from one step to the next. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. That is the mental model for K-Way Heap Merge; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Push one frontier item per sorted source and advance only the source that wins. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(N log k) time · O(k) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only k-way-merge program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn merge_many(lists:&[Vec<i32>])->Vec<i32> {\n    let mut heap=std::collections::BinaryHeap::new(); let mut out=Vec::new();\n    for (i,list) in lists.iter().enumerate() { if let Some(&x)=list.first() { heap.push(std::cmp::Reverse((x,i,0))); } }\n    while let Some(std::cmp::Reverse((x,i,j)))=heap.pop() {\n        out.push(x); if let Some(&next)=lists[i].get(j+1) { heap.push(std::cmp::Reverse((next,i,j+1))); }\n    }\n    out\n}\n\nfn main() {\n    let result = csv(merge_many(&[vec![1,4,7],vec![2,5,8],vec![0,6,9]]));\n    println!(\"{result}\");\n}\n",
+    "explanation": "Source heads 1,2,0 yield 0 first; advance only its source to 6. The next heap heads 1,2,6 yield 1. Repeating merges [1,4,7], [2,5,8], [0,6,9] into 0,1,2,4,5,6,7,8,9.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Merge the three sorted sequences. The visible fixture is `[1,4,7];[2,5,8];[0,6,9]` and its example result is `0,1,2,4,5,6,7,8,9`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Merge the three sorted sequences. For the visible input `[1,4,7];[2,5,8];[0,6,9]`, the stated result is `0,1,2,4,5,6,7,8,9`. Before reading code, name the smallest piece of information that must survive from one step to the next. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. That is the mental model for K-Way Heap Merge; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Push one frontier item per sorted source and advance only the source that wins. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(N log k) time · O(k) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "Source heads 1,2,0 yield 0 first; advance only its source to 6. The next heap heads 1,2,6 yield 1. Repeating merges [1,4,7], [2,5,8], [0,6,9] into 0,1,2,4,5,6,7,8,9.",
+    "practiceCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn merge_many(lists:&[Vec<i32>])->Vec<i32> {\n    let mut heap=std::collections::BinaryHeap::new(); let mut out=Vec::new();\n    for (i,list) in lists.iter().enumerate() { if let Some(&x)=list.first() { heap.push(std::cmp::Reverse((x,i,0))); } }\n    while let Some(std::cmp::Reverse((x,i,j)))=heap.pop() {\n        out.push(x); if let Some(&next)=lists[i].get(j+1) { heap.push(std::cmp::Reverse((next,i,j+1))); }\n    }\n    out\n}\n\nfn main() {\n    let result = csv(merge_many(&[vec![1,4,7],vec![2,5,8],vec![0,6,9]]));\n    println!(\"{result}\");\n}\n",
+    "question": "Why push only the next unread item from each sorted source?",
+    "rule": "No later item from that source can precede its current head. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(N log k) time · O(k) space bound without looking at the code.",
     "summary": "Push one frontier item per sorted source and advance only the source that wins.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-heaps-streaming-a.png",

@@ -7,7 +7,7 @@
     "expectedAnswer": "4",
     "idea": "At least one half remains sorted; use that fact to choose the viable side.",
     "patternID": "rotated-search",
-    "rustSketch": "fn lower_bound(values: &[i32], target: i32) -> usize {\n    let (mut low, mut high) = (0, values.len());\n    while low < high {\n        let mid = low + (high - low) / 2;\n        if values[mid] < target { low = mid + 1; } else { high = mid; }\n    }\n    low\n}",
+    "rustSketch": "fn rotated_index(a:&[i32],target:i32)->i32 {\n    let (mut lo,mut hi)=(0,a.len()); // distinct values\n    while lo<hi {\n        let mid=lo+(hi-lo)/2; if a[mid]==target { return mid as i32; }\n        if a[lo]<=a[mid] {\n            if a[lo]<=target && target<a[mid] { hi=mid; } else { lo=mid+1; }\n        } else if a[mid]<target && target<=a[hi-1] { lo=mid+1; } else { hi=mid; }\n    }\n    -1\n}\n\nfn main() {\n    let result = rotated_index(&[4,5,6,7,0,1,2],0).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return the index of 0.",
     "useCases": "lookup in a rotated distinct sorted array",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "At least one half remains sorted; use that fact to choose the viable side.",
         "direction": "previous",
-        "title": "Rotated Sorted Search: Mental Model"
+        "title": "Rotated Sorted Search: Mental Model",
+        "concept": "At least one half remains sorted; use that fact to choose the viable side."
       },
       {
-        "concept": "Return the index of 0.",
         "direction": "next",
-        "title": "Challenge: Rotated Sorted Search"
+        "title": "Challenge: Rotated Sorted Search",
+        "concept": "Return the index of 0."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "At least one half is sorted and its endpoint range can be tested. In [4,5,6,7,0,1,2], the first midpoint lies in a sorted left half that cannot contain target 0. Retain the right half and eventually return index 4. Distinct values are required for this simple branch rule.",
+    "misconception": "“Both halves are globally sorted in the original order”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[4,5,6,7,0,1,2]`, write the state before the first update. Explain how it represents this claim: At least one half remains sorted; use that fact to choose the viable side. Binary search maintains an interval that is still capable of containing the answer. State precisely why the discarded half cannot contain it."
+        "title": "Concrete transition",
+        "detail": "In [4,5,6,7,0,1,2], the first midpoint lies in a sorted left half that cannot contain target 0. Retain the right half and eventually return index 4. Distinct values are required for this simple branch rule."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `4`. Use half-open bounds consistently and compute the midpoint without overflowing large integer indices."
+        "title": "Independent second fixture",
+        "detail": "Input `[2,3,0,1]` produces `2`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check no match, duplicate matches, the first and last valid positions, and an answer at the boundary of the search domain. Defend the O(log n) time · O(1) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[5,7,9,1,3]` produces `-1`. At least one half is sorted and its endpoint range can be tested. The stated work bound is O(log n) time · O(1) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[4,5,6,7,0,1,2]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Rotated Sorted Search survives, which state must be updated, and whether the O(log n) time · O(1) space bound still holds. It needs ordering, a monotone predicate, or another proved structure that lets one half be discarded; merely containing numbers is not enough."
+    "transferChallenge": "Compare the visible input `[4,5,6,7,0,1,2]` with `[0]`. Predict why their results are `4` and `0`. Then change one legal value and explain whether the same invariant, at least one half is sorted and its endpoint range can be tested, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.rotated-search.recognize",
@@ -54,21 +54,21 @@
   "title": "Rotated Sorted Search: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "lookup in a rotated distinct sorted array",
-      "Only problems with exactly one input value"
+      "`3`",
+      "`2`",
+      "`1`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Rotated Sorted Search",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Rotated Sorted Search",
-    "explanation": "A problem is a good match for Rotated Sorted Search when it asks for lookup in a rotated distinct sorted array. Here the concrete task is: Return the index of 0. The visible input `[4,5,6,7,0,1,2]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. It needs ordering, a monotone predicate, or another proved structure that lets one half be discarded; merely containing numbers is not enough. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: At least one half remains sorted; use that fact to choose the viable side. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Binary search maintains an interval that is still capable of containing the answer. State precisely why the discarded half cannot contain it. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(log n) time · O(1) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `4` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check no match, duplicate matches, the first and last valid positions, and an answer at the boundary of the search domain. Use half-open bounds consistently and compute the midpoint without overflowing large integer indices. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: lookup in a rotated distinct sorted array.",
-    "practiceCode": "fn lower_bound(values: &[i32], target: i32) -> usize {\n    let (mut low, mut high) = (0, values.len());\n    while low < high {\n        let mid = low + (high - low) / 2;\n        if values[mid] < target { low = mid + 1; } else { high = mid; }\n    }\n    low\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only rotated-search program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn rotated_index(a:&[i32],target:i32)->i32 {\n    let (mut lo,mut hi)=(0,a.len()); // distinct values\n    while lo<hi {\n        let mid=lo+(hi-lo)/2; if a[mid]==target { return mid as i32; }\n        if a[lo]<=a[mid] {\n            if a[lo]<=target && target<a[mid] { hi=mid; } else { lo=mid+1; }\n        } else if a[mid]<target && target<=a[hi-1] { lo=mid+1; } else { hi=mid; }\n    }\n    -1\n}\n\nfn main() {\n    let result = rotated_index(&[4,5,6,7,0,1,2],0).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "In [4,5,6,7,0,1,2], the first midpoint lies in a sorted left half that cannot contain target 0. Retain the right half and eventually return index 4. Distinct values are required for this simple branch rule.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the index of 0. The visible fixture is `[4,5,6,7,0,1,2]` and its example result is `4`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Rotated Sorted Search when it asks for lookup in a rotated distinct sorted array. Here the concrete task is: Return the index of 0. The visible input `[4,5,6,7,0,1,2]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. It needs ordering, a monotone predicate, or another proved structure that lets one half be discarded; merely containing numbers is not enough. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: At least one half remains sorted; use that fact to choose the viable side. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Binary search maintains an interval that is still capable of containing the answer. State precisely why the discarded half cannot contain it. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(log n) time · O(1) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `4` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check no match, duplicate matches, the first and last valid positions, and an answer at the boundary of the search domain. Use half-open bounds consistently and compute the midpoint without overflowing large integer indices. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `2`. At least one half is sorted and its endpoint range can be tested. Compare this independent fixture with the worked trace: In [4,5,6,7,0,1,2], the first midpoint lies in a sorted left half that cannot contain target 0. Retain the right half and eventually return index 4. Distinct values are required for this simple branch rule.",
+    "practiceCode": "fn rotated_index(a:&[i32],target:i32)->i32 {\n    let (mut lo,mut hi)=(0,a.len()); // distinct values\n    while lo<hi {\n        let mid=lo+(hi-lo)/2; if a[mid]==target { return mid as i32; }\n        if a[lo]<=a[mid] {\n            if a[lo]<=target && target<a[mid] { hi=mid; } else { lo=mid+1; }\n        } else if a[mid]<target && target<=a[hi-1] { lo=mid+1; } else { hi=mid; }\n    }\n    -1\n}\n\nfn main() {\n    let result = rotated_index(&[4,5,6,7,0,1,2],0).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Rotated Sorted Search on input `[2,3,0,1]`. Which result follows from the documented contract?",
+    "rule": "At least one half is sorted and its endpoint range can be tested. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Rotated Sorted Search.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-binary-search-a.png",

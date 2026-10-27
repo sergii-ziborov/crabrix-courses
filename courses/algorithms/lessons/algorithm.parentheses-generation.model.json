@@ -7,7 +7,7 @@
     "expectedAnswer": "((()));(()());(())();()(());()()()",
     "idea": "Add an open symbol while available and a close only when it cannot exceed opens used.",
     "patternID": "parentheses-generation",
-    "rustSketch": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
+    "rustSketch": "fn parentheses(n:usize)->Vec<String> {\n    fn visit(n:usize,open:usize,closed:usize,text:&mut String,out:&mut Vec<String>) {\n        if closed==n { out.push(text.clone()); return; }\n        if open<n { text.push('('); visit(n,open+1,closed,text,out); text.pop(); }\n        if closed<open { text.push(')'); visit(n,open,closed+1,text,out); text.pop(); }\n    }\n    let mut out=Vec::new(); visit(n,0,0,&mut String::new(),&mut out); out\n}\n\nfn main() {\n    let result = parentheses(3).join(\";\");\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return valid sequences for three pairs in lexicographic order.",
     "useCases": "balanced sequence construction",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Return unique nondecreasing combinations summing to 7.",
         "direction": "previous",
-        "title": "Challenge: Combination Sum"
+        "title": "Challenge: Combination Sum",
+        "concept": "Return unique nondecreasing combinations summing to 7."
       },
       {
-        "concept": "balanced sequence construction",
         "direction": "next",
-        "title": "Valid Parentheses Generation: When to Use It"
+        "title": "Valid Parentheses Generation: When to Use It",
+        "concept": "balanced sequence construction"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "No prefix may contain more closes than opens. For n=3, append '(' first whenever openings remain. Only close an unmatched opening. The five valid strings are emitted in lexicographic order; n=0 has one valid empty construction, not a failed search.",
+    "misconception": "“Every prefix must have equal opens and closes”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `n=3`, write the state before the first update. Explain how it represents this claim: Add an open symbol while available and a close only when it cannot exceed opens used. Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains."
+        "title": "Concrete transition",
+        "detail": "For n=3, append '(' first whenever openings remain. Only close an unmatched opening. The five valid strings are emitted in lexicographic order; n=0 has one valid empty construction, not a failed search."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `((()));(()());(())();()(());()()()`. For recursive search, push a choice, recurse, then undo it; for meet-in-the-middle, collect each half before matching them. In Rust, clone a path only when storing a completed answer."
+        "title": "Independent second fixture",
+        "detail": "Input `n=0` produces An empty output string. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. Defend the O(Catalan(n)*n) time · O(n) depth bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `n=4` produces `(((())));((()()));((())());((()))();(()(()));(()()());(()())();(())(());(())()();()((()));()(()());()(())();()()(());()()()()`. No prefix may contain more closes than opens. The stated work bound is O(Catalan(n)*n) time · O(n) depth. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `n=3` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Valid Parentheses Generation survives, which state must be updated, and whether the O(Catalan(n)*n) time · O(n) depth bound still holds. Use pruning when partial choices can already be ruled out. Meet-in-the-middle instead trades two exhaustive half-enumerations for a smaller search space."
+    "transferChallenge": "Compare the visible input `n=3` with `n=2`. Predict why their results are `((()));(()());(())();()(());()()()` and `(());()()`. Then change one legal value and explain whether the same invariant, no prefix may contain more closes than opens, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.parentheses-generation.model",
@@ -54,21 +54,21 @@
   "title": "Valid Parentheses Generation: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "No prefix may contain more closes than opens",
+      "Every prefix must have equal opens and closes",
+      "Closing choices depend on alphabetical sorting only"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(Catalan(n)*n) time · O(n) depth",
-    "exampleCode": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
-    "explanation": "Begin with the concrete question: Return valid sequences for three pairs in lexicographic order. For the visible input `n=3`, the stated result is `((()));(()());(())();()(());()()()`. Before reading code, name the smallest piece of information that must survive from one step to the next. Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains. That is the mental model for Valid Parentheses Generation; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Add an open symbol while available and a close only when it cannot exceed opens used. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. For recursive search, push a choice, recurse, then undo it; for meet-in-the-middle, collect each half before matching them. In Rust, clone a path only when storing a completed answer. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(Catalan(n)*n) time · O(n) depth. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only parentheses-generation program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn parentheses(n:usize)->Vec<String> {\n    fn visit(n:usize,open:usize,closed:usize,text:&mut String,out:&mut Vec<String>) {\n        if closed==n { out.push(text.clone()); return; }\n        if open<n { text.push('('); visit(n,open+1,closed,text,out); text.pop(); }\n        if closed<open { text.push(')'); visit(n,open,closed+1,text,out); text.pop(); }\n    }\n    let mut out=Vec::new(); visit(n,0,0,&mut String::new(),&mut out); out\n}\n\nfn main() {\n    let result = parentheses(3).join(\";\");\n    println!(\"{result}\");\n}\n",
+    "explanation": "For n=3, append '(' first whenever openings remain. Only close an unmatched opening. The five valid strings are emitted in lexicographic order; n=0 has one valid empty construction, not a failed search.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return valid sequences for three pairs in lexicographic order. The visible fixture is `n=3` and its example result is `((()));(()());(())();()(());()()()`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return valid sequences for three pairs in lexicographic order. For the visible input `n=3`, the stated result is `((()));(()());(())();()(());()()()`. Before reading code, name the smallest piece of information that must survive from one step to the next. Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains. That is the mental model for Valid Parentheses Generation; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Add an open symbol while available and a close only when it cannot exceed opens used. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(Catalan(n)*n) time · O(n) depth. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "For n=3, append '(' first whenever openings remain. Only close an unmatched opening. The five valid strings are emitted in lexicographic order; n=0 has one valid empty construction, not a failed search.",
+    "practiceCode": "fn parentheses(n:usize)->Vec<String> {\n    fn visit(n:usize,open:usize,closed:usize,text:&mut String,out:&mut Vec<String>) {\n        if closed==n { out.push(text.clone()); return; }\n        if open<n { text.push('('); visit(n,open+1,closed,text,out); text.pop(); }\n        if closed<open { text.push(')'); visit(n,open,closed+1,text,out); text.pop(); }\n    }\n    let mut out=Vec::new(); visit(n,0,0,&mut String::new(),&mut out); out\n}\n\nfn main() {\n    let result = parentheses(3).join(\";\");\n    println!(\"{result}\");\n}\n",
+    "question": "Why may a closing parenthesis be appended only when closed is less than open?",
+    "rule": "No prefix may contain more closes than opens. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(Catalan(n)*n) time · O(n) depth bound without looking at the code.",
     "summary": "Add an open symbol while available and a close only when it cannot exceed opens used.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-backtracking-a.png",

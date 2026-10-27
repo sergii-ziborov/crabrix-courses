@@ -7,44 +7,44 @@
     "expectedAnswer": "3",
     "idea": "Start a traversal from every still-unseen node and count starts.",
     "patternID": "connected-components",
-    "rustSketch": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "rustSketch": "fn component_count(graph:&[Vec<usize>])->usize {\n    let mut seen=vec![false;graph.len()]; let mut count=0;\n    for start in 0..graph.len() {\n        if seen[start] { continue; } count+=1; seen[start]=true; let mut stack=vec![start];\n        while let Some(v)=stack.pop() { for &u in &graph[v] { if !seen[u] { seen[u]=true; stack.push(u); } } }\n    }\n    count\n}\n\nfn main() {\n    let result = component_count(&[vec![1],vec![0,2],vec![1],vec![4],vec![3],vec![]]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return the number of undirected connected components.",
     "useCases": "islands, clusters, disconnected networks",
     "visibleInput": "n=6 edges=(0,1),(1,2),(3,4)"
   },
   "concept": "Start a traversal from every still-unseen node and count starts.",
-  "contentDigest": "bbab32f102c5159b5082c3ed3ad7866a241a28d9bf4ab57bb5a3dc5ab52d1270",
+  "contentDigest": "5bfcf5476376601b777d4ed18b7979b47bca72f86ba2fe534f77992f1aab5953",
   "depth": {
     "connections": [
       {
-        "concept": "Return distance in edges from node 0 to every node.",
         "direction": "previous",
-        "title": "Challenge: Graph BFS"
+        "title": "Challenge: Graph BFS",
+        "concept": "Return distance in edges from node 0 to every node."
       },
       {
-        "concept": "islands, clusters, disconnected networks",
         "direction": "next",
-        "title": "Connected Components: When to Use It"
+        "title": "Connected Components: When to Use It",
+        "concept": "islands, clusters, disconnected networks"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "One start cannot reach components separated from it. In n=6 with edges (0,1),(1,2),(3,4), the first search marks {0,1,2}, the next marks {3,4}, and isolated 5 forms a third component. The result is 3, including isolated vertices.",
+    "misconception": "“The first component always contains all vertices”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `n=6 edges=(0,1),(1,2),(3,4)`, write the state before the first update. Explain how it represents this claim: Start a traversal from every still-unseen node and count starts. A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal."
+        "title": "Concrete transition",
+        "detail": "In n=6 with edges (0,1),(1,2),(3,4), the first search marks {0,1,2}, the next marks {3,4}, and isolated 5 forms a third component. The result is 3, including isolated vertices."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `3`. An adjacency list and `VecDeque` make breadth-first work explicit. Mark before enqueuing to avoid duplicate frontier entries."
+        "title": "Independent second fixture",
+        "detail": "Input `n=3 edges=` produces `3`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. Defend the O(V+E) time · O(V) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `n=5 edges=(0,1),(2,3)` produces `3`. One start cannot reach components separated from it. The stated work bound is O(V+E) time · O(V) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `n=6 edges=(0,1),(1,2),(3,4)` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Connected Components survives, which state must be updated, and whether the O(V+E) time · O(V) space bound still holds. Choose a representation for the operations first; when traversing, DFS explores depth and BFS follows equal-cost layers. Directed edges and disconnected components change the plan."
+    "transferChallenge": "Compare the visible input `n=6 edges=(0,1),(1,2),(3,4)` with `n=4 edges=(0,1),(1,2),(2,3)`. Predict why their results are `3` and `1`. Then change one legal value and explain whether the same invariant, one start cannot reach components separated from it, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.connected-components.model",
@@ -54,21 +54,21 @@
   "title": "Connected Components: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "One start cannot reach components separated from it",
+      "The first component always contains all vertices",
+      "The number of vertices equals the number of components"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(V+E) time · O(V) space",
-    "exampleCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
-    "explanation": "Begin with the concrete question: Return the number of undirected connected components. For the visible input `n=6 edges=(0,1),(1,2),(3,4)`, the stated result is `3`. Before reading code, name the smallest piece of information that must survive from one step to the next. A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal. That is the mental model for Connected Components; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Start a traversal from every still-unseen node and count starts. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. An adjacency list and `VecDeque` make breadth-first work explicit. Mark before enqueuing to avoid duplicate frontier entries. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(V+E) time · O(V) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only connected-components program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn component_count(graph:&[Vec<usize>])->usize {\n    let mut seen=vec![false;graph.len()]; let mut count=0;\n    for start in 0..graph.len() {\n        if seen[start] { continue; } count+=1; seen[start]=true; let mut stack=vec![start];\n        while let Some(v)=stack.pop() { for &u in &graph[v] { if !seen[u] { seen[u]=true; stack.push(u); } } }\n    }\n    count\n}\n\nfn main() {\n    let result = component_count(&[vec![1],vec![0,2],vec![1],vec![4],vec![3],vec![]]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "In n=6 with edges (0,1),(1,2),(3,4), the first search marks {0,1,2}, the next marks {3,4}, and isolated 5 forms a third component. The result is 3, including isolated vertices.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the number of undirected connected components. The visible fixture is `n=6 edges=(0,1),(1,2),(3,4)` and its example result is `3`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return the number of undirected connected components. For the visible input `n=6 edges=(0,1),(1,2),(3,4)`, the stated result is `3`. Before reading code, name the smallest piece of information that must survive from one step to the next. A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal. That is the mental model for Connected Components; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Start a traversal from every still-unseen node and count starts. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(V+E) time · O(V) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "In n=6 with edges (0,1),(1,2),(3,4), the first search marks {0,1,2}, the next marks {3,4}, and isolated 5 forms a third component. The result is 3, including isolated vertices.",
+    "practiceCode": "fn component_count(graph:&[Vec<usize>])->usize {\n    let mut seen=vec![false;graph.len()]; let mut count=0;\n    for start in 0..graph.len() {\n        if seen[start] { continue; } count+=1; seen[start]=true; let mut stack=vec![start];\n        while let Some(v)=stack.pop() { for &u in &graph[v] { if !seen[u] { seen[u]=true; stack.push(u); } } }\n    }\n    count\n}\n\nfn main() {\n    let result = component_count(&[vec![1],vec![0,2],vec![1],vec![4],vec![3],vec![]]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Why start a new search at every still-unseen vertex?",
+    "rule": "One start cannot reach components separated from it. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(V+E) time · O(V) space bound without looking at the code.",
     "summary": "Start a traversal from every still-unseen node and count starts.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-graph-traversal-a.png",

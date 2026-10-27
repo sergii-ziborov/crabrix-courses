@@ -7,9 +7,9 @@
     "expectedAnswer": "2,3,5,7,11,13,17,19,23,29",
     "idea": "Mark multiples beginning at p squared for each still-prime p.",
     "patternID": "sieve",
-    "rustSketch": "fn gcd(mut a: u64, mut b: u64) -> u64 {\n    while b != 0 {\n        (a, b) = (b, a % b);\n    }\n    a\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn primes_to(n:usize)->Vec<usize> {\n    let mut prime=vec![true;n+1]; prime[0]=false; if n>=1 { prime[1]=false; }\n    let mut p=2;\n    while p<=n/p { if prime[p] { for multiple in (p*p..=n).step_by(p) { prime[multiple]=false; } } p+=1; }\n    (2..=n).filter(|&i|prime[i]).collect()\n}\n\nfn main() {\n    let result = csv(primes_to(30));\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
-    "task": "Return primes not exceeding 30.",
+    "task": "Parse n and return primes not exceeding n in ascending order, as comma-separated integers.",
     "useCases": "prime tables and factor-precomputation",
     "visibleInput": "n=30"
   },
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Mark multiples beginning at p squared for each still-prime p.",
         "direction": "previous",
-        "title": "Sieve of Eratosthenes: Mental Model"
+        "title": "Sieve of Eratosthenes: Mental Model",
+        "concept": "Mark multiples beginning at p squared for each still-prime p."
       },
       {
-        "concept": "Return primes not exceeding 30.",
         "direction": "next",
-        "title": "Challenge: Sieve of Eratosthenes"
+        "title": "Challenge: Sieve of Eratosthenes",
+        "concept": "Parse n and return primes not exceeding n in ascending order, as comma-separated integers."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "Smaller multiples already have a smaller prime factor. For bound 30, processing 2 crosses off 4,6,...,30; processing 3 starts at 9, and 5 starts at 25. Remaining true entries are 2,3,5,7,11,13,17,19,23,29. Bounds below 2 produce an empty report.",
+    "misconception": "“Every smaller number is prime”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `n=30`, write the state before the first update. Explain how it represents this claim: Mark multiples beginning at p squared for each still-prime p. An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds."
+        "title": "Concrete transition",
+        "detail": "For bound 30, processing 2 crosses off 4,6,...,30; processing 3 starts at 9, and 5 starts at 25. Remaining true entries are 2,3,5,7,11,13,17,19,23,29. Bounds below 2 produce an empty report."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `2,3,5,7,11,13,17,19,23,29`. Use explicit integer widths and checked arithmetic when input bounds require them. Distinguish bit positions from numeric values."
+        "title": "Independent second fixture",
+        "detail": "Input `n=1` produces An empty output string. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Defend the O(n log log n) time · O(n) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `n=20` produces `2,3,5,7,11,13,17,19`. Smaller multiples already have a smaller prime factor. The stated work bound is O(n log log n) time · O(n) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `n=30` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Sieve of Eratosthenes survives, which state must be updated, and whether the O(n log log n) time · O(n) space bound still holds. Check number size, sign, and modulus assumptions before using a shortcut; not every inverse or division exists."
+    "transferChallenge": "Compare the visible input `n=30` with `n=2`. Predict why their results are `2,3,5,7,11,13,17,19,23,29` and `2`. Then change one legal value and explain whether the same invariant, smaller multiples already have a smaller prime factor, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.sieve.recognize",
@@ -54,21 +54,21 @@
   "title": "Sieve of Eratosthenes: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "prime tables and factor-precomputation",
-      "Only problems with exactly one input value"
+      "`0`",
+      "An empty output string",
+      "`not a valid result`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Sieve of Eratosthenes",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Sieve of Eratosthenes",
-    "explanation": "A problem is a good match for Sieve of Eratosthenes when it asks for prime tables and factor-precomputation. Here the concrete task is: Return primes not exceeding 30. The visible input `n=30` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Check number size, sign, and modulus assumptions before using a shortcut; not every inverse or division exists. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Mark multiples beginning at p squared for each still-prime p. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n log log n) time · O(n) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `2,3,5,7,11,13,17,19,23,29` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Use explicit integer widths and checked arithmetic when input bounds require them. Distinguish bit positions from numeric values. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: prime tables and factor-precomputation.",
-    "practiceCode": "fn gcd(mut a: u64, mut b: u64) -> u64 {\n    while b != 0 {\n        (a, b) = (b, a % b);\n    }\n    a\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only sieve program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn primes_to(n:usize)->Vec<usize> {\n    let mut prime=vec![true;n+1]; prime[0]=false; if n>=1 { prime[1]=false; }\n    let mut p=2;\n    while p<=n/p { if prime[p] { for multiple in (p*p..=n).step_by(p) { prime[multiple]=false; } } p+=1; }\n    (2..=n).filter(|&i|prime[i]).collect()\n}\n\nfn main() {\n    let result = csv(primes_to(30));\n    println!(\"{result}\");\n}\n",
+    "explanation": "For bound 30, processing 2 crosses off 4,6,...,30; processing 3 starts at 9, and 5 starts at 25. Remaining true entries are 2,3,5,7,11,13,17,19,23,29. Bounds below 2 produce an empty report.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Parse n and return primes not exceeding n in ascending order, as comma-separated integers. The visible fixture is `n=30` and its example result is `2,3,5,7,11,13,17,19,23,29`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Sieve of Eratosthenes when it asks for prime tables and factor-precomputation. Here the concrete task is: Parse n and return primes not exceeding n in ascending order, as comma-separated integers. The visible input `n=30` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Check number size, sign, and modulus assumptions before using a shortcut; not every inverse or division exists. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Mark multiples beginning at p squared for each still-prime p. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n log log n) time · O(n) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `2,3,5,7,11,13,17,19,23,29` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Use explicit integer widths and checked arithmetic when input bounds require them. Distinguish bit positions from numeric values. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is An empty output string. Smaller multiples already have a smaller prime factor. Compare this independent fixture with the worked trace: For bound 30, processing 2 crosses off 4,6,...,30; processing 3 starts at 9, and 5 starts at 25. Remaining true entries are 2,3,5,7,11,13,17,19,23,29. Bounds below 2 produce an empty report.",
+    "practiceCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn primes_to(n:usize)->Vec<usize> {\n    let mut prime=vec![true;n+1]; prime[0]=false; if n>=1 { prime[1]=false; }\n    let mut p=2;\n    while p<=n/p { if prime[p] { for multiple in (p*p..=n).step_by(p) { prime[multiple]=false; } } p+=1; }\n    (2..=n).filter(|&i|prime[i]).collect()\n}\n\nfn main() {\n    let result = csv(primes_to(30));\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Sieve of Eratosthenes on input `n=1`. Which result follows from the documented contract?",
+    "rule": "Smaller multiples already have a smaller prime factor. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Sieve of Eratosthenes.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-math-bits-a.png",

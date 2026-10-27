@@ -7,44 +7,44 @@
     "expectedAnswer": "4",
     "idea": "Add failure links to a trie so one scan reports all pattern suffixes ending at each position.",
     "patternID": "aho-corasick",
-    "rustSketch": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "rustSketch": "#[derive(Clone)]\nstruct AutomatonNode { next:[usize;26], failure:usize, matches:usize }\nfn multi_pattern_count(text:&str,patterns:&[&str])->usize {\n    let empty=AutomatonNode{next:[0;26],failure:0,matches:0}; let mut nodes=vec![empty.clone()];\n    for pattern in patterns {\n        assert!(!pattern.is_empty()); let mut v=0;\n        for c in pattern.bytes() { assert!(c.is_ascii_lowercase()); let key=(c-b'a') as usize;\n            if nodes[v].next[key]==0 { nodes[v].next[key]=nodes.len(); nodes.push(empty.clone()); } v=nodes[v].next[key];\n        } nodes[v].matches+=1;\n    }\n    let mut queue=std::collections::VecDeque::new(); for &u in &nodes[0].next { if u!=0 { queue.push_back(u); } }\n    while let Some(v)=queue.pop_front() {\n        let failure=nodes[v].failure; nodes[v].matches+=nodes[failure].matches;\n        for c in 0..26 { let u=nodes[v].next[c];\n            if u==0 { nodes[v].next[c]=nodes[failure].next[c]; }\n            else { nodes[u].failure=nodes[failure].next[c]; queue.push_back(u); }\n        }\n    }\n    let (mut state,mut count)=(0,0);\n    for c in text.bytes() { assert!(c.is_ascii_lowercase()); state=nodes[state].next[(c-b'a') as usize]; count+=nodes[state].matches; } count\n}\n\nfn main() {\n    let result = multi_pattern_count(\"ahishers\",&[\"he\",\"she\",\"his\",\"hers\"]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
-    "task": "Return matched pattern count including overlaps.",
+    "task": "Parse lowercase ASCII text and nonempty lowercase ASCII patterns. Count every pattern occurrence, including overlaps and simultaneous suffix matches.",
     "useCases": "many-pattern search, filters, signature scanning",
     "visibleInput": "text=ahishers patterns=[he,she,his,hers]"
   },
   "concept": "many-pattern search, filters, signature scanning",
-  "contentDigest": "f9dbfc6ac98b91771f6f8e0eba16d8d00d6d8ebd4ae8d78e2557fcc41207a78f",
+  "contentDigest": "4f0d6a3d2b2853d94d12928b8490d0241d3e99479d93237f4c3b91472df52ebf",
   "depth": {
     "connections": [
       {
-        "concept": "Add failure links to a trie so one scan reports all pattern suffixes ending at each position.",
         "direction": "previous",
-        "title": "Aho–Corasick: Mental Model"
+        "title": "Aho–Corasick: Mental Model",
+        "concept": "Add failure links to a trie so one scan reports all pattern suffixes ending at each position."
       },
       {
-        "concept": "Return matched pattern count including overlaps.",
         "direction": "next",
-        "title": "Challenge: Aho–Corasick"
+        "title": "Challenge: Aho–Corasick",
+        "concept": "Parse lowercase ASCII text and nonempty lowercase ASCII patterns. Count every pattern occurrence, including overlaps and simultaneous suffix matches."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "A suffix of the current match may itself be a pattern. In ahishers, matches are his, she, he and hers, total 4. At the end of she, its failure chain also recognizes he. In aaaa with patterns a and aa, overlaps produce 4+3=7 matches.",
+    "misconception": "“Failure links represent unrelated future text”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `text=ahishers patterns=[he,she,his,hers]`, write the state before the first update. Explain how it represents this claim: Add failure links to a trie so one scan reports all pattern suffixes ending at each position. `String` algorithms compare symbols or prefixes, but a Rust `String` is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters."
+        "title": "Concrete transition",
+        "detail": "In ahishers, matches are his, she, he and hers, total 4. At the end of she, its failure chain also recognizes he. In aaaa with patterns a and aa, overlaps produce 4+3=7 matches."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `4`. Use bytes only when the input contract permits byte-wise matching. Never index a `String` as though every character occupied one byte."
+        "title": "Independent second fixture",
+        "detail": "Input `text=abc patterns=[x,y]` produces `0`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Defend the O(text + matches + total patterns) time bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `text=she patterns=[s,he,she]` produces `3`. A suffix of the current match may itself be a pattern. The stated work bound is O(text + matches + total patterns) time. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `text=ahishers patterns=[he,she,his,hers]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Aho–Corasick survives, which state must be updated, and whether the O(text + matches + total patterns) time bound still holds. Look for repeated prefix queries or pattern matching before choosing a trie or preprocessing; a one-off short search may not need either."
+    "transferChallenge": "Compare the visible input `text=ahishers patterns=[he,she,his,hers]` with `text=ababa patterns=[aba,ba]`. Predict why their results are `4` and `4`. Then change one legal value and explain whether the same invariant, a suffix of the current match may itself be a pattern, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.aho-corasick.recognize",
@@ -54,21 +54,21 @@
   "title": "Aho–Corasick: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "many-pattern search, filters, signature scanning",
-      "Only problems with exactly one input value"
+      "`1`",
+      "`0`",
+      "`-1`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Aho–Corasick",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Aho–Corasick",
-    "explanation": "A problem is a good match for Aho–Corasick when it asks for many-pattern search, filters, signature scanning. Here the concrete task is: Return matched pattern count including overlaps. The visible input `text=ahishers patterns=[he,she,his,hers]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for repeated prefix queries or pattern matching before choosing a trie or preprocessing; a one-off short search may not need either. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Add failure links to a trie so one scan reports all pattern suffixes ending at each position. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? `String` algorithms compare symbols or prefixes, but a Rust `String` is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(text + matches + total patterns) time; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `4` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Use bytes only when the input contract permits byte-wise matching. Never index a `String` as though every character occupied one byte. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: many-pattern search, filters, signature scanning.",
-    "practiceCode": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only aho-corasick program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "#[derive(Clone)]\nstruct AutomatonNode { next:[usize;26], failure:usize, matches:usize }\nfn multi_pattern_count(text:&str,patterns:&[&str])->usize {\n    let empty=AutomatonNode{next:[0;26],failure:0,matches:0}; let mut nodes=vec![empty.clone()];\n    for pattern in patterns {\n        assert!(!pattern.is_empty()); let mut v=0;\n        for c in pattern.bytes() { assert!(c.is_ascii_lowercase()); let key=(c-b'a') as usize;\n            if nodes[v].next[key]==0 { nodes[v].next[key]=nodes.len(); nodes.push(empty.clone()); } v=nodes[v].next[key];\n        } nodes[v].matches+=1;\n    }\n    let mut queue=std::collections::VecDeque::new(); for &u in &nodes[0].next { if u!=0 { queue.push_back(u); } }\n    while let Some(v)=queue.pop_front() {\n        let failure=nodes[v].failure; nodes[v].matches+=nodes[failure].matches;\n        for c in 0..26 { let u=nodes[v].next[c];\n            if u==0 { nodes[v].next[c]=nodes[failure].next[c]; }\n            else { nodes[u].failure=nodes[failure].next[c]; queue.push_back(u); }\n        }\n    }\n    let (mut state,mut count)=(0,0);\n    for c in text.bytes() { assert!(c.is_ascii_lowercase()); state=nodes[state].next[(c-b'a') as usize]; count+=nodes[state].matches; } count\n}\n\nfn main() {\n    let result = multi_pattern_count(\"ahishers\",&[\"he\",\"she\",\"his\",\"hers\"]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "In ahishers, matches are his, she, he and hers, total 4. At the end of she, its failure chain also recognizes he. In aaaa with patterns a and aa, overlaps produce 4+3=7 matches.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Parse lowercase ASCII text and nonempty lowercase ASCII patterns. Count every pattern occurrence, including overlaps and simultaneous suffix matches. The visible fixture is `text=ahishers patterns=[he,she,his,hers]` and its example result is `4`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Aho–Corasick when it asks for many-pattern search, filters, signature scanning. Here the concrete task is: Parse lowercase ASCII text and nonempty lowercase ASCII patterns. Count every pattern occurrence, including overlaps and simultaneous suffix matches. The visible input `text=ahishers patterns=[he,she,his,hers]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for repeated prefix queries or pattern matching before choosing a trie or preprocessing; a one-off short search may not need either. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Add failure links to a trie so one scan reports all pattern suffixes ending at each position. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? `String` algorithms compare symbols or prefixes, but a Rust `String` is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(text + matches + total patterns) time; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `4` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Use bytes only when the input contract permits byte-wise matching. Never index a `String` as though every character occupied one byte. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `0`. A suffix of the current match may itself be a pattern. Compare this independent fixture with the worked trace: In ahishers, matches are his, she, he and hers, total 4. At the end of she, its failure chain also recognizes he. In aaaa with patterns a and aa, overlaps produce 4+3=7 matches.",
+    "practiceCode": "#[derive(Clone)]\nstruct AutomatonNode { next:[usize;26], failure:usize, matches:usize }\nfn multi_pattern_count(text:&str,patterns:&[&str])->usize {\n    let empty=AutomatonNode{next:[0;26],failure:0,matches:0}; let mut nodes=vec![empty.clone()];\n    for pattern in patterns {\n        assert!(!pattern.is_empty()); let mut v=0;\n        for c in pattern.bytes() { assert!(c.is_ascii_lowercase()); let key=(c-b'a') as usize;\n            if nodes[v].next[key]==0 { nodes[v].next[key]=nodes.len(); nodes.push(empty.clone()); } v=nodes[v].next[key];\n        } nodes[v].matches+=1;\n    }\n    let mut queue=std::collections::VecDeque::new(); for &u in &nodes[0].next { if u!=0 { queue.push_back(u); } }\n    while let Some(v)=queue.pop_front() {\n        let failure=nodes[v].failure; nodes[v].matches+=nodes[failure].matches;\n        for c in 0..26 { let u=nodes[v].next[c];\n            if u==0 { nodes[v].next[c]=nodes[failure].next[c]; }\n            else { nodes[u].failure=nodes[failure].next[c]; queue.push_back(u); }\n        }\n    }\n    let (mut state,mut count)=(0,0);\n    for c in text.bytes() { assert!(c.is_ascii_lowercase()); state=nodes[state].next[(c-b'a') as usize]; count+=nodes[state].matches; } count\n}\n\nfn main() {\n    let result = multi_pattern_count(\"ahishers\",&[\"he\",\"she\",\"his\",\"hers\"]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Aho–Corasick on input `text=abc patterns=[x,y]`. Which result follows from the documented contract?",
+    "rule": "A suffix of the current match may itself be a pattern. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Aho–Corasick.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-strings-tries-b.png",

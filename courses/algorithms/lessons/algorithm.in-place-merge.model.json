@@ -7,44 +7,44 @@
     "expectedAnswer": "1,2,3,5,6,7",
     "idea": "Fill free capacity from the end so unread source values are never overwritten.",
     "patternID": "in-place-merge",
-    "rustSketch": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn merge_into(a: &mut [i32], mut m: usize, b: &[i32]) {\n    assert_eq!(a.len(),m+b.len()); let mut n=b.len(); let mut write=a.len();\n    while n>0 {\n        write-=1;\n        if m>0 && a[m-1]>b[n-1] { m-=1; a[write]=a[m]; }\n        else { n-=1; a[write]=b[n]; }\n    }\n}\n\nfn main() {\n    let result = { let mut a=vec![1,3,7,0,0,0]; merge_into(&mut a,3,&[2,5,6]); csv(a) };\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Merge the second sorted list into the first buffer.",
     "useCases": "merging sorted buffers with trailing capacity",
     "visibleInput": "a=[1,3,7,0,0,0] m=3; b=[2,5,6]"
   },
   "concept": "Fill free capacity from the end so unread source values are never overwritten.",
-  "contentDigest": "38913ed58d40008ee772381def4aa712b851e2d608c36f22f36d8c487f11bf4a",
+  "contentDigest": "599a3c7b314e4494c768ea3e902d27a8d64c563a37b7955bee1659706261e389",
   "depth": {
     "connections": [
       {
-        "concept": "Return the greatest area formed by two heights.",
         "direction": "previous",
-        "title": "Challenge: Container Area"
+        "title": "Challenge: Container Area",
+        "concept": "Return the greatest area formed by two heights."
       },
       {
-        "concept": "merging sorted buffers with trailing capacity",
         "direction": "next",
-        "title": "Backward In-Place Merge: When to Use It"
+        "title": "Backward In-Place Merge: When to Use It",
+        "concept": "merging sorted buffers with trailing capacity"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "The free suffix prevents overwriting unread values from the first list. Compare last live values 7 and 6, place 7 in the final slot, then compare 3 and 6. Continuing backward yields [1,2,3,5,6,7]. The first list's trailing zeros are capacity, not live sorted values.",
+    "misconception": "“Backward merging reverses the required sort order”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `a=[1,3,7,0,0,0] m=3; b=[2,5,6]`, write the state before the first update. Explain how it represents this claim: Fill free capacity from the end so unread source values are never overwritten. Two positions move according to a monotone fact: after one comparison, some candidates can be ruled out permanently. Name that fact."
+        "title": "Concrete transition",
+        "detail": "Compare last live values 7 and 6, place 7 in the final slot, then compare 3 and 6. Continuing backward yields [1,2,3,5,6,7]. The first list's trailing zeros are capacity, not live sorted values."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `1,2,3,5,6,7`. Use explicit bounds for both indices. If the algorithm mutates a vector, separate read and write positions so ownership stays clear."
+        "title": "Independent second fixture",
+        "detail": "Input `a=[0,0,0] m=0; b=[1,2,3]` produces `1,2,3`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test pointers meeting, crossing, duplicate values, and the smallest valid input; many off-by-one errors hide there. Defend the O(n+m) time · O(1) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `a=[9,0] m=1; b=[2]` produces `2,9`. The free suffix prevents overwriting unread values from the first list. The stated work bound is O(n+m) time · O(1) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `a=[1,3,7,0,0,0] m=3; b=[2,5,6]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Backward In-Place Merge survives, which state must be updated, and whether the O(n+m) time · O(1) space bound still holds. Check whether the input is sorted, whether you may reorder it, and whether moving a pointer preserves the answer you seek."
+    "transferChallenge": "Compare the visible input `a=[1,3,7,0,0,0] m=3; b=[2,5,6]` with `a=[1,2,0,0] m=2; b=[1,2]`. Predict why their results are `1,2,3,5,6,7` and `1,1,2,2`. Then change one legal value and explain whether the same invariant, the free suffix prevents overwriting unread values from the first list, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.in-place-merge.model",
@@ -54,21 +54,21 @@
   "title": "Backward In-Place Merge: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "The free suffix prevents overwriting unread values from the first list",
+      "Backward merging reverses the required sort order",
+      "The first list is immutable during merging"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n+m) time · O(1) space",
-    "exampleCode": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
-    "explanation": "Begin with the concrete question: Merge the second sorted list into the first buffer. For the visible input `a=[1,3,7,0,0,0] m=3; b=[2,5,6]`, the stated result is `1,2,3,5,6,7`. Before reading code, name the smallest piece of information that must survive from one step to the next. Two positions move according to a monotone fact: after one comparison, some candidates can be ruled out permanently. Name that fact. That is the mental model for Backward In-Place Merge; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Fill free capacity from the end so unread source values are never overwritten. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use explicit bounds for both indices. If the algorithm mutates a vector, separate read and write positions so ownership stays clear. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n+m) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test pointers meeting, crossing, duplicate values, and the smallest valid input; many off-by-one errors hide there. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only in-place-merge program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn merge_into(a: &mut [i32], mut m: usize, b: &[i32]) {\n    assert_eq!(a.len(),m+b.len()); let mut n=b.len(); let mut write=a.len();\n    while n>0 {\n        write-=1;\n        if m>0 && a[m-1]>b[n-1] { m-=1; a[write]=a[m]; }\n        else { n-=1; a[write]=b[n]; }\n    }\n}\n\nfn main() {\n    let result = { let mut a=vec![1,3,7,0,0,0]; merge_into(&mut a,3,&[2,5,6]); csv(a) };\n    println!(\"{result}\");\n}\n",
+    "explanation": "Compare last live values 7 and 6, place 7 in the final slot, then compare 3 and 6. Continuing backward yields [1,2,3,5,6,7]. The first list's trailing zeros are capacity, not live sorted values.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Merge the second sorted list into the first buffer. The visible fixture is `a=[1,3,7,0,0,0] m=3; b=[2,5,6]` and its example result is `1,2,3,5,6,7`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Merge the second sorted list into the first buffer. For the visible input `a=[1,3,7,0,0,0] m=3; b=[2,5,6]`, the stated result is `1,2,3,5,6,7`. Before reading code, name the smallest piece of information that must survive from one step to the next. Two positions move according to a monotone fact: after one comparison, some candidates can be ruled out permanently. Name that fact. That is the mental model for Backward In-Place Merge; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Fill free capacity from the end so unread source values are never overwritten. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n+m) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test pointers meeting, crossing, duplicate values, and the smallest valid input; many off-by-one errors hide there. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "Compare last live values 7 and 6, place 7 in the final slot, then compare 3 and 6. Continuing backward yields [1,2,3,5,6,7]. The first list's trailing zeros are capacity, not live sorted values.",
+    "practiceCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn merge_into(a: &mut [i32], mut m: usize, b: &[i32]) {\n    assert_eq!(a.len(),m+b.len()); let mut n=b.len(); let mut write=a.len();\n    while n>0 {\n        write-=1;\n        if m>0 && a[m-1]>b[n-1] { m-=1; a[write]=a[m]; }\n        else { n-=1; a[write]=b[n]; }\n    }\n}\n\nfn main() {\n    let result = { let mut a=vec![1,3,7,0,0,0]; merge_into(&mut a,3,&[2,5,6]); csv(a) };\n    println!(\"{result}\");\n}\n",
+    "question": "Why fill the merged buffer from its end?",
+    "rule": "The free suffix prevents overwriting unread values from the first list. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(n+m) time · O(1) space bound without looking at the code.",
     "summary": "Fill free capacity from the end so unread source values are never overwritten.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-two-pointers-b.png",

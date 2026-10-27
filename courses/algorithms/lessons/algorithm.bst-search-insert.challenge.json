@@ -7,44 +7,44 @@
     "expectedAnswer": "1,2,3,4,5,7",
     "idea": "Use the ordering invariant to follow one child and preserve it at insertion.",
     "patternID": "bst-search-insert",
-    "rustSketch": "fn height(node: Option<&Node>) -> usize {\n    match node {\n        None => 0,\n        Some(node) => 1 + height(node.left.as_deref()).max(height(node.right.as_deref())),\n    }\n}",
+    "rustSketch": "\ntype Tree=Option<Box<Node>>;\nstruct Node { value:i32, left:Tree, right:Tree }\nfn node(value:i32,left:Tree,right:Tree)->Tree { Some(Box::new(Node{value,left,right})) }\nfn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn insert_bst(root:&mut Tree,value:i32) {\n    match root {\n        None=>*root=node(value,None,None),\n        Some(n) if value<n.value=>insert_bst(&mut n.left,value),\n        Some(n)=>insert_bst(&mut n.right,value), // duplicates go right\n    }\n}\nfn bst_values(root:&Tree)->Vec<i32> {\n    match root { None=>Vec::new(),Some(n)=>{\n        let mut out=bst_values(&n.left); out.push(n.value); out.extend(bst_values(&n.right)); out\n    } }\n}\n\nfn main() {\n    let result = { let mut root=node(2,node(1,None,None),node(3,None,None)); insert_bst(&mut root,5); csv(bst_values(&root)) };\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
-    "task": "Insert 5 and return inorder values.",
+    "task": "Parse the level-order BST, insert 5 (equal keys go right), then return inorder values.",
     "useCases": "ordered sets and maps",
     "visibleInput": "BST=[4,2,7,1,3]"
   },
-  "concept": "Insert 5 and return inorder values.",
-  "contentDigest": "3757094181b49cdec11a8de459726ffc8e64b606dc9c965b7e2bf5f4abfa57bf",
+  "concept": "Parse the level-order BST, insert 5 (equal keys go right), then return inorder values.",
+  "contentDigest": "b04581bb8d1ff71d8bb33ec602034a13b38dbd1dc47f6f652fbed545da822a39",
   "depth": {
     "connections": [
       {
-        "concept": "ordered sets and maps",
         "direction": "previous",
-        "title": "BST Search and Insert: When to Use It"
+        "title": "BST Search and Insert: When to Use It",
+        "concept": "ordered sets and maps"
       },
       {
-        "concept": "Combine child evidence; the first node reached from both targets is their lowest shared ancestor.",
         "direction": "next",
-        "title": "Lowest Common Ancestor: Mental Model"
+        "title": "Lowest Common Ancestor: Mental Model",
+        "concept": "Combine child evidence; the first node reached from both targets is their lowest shared ancestor."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "The left subtree. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“The right subtree”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `BST=[4,2,7,1,3]`, write the state before the first update. Explain how it represents this claim: Use the ordering invariant to follow one child and preserve it at insertion. A tree result is built from a node and its children. Decide whether information flows downward, upward, or in level order."
+        "title": "Pattern-specific invariant",
+        "detail": "The left subtree. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Use references for read-only traversals and make the stack or queue explicit when recursion depth might be large."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `BST=[2,1,3]` and computes `1,2,3,5`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test a missing root, a leaf, a skewed tree, and equal or duplicate values when ordering rules depend on them. Defend the O(h) time · O(h) stack or O(1) iterative bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `BST=[9,4,12,1,7]`, the independently calculated result is `1,4,5,7,9,12`. The complexity discussion uses O(h) time · O(h) stack or O(1) iterative. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `BST=[4,2,7,1,3]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from BST Search and Insert survives, which state must be updated, and whether the O(h) time · O(h) stack or O(1) iterative bound still holds. Look for hierarchy and parent-child structure; a plain sequence algorithm loses the branching relationships."
+    "transferChallenge": "Change the independent fixture `BST=[2,1,3]` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `BST=[4,2,7,1,3]`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.bst-search-insert.challenge",
@@ -54,21 +54,21 @@
   "title": "Challenge: BST Search and Insert",
   "writing": {
     "answers": [
-      "O(h) time · O(h) stack or O(1) iterative",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`1,4,5,7,9,12`",
+      "`4,5,7,9,12`",
+      "`2,4,5,7,9,12`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Insert 5 and return inorder values.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement BST Search and Insert\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Insert 5 and return inorder values. On input `BST=[4,2,7,1,3]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Use the ordering invariant to follow one child and preserve it at insertion. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A tree result is built from a node and its children. Decide whether information flows downward, upward, or in level order. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use references for read-only traversals and make the stack or queue explicit when recursion depth might be large. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(h) time · O(h) stack or O(1) iterative; explain which operation dominates it and how many times the input can trigger that operation. Test a missing root, a leaf, a skewed tree, and equal or duplicate values when ordering rules depend on them. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(h) time · O(h) stack or O(1) iterative; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Insert 5 and return inorder values.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement BST Search and Insert\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS bst-search-insert, and your explanation still meets O(h) time · O(h) stack or O(1) iterative.",
-    "summary": "Insert 5 and return inorder values.",
-    "task": "Insert 5 and return inorder values."
+    "exampleCaption": "Complete std-only bst-search-insert program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "\ntype Tree=Option<Box<Node>>;\nstruct Node { value:i32, left:Tree, right:Tree }\nfn node(value:i32,left:Tree,right:Tree)->Tree { Some(Box::new(Node{value,left,right})) }\nfn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn insert_bst(root:&mut Tree,value:i32) {\n    match root {\n        None=>*root=node(value,None,None),\n        Some(n) if value<n.value=>insert_bst(&mut n.left,value),\n        Some(n)=>insert_bst(&mut n.right,value), // duplicates go right\n    }\n}\nfn bst_values(root:&Tree)->Vec<i32> {\n    match root { None=>Vec::new(),Some(n)=>{\n        let mut out=bst_values(&n.left); out.push(n.value); out.extend(bst_values(&n.right)); out\n    } }\n}\n\nfn main() {\n    let result = { let mut root=node(2,node(1,None,None),node(3,None,None)); insert_bst(&mut root,5); csv(bst_values(&root)) };\n    println!(\"{result}\");\n}\n",
+    "explanation": "The left subtree. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `BST=[2,1,3]`, the worked program returns `1,2,3,5`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `BST=[4,2,7,1,3]`; predict that result before opening the answer reveal. The precise contract is: Parse the level-order BST, insert 5 (equal keys go right), then return inorder values.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Parse the level-order BST, insert 5 (equal keys go right), then return inorder values. On input `BST=[4,2,7,1,3]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Use the ordering invariant to follow one child and preserve it at insertion. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A tree result is built from a node and its children. Decide whether information flows downward, upward, or in level order. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(h) time · O(h) stack or O(1) iterative; explain which operation dominates it and how many times the input can trigger that operation. Test a missing root, a leaf, a skewed tree, and equal or duplicate values when ordering rules depend on them. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `1,4,5,7,9,12`. The left subtree. Compare this independent fixture with the worked trace: Inserting 5 into BST [4,2,7,1,3] follows 4→right to 7, then left to an empty link. Inorder becomes 1,2,3,4,5,7. The example explicitly sends duplicate keys to the right.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Parse the level-order BST, insert 5 (equal keys go right), then return inorder values.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement bst-search-insert\")\n}\n",
+    "question": "Boundary check for bst-search-insert: with input `BST=[9,4,12,1,7]`, what result should solve return?",
+    "rule": "The left subtree. Parse the level-order BST, insert 5 (equal keys go right), then return inorder values.",
+    "success": "The private harness prints PASS bst-search-insert. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
+    "summary": "Parse the level-order BST, insert 5 (equal keys go right), then return inorder values.",
+    "task": "Parse the level-order BST, insert 5 (equal keys go right), then return inorder values."
   },
   "illustration": {
     "path": "media/algorithms-trees-b.png",

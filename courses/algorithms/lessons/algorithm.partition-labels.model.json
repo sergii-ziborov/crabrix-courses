@@ -7,7 +7,7 @@
     "expectedAnswer": "9,7,8",
     "idea": "Extend the current segment to the farthest last occurrence of every symbol encountered.",
     "patternID": "partition-labels",
-    "rustSketch": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn partition_lengths(text:&str)->Vec<usize> {\n    assert!(text.is_ascii()); let mut last=[0;256]; for (i,c) in text.bytes().enumerate() { last[c as usize]=i; }\n    let (mut start,mut end)=(0,0); let mut out=Vec::new();\n    for (i,c) in text.bytes().enumerate() { end=end.max(last[c as usize]); if i==end { out.push(i+1-start); start=i+1; } } out\n}\n\nfn main() {\n    let result = csv(partition_lengths(\"ababcbacadefegdehijhklij\"));\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return partition lengths.",
     "useCases": "split sequences so each key belongs to one segment",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Return a valid starting station, or -1.",
         "direction": "previous",
-        "title": "Challenge: Gas Station Reset"
+        "title": "Challenge: Gas Station Reset",
+        "concept": "Return a valid starting station, or -1."
       },
       {
-        "concept": "split sequences so each key belongs to one segment",
         "direction": "next",
-        "title": "Last-Occurrence Partition: When to Use It"
+        "title": "Last-Occurrence Partition: When to Use It",
+        "concept": "split sequences so each key belongs to one segment"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "No symbol may appear in two different output partitions. In ababcbacadefegdehijhklij, the first partition cannot close until the last occurrence of its letters at index 8. Subsequent boundaries produce lengths 7 and 8. The complete output is 9,7,8, covering all 24 bytes.",
+    "misconception": "“Every partition must contain distinct symbols”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `ababcbacadefegdehijhklij`, write the state before the first update. Explain how it represents this claim: Extend the current segment to the farthest last occurrence of every symbol encountered. A greedy step commits to a local choice. Give the exchange or dominance reason that an optimal solution can still include that choice."
+        "title": "Concrete transition",
+        "detail": "In ababcbacadefegdehijhklij, the first partition cannot close until the last occurrence of its letters at index 8. Subsequent boundaries produce lengths 7 and 8. The complete output is 9,7,8, covering all 24 bytes."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `9,7,8`. Keep interval endpoint conventions explicit where they apply. If sorting is part of the method, its Rust comparator must encode the proof's exact tie break."
+        "title": "Independent second fixture",
+        "detail": "Input `aaaa` produces `4`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test touching intervals, equal endpoints, empty input, and a locally attractive choice that blocks a better future choice. Defend the O(n) time · O(alphabet) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `eccbbbbdec` produces `10`. No symbol may appear in two different output partitions. The stated work bound is O(n) time · O(alphabet) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `ababcbacadefegdehijhklij` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Last-Occurrence Partition survives, which state must be updated, and whether the O(n) time · O(alphabet) space bound still holds. When the method sorts intervals or events, use the coordinate and tie break required by its proof. Other greedy walks keep an invariant without sorting."
+    "transferChallenge": "Compare the visible input `ababcbacadefegdehijhklij` with `abac`. Predict why their results are `9,7,8` and `3,1`. Then change one legal value and explain whether the same invariant, no symbol may appear in two different output partitions, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.partition-labels.model",
@@ -54,21 +54,21 @@
   "title": "Last-Occurrence Partition: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "No symbol may appear in two different output partitions",
+      "Every partition must contain distinct symbols",
+      "Partitions must have equal length"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n) time · O(alphabet) space",
-    "exampleCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
-    "explanation": "Begin with the concrete question: Return partition lengths. For the visible input `ababcbacadefegdehijhklij`, the stated result is `9,7,8`. Before reading code, name the smallest piece of information that must survive from one step to the next. A greedy step commits to a local choice. Give the exchange or dominance reason that an optimal solution can still include that choice. That is the mental model for Last-Occurrence Partition; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Extend the current segment to the farthest last occurrence of every symbol encountered. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Keep interval endpoint conventions explicit where they apply. If sorting is part of the method, its Rust comparator must encode the proof's exact tie break. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n) time · O(alphabet) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test touching intervals, equal endpoints, empty input, and a locally attractive choice that blocks a better future choice. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only partition-labels program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn partition_lengths(text:&str)->Vec<usize> {\n    assert!(text.is_ascii()); let mut last=[0;256]; for (i,c) in text.bytes().enumerate() { last[c as usize]=i; }\n    let (mut start,mut end)=(0,0); let mut out=Vec::new();\n    for (i,c) in text.bytes().enumerate() { end=end.max(last[c as usize]); if i==end { out.push(i+1-start); start=i+1; } } out\n}\n\nfn main() {\n    let result = csv(partition_lengths(\"ababcbacadefegdehijhklij\"));\n    println!(\"{result}\");\n}\n",
+    "explanation": "In ababcbacadefegdehijhklij, the first partition cannot close until the last occurrence of its letters at index 8. Subsequent boundaries produce lengths 7 and 8. The complete output is 9,7,8, covering all 24 bytes.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return partition lengths. The visible fixture is `ababcbacadefegdehijhklij` and its example result is `9,7,8`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return partition lengths. For the visible input `ababcbacadefegdehijhklij`, the stated result is `9,7,8`. Before reading code, name the smallest piece of information that must survive from one step to the next. A greedy step commits to a local choice. Give the exchange or dominance reason that an optimal solution can still include that choice. That is the mental model for Last-Occurrence Partition; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Extend the current segment to the farthest last occurrence of every symbol encountered. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n) time · O(alphabet) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test touching intervals, equal endpoints, empty input, and a locally attractive choice that blocks a better future choice. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "In ababcbacadefegdehijhklij, the first partition cannot close until the last occurrence of its letters at index 8. Subsequent boundaries produce lengths 7 and 8. The complete output is 9,7,8, covering all 24 bytes.",
+    "practiceCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn partition_lengths(text:&str)->Vec<usize> {\n    assert!(text.is_ascii()); let mut last=[0;256]; for (i,c) in text.bytes().enumerate() { last[c as usize]=i; }\n    let (mut start,mut end)=(0,0); let mut out=Vec::new();\n    for (i,c) in text.bytes().enumerate() { end=end.max(last[c as usize]); if i==end { out.push(i+1-start); start=i+1; } } out\n}\n\nfn main() {\n    let result = csv(partition_lengths(\"ababcbacadefegdehijhklij\"));\n    println!(\"{result}\");\n}\n",
+    "question": "Why extend the current partition end to each symbol's last occurrence?",
+    "rule": "No symbol may appear in two different output partitions. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(alphabet) space bound without looking at the code.",
     "summary": "Extend the current segment to the farthest last occurrence of every symbol encountered.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-greedy-intervals-b.png",

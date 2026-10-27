@@ -7,44 +7,44 @@
     "expectedAnswer": "0,4,2",
     "idea": "Relax every edge V-1 times; an improvement on the next pass proves a reachable negative cycle.",
     "patternID": "bellman-ford",
-    "rustSketch": "// Dijkstra invariant:\n// when the smallest tentative distance is popped and is current,\n// no later non-negative path can improve that node.",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn bellman_ford(n:usize,edges:&[(usize,usize,i64)],start:usize)->Vec<i64> {\n    let mut distance=vec![i64::MAX;n]; distance[start]=0;\n    for _ in 1..n {\n        let mut changed=false;\n        for &(a,b,w) in edges {\n            if distance[a]!=i64::MAX && distance[a]+w<distance[b] { distance[b]=distance[a]+w; changed=true; }\n        }\n        if !changed { break; }\n    }\n    for &(a,b,w) in edges { assert!(distance[a]==i64::MAX || distance[a]+w>=distance[b],\"negative cycle\"); }\n    distance.into_iter().map(|d|if d==i64::MAX {-1} else {d}).collect()\n}\n\nfn main() {\n    let result = csv(bellman_ford(3,&[(0,1,4),(0,2,5),(1,2,-2)],0));\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return shortest distances from 0.",
     "useCases": "negative edges and negative-cycle detection",
     "visibleInput": "edges=0->1:4,0->2:5,1->2:-2"
   },
   "concept": "negative edges and negative-cycle detection",
-  "contentDigest": "37848fd89bcea0da8e1a790959af78bcc959b7dd647848ae5beafe69d268ca9c",
+  "contentDigest": "26a472b111e7c53bcfbf799abd40f73d321b582500397af95dd565dc449b2652",
   "depth": {
     "connections": [
       {
-        "concept": "Relax every edge V-1 times; an improvement on the next pass proves a reachable negative cycle.",
         "direction": "previous",
-        "title": "Bellman–Ford: Mental Model"
+        "title": "Bellman–Ford: Mental Model",
+        "concept": "Relax every edge V-1 times; an improvement on the next pass proves a reachable negative cycle."
       },
       {
-        "concept": "Return shortest distances from 0.",
         "direction": "next",
-        "title": "Challenge: Bellman–Ford"
+        "title": "Challenge: Bellman–Ford",
+        "concept": "Return shortest distances from 0."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "A negative cycle reachable from the source. In 0→1:4,0→2:5,1→2:-2, relaxing through node 1 improves node 2 to 2. Repeated full passes handle arbitrary edge order. The lesson's fixtures exclude reachable negative cycles; the example asserts that precondition after the passes.",
+    "misconception": "“That all shortest paths have been proven final”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `edges=0->1:4,0->2:5,1->2:-2`, write the state before the first update. Explain how it represents this claim: Relax every edge V-1 times; an improvement on the next pass proves a reachable negative cycle. Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state."
+        "title": "Concrete transition",
+        "detail": "In 0→1:4,0→2:5,1→2:-2, relaxing through node 1 improves node 2 to 2. Repeated full passes handle arbitrary edge order. The lesson's fixtures exclude reachable negative cycles; the example asserts that precondition after the passes."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `0,4,2`. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic."
+        "title": "Independent second fixture",
+        "detail": "Input `edges=0->1:2,1->2:-1` produces `0,2,1`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Defend the O(VE) time · O(V) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `edges=0->1:9,0->2:2,2->1:3` produces `0,5,2`. A negative cycle reachable from the source. The stated work bound is O(VE) time · O(V) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `edges=0->1:4,0->2:5,1->2:-2` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Bellman–Ford survives, which state must be updated, and whether the O(VE) time · O(V) space bound still holds. Inspect weight signs and graph direction: non-negative shortest paths, negative edges, and zero-one weights support different algorithms."
+    "transferChallenge": "Compare the visible input `edges=0->1:4,0->2:5,1->2:-2` with `edges=0->1:0,1->2:0`. Predict why their results are `0,4,2` and `0,0,0`. Then change one legal value and explain whether the same invariant, a negative cycle reachable from the source, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.bellman-ford.recognize",
@@ -54,21 +54,21 @@
   "title": "Bellman–Ford: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "negative edges and negative-cycle detection",
-      "Only problems with exactly one input value"
+      "`2,1`",
+      "`0,2,1`",
+      "`1,2,1`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Bellman–Ford",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Bellman–Ford",
-    "explanation": "A problem is a good match for Bellman–Ford when it asks for negative edges and negative-cycle detection. Here the concrete task is: Return shortest distances from 0. The visible input `edges=0->1:4,0->2:5,1->2:-2` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Inspect weight signs and graph direction: non-negative shortest paths, negative edges, and zero-one weights support different algorithms. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Relax every edge V-1 times; an improvement on the next pass proves a reachable negative cycle. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(VE) time · O(V) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `0,4,2` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: negative edges and negative-cycle detection.",
-    "practiceCode": "// Dijkstra invariant:\n// when the smallest tentative distance is popped and is current,\n// no later non-negative path can improve that node.",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only bellman-ford program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn bellman_ford(n:usize,edges:&[(usize,usize,i64)],start:usize)->Vec<i64> {\n    let mut distance=vec![i64::MAX;n]; distance[start]=0;\n    for _ in 1..n {\n        let mut changed=false;\n        for &(a,b,w) in edges {\n            if distance[a]!=i64::MAX && distance[a]+w<distance[b] { distance[b]=distance[a]+w; changed=true; }\n        }\n        if !changed { break; }\n    }\n    for &(a,b,w) in edges { assert!(distance[a]==i64::MAX || distance[a]+w>=distance[b],\"negative cycle\"); }\n    distance.into_iter().map(|d|if d==i64::MAX {-1} else {d}).collect()\n}\n\nfn main() {\n    let result = csv(bellman_ford(3,&[(0,1,4),(0,2,5),(1,2,-2)],0));\n    println!(\"{result}\");\n}\n",
+    "explanation": "In 0→1:4,0→2:5,1→2:-2, relaxing through node 1 improves node 2 to 2. Repeated full passes handle arbitrary edge order. The lesson's fixtures exclude reachable negative cycles; the example asserts that precondition after the passes.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return shortest distances from 0. The visible fixture is `edges=0->1:4,0->2:5,1->2:-2` and its example result is `0,4,2`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Bellman–Ford when it asks for negative edges and negative-cycle detection. Here the concrete task is: Return shortest distances from 0. The visible input `edges=0->1:4,0->2:5,1->2:-2` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Inspect weight signs and graph direction: non-negative shortest paths, negative edges, and zero-one weights support different algorithms. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Relax every edge V-1 times; an improvement on the next pass proves a reachable negative cycle. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(VE) time · O(V) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `0,4,2` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `0,2,1`. A negative cycle reachable from the source. Compare this independent fixture with the worked trace: In 0→1:4,0→2:5,1→2:-2, relaxing through node 1 improves node 2 to 2. Repeated full passes handle arbitrary edge order. The lesson's fixtures exclude reachable negative cycles; the example asserts that precondition after the passes.",
+    "practiceCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn bellman_ford(n:usize,edges:&[(usize,usize,i64)],start:usize)->Vec<i64> {\n    let mut distance=vec![i64::MAX;n]; distance[start]=0;\n    for _ in 1..n {\n        let mut changed=false;\n        for &(a,b,w) in edges {\n            if distance[a]!=i64::MAX && distance[a]+w<distance[b] { distance[b]=distance[a]+w; changed=true; }\n        }\n        if !changed { break; }\n    }\n    for &(a,b,w) in edges { assert!(distance[a]==i64::MAX || distance[a]+w>=distance[b],\"negative cycle\"); }\n    distance.into_iter().map(|d|if d==i64::MAX {-1} else {d}).collect()\n}\n\nfn main() {\n    let result = csv(bellman_ford(3,&[(0,1,4),(0,2,5),(1,2,-2)],0));\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Bellman–Ford on input `edges=0->1:2,1->2:-1`. Which result follows from the documented contract?",
+    "rule": "A negative cycle reachable from the source. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Bellman–Ford.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-weighted-graphs-b.png",

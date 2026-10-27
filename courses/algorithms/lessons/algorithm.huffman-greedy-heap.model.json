@@ -7,44 +7,44 @@
     "expectedAnswer": "224",
     "idea": "Repeatedly merge the two lightest items; the accumulated merge cost is optimal.",
     "patternID": "huffman-greedy-heap",
-    "rustSketch": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "rustSketch": "fn merge_cost(weights:&[i64])->i64 {\n    let mut heap:std::collections::BinaryHeap<_>=weights.iter().map(|&x|std::cmp::Reverse(x)).collect(); let mut cost=0;\n    while heap.len()>1 {\n        let merged=heap.pop().unwrap().0+heap.pop().unwrap().0; cost+=merged; heap.push(std::cmp::Reverse(merged));\n    }\n    cost\n}\n\nfn main() {\n    let result = merge_cost(&[5,9,12,13,16,45]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return the minimum total merge cost.",
     "useCases": "prefix coding and minimum merge cost",
     "visibleInput": "weights=[5,9,12,13,16,45]"
   },
   "concept": "Repeatedly merge the two lightest items; the accumulated merge cost is optimal.",
-  "contentDigest": "db52dd15ce7b1b5657a0861d22f9a1a832ecd06550128a7e805be2e6570324f6",
+  "contentDigest": "77de1a36f4f1b3a99b5d5a8fc5be2d419ed864df0e62b2da2ed6f0f68d809fe8",
   "depth": {
     "connections": [
       {
-        "concept": "Return the minimum rooms required.",
         "direction": "previous",
-        "title": "Challenge: Meeting Rooms Heap"
+        "title": "Challenge: Meeting Rooms Heap",
+        "concept": "Return the minimum rooms required."
       },
       {
-        "concept": "prefix coding and minimum merge cost",
         "direction": "next",
-        "title": "Huffman Merge Heap: When to Use It"
+        "title": "Huffman Merge Heap: When to Use It",
+        "concept": "prefix coding and minimum merge cost"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "It minimizes the additional weighted merge cost. Weights 5 and 9 merge to 14, then 12 and 13 merge to 25, then 14 and 16 merge to 30. Continuing with the two minima yields total merge cost 224. A one-item input needs no merge and costs zero.",
+    "misconception": "“The largest two weights must always be merged first”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `weights=[5,9,12,13,16,45]`, write the state before the first update. Explain how it represents this claim: Repeatedly merge the two lightest items; the accumulated merge cost is optimal. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded."
+        "title": "Concrete transition",
+        "detail": "Weights 5 and 9 merge to 14, then 12 and 13 merge to 25, then 14 and 16 merge to 30. Continuing with the two minima yields total merge cost 224. A one-item input needs no merge and costs zero."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `224`. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data."
+        "title": "Independent second fixture",
+        "detail": "Input `weights=[7]` produces `0`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Defend the O(n log n) time · O(n) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `weights=[1,1,10]` produces `14`. It minimizes the additional weighted merge cost. The stated work bound is O(n log n) time · O(n) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `weights=[5,9,12,13,16,45]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Huffman Merge Heap survives, which state must be updated, and whether the O(n log n) time · O(n) space bound still holds. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work."
+    "transferChallenge": "Compare the visible input `weights=[5,9,12,13,16,45]` with `weights=[2,2,2,2]`. Predict why their results are `224` and `16`. Then change one legal value and explain whether the same invariant, it minimizes the additional weighted merge cost, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.huffman-greedy-heap.model",
@@ -54,21 +54,21 @@
   "title": "Huffman Merge Heap: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "It minimizes the additional weighted merge cost",
+      "The largest two weights must always be merged first",
+      "The final total is only the sum of original weights"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n log n) time · O(n) space",
-    "exampleCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
-    "explanation": "Begin with the concrete question: Return the minimum total merge cost. For the visible input `weights=[5,9,12,13,16,45]`, the stated result is `224`. Before reading code, name the smallest piece of information that must survive from one step to the next. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. That is the mental model for Huffman Merge Heap; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Repeatedly merge the two lightest items; the accumulated merge cost is optimal. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n log n) time · O(n) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only huffman-greedy-heap program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn merge_cost(weights:&[i64])->i64 {\n    let mut heap:std::collections::BinaryHeap<_>=weights.iter().map(|&x|std::cmp::Reverse(x)).collect(); let mut cost=0;\n    while heap.len()>1 {\n        let merged=heap.pop().unwrap().0+heap.pop().unwrap().0; cost+=merged; heap.push(std::cmp::Reverse(merged));\n    }\n    cost\n}\n\nfn main() {\n    let result = merge_cost(&[5,9,12,13,16,45]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "Weights 5 and 9 merge to 14, then 12 and 13 merge to 25, then 14 and 16 merge to 30. Continuing with the two minima yields total merge cost 224. A one-item input needs no merge and costs zero.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the minimum total merge cost. The visible fixture is `weights=[5,9,12,13,16,45]` and its example result is `224`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return the minimum total merge cost. For the visible input `weights=[5,9,12,13,16,45]`, the stated result is `224`. Before reading code, name the smallest piece of information that must survive from one step to the next. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. That is the mental model for Huffman Merge Heap; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Repeatedly merge the two lightest items; the accumulated merge cost is optimal. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n log n) time · O(n) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "Weights 5 and 9 merge to 14, then 12 and 13 merge to 25, then 14 and 16 merge to 30. Continuing with the two minima yields total merge cost 224. A one-item input needs no merge and costs zero.",
+    "practiceCode": "fn merge_cost(weights:&[i64])->i64 {\n    let mut heap:std::collections::BinaryHeap<_>=weights.iter().map(|&x|std::cmp::Reverse(x)).collect(); let mut cost=0;\n    while heap.len()>1 {\n        let merged=heap.pop().unwrap().0+heap.pop().unwrap().0; cost+=merged; heap.push(std::cmp::Reverse(merged));\n    }\n    cost\n}\n\nfn main() {\n    let result = merge_cost(&[5,9,12,13,16,45]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Why merge the two smallest weights at each Huffman step?",
+    "rule": "It minimizes the additional weighted merge cost. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(n log n) time · O(n) space bound without looking at the code.",
     "summary": "Repeatedly merge the two lightest items; the accumulated merge cost is optimal.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-heaps-streaming-b.png",

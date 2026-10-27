@@ -7,7 +7,7 @@
     "expectedAnswer": "1,2,3,5",
     "idea": "Keep a fixed gap so the leading pointer reaching the end positions the trailing pointer before the target.",
     "patternID": "remove-nth-from-end",
-    "rustSketch": "// Conceptual ownership-safe reversal:\n// while let Some(mut node) = head.take() {\n//     head = node.next.take();\n//     node.next = reversed;\n//     reversed = Some(node);\n// }",
+    "rustSketch": "\ntype Link=Option<Box<ListNode>>;\nstruct ListNode { value:i32, next:Link }\nfn list(values:&[i32])->Link {\n    values.iter().rev().fold(None,|next,&value|Some(Box::new(ListNode{value,next})))\n}\nfn list_values(head:&Link)->Vec<i32> {\n    let mut out=Vec::new(); let mut p=head.as_deref();\n    while let Some(n)=p { out.push(n.value); p=n.next.as_deref(); } out\n}\nfn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn remove_from_end(mut head:Link,n:usize)->Link {\n    let mut length:usize=0; let mut scan=head.as_deref();\n    while let Some(node)=scan { length+=1; scan=node.next.as_deref(); }\n    assert!(n>0 && n<=length); let mut link=&mut head;\n    for _ in 0..length-n { link=&mut link.as_mut().unwrap().next; }\n    let next=link.as_mut().unwrap().next.take(); *link=next; head\n}\n\nfn main() {\n    let result = csv(list_values(&remove_from_end(list(&[1,2,3,4,5]),2)));\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Remove the second node from the end and return remaining values.",
     "useCases": "nth from end without a length pass",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Keep a fixed gap so the leading pointer reaching the end positions the trailing pointer before the target.",
         "direction": "previous",
-        "title": "Gap Pointer Removal: Mental Model"
+        "title": "Gap Pointer Removal: Mental Model",
+        "concept": "Keep a fixed gap so the leading pointer reaching the end positions the trailing pointer before the target."
       },
       {
-        "concept": "Remove the second node from the end and return remaining values.",
         "direction": "next",
-        "title": "Challenge: Gap Pointer Removal"
+        "title": "Challenge: Gap Pointer Removal",
+        "concept": "Remove the second node from the end and return remaining values."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "Count the length, then advance to the link at length-2. For 1→2→3→4→5, length=5 and the target's zero-based index is 3, value 4. Advance a mutable link three times and replace it with the target's successor. For a two-node list, the target is the head.",
+    "misconception": "“Remove the node with value 2”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `1->2->3->4->5`, write the state before the first update. Explain how it represents this claim: Keep a fixed gap so the leading pointer reaching the end positions the trailing pointer before the target. A list algorithm changes relationships between nodes, not just values. Draw the next pointers before and after each mutation."
+        "title": "Concrete transition",
+        "detail": "For 1→2→3→4→5, length=5 and the target's zero-based index is 3, value 4. Advance a mutable link three times and replace it with the target's successor. For a two-node list, the target is the head."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `1,2,3,5`. Rust ownership makes linked structures explicit: use the provided node type, take links carefully, and preserve access to the remaining chain."
+        "title": "Independent second fixture",
+        "detail": "Input `9->8->7` produces `9,7`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check an empty list, one node, a head or tail change, and cycles when the problem allows them. Defend the O(n) time · O(1) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `5->5` produces `5`. Count the length, then advance to the link at length-2. The stated work bound is O(n) time · O(1) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `1->2->3->4->5` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Gap Pointer Removal survives, which state must be updated, and whether the O(n) time · O(1) space bound still holds. Look for tasks where node identity or one-way traversal matters. An indexed vector solution can hide the pointer constraint rather than solve it."
+    "transferChallenge": "Compare the visible input `1->2->3->4->5` with `1->2->3->4`. Predict why their results are `1,2,3,5` and `1,2,4`. Then change one legal value and explain whether the same invariant, count the length, then advance to the link at length-2, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.remove-nth-from-end.recognize",
@@ -54,21 +54,21 @@
   "title": "Gap Pointer Removal: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "nth from end without a length pass",
-      "Only problems with exactly one input value"
+      "`7`",
+      "`9,7`",
+      "`10,7`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Gap Pointer Removal",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Gap Pointer Removal",
-    "explanation": "A problem is a good match for Gap Pointer Removal when it asks for nth from end without a length pass. Here the concrete task is: Remove the second node from the end and return remaining values. The visible input `1->2->3->4->5` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for tasks where node identity or one-way traversal matters. An indexed vector solution can hide the pointer constraint rather than solve it. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Keep a fixed gap so the leading pointer reaching the end positions the trailing pointer before the target. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A list algorithm changes relationships between nodes, not just values. Draw the next pointers before and after each mutation. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(1) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `1,2,3,5` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check an empty list, one node, a head or tail change, and cycles when the problem allows them. Rust ownership makes linked structures explicit: use the provided node type, take links carefully, and preserve access to the remaining chain. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: nth from end without a length pass.",
-    "practiceCode": "// Conceptual ownership-safe reversal:\n// while let Some(mut node) = head.take() {\n//     head = node.next.take();\n//     node.next = reversed;\n//     reversed = Some(node);\n// }",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only remove-nth-from-end program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "\ntype Link=Option<Box<ListNode>>;\nstruct ListNode { value:i32, next:Link }\nfn list(values:&[i32])->Link {\n    values.iter().rev().fold(None,|next,&value|Some(Box::new(ListNode{value,next})))\n}\nfn list_values(head:&Link)->Vec<i32> {\n    let mut out=Vec::new(); let mut p=head.as_deref();\n    while let Some(n)=p { out.push(n.value); p=n.next.as_deref(); } out\n}\nfn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn remove_from_end(mut head:Link,n:usize)->Link {\n    let mut length:usize=0; let mut scan=head.as_deref();\n    while let Some(node)=scan { length+=1; scan=node.next.as_deref(); }\n    assert!(n>0 && n<=length); let mut link=&mut head;\n    for _ in 0..length-n { link=&mut link.as_mut().unwrap().next; }\n    let next=link.as_mut().unwrap().next.take(); *link=next; head\n}\n\nfn main() {\n    let result = csv(list_values(&remove_from_end(list(&[1,2,3,4,5]),2)));\n    println!(\"{result}\");\n}\n",
+    "explanation": "For 1→2→3→4→5, length=5 and the target's zero-based index is 3, value 4. Advance a mutable link three times and replace it with the target's successor. For a two-node list, the target is the head.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Remove the second node from the end and return remaining values. The visible fixture is `1->2->3->4->5` and its example result is `1,2,3,5`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Gap Pointer Removal when it asks for nth from end without a length pass. Here the concrete task is: Remove the second node from the end and return remaining values. The visible input `1->2->3->4->5` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for tasks where node identity or one-way traversal matters. An indexed vector solution can hide the pointer constraint rather than solve it. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Keep a fixed gap so the leading pointer reaching the end positions the trailing pointer before the target. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A list algorithm changes relationships between nodes, not just values. Draw the next pointers before and after each mutation. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(1) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `1,2,3,5` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check an empty list, one node, a head or tail change, and cycles when the problem allows them. Rust ownership makes linked structures explicit: use the provided node type, take links carefully, and preserve access to the remaining chain. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `9,7`. Count the length, then advance to the link at length-2. Compare this independent fixture with the worked trace: For 1→2→3→4→5, length=5 and the target's zero-based index is 3, value 4. Advance a mutable link three times and replace it with the target's successor. For a two-node list, the target is the head.",
+    "practiceCode": "\ntype Link=Option<Box<ListNode>>;\nstruct ListNode { value:i32, next:Link }\nfn list(values:&[i32])->Link {\n    values.iter().rev().fold(None,|next,&value|Some(Box::new(ListNode{value,next})))\n}\nfn list_values(head:&Link)->Vec<i32> {\n    let mut out=Vec::new(); let mut p=head.as_deref();\n    while let Some(n)=p { out.push(n.value); p=n.next.as_deref(); } out\n}\nfn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn remove_from_end(mut head:Link,n:usize)->Link {\n    let mut length:usize=0; let mut scan=head.as_deref();\n    while let Some(node)=scan { length+=1; scan=node.next.as_deref(); }\n    assert!(n>0 && n<=length); let mut link=&mut head;\n    for _ in 0..length-n { link=&mut link.as_mut().unwrap().next; }\n    let next=link.as_mut().unwrap().next.take(); *link=next; head\n}\n\nfn main() {\n    let result = csv(list_values(&remove_from_end(list(&[1,2,3,4,5]),2)));\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Gap Pointer Removal on input `9->8->7`. Which result follows from the documented contract?",
+    "rule": "Count the length, then advance to the link at length-2. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Gap Pointer Removal.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-linked-lists-a.png",

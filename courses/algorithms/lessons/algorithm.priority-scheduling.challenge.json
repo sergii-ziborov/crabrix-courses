@@ -7,44 +7,44 @@
     "expectedAnswer": "0,1,2",
     "idea": "Order available work by the decision criterion while time controls when work becomes eligible.",
     "patternID": "priority-scheduling",
-    "rustSketch": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn completion_order(jobs:&[(usize,i32,i32)])->Vec<usize> {\n    let mut arrivals=jobs.to_vec(); arrivals.sort_by_key(|&(id,t,_)|(t,id));\n    let mut ready=std::collections::BinaryHeap::new(); let (mut i,mut time)=(0,0); let mut out=Vec::new();\n    while i<arrivals.len() || !ready.is_empty() {\n        if ready.is_empty() { time=time.max(arrivals[i].1); }\n        while i<arrivals.len() && arrivals[i].1<=time { let (id,_,duration)=arrivals[i]; ready.push(std::cmp::Reverse((duration,id))); i+=1; }\n        let std::cmp::Reverse((duration,id))=ready.pop().unwrap(); time+=duration; out.push(id);\n    }\n    out\n}\n\nfn main() {\n    let result = csv(completion_order(&[(0,0,2),(1,0,1),(2,3,1)]));\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
-    "task": "Run shortest available job first and return completion order by job ID.",
+    "task": "Parse unique job IDs with arrival t and positive duration d. Run the shortest available job nonpreemptively, breaking equal durations by smaller ID. Return completion order.",
     "useCases": "task scheduling, CPU queues, simulation",
     "visibleInput": "(id0,t0,d3),(id1,t1,d1),(id2,t1,d2)"
   },
-  "concept": "Run shortest available job first and return completion order by job ID.",
+  "concept": "Parse unique job IDs with arrival t and positive duration d. Run the shortest available job nonpreemptively, breaking equal durations by smaller ID. Return completion order.",
   "contentDigest": "a2c1eefe599471c1d45e536fa6d75befb0798397d38233c7cce3c8c4db2be1be",
   "depth": {
     "connections": [
       {
-        "concept": "task scheduling, CPU queues, simulation",
         "direction": "previous",
-        "title": "Priority Scheduling: When to Use It"
+        "title": "Priority Scheduling: When to Use It",
+        "concept": "task scheduling, CPU queues, simulation"
       },
       {
-        "concept": "Sort by start time and reuse the room whose end time is smallest.",
         "direction": "next",
-        "title": "Meeting Rooms Heap: Mental Model"
+        "title": "Meeting Rooms Heap: Mental Model",
+        "concept": "Sort by start time and reuse the room whose end time is smallest."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "Shortest duration, then smallest job ID. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“Earliest deadline, regardless of arrival”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `(id0,t0,d3),(id1,t1,d1),(id2,t1,d2)`, write the state before the first update. Explain how it represents this claim: Order available work by the decision criterion while time controls when work becomes eligible. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded."
+        "title": "Pattern-specific invariant",
+        "detail": "Shortest duration, then smallest job ID. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `(id0,t0,d2),(id1,t0,d1),(id2,t3,d1)` and computes `1,0,2`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Defend the O(n log n) time · O(n) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `(id0,t5,d2),(id1,t8,d1)`, the independently calculated result is `0,1`. The complexity discussion uses O(n log n) time · O(n) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `(id0,t0,d3),(id1,t1,d1),(id2,t1,d2)` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Priority Scheduling survives, which state must be updated, and whether the O(n log n) time · O(n) space bound still holds. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work."
+    "transferChallenge": "Change the independent fixture `(id0,t0,d2),(id1,t0,d1),(id2,t3,d1)` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `(id0,t0,d3),(id1,t1,d1),(id2,t1,d2)`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.priority-scheduling.challenge",
@@ -54,21 +54,21 @@
   "title": "Challenge: Priority Scheduling",
   "writing": {
     "answers": [
-      "O(n log n) time · O(n) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`0,1,2`",
+      "`1,2`",
+      "`1,1,2`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Run shortest available job first and return completion order by job ID.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Priority Scheduling\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Run shortest available job first and return completion order by job ID. On input `(id0,t0,d3),(id1,t1,d1),(id2,t1,d2)`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Order available work by the decision criterion while time controls when work becomes eligible. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n log n) time · O(n) space; explain which operation dominates it and how many times the input can trigger that operation. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(n log n) time · O(n) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Run shortest available job first and return completion order by job ID.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Priority Scheduling\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS priority-scheduling, and your explanation still meets O(n log n) time · O(n) space.",
-    "summary": "Run shortest available job first and return completion order by job ID.",
-    "task": "Run shortest available job first and return completion order by job ID."
+    "exampleCaption": "Complete std-only priority-scheduling program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn completion_order(jobs:&[(usize,i32,i32)])->Vec<usize> {\n    let mut arrivals=jobs.to_vec(); arrivals.sort_by_key(|&(id,t,_)|(t,id));\n    let mut ready=std::collections::BinaryHeap::new(); let (mut i,mut time)=(0,0); let mut out=Vec::new();\n    while i<arrivals.len() || !ready.is_empty() {\n        if ready.is_empty() { time=time.max(arrivals[i].1); }\n        while i<arrivals.len() && arrivals[i].1<=time { let (id,_,duration)=arrivals[i]; ready.push(std::cmp::Reverse((duration,id))); i+=1; }\n        let std::cmp::Reverse((duration,id))=ready.pop().unwrap(); time+=duration; out.push(id);\n    }\n    out\n}\n\nfn main() {\n    let result = csv(completion_order(&[(0,0,2),(1,0,1),(2,3,1)]));\n    println!(\"{result}\");\n}\n",
+    "explanation": "Shortest duration, then smallest job ID. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `(id0,t0,d2),(id1,t0,d1),(id2,t3,d1)`, the worked program returns `1,0,2`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `(id0,t0,d3),(id1,t1,d1),(id2,t1,d2)`; predict that result before opening the answer reveal. The precise contract is: Parse unique job IDs with arrival t and positive duration d. Run the shortest available job nonpreemptively, breaking equal durations by smaller ID. Return completion order.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Parse unique job IDs with arrival t and positive duration d. Run the shortest available job nonpreemptively, breaking equal durations by smaller ID. Return completion order. On input `(id0,t0,d3),(id1,t1,d1),(id2,t1,d2)`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Order available work by the decision criterion while time controls when work becomes eligible. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(n log n) time · O(n) space; explain which operation dominates it and how many times the input can trigger that operation. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `0,1,2`. Shortest duration, then smallest job ID. Compare this independent fixture with the worked trace: At time 0 only job 0 with duration 3 is available, so it finishes first. At time 3 jobs 1 and 2 are ready; duration 1 beats duration 2. The completion order is 0,1,2; jobs are never interrupted mid-run.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Parse unique job IDs with arrival t and positive duration d. Run the shortest available job nonpreemptively, breaking equal durations by smaller ID. Return completion order.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement priority-scheduling\")\n}\n",
+    "question": "Boundary check for priority-scheduling: with input `(id0,t0,d4),(id1,t1,d1),(id2,t2,d1)`, what result should solve return?",
+    "rule": "Shortest duration, then smallest job ID. Parse unique job IDs with arrival t and positive duration d. Run the shortest available job nonpreemptively, breaking equal durations by smaller ID. Return completion order.",
+    "success": "The private harness prints PASS priority-scheduling. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
+    "summary": "Parse unique job IDs with arrival t and positive duration d. Run the shortest available job nonpreemptively, breaking equal durations by smaller ID. Return completion order.",
+    "task": "Parse unique job IDs with arrival t and positive duration d. Run the shortest available job nonpreemptively, breaking equal durations by smaller ID. Return completion order."
   },
   "illustration": {
     "path": "media/algorithms-heaps-streaming-b.png",

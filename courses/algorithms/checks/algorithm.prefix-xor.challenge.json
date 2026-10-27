@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS prefix-xor\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"7\".to_string()",
-      "String::from(\"7\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.prefix-xor.challenge",
     "patternID": "prefix-xor",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return XOR from inclusive index 1 through 4.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Prefix XOR\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Return XOR of inclusive indexes 1 through 4; input contains at least five integers.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement prefix-xor\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "7",
+        "kind": "visible",
         "input": "[5,1,7,3,2]",
-        "kind": "visible"
+        "expectedAnswer": "7"
       },
       {
-        "expectedAnswer": "0",
+        "kind": "boundary",
         "input": "[0,1,1,1,1]",
-        "kind": "boundary"
+        "expectedAnswer": "0"
       },
       {
-        "expectedAnswer": "0",
-        "input": "\n[0,1,1,1,1]\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "[1,2,3,4,5,6,7]",
+        "expectedAnswer": "0"
       },
       {
-        "expectedAnswer": "7",
+        "kind": "adversarial",
+        "input": "[3,3,3,3,3,3,3]",
+        "expectedAnswer": "0"
+      },
+      {
+        "kind": "adversarial",
+        "input": "[8,7,6,5,4,3,2]",
+        "expectedAnswer": "0"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \n[5,1,7,3,2]\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "7"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\n[8,7,6,5,4,3,2]\n",
+        "expectedAnswer": "0"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"[5,1,7,3,2]\"#, r#\"7\"#),\n    (r#\"[0,1,1,1,1]\"#, r#\"0\"#),\n    (r#\"\n[0,1,1,1,1]\n\"#, r#\"0\"#),\n    (r#\"  \n[5,1,7,3,2]\n  \"#, r#\"7\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS prefix-xor\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"[5,1,7,3,2]\",\"7\"),\n        (\"[0,1,1,1,1]\",\"0\"),\n        (\"[1,2,3,4,5,6,7]\",\"0\"),\n        (\"[3,3,3,3,3,3,3]\",\"0\"),\n        (\"[8,7,6,5,4,3,2]\",\"0\"),\n        (\"  \\n[5,1,7,3,2]\\n  \",\"7\"),\n        (\"\\n[8,7,6,5,4,3,2]\\n\",\"0\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS prefix-xor\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS prefix-xor\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"7\".to_string()",
-      "String::from(\"7\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

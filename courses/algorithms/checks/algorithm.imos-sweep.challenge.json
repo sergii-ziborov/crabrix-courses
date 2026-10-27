@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS imos-sweep\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"4\".to_string()",
-      "String::from(\"4\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.imos-sweep.challenge",
     "patternID": "imos-sweep",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Parse n and inclusive (start,end,delta) updates; return the maximum simultaneous load.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Imos Sweep\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Parse n and inclusive (start,end,delta) updates with nonnegative loads. Return the maximum simultaneous load over indexes 0..n-1. Add at start and subtract at end+1.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement imos-sweep\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "4",
+        "kind": "visible",
         "input": "n=5 updates=(0,2,2),(1,3,3),(3,4,1)",
-        "kind": "visible"
+        "expectedAnswer": "5"
       },
       {
-        "expectedAnswer": "3",
+        "kind": "boundary",
         "input": "n=4 updates=(0,1,2),(1,3,1)",
-        "kind": "boundary"
+        "expectedAnswer": "3"
       },
       {
-        "expectedAnswer": "3",
-        "input": "\nn=4 updates=(0,1,2),(1,3,1)\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "n=4 updates=(0,1,2),(2,3,2)",
+        "expectedAnswer": "2"
       },
       {
-        "expectedAnswer": "4",
+        "kind": "adversarial",
+        "input": "n=3 updates=(0,2,1),(0,2,4)",
+        "expectedAnswer": "5"
+      },
+      {
+        "kind": "adversarial",
+        "input": "n=5 updates=(4,4,9),(0,0,2)",
+        "expectedAnswer": "9"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \nn=5 updates=(0,2,2),(1,3,3),(3,4,1)\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "5"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\nn=5 updates=(4,4,9),(0,0,2)\n",
+        "expectedAnswer": "9"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"n=5 updates=(0,2,2),(1,3,3),(3,4,1)\"#, r#\"4\"#),\n    (r#\"n=4 updates=(0,1,2),(1,3,1)\"#, r#\"3\"#),\n    (r#\"\nn=4 updates=(0,1,2),(1,3,1)\n\"#, r#\"3\"#),\n    (r#\"  \nn=5 updates=(0,2,2),(1,3,3),(3,4,1)\n  \"#, r#\"4\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS imos-sweep\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"n=5 updates=(0,2,2),(1,3,3),(3,4,1)\",\"5\"),\n        (\"n=4 updates=(0,1,2),(1,3,1)\",\"3\"),\n        (\"n=4 updates=(0,1,2),(2,3,2)\",\"2\"),\n        (\"n=3 updates=(0,2,1),(0,2,4)\",\"5\"),\n        (\"n=5 updates=(4,4,9),(0,0,2)\",\"9\"),\n        (\"  \\nn=5 updates=(0,2,2),(1,3,3),(3,4,1)\\n  \",\"5\"),\n        (\"\\nn=5 updates=(4,4,9),(0,0,2)\\n\",\"9\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS imos-sweep\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS imos-sweep\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"4\".to_string()",
-      "String::from(\"4\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

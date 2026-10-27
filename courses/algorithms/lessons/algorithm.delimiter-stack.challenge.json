@@ -7,44 +7,44 @@
     "expectedAnswer": "true",
     "idea": "Push open delimiters and require every close to match the most recent open.",
     "patternID": "delimiter-stack",
-    "rustSketch": "fn balanced(text: &str) -> bool {\n    let mut stack = Vec::new();\n    for ch in text.chars() {\n        match ch {\n            '(' | '[' | '{' => stack.push(ch),\n            ')' => if stack.pop() != Some('(') { return false; },\n            ']' => if stack.pop() != Some('[') { return false; },\n            '}' => if stack.pop() != Some('{') { return false; },\n            _ => {}\n        }\n    }\n    stack.is_empty()\n}",
+    "rustSketch": "fn balanced(text:&str)->bool {\n    let mut stack=Vec::new();\n    for c in text.chars() {\n        match c {\n            '('|'['|'{' => stack.push(c),\n            ')'|']'|'}' => {\n                let expected=match c { ')'=>'(', ']'=>'[', _=>'{' };\n                if stack.pop()!=Some(expected) { return false; }\n            }\n            _=>{}\n        }\n    }\n    stack.is_empty()\n}\n\nfn main() {\n    let result = balanced(\"([)]\").to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Return true when the delimiters are correctly nested.",
     "useCases": "nested syntax, parsers, balanced scopes",
     "visibleInput": "{[()()]}[]"
   },
   "concept": "Return true when the delimiters are correctly nested.",
-  "contentDigest": "5b6dabe03e348025732a0b15bec4639c37bc71324f576074772349d0ef680c26",
+  "contentDigest": "614c1dbddfe258913d8d92e527d250c16c8fdae10d229ddd2858b7d4dce5077c",
   "depth": {
     "connections": [
       {
-        "concept": "nested syntax, parsers, balanced scopes",
         "direction": "previous",
-        "title": "Delimiter Stack: When to Use It"
+        "title": "Delimiter Stack: When to Use It",
+        "concept": "nested syntax, parsers, balanced scopes"
       },
       {
-        "concept": "Push operands and reduce the latest operands whenever an operator arrives.",
         "direction": "next",
-        "title": "Postfix Evaluation: Mental Model"
+        "title": "Postfix Evaluation: Mental Model",
+        "concept": "Push operands and reduce the latest operands whenever an operator arrives."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "Nested delimiters close in last-in-first-out order. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“Any earlier opening bracket is sufficient”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `{[()()]}[]`, write the state before the first update. Explain how it represents this claim: Push open delimiters and require every close to match the most recent open. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs."
+        "title": "Pattern-specific invariant",
+        "detail": "Nested delimiters close in last-in-first-out order. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. `Vec` works as a stack; `VecDeque` supplies efficient operations at both ends. Avoid removing from the front of a `Vec` in a long loop."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `([)]` and computes `false`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Defend the O(n) time · O(n) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `(()`, the independently calculated result is `false`. The complexity discussion uses O(n) time · O(n) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `{[()()]}[]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Delimiter Stack survives, which state must be updated, and whether the O(n) time · O(n) space bound still holds. Look for nested structure, next-greater relationships, or ordered processing. A plain scan is enough when no unresolved state must be retained."
+    "transferChallenge": "Change the independent fixture `([)]` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `{[()()]}[]`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.delimiter-stack.challenge",
@@ -54,19 +54,19 @@
   "title": "Challenge: Delimiter Stack",
   "writing": {
     "answers": [
-      "O(n) time · O(n) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`false`",
+      "`true`",
+      "The valid input necessarily panics"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return true when the delimiters are correctly nested.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Delimiter Stack\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Return true when the delimiters are correctly nested. On input `{[()()]}[]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Push open delimiters and require every close to match the most recent open. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. `Vec` works as a stack; `VecDeque` supplies efficient operations at both ends. Avoid removing from the front of a `Vec` in a long loop. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(n) space; explain which operation dominates it and how many times the input can trigger that operation. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(n) time · O(n) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return true when the delimiters are correctly nested.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Delimiter Stack\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS delimiter-stack, and your explanation still meets O(n) time · O(n) space.",
+    "exampleCaption": "Complete std-only delimiter-stack program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn balanced(text:&str)->bool {\n    let mut stack=Vec::new();\n    for c in text.chars() {\n        match c {\n            '('|'['|'{' => stack.push(c),\n            ')'|']'|'}' => {\n                let expected=match c { ')'=>'(', ']'=>'[', _=>'{' };\n                if stack.pop()!=Some(expected) { return false; }\n            }\n            _=>{}\n        }\n    }\n    stack.is_empty()\n}\n\nfn main() {\n    let result = balanced(\"([)]\").to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "Nested delimiters close in last-in-first-out order. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `([)]`, the worked program returns `false`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `{[()()]}[]`; predict that result before opening the answer reveal. The precise contract is: Return true when the delimiters are correctly nested.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Return true when the delimiters are correctly nested. On input `{[()()]}[]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Push open delimiters and require every close to match the most recent open. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(n) space; explain which operation dominates it and how many times the input can trigger that operation. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `false`. Nested delimiters close in last-in-first-out order. Compare this independent fixture with the worked trace: For {[()()]}, push { then [, and pop each matching inner pair before closing ]. Input ([)] fails at ) because the stack top is [, even though each bracket count is balanced.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return true when the delimiters are correctly nested.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement delimiter-stack\")\n}\n",
+    "question": "Boundary check for delimiter-stack: with input `(()`, what result should solve return?",
+    "rule": "Nested delimiters close in last-in-first-out order. Return true when the delimiters are correctly nested.",
+    "success": "The private harness prints PASS delimiter-stack. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Return true when the delimiters are correctly nested.",
     "task": "Return true when the delimiters are correctly nested."
   },

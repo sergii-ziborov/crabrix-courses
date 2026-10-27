@@ -7,44 +7,44 @@
     "expectedAnswer": "true",
     "idea": "Maintain both key-to-value and value-to-key constraints to enforce a bijection.",
     "patternID": "bidirectional-map",
-    "rustSketch": "use std::collections::HashMap;\nfn counts(values: &[i32]) -> HashMap<i32, usize> {\n    let mut map = HashMap::new();\n    for &value in values { *map.entry(value).or_insert(0) += 1; }\n    map\n}",
+    "rustSketch": "fn follows_pattern(pattern: &str, words: &[&str]) -> bool {\n    let letters: Vec<_> = pattern.chars().collect();\n    if letters.len() != words.len() { return false; }\n    let (mut forward, mut reverse) = (std::collections::HashMap::new(), std::collections::HashMap::new());\n    for (&letter, &word) in letters.iter().zip(words) {\n        if forward.get(&letter).is_some_and(|&old| old != word)\n            || reverse.get(word).is_some_and(|&old| old != letter) { return false; }\n        forward.insert(letter, word); reverse.insert(word, letter);\n    }\n    true\n}\n\nfn main() {\n    let result = follows_pattern(\"abba\",&[\"red\",\"blue\",\"blue\",\"red\"]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return true when pattern letters map one-to-one onto the words.",
     "useCases": "isomorphism, renaming, one-to-one assignments",
     "visibleInput": "abba; red blue blue red"
   },
   "concept": "Maintain both key-to-value and value-to-key constraints to enforce a bijection.",
-  "contentDigest": "b754141dd03cfeacec58301500f5f2c65a19da0c4f423df09eb9cfb1f1a1e0c4",
+  "contentDigest": "d758185ee83e39e369473bbf009ba19716e8b4a0723c8195d85ce2b82f8ca6e3",
   "depth": {
     "connections": [
       {
-        "concept": "Return the length of the longest consecutive integer run.",
         "direction": "previous",
-        "title": "Challenge: Longest Consecutive Set Run"
+        "title": "Challenge: Longest Consecutive Set Run",
+        "concept": "Return the length of the longest consecutive integer run."
       },
       {
-        "concept": "isomorphism, renaming, one-to-one assignments",
         "direction": "next",
-        "title": "Bidirectional Mapping: When to Use It"
+        "title": "Bidirectional Mapping: When to Use It",
+        "concept": "isomorphism, renaming, one-to-one assignments"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "Different letters must not map to the same word. In abba with red blue blue red, a→red and b→blue agree in both directions. For ab with red red, the forward mappings individually exist but the reverse mapping detects that two letters share one word.",
+    "misconception": "“A forward map alone proves a bijection”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `abba; red blue blue red`, write the state before the first update. Explain how it represents this claim: Maintain both key-to-value and value-to-key constraints to enforce a bijection. A key-derived representation lets later work reuse an earlier fact. It may be a set, a map from keys to state, compressed ranks, or a rolling fingerprint; name which one this pattern uses."
+        "title": "Concrete transition",
+        "detail": "In abba with red blue blue red, a→red and b→blue agree in both directions. For ab with red red, the forward mappings individually exist but the reverse mapping detects that two letters share one word."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `true`. In Rust, use `HashSet` for presence and `HashMap` for associated state. Compression and rolling hashes need their own arrays or arithmetic; do not force every hashing pattern into a map."
+        "title": "Independent second fixture",
+        "detail": "Input `ab; red red` produces `false`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check missing keys, repeated keys, and collisions conceptually; expected constant-time operations are not a worst-case promise. Defend the O(n) expected time · O(k) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `abc; one two three` produces `true`. Different letters must not map to the same word. The stated work bound is O(n) expected time · O(k) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `abba; red blue blue red` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Bidirectional Mapping survives, which state must be updated, and whether the O(n) expected time · O(k) space bound still holds. Look for repeated membership, grouping, or a reusable key representation. A sorted structure may be preferable when deterministic order is part of the requirement."
+    "transferChallenge": "Compare the visible input `abba; red blue blue red` with `aaa; red red red`. Predict why their results are `true` and `true`. Then change one legal value and explain whether the same invariant, different letters must not map to the same word, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.bidirectional-map.model",
@@ -54,21 +54,21 @@
   "title": "Bidirectional Mapping: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "Different letters must not map to the same word",
+      "A forward map alone proves a bijection",
+      "Reverse maps make word order irrelevant"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n) expected time · O(k) space",
-    "exampleCode": "use std::collections::HashMap;\nfn counts(values: &[i32]) -> HashMap<i32, usize> {\n    let mut map = HashMap::new();\n    for &value in values { *map.entry(value).or_insert(0) += 1; }\n    map\n}",
-    "explanation": "Begin with the concrete question: Return true when pattern letters map one-to-one onto the words. For the visible input `abba; red blue blue red`, the stated result is `true`. Before reading code, name the smallest piece of information that must survive from one step to the next. A key-derived representation lets later work reuse an earlier fact. It may be a set, a map from keys to state, compressed ranks, or a rolling fingerprint; name which one this pattern uses. That is the mental model for Bidirectional Mapping; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Maintain both key-to-value and value-to-key constraints to enforce a bijection. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. In Rust, use `HashSet` for presence and `HashMap` for associated state. Compression and rolling hashes need their own arrays or arithmetic; do not force every hashing pattern into a map. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n) expected time · O(k) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check missing keys, repeated keys, and collisions conceptually; expected constant-time operations are not a worst-case promise. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "use std::collections::HashMap;\nfn counts(values: &[i32]) -> HashMap<i32, usize> {\n    let mut map = HashMap::new();\n    for &value in values { *map.entry(value).or_insert(0) += 1; }\n    map\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only bidirectional-map program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn follows_pattern(pattern: &str, words: &[&str]) -> bool {\n    let letters: Vec<_> = pattern.chars().collect();\n    if letters.len() != words.len() { return false; }\n    let (mut forward, mut reverse) = (std::collections::HashMap::new(), std::collections::HashMap::new());\n    for (&letter, &word) in letters.iter().zip(words) {\n        if forward.get(&letter).is_some_and(|&old| old != word)\n            || reverse.get(word).is_some_and(|&old| old != letter) { return false; }\n        forward.insert(letter, word); reverse.insert(word, letter);\n    }\n    true\n}\n\nfn main() {\n    let result = follows_pattern(\"abba\",&[\"red\",\"blue\",\"blue\",\"red\"]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "In abba with red blue blue red, a→red and b→blue agree in both directions. For ab with red red, the forward mappings individually exist but the reverse mapping detects that two letters share one word.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return true when pattern letters map one-to-one onto the words. The visible fixture is `abba; red blue blue red` and its example result is `true`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return true when pattern letters map one-to-one onto the words. For the visible input `abba; red blue blue red`, the stated result is `true`. Before reading code, name the smallest piece of information that must survive from one step to the next. A key-derived representation lets later work reuse an earlier fact. It may be a set, a map from keys to state, compressed ranks, or a rolling fingerprint; name which one this pattern uses. That is the mental model for Bidirectional Mapping; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Maintain both key-to-value and value-to-key constraints to enforce a bijection. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n) expected time · O(k) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check missing keys, repeated keys, and collisions conceptually; expected constant-time operations are not a worst-case promise. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "In abba with red blue blue red, a→red and b→blue agree in both directions. For ab with red red, the forward mappings individually exist but the reverse mapping detects that two letters share one word.",
+    "practiceCode": "fn follows_pattern(pattern: &str, words: &[&str]) -> bool {\n    let letters: Vec<_> = pattern.chars().collect();\n    if letters.len() != words.len() { return false; }\n    let (mut forward, mut reverse) = (std::collections::HashMap::new(), std::collections::HashMap::new());\n    for (&letter, &word) in letters.iter().zip(words) {\n        if forward.get(&letter).is_some_and(|&old| old != word)\n            || reverse.get(word).is_some_and(|&old| old != letter) { return false; }\n        forward.insert(letter, word); reverse.insert(word, letter);\n    }\n    true\n}\n\nfn main() {\n    let result = follows_pattern(\"abba\",&[\"red\",\"blue\",\"blue\",\"red\"]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Why does a word pattern need both forward and reverse maps?",
+    "rule": "Different letters must not map to the same word. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(n) expected time · O(k) space bound without looking at the code.",
     "summary": "Maintain both key-to-value and value-to-key constraints to enforce a bijection.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-hashing-b.png",

@@ -7,7 +7,7 @@
     "expectedAnswer": "1,2,3,4,5,6,7",
     "idea": "Visit left, node, then right; in a BST this emits sorted keys.",
     "patternID": "tree-inorder",
-    "rustSketch": "fn height(node: Option<&Node>) -> usize {\n    match node {\n        None => 0,\n        Some(node) => 1 + height(node.left.as_deref()).max(height(node.right.as_deref())),\n    }\n}",
+    "rustSketch": "\ntype Tree=Option<Box<Node>>;\nstruct Node { value:i32, left:Tree, right:Tree }\nfn node(value:i32,left:Tree,right:Tree)->Tree { Some(Box::new(Node{value,left,right})) }\nfn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn inorder(root:&Tree)->Vec<i32> {\n    fn visit(root:&Tree,out:&mut Vec<i32>) {\n        if let Some(n)=root { visit(&n.left,out); out.push(n.value); visit(&n.right,out); }\n    }\n    let mut out=Vec::new(); visit(root,&mut out); out\n}\n\nfn main() {\n    let result = csv(inorder(&node(4,node(2,node(1,None,None),node(3,None,None)),node(6,node(5,None,None),node(7,None,None)))));\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return inorder values of the BST.",
     "useCases": "BST iteration and expression trees",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Return preorder values of the level-order tree.",
         "direction": "previous",
-        "title": "Challenge: Preorder DFS"
+        "title": "Challenge: Preorder DFS",
+        "concept": "Return preorder values of the level-order tree."
       },
       {
-        "concept": "BST iteration and expression trees",
         "direction": "next",
-        "title": "Inorder DFS: When to Use It"
+        "title": "Inorder DFS: When to Use It",
+        "concept": "BST iteration and expression trees"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "It visits the lower-valued left subtree, then node, then right subtree. In the BST [4,2,6,1,3,5,7], visit 1,2,3 before 4 and 5,6,7 after it. The traversal produces sorted output because the input satisfies BST ordering, not because traversal compares and swaps values.",
+    "misconception": "“Any binary tree's inorder values are sorted”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[4,2,6,1,3,5,7]`, write the state before the first update. Explain how it represents this claim: Visit left, node, then right; in a BST this emits sorted keys. A tree result is built from a node and its children. Decide whether information flows downward, upward, or in level order."
+        "title": "Concrete transition",
+        "detail": "In the BST [4,2,6,1,3,5,7], visit 1,2,3 before 4 and 5,6,7 after it. The traversal produces sorted output because the input satisfies BST ordering, not because traversal compares and swaps values."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `1,2,3,4,5,6,7`. Use references for read-only traversals and make the stack or queue explicit when recursion depth might be large."
+        "title": "Independent second fixture",
+        "detail": "Input `[1]` produces `1`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test a missing root, a leaf, a skewed tree, and equal or duplicate values when ordering rules depend on them. Defend the O(n) time · O(h) stack bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[8,4,12,2,6,10,14]` produces `2,4,6,8,10,12,14`. It visits the lower-valued left subtree, then node, then right subtree. The stated work bound is O(n) time · O(h) stack. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[4,2,6,1,3,5,7]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Inorder DFS survives, which state must be updated, and whether the O(n) time · O(h) stack bound still holds. Look for hierarchy and parent-child structure; a plain sequence algorithm loses the branching relationships."
+    "transferChallenge": "Compare the visible input `[4,2,6,1,3,5,7]` with `[1,null,2,null,3]`. Predict why their results are `1,2,3,4,5,6,7` and `1,2,3`. Then change one legal value and explain whether the same invariant, it visits the lower-valued left subtree, then node, then right subtree, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.tree-inorder.model",
@@ -54,21 +54,21 @@
   "title": "Inorder DFS: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "It visits the lower-valued left subtree, then node, then right subtree",
+      "Any binary tree's inorder values are sorted",
+      "It sorts values after traversal"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n) time · O(h) stack",
-    "exampleCode": "fn height(node: Option<&Node>) -> usize {\n    match node {\n        None => 0,\n        Some(node) => 1 + height(node.left.as_deref()).max(height(node.right.as_deref())),\n    }\n}",
-    "explanation": "Begin with the concrete question: Return inorder values of the BST. For the visible input `[4,2,6,1,3,5,7]`, the stated result is `1,2,3,4,5,6,7`. Before reading code, name the smallest piece of information that must survive from one step to the next. A tree result is built from a node and its children. Decide whether information flows downward, upward, or in level order. That is the mental model for Inorder DFS; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Visit left, node, then right; in a BST this emits sorted keys. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use references for read-only traversals and make the stack or queue explicit when recursion depth might be large. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n) time · O(h) stack. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test a missing root, a leaf, a skewed tree, and equal or duplicate values when ordering rules depend on them. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn height(node: Option<&Node>) -> usize {\n    match node {\n        None => 0,\n        Some(node) => 1 + height(node.left.as_deref()).max(height(node.right.as_deref())),\n    }\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only tree-inorder program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "\ntype Tree=Option<Box<Node>>;\nstruct Node { value:i32, left:Tree, right:Tree }\nfn node(value:i32,left:Tree,right:Tree)->Tree { Some(Box::new(Node{value,left,right})) }\nfn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn inorder(root:&Tree)->Vec<i32> {\n    fn visit(root:&Tree,out:&mut Vec<i32>) {\n        if let Some(n)=root { visit(&n.left,out); out.push(n.value); visit(&n.right,out); }\n    }\n    let mut out=Vec::new(); visit(root,&mut out); out\n}\n\nfn main() {\n    let result = csv(inorder(&node(4,node(2,node(1,None,None),node(3,None,None)),node(6,node(5,None,None),node(7,None,None)))));\n    println!(\"{result}\");\n}\n",
+    "explanation": "In the BST [4,2,6,1,3,5,7], visit 1,2,3 before 4 and 5,6,7 after it. The traversal produces sorted output because the input satisfies BST ordering, not because traversal compares and swaps values.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return inorder values of the BST. The visible fixture is `[4,2,6,1,3,5,7]` and its example result is `1,2,3,4,5,6,7`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return inorder values of the BST. For the visible input `[4,2,6,1,3,5,7]`, the stated result is `1,2,3,4,5,6,7`. Before reading code, name the smallest piece of information that must survive from one step to the next. A tree result is built from a node and its children. Decide whether information flows downward, upward, or in level order. That is the mental model for Inorder DFS; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Visit left, node, then right; in a BST this emits sorted keys. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n) time · O(h) stack. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test a missing root, a leaf, a skewed tree, and equal or duplicate values when ordering rules depend on them. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "In the BST [4,2,6,1,3,5,7], visit 1,2,3 before 4 and 5,6,7 after it. The traversal produces sorted output because the input satisfies BST ordering, not because traversal compares and swaps values.",
+    "practiceCode": "\ntype Tree=Option<Box<Node>>;\nstruct Node { value:i32, left:Tree, right:Tree }\nfn node(value:i32,left:Tree,right:Tree)->Tree { Some(Box::new(Node{value,left,right})) }\nfn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn inorder(root:&Tree)->Vec<i32> {\n    fn visit(root:&Tree,out:&mut Vec<i32>) {\n        if let Some(n)=root { visit(&n.left,out); out.push(n.value); visit(&n.right,out); }\n    }\n    let mut out=Vec::new(); visit(root,&mut out); out\n}\n\nfn main() {\n    let result = csv(inorder(&node(4,node(2,node(1,None,None),node(3,None,None)),node(6,node(5,None,None),node(7,None,None)))));\n    println!(\"{result}\");\n}\n",
+    "question": "Why does inorder traversal sort values of a valid BST?",
+    "rule": "It visits the lower-valued left subtree, then node, then right subtree. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(h) stack bound without looking at the code.",
     "summary": "Visit left, node, then right; in a BST this emits sorted keys.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-trees-a.png",

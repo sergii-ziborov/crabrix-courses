@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS gas-station\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"3\".to_string()",
-      "String::from(\"3\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.gas-station.challenge",
     "patternID": "gas-station",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return a valid starting station, or -1.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Gas Station Reset\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Return a valid starting station, or -1.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement gas-station\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "3",
+        "kind": "visible",
         "input": "gas=[1,2,3,4,5] cost=[3,4,5,1,2]",
-        "kind": "visible"
+        "expectedAnswer": "3"
       },
       {
-        "expectedAnswer": "0",
+        "kind": "boundary",
         "input": "gas=[2] cost=[1]",
-        "kind": "boundary"
+        "expectedAnswer": "0"
       },
       {
-        "expectedAnswer": "0",
-        "input": "\ngas=[2] cost=[1]\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "gas=[1,1] cost=[2,2]",
+        "expectedAnswer": "-1"
       },
       {
-        "expectedAnswer": "3",
+        "kind": "adversarial",
+        "input": "gas=[1,2,3] cost=[2,2,1]",
+        "expectedAnswer": "1"
+      },
+      {
+        "kind": "adversarial",
+        "input": "gas=[2,2,2] cost=[1,1,1]",
+        "expectedAnswer": "0"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \ngas=[1,2,3,4,5] cost=[3,4,5,1,2]\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "3"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\ngas=[2,2,2] cost=[1,1,1]\n",
+        "expectedAnswer": "0"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"gas=[1,2,3,4,5] cost=[3,4,5,1,2]\"#, r#\"3\"#),\n    (r#\"gas=[2] cost=[1]\"#, r#\"0\"#),\n    (r#\"\ngas=[2] cost=[1]\n\"#, r#\"0\"#),\n    (r#\"  \ngas=[1,2,3,4,5] cost=[3,4,5,1,2]\n  \"#, r#\"3\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS gas-station\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"gas=[1,2,3,4,5] cost=[3,4,5,1,2]\",\"3\"),\n        (\"gas=[2] cost=[1]\",\"0\"),\n        (\"gas=[1,1] cost=[2,2]\",\"-1\"),\n        (\"gas=[1,2,3] cost=[2,2,1]\",\"1\"),\n        (\"gas=[2,2,2] cost=[1,1,1]\",\"0\"),\n        (\"  \\ngas=[1,2,3,4,5] cost=[3,4,5,1,2]\\n  \",\"3\"),\n        (\"\\ngas=[2,2,2] cost=[1,1,1]\\n\",\"0\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS gas-station\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS gas-station\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"3\".to_string()",
-      "String::from(\"3\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

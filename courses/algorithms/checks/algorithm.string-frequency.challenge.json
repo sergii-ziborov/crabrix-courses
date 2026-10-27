@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS string-frequency\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"w\".to_string()",
-      "String::from(\"w\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.string-frequency.challenge",
     "patternID": "string-frequency",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return the first non-repeated ASCII character.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Character Frequency\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Return the first non-repeated ASCII character in source order, or none when no such character exists.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement string-frequency\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "w",
+        "kind": "visible",
         "input": "swiss",
-        "kind": "visible"
+        "expectedAnswer": "w"
       },
       {
-        "expectedAnswer": "c",
+        "kind": "boundary",
         "input": "aabbc",
-        "kind": "boundary"
+        "expectedAnswer": "c"
       },
       {
-        "expectedAnswer": "c",
-        "input": "\naabbc\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "a",
+        "expectedAnswer": "a"
       },
       {
-        "expectedAnswer": "w",
+        "kind": "adversarial",
+        "input": "abac",
+        "expectedAnswer": "b"
+      },
+      {
+        "kind": "adversarial",
+        "input": "aabbz",
+        "expectedAnswer": "z"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \nswiss\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "w"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\naabbz\n",
+        "expectedAnswer": "z"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"swiss\"#, r#\"w\"#),\n    (r#\"aabbc\"#, r#\"c\"#),\n    (r#\"\naabbc\n\"#, r#\"c\"#),\n    (r#\"  \nswiss\n  \"#, r#\"w\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS string-frequency\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"swiss\",\"w\"),\n        (\"aabbc\",\"c\"),\n        (\"a\",\"a\"),\n        (\"abac\",\"b\"),\n        (\"aabbz\",\"z\"),\n        (\"  \\nswiss\\n  \",\"w\"),\n        (\"\\naabbz\\n\",\"z\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS string-frequency\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS string-frequency\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"w\".to_string()",
-      "String::from(\"w\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

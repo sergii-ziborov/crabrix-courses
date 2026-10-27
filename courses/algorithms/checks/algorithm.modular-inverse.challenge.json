@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS modular-inverse\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"4\".to_string()",
-      "String::from(\"4\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.modular-inverse.challenge",
     "patternID": "modular-inverse",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return inverse of 3 modulo 11.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Modular Inverse\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Parse a and mod with mod>1 and gcd(a,mod)=1. Return the inverse normalized to 0..mod-1.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement modular-inverse\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "4",
+        "kind": "visible",
         "input": "a=3 mod=11",
-        "kind": "visible"
+        "expectedAnswer": "4"
       },
       {
-        "expectedAnswer": "3",
+        "kind": "boundary",
         "input": "a=2 mod=5",
-        "kind": "boundary"
+        "expectedAnswer": "3"
       },
       {
-        "expectedAnswer": "3",
-        "input": "\na=2 mod=5\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "a=7 mod=13",
+        "expectedAnswer": "2"
       },
       {
-        "expectedAnswer": "4",
+        "kind": "adversarial",
+        "input": "a=1 mod=9",
+        "expectedAnswer": "1"
+      },
+      {
+        "kind": "adversarial",
+        "input": "a=10 mod=17",
+        "expectedAnswer": "12"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \na=3 mod=11\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "4"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\na=10 mod=17\n",
+        "expectedAnswer": "12"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"a=3 mod=11\"#, r#\"4\"#),\n    (r#\"a=2 mod=5\"#, r#\"3\"#),\n    (r#\"\na=2 mod=5\n\"#, r#\"3\"#),\n    (r#\"  \na=3 mod=11\n  \"#, r#\"4\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS modular-inverse\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"a=3 mod=11\",\"4\"),\n        (\"a=2 mod=5\",\"3\"),\n        (\"a=7 mod=13\",\"2\"),\n        (\"a=1 mod=9\",\"1\"),\n        (\"a=10 mod=17\",\"12\"),\n        (\"  \\na=3 mod=11\\n  \",\"4\"),\n        (\"\\na=10 mod=17\\n\",\"12\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS modular-inverse\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS modular-inverse\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"4\".to_string()",
-      "String::from(\"4\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

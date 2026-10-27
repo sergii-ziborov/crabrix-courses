@@ -7,7 +7,7 @@
     "expectedAnswer": "0",
     "idea": "Represent intervals as a binary tree so a query visits only canonical covering nodes.",
     "patternID": "segment-tree",
-    "rustSketch": "fn prefix(values: &[i64]) -> Vec<i64> {\n    let mut sums = vec![0; values.len() + 1];\n    for i in 0..values.len() { sums[i + 1] = sums[i] + values[i]; }\n    sums\n}",
+    "rustSketch": "fn updated_min(values: &[i32], update: (usize, i32), range: (usize, usize)) -> i32 {\n    let n = values.len().next_power_of_two();\n    let mut tree = vec![i32::MAX; 2*n];\n    tree[n..n+values.len()].copy_from_slice(values);\n    for i in (1..n).rev() { tree[i] = tree[2*i].min(tree[2*i+1]); }\n    let mut i = n + update.0; tree[i] = update.1;\n    while i > 1 { i /= 2; tree[i] = tree[2*i].min(tree[2*i+1]); }\n    let (mut left, mut right) = (range.0+n, range.1+n+1);\n    let mut result = i32::MAX;\n    while left < right {\n        if left % 2 == 1 { result = result.min(tree[left]); left += 1; }\n        if right % 2 == 1 { right -= 1; result = result.min(tree[right]); }\n        left /= 2; right /= 2;\n    }\n    result\n}\n\nfn main() {\n    let result = updated_min(&[5,4,7,2],(2,0),(1,3)).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Build range minimum, apply the point update, then query the inclusive range.",
     "useCases": "dynamic range min/max/sum and interval aggregation",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Represent intervals as a binary tree so a query visits only canonical covering nodes.",
         "direction": "previous",
-        "title": "Segment Tree: Mental Model"
+        "title": "Segment Tree: Mental Model",
+        "concept": "Represent intervals as a binary tree so a query visits only canonical covering nodes."
       },
       {
-        "concept": "Build range minimum, apply the point update, then query the inclusive range.",
         "direction": "next",
-        "title": "Challenge: Segment Tree"
+        "title": "Challenge: Segment Tree",
+        "concept": "Build range minimum, apply the point update, then query the inclusive range."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "Their disjoint canonical intervals cover the requested range. Build minima for [5,4,7,2]. Updating index 2 to 0 changes its leaf and ancestors. Inclusive query [1,3] combines canonical ranges and returns 0; the query loop uses a half-open right endpoint internally.",
+    "misconception": "“Every query must visit all leaves”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `values=[5,4,7,2] update=(2,0) query=1..3`, write the state before the first update. Explain how it represents this claim: Represent intervals as a binary tree so a query visits only canonical covering nodes. A range method summarizes intervals so the same information is not recomputed. A static prefix table and an updateable tree make different tradeoffs; define endpoint conventions first."
+        "title": "Concrete transition",
+        "detail": "Build minima for [5,4,7,2]. Updating index 2 to 0 changes its leaf and ancestors. Inclusive query [1,3] combines canonical ranges and returns 0; the query loop uses a half-open right endpoint internally."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `0`. Allocate an extra prefix slot when a zero-length prefix simplifies indexing, and use a numeric type large enough for accumulated values."
+        "title": "Independent second fixture",
+        "detail": "Input `values=[1,2,3] update=(0,9) query=0..2` produces `2`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test the first and last position, an empty range where permitted, and the boundary immediately after an update. Defend the O(log n) update/query · O(n) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `values=[8,6,7] update=(1,2) query=0..0` produces `8`. Their disjoint canonical intervals cover the requested range. The stated work bound is O(log n) update/query · O(n) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `values=[5,4,7,2] update=(2,0) query=1..3` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Segment Tree survives, which state must be updated, and whether the O(log n) update/query · O(n) space bound still holds. Precomputation pays when many ranges are queried. If values change between queries, an updateable structure may be needed; for one small query, a direct walk is simpler."
+    "transferChallenge": "Compare the visible input `values=[5,4,7,2] update=(2,0) query=1..3` with `values=[4,4,4,4] update=(3,1) query=1..3`. Predict why their results are `0` and `1`. Then change one legal value and explain whether the same invariant, their disjoint canonical intervals cover the requested range, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.segment-tree.recognize",
@@ -54,21 +54,21 @@
   "title": "Segment Tree: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "dynamic range min/max/sum and interval aggregation",
-      "Only problems with exactly one input value"
+      "`3`",
+      "`2`",
+      "`1`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Segment Tree",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Segment Tree",
-    "explanation": "A problem is a good match for Segment Tree when it asks for dynamic range min/max/sum and interval aggregation. Here the concrete task is: Build range minimum, apply the point update, then query the inclusive range. The visible input `values=[5,4,7,2] update=(2,0) query=1..3` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Precomputation pays when many ranges are queried. If values change between queries, an updateable structure may be needed; for one small query, a direct walk is simpler. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Represent intervals as a binary tree so a query visits only canonical covering nodes. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A range method summarizes intervals so the same information is not recomputed. A static prefix table and an updateable tree make different tradeoffs; define endpoint conventions first. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(log n) update/query · O(n) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `0` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test the first and last position, an empty range where permitted, and the boundary immediately after an update. Allocate an extra prefix slot when a zero-length prefix simplifies indexing, and use a numeric type large enough for accumulated values. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: dynamic range min/max/sum and interval aggregation.",
-    "practiceCode": "fn prefix(values: &[i64]) -> Vec<i64> {\n    let mut sums = vec![0; values.len() + 1];\n    for i in 0..values.len() { sums[i + 1] = sums[i] + values[i]; }\n    sums\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only segment-tree program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn updated_min(values: &[i32], update: (usize, i32), range: (usize, usize)) -> i32 {\n    let n = values.len().next_power_of_two();\n    let mut tree = vec![i32::MAX; 2*n];\n    tree[n..n+values.len()].copy_from_slice(values);\n    for i in (1..n).rev() { tree[i] = tree[2*i].min(tree[2*i+1]); }\n    let mut i = n + update.0; tree[i] = update.1;\n    while i > 1 { i /= 2; tree[i] = tree[2*i].min(tree[2*i+1]); }\n    let (mut left, mut right) = (range.0+n, range.1+n+1);\n    let mut result = i32::MAX;\n    while left < right {\n        if left % 2 == 1 { result = result.min(tree[left]); left += 1; }\n        if right % 2 == 1 { right -= 1; result = result.min(tree[right]); }\n        left /= 2; right /= 2;\n    }\n    result\n}\n\nfn main() {\n    let result = updated_min(&[5,4,7,2],(2,0),(1,3)).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "Build minima for [5,4,7,2]. Updating index 2 to 0 changes its leaf and ancestors. Inclusive query [1,3] combines canonical ranges and returns 0; the query loop uses a half-open right endpoint internally.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Build range minimum, apply the point update, then query the inclusive range. The visible fixture is `values=[5,4,7,2] update=(2,0) query=1..3` and its example result is `0`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Segment Tree when it asks for dynamic range min/max/sum and interval aggregation. Here the concrete task is: Build range minimum, apply the point update, then query the inclusive range. The visible input `values=[5,4,7,2] update=(2,0) query=1..3` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Precomputation pays when many ranges are queried. If values change between queries, an updateable structure may be needed; for one small query, a direct walk is simpler. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Represent intervals as a binary tree so a query visits only canonical covering nodes. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A range method summarizes intervals so the same information is not recomputed. A static prefix table and an updateable tree make different tradeoffs; define endpoint conventions first. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(log n) update/query · O(n) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `0` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test the first and last position, an empty range where permitted, and the boundary immediately after an update. Allocate an extra prefix slot when a zero-length prefix simplifies indexing, and use a numeric type large enough for accumulated values. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `2`. Their disjoint canonical intervals cover the requested range. Compare this independent fixture with the worked trace: Build minima for [5,4,7,2]. Updating index 2 to 0 changes its leaf and ancestors. Inclusive query [1,3] combines canonical ranges and returns 0; the query loop uses a half-open right endpoint internally.",
+    "practiceCode": "fn updated_min(values: &[i32], update: (usize, i32), range: (usize, usize)) -> i32 {\n    let n = values.len().next_power_of_two();\n    let mut tree = vec![i32::MAX; 2*n];\n    tree[n..n+values.len()].copy_from_slice(values);\n    for i in (1..n).rev() { tree[i] = tree[2*i].min(tree[2*i+1]); }\n    let mut i = n + update.0; tree[i] = update.1;\n    while i > 1 { i /= 2; tree[i] = tree[2*i].min(tree[2*i+1]); }\n    let (mut left, mut right) = (range.0+n, range.1+n+1);\n    let mut result = i32::MAX;\n    while left < right {\n        if left % 2 == 1 { result = result.min(tree[left]); left += 1; }\n        if right % 2 == 1 { right -= 1; result = result.min(tree[right]); }\n        left /= 2; right /= 2;\n    }\n    result\n}\n\nfn main() {\n    let result = updated_min(&[5,4,7,2],(2,0),(1,3)).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Segment Tree on input `values=[1,2,3] update=(0,9) query=0..2`. Which result follows from the documented contract?",
+    "rule": "Their disjoint canonical intervals cover the requested range. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Segment Tree.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-ranges-b.png",

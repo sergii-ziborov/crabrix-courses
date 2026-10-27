@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS bidirectional-map\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"true\".to_string()",
-      "String::from(\"true\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.bidirectional-map.challenge",
     "patternID": "bidirectional-map",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return true when pattern letters map one-to-one onto the words.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Bidirectional Mapping\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Return true when pattern letters map one-to-one onto the words.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement bidirectional-map\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "true",
+        "kind": "visible",
         "input": "abba; red blue blue red",
-        "kind": "visible"
+        "expectedAnswer": "true"
       },
       {
-        "expectedAnswer": "false",
+        "kind": "boundary",
         "input": "abba; red blue blue green",
-        "kind": "adversarial"
+        "expectedAnswer": "false"
       },
       {
-        "expectedAnswer": "false",
-        "input": "\nabba; red blue blue green\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "ab; red red",
+        "expectedAnswer": "false"
       },
       {
-        "expectedAnswer": "true",
+        "kind": "adversarial",
+        "input": "aaa; red red red",
+        "expectedAnswer": "true"
+      },
+      {
+        "kind": "adversarial",
+        "input": "abc; one two three",
+        "expectedAnswer": "true"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \nabba; red blue blue red\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "true"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\nabc; one two three\n",
+        "expectedAnswer": "true"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"abba; red blue blue red\"#, r#\"true\"#),\n    (r#\"abba; red blue blue green\"#, r#\"false\"#),\n    (r#\"\nabba; red blue blue green\n\"#, r#\"false\"#),\n    (r#\"  \nabba; red blue blue red\n  \"#, r#\"true\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS bidirectional-map\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"abba; red blue blue red\",\"true\"),\n        (\"abba; red blue blue green\",\"false\"),\n        (\"ab; red red\",\"false\"),\n        (\"aaa; red red red\",\"true\"),\n        (\"abc; one two three\",\"true\"),\n        (\"  \\nabba; red blue blue red\\n  \",\"true\"),\n        (\"\\nabc; one two three\\n\",\"true\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS bidirectional-map\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS bidirectional-map\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"true\".to_string()",
-      "String::from(\"true\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

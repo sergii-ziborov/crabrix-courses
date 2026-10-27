@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS word-grid-search\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"true\".to_string()",
-      "String::from(\"true\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.word-grid-search.challenge",
     "patternID": "word-grid-search",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return true when the word can be traced without reusing a cell.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Grid Word Search\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Parse a rectangular ASCII grid and word. Return whether four-neighbor moves spell the word without reusing a cell within one path.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement word-grid-search\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "true",
+        "kind": "visible",
         "input": "grid=ABCE,SFCS,ADEE word=ABCCED",
-        "kind": "visible"
+        "expectedAnswer": "true"
       },
       {
-        "expectedAnswer": "false",
+        "kind": "boundary",
         "input": "grid=A word=B",
-        "kind": "boundary"
+        "expectedAnswer": "false"
       },
       {
-        "expectedAnswer": "false",
-        "input": "\ngrid=A word=B\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "grid=AB,CD word=ACD",
+        "expectedAnswer": "true"
       },
       {
-        "expectedAnswer": "true",
+        "kind": "adversarial",
+        "input": "grid=AA word=AAA",
+        "expectedAnswer": "false"
+      },
+      {
+        "kind": "adversarial",
+        "input": "grid=ABC word=CBA",
+        "expectedAnswer": "true"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \ngrid=ABCE,SFCS,ADEE word=ABCCED\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "true"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\ngrid=ABC word=CBA\n",
+        "expectedAnswer": "true"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"grid=ABCE,SFCS,ADEE word=ABCCED\"#, r#\"true\"#),\n    (r#\"grid=A word=B\"#, r#\"false\"#),\n    (r#\"\ngrid=A word=B\n\"#, r#\"false\"#),\n    (r#\"  \ngrid=ABCE,SFCS,ADEE word=ABCCED\n  \"#, r#\"true\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS word-grid-search\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"grid=ABCE,SFCS,ADEE word=ABCCED\",\"true\"),\n        (\"grid=A word=B\",\"false\"),\n        (\"grid=AB,CD word=ACD\",\"true\"),\n        (\"grid=AA word=AAA\",\"false\"),\n        (\"grid=ABC word=CBA\",\"true\"),\n        (\"  \\ngrid=ABCE,SFCS,ADEE word=ABCCED\\n  \",\"true\"),\n        (\"\\ngrid=ABC word=CBA\\n\",\"true\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS word-grid-search\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS word-grid-search\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"true\".to_string()",
-      "String::from(\"true\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

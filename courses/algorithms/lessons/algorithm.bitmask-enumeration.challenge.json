@@ -7,44 +7,44 @@
     "expectedAnswer": "5",
     "idea": "Use each bit as an include/exclude choice for one item.",
     "patternID": "bitmask-enumeration",
-    "rustSketch": "fn gcd(mut a: u64, mut b: u64) -> u64 {\n    while b != 0 {\n        (a, b) = (b, a % b);\n    }\n    a\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn matching_masks(values:&[i32],target:i32)->Vec<usize> {\n    assert!(values.len()<usize::BITS as usize);\n    (0..1_usize<<values.len()).filter(|&mask|values.iter().enumerate().filter(|(i,_)|mask>>i&1==1).map(|(_,x)|x).sum::<i32>()==target).collect()\n}\n\nfn main() {\n    let result = csv(matching_masks(&[2,3],5));\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
-    "task": "Return masks whose selected values sum to 5.",
+    "task": "Parse values and return, in increasing order, every zero-based position mask whose selected values sum to 5.",
     "useCases": "small subsets, permissions, feature combinations",
     "visibleInput": "values=[1,2,4]"
   },
-  "concept": "Return masks whose selected values sum to 5.",
-  "contentDigest": "1a618314e8028ab7af40e363b158d12e03b6cc172617c669a7ace98439424e9c",
+  "concept": "Parse values and return, in increasing order, every zero-based position mask whose selected values sum to 5.",
+  "contentDigest": "d9ac88e16b68d1269a502cf1dfc94871da5b4c83920b2dbc58d96fd7d25b7b62",
   "depth": {
     "connections": [
       {
-        "concept": "small subsets, permissions, feature combinations",
         "direction": "previous",
-        "title": "Bitmask Enumeration: When to Use It"
+        "title": "Bitmask Enumeration: When to Use It",
+        "concept": "small subsets, permissions, feature combinations"
       },
       {
-        "concept": "Equal values cancel and zero is neutral, leaving an odd-occurring value.",
         "direction": "next",
-        "title": "XOR Cancellation: Mental Model"
+        "title": "XOR Cancellation: Mental Model",
+        "concept": "Equal values cancel and zero is neutral, leaving an odd-occurring value."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "It selects input position i, including when values repeat. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“It selects every value numerically equal to i”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `values=[1,2,4]`, write the state before the first update. Explain how it represents this claim: Use each bit as an include/exclude choice for one item. An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds."
+        "title": "Pattern-specific invariant",
+        "detail": "It selects input position i, including when values repeat. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Use explicit integer widths and checked arithmetic when input bounds require them. Distinguish bit positions from numeric values."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `values=[2,3]` and computes `3`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Defend the O(2^n*n) time · O(1) state excluding output bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `values=[2,4]`, the independently calculated result is An empty output string. The complexity discussion uses O(2^n*n) time · O(1) state excluding output. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `values=[1,2,4]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Bitmask Enumeration survives, which state must be updated, and whether the O(2^n*n) time · O(1) state excluding output bound still holds. Check number size, sign, and modulus assumptions before using a shortcut; not every inverse or division exists."
+    "transferChallenge": "Change the independent fixture `values=[2,3]` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `values=[1,2,4]`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.bitmask-enumeration.challenge",
@@ -54,21 +54,21 @@
   "title": "Challenge: Bitmask Enumeration",
   "writing": {
     "answers": [
-      "O(2^n*n) time · O(1) state excluding output",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "An empty output string",
+      "`0`",
+      "`not a valid result`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return masks whose selected values sum to 5.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Bitmask Enumeration\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Return masks whose selected values sum to 5. On input `values=[1,2,4]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Use each bit as an include/exclude choice for one item. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use explicit integer widths and checked arithmetic when input bounds require them. Distinguish bit positions from numeric values. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(2^n*n) time · O(1) state excluding output; explain which operation dominates it and how many times the input can trigger that operation. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(2^n*n) time · O(1) state excluding output; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return masks whose selected values sum to 5.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Bitmask Enumeration\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS bitmask-enumeration, and your explanation still meets O(2^n*n) time · O(1) state excluding output.",
-    "summary": "Return masks whose selected values sum to 5.",
-    "task": "Return masks whose selected values sum to 5."
+    "exampleCaption": "Complete std-only bitmask-enumeration program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn matching_masks(values:&[i32],target:i32)->Vec<usize> {\n    assert!(values.len()<usize::BITS as usize);\n    (0..1_usize<<values.len()).filter(|&mask|values.iter().enumerate().filter(|(i,_)|mask>>i&1==1).map(|(_,x)|x).sum::<i32>()==target).collect()\n}\n\nfn main() {\n    let result = csv(matching_masks(&[2,3],5));\n    println!(\"{result}\");\n}\n",
+    "explanation": "It selects input position i, including when values repeat. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `values=[2,3]`, the worked program returns `3`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `values=[1,2,4]`; predict that result before opening the answer reveal. The precise contract is: Parse values and return, in increasing order, every zero-based position mask whose selected values sum to 5.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Parse values and return, in increasing order, every zero-based position mask whose selected values sum to 5. On input `values=[1,2,4]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Use each bit as an include/exclude choice for one item. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(2^n*n) time · O(1) state excluding output; explain which operation dominates it and how many times the input can trigger that operation. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is An empty output string. It selects input position i, including when values repeat. Compare this independent fixture with the worked trace: For values [1,2,4], mask 5 is binary 101 and selects 1 and 4, sum 5. For [2,3], mask 3 selects both and also sums to 5. Different positions remain distinct even when their values coincide.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Parse values and return, in increasing order, every zero-based position mask whose selected values sum to 5.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement bitmask-enumeration\")\n}\n",
+    "question": "Boundary check for bitmask-enumeration: with input `values=[2,4]`, what result should solve return?",
+    "rule": "It selects input position i, including when values repeat. Parse values and return, in increasing order, every zero-based position mask whose selected values sum to 5.",
+    "success": "The private harness prints PASS bitmask-enumeration. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
+    "summary": "Parse values and return, in increasing order, every zero-based position mask whose selected values sum to 5.",
+    "task": "Parse values and return, in increasing order, every zero-based position mask whose selected values sum to 5."
   },
   "illustration": {
     "path": "media/algorithms-math-bits-a.png",

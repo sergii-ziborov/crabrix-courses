@@ -7,44 +7,44 @@
     "expectedAnswer": "4",
     "idea": "Equal interval ends add two; unequal ends discard one boundary and keep the better interval.",
     "patternID": "longest-pal-subsequence",
-    "rustSketch": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
+    "rustSketch": "fn palindromic_subsequence(text:&str)->usize {\n    assert!(text.is_ascii()); let a=text.as_bytes(); let n=a.len(); if n==0 { return 0; } let mut dp=vec![vec![0;n];n];\n    for i in (0..n).rev() { dp[i][i]=1; for j in i+1..n {\n        dp[i][j]=if a[i]==a[j] { 2+if j==i+1 { 0 } else { dp[i+1][j-1] } } else { dp[i+1][j].max(dp[i][j-1]) };\n    } } dp[0][n-1]\n}\n\nfn main() {\n    let result = palindromic_subsequence(\"bbbab\").to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return the longest palindromic subsequence length.",
     "useCases": "palindrome retention and minimum deletions",
     "visibleInput": "bbbab"
   },
   "concept": "palindrome retention and minimum deletions",
-  "contentDigest": "d16b6831ff028a7c439801691683e66cd5d6117acd31db2066e49f2e409c5d7e",
+  "contentDigest": "33d14b271e6fac7ffac56db9cd2702da71079be8f9027d6e2ef9e32fadae38b9",
   "depth": {
     "connections": [
       {
-        "concept": "Equal interval ends add two; unequal ends discard one boundary and keep the better interval.",
         "direction": "previous",
-        "title": "Longest Palindromic Subsequence: Mental Model"
+        "title": "Longest Palindromic Subsequence: Mental Model",
+        "concept": "Equal interval ends add two; unequal ends discard one boundary and keep the better interval."
       },
       {
-        "concept": "Return the longest palindromic subsequence length.",
         "direction": "next",
-        "title": "Challenge: Longest Palindromic Subsequence"
+        "title": "Challenge: Longest Palindromic Subsequence",
+        "concept": "Return the longest palindromic subsequence length."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "An optimal palindromic subsequence cannot require both unequal ends. For bbbab, retaining four b symbols gives length 4 despite skipping a. Matching ends contribute two plus the inner interval; unequal ends choose the better of the two shorter intervals. A one-symbol interval has base length 1.",
+    "misconception": "“Unequal endpoints force answer zero”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `bbbab`, write the state before the first update. Explain how it represents this claim: Equal interval ends add two; unequal ends discard one boundary and keep the better interval. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit."
+        "title": "Concrete transition",
+        "detail": "For bbbab, retaining four b symbols gives length 4 despite skipping a. Matching ends contribute two plus the inner interval; unequal ends choose the better of the two shorter intervals. A one-symbol interval has base length 1."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `4`. Index tables consistently where the state is tabular. Compress dimensions only after the full recurrence and its dependency order are clear."
+        "title": "Independent second fixture",
+        "detail": "Input `aaaa` produces `4`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Defend the O(n^2) time · O(n^2) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `agbdba` produces `5`. An optimal palindromic subsequence cannot require both unequal ends. The stated work bound is O(n^2) time · O(n^2) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `bbbab` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Longest Palindromic Subsequence survives, which state must be updated, and whether the O(n^2) time · O(n^2) space bound still holds. Write the dependency arrows before choosing loop order; a recurrence that reads the future cannot be filled left to right without adjustment."
+    "transferChallenge": "Compare the visible input `bbbab` with `abcd`. Predict why their results are `4` and `1`. Then change one legal value and explain whether the same invariant, an optimal palindromic subsequence cannot require both unequal ends, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.longest-pal-subsequence.recognize",
@@ -54,21 +54,21 @@
   "title": "Longest Palindromic Subsequence: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "palindrome retention and minimum deletions",
-      "Only problems with exactly one input value"
+      "`5`",
+      "`4`",
+      "`3`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Longest Palindromic Subsequence",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Longest Palindromic Subsequence",
-    "explanation": "A problem is a good match for Longest Palindromic Subsequence when it asks for palindrome retention and minimum deletions. Here the concrete task is: Return the longest palindromic subsequence length. The visible input `bbbab` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Write the dependency arrows before choosing loop order; a recurrence that reads the future cannot be filled left to right without adjustment. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Equal interval ends add two; unequal ends discard one boundary and keep the better interval. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n^2) time · O(n^2) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `4` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Index tables consistently where the state is tabular. Compress dimensions only after the full recurrence and its dependency order are clear. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: palindrome retention and minimum deletions.",
-    "practiceCode": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only longest-pal-subsequence program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn palindromic_subsequence(text:&str)->usize {\n    assert!(text.is_ascii()); let a=text.as_bytes(); let n=a.len(); if n==0 { return 0; } let mut dp=vec![vec![0;n];n];\n    for i in (0..n).rev() { dp[i][i]=1; for j in i+1..n {\n        dp[i][j]=if a[i]==a[j] { 2+if j==i+1 { 0 } else { dp[i+1][j-1] } } else { dp[i+1][j].max(dp[i][j-1]) };\n    } } dp[0][n-1]\n}\n\nfn main() {\n    let result = palindromic_subsequence(\"bbbab\").to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "For bbbab, retaining four b symbols gives length 4 despite skipping a. Matching ends contribute two plus the inner interval; unequal ends choose the better of the two shorter intervals. A one-symbol interval has base length 1.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the longest palindromic subsequence length. The visible fixture is `bbbab` and its example result is `4`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Longest Palindromic Subsequence when it asks for palindrome retention and minimum deletions. Here the concrete task is: Return the longest palindromic subsequence length. The visible input `bbbab` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Write the dependency arrows before choosing loop order; a recurrence that reads the future cannot be filled left to right without adjustment. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Equal interval ends add two; unequal ends discard one boundary and keep the better interval. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n^2) time · O(n^2) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `4` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Index tables consistently where the state is tabular. Compress dimensions only after the full recurrence and its dependency order are clear. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `4`. An optimal palindromic subsequence cannot require both unequal ends. Compare this independent fixture with the worked trace: For bbbab, retaining four b symbols gives length 4 despite skipping a. Matching ends contribute two plus the inner interval; unequal ends choose the better of the two shorter intervals. A one-symbol interval has base length 1.",
+    "practiceCode": "fn palindromic_subsequence(text:&str)->usize {\n    assert!(text.is_ascii()); let a=text.as_bytes(); let n=a.len(); if n==0 { return 0; } let mut dp=vec![vec![0;n];n];\n    for i in (0..n).rev() { dp[i][i]=1; for j in i+1..n {\n        dp[i][j]=if a[i]==a[j] { 2+if j==i+1 { 0 } else { dp[i+1][j-1] } } else { dp[i+1][j].max(dp[i][j-1]) };\n    } } dp[0][n-1]\n}\n\nfn main() {\n    let result = palindromic_subsequence(\"bbbab\").to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Longest Palindromic Subsequence on input `aaaa`. Which result follows from the documented contract?",
+    "rule": "An optimal palindromic subsequence cannot require both unequal ends. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Longest Palindromic Subsequence.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-dynamic-2d-a.png",

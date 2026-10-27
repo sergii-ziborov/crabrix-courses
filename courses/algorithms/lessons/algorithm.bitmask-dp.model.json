@@ -7,44 +7,44 @@
     "expectedAnswer": "80",
     "idea": "Encode the chosen subset in bits and transition by adding one unused item.",
     "patternID": "bitmask-dp",
-    "rustSketch": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
+    "rustSketch": "fn travelling_salesman(cost:&[Vec<i32>])->i32 {\n    let n=cost.len(); assert!(n>0 && n<=16); let states=1<<n; let infinity=i32::MAX/4; let mut dp=vec![vec![infinity;n];states]; dp[1][0]=0;\n    for mask in 1..states { for last in 0..n { if dp[mask][last]==infinity { continue; }\n        for next in 0..n { if mask>>next&1==0 { let new=mask|1<<next; dp[new][next]=dp[new][next].min(dp[mask][last]+cost[last][next]); } }\n    } }\n    (0..n).map(|last|dp[states-1][last]+cost[last][0]).min().unwrap()\n}\n\nfn main() {\n    let result = travelling_salesman(&[vec![0,10,15,20],vec![10,0,35,25],vec![15,35,0,30],vec![20,25,30,0]]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return minimum tour cost starting and ending at 0.",
     "useCases": "small assignment, travelling salesperson, pairing",
     "visibleInput": "matrix=[[0,10,15,20],[10,0,35,25],[15,35,0,30],[20,25,30,0]]"
   },
   "concept": "Encode the chosen subset in bits and transition by adding one unused item.",
-  "contentDigest": "d08b0e2d408238bfdb7ff121e7013eb98508677329eded7000f6d2d25125ab66",
+  "contentDigest": "5af0b06257ab7ded9e4e9fc426bcffa8c593ad328ddc67320a918b20537dd0f6",
   "depth": {
     "connections": [
       {
-        "concept": "Count integers from 0 through 25 whose digit sum is 5.",
         "direction": "previous",
-        "title": "Challenge: Digit DP"
+        "title": "Challenge: Digit DP",
+        "concept": "Parse bound and sum. Count integers from 0 through bound inclusive whose decimal digit sum is sum; zero has digit sum zero."
       },
       {
-        "concept": "small assignment, travelling salesperson, pairing",
         "direction": "next",
-        "title": "Bitmask DP: When to Use It"
+        "title": "Bitmask DP: When to Use It",
+        "concept": "small assignment, travelling salesperson, pairing"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "The visited vertex subset and current final vertex. In the four-city sample, a minimum closed tour costs 80. State (mask,last) records the cheapest route starting at 0, visiting exactly mask and ending at last. Add the edge back to 0 only after all vertices have been visited.",
+    "misconception": "“Only the number of visited vertices”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `matrix=[[0,10,15,20],[10,0,35,25],[15,35,0,30],[20,25,30,0]]`, write the state before the first update. Explain how it represents this claim: Encode the chosen subset in bits and transition by adding one unused item. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit."
+        "title": "Concrete transition",
+        "detail": "In the four-city sample, a minimum closed tour costs 80. State (mask,last) records the cheapest route starting at 0, visiting exactly mask and ending at last. Add the edge back to 0 only after all vertices have been visited."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `80`. Index tables consistently where the state is tabular. Compress dimensions only after the full recurrence and its dependency order are clear."
+        "title": "Independent second fixture",
+        "detail": "Input `matrix=[[0,5],[5,0]]` produces `10`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Defend the O(2^n * n^2) typical · O(2^n*n) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `matrix=[[0,3,4],[3,0,1],[4,1,0]]` produces `8`. The visited vertex subset and current final vertex. The stated work bound is O(2^n * n^2) typical · O(2^n*n) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `matrix=[[0,10,15,20],[10,0,35,25],[15,35,0,30],[20,25,30,0]]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Bitmask DP survives, which state must be updated, and whether the O(2^n * n^2) typical · O(2^n*n) space bound still holds. Write the dependency arrows before choosing loop order; a recurrence that reads the future cannot be filled left to right without adjustment."
+    "transferChallenge": "Compare the visible input `matrix=[[0,10,15,20],[10,0,35,25],[15,35,0,30],[20,25,30,0]]` with `matrix=[[0,1,5],[1,0,2],[5,2,0]]`. Predict why their results are `80` and `8`. Then change one legal value and explain whether the same invariant, the visited vertex subset and current final vertex, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.bitmask-dp.model",
@@ -54,21 +54,21 @@
   "title": "Bitmask DP: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "The visited vertex subset and current final vertex",
+      "Only the number of visited vertices",
+      "Only the last edge's weight"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(2^n * n^2) typical · O(2^n*n) space",
-    "exampleCode": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
-    "explanation": "Begin with the concrete question: Return minimum tour cost starting and ending at 0. For the visible input `matrix=[[0,10,15,20],[10,0,35,25],[15,35,0,30],[20,25,30,0]]`, the stated result is `80`. Before reading code, name the smallest piece of information that must survive from one step to the next. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit. That is the mental model for Bitmask DP; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Encode the chosen subset in bits and transition by adding one unused item. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Index tables consistently where the state is tabular. Compress dimensions only after the full recurrence and its dependency order are clear. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(2^n * n^2) typical · O(2^n*n) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only bitmask-dp program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn travelling_salesman(cost:&[Vec<i32>])->i32 {\n    let n=cost.len(); assert!(n>0 && n<=16); let states=1<<n; let infinity=i32::MAX/4; let mut dp=vec![vec![infinity;n];states]; dp[1][0]=0;\n    for mask in 1..states { for last in 0..n { if dp[mask][last]==infinity { continue; }\n        for next in 0..n { if mask>>next&1==0 { let new=mask|1<<next; dp[new][next]=dp[new][next].min(dp[mask][last]+cost[last][next]); } }\n    } }\n    (0..n).map(|last|dp[states-1][last]+cost[last][0]).min().unwrap()\n}\n\nfn main() {\n    let result = travelling_salesman(&[vec![0,10,15,20],vec![10,0,35,25],vec![15,35,0,30],vec![20,25,30,0]]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "In the four-city sample, a minimum closed tour costs 80. State (mask,last) records the cheapest route starting at 0, visiting exactly mask and ending at last. Add the edge back to 0 only after all vertices have been visited.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return minimum tour cost starting and ending at 0. The visible fixture is `matrix=[[0,10,15,20],[10,0,35,25],[15,35,0,30],[20,25,30,0]]` and its example result is `80`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return minimum tour cost starting and ending at 0. For the visible input `matrix=[[0,10,15,20],[10,0,35,25],[15,35,0,30],[20,25,30,0]]`, the stated result is `80`. Before reading code, name the smallest piece of information that must survive from one step to the next. A multidimensional or structured DP state records the information needed to identify a subproblem: two prefixes, an interval, a bitmask, a tree node, or a resource limit. That is the mental model for Bitmask DP; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Encode the chosen subset in bits and transition by adding one unused item. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(2^n * n^2) typical · O(2^n*n) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test base states, boundary cells or subsets, ties, and whether a compressed representation overwrites a value still needed later. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "In the four-city sample, a minimum closed tour costs 80. State (mask,last) records the cheapest route starting at 0, visiting exactly mask and ending at last. Add the edge back to 0 only after all vertices have been visited.",
+    "practiceCode": "fn travelling_salesman(cost:&[Vec<i32>])->i32 {\n    let n=cost.len(); assert!(n>0 && n<=16); let states=1<<n; let infinity=i32::MAX/4; let mut dp=vec![vec![infinity;n];states]; dp[1][0]=0;\n    for mask in 1..states { for last in 0..n { if dp[mask][last]==infinity { continue; }\n        for next in 0..n { if mask>>next&1==0 { let new=mask|1<<next; dp[new][next]=dp[new][next].min(dp[mask][last]+cost[last][next]); } }\n    } }\n    (0..n).map(|last|dp[states-1][last]+cost[last][0]).min().unwrap()\n}\n\nfn main() {\n    let result = travelling_salesman(&[vec![0,10,15,20],vec![10,0,35,25],vec![15,35,0,30],vec![20,25,30,0]]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "What information identifies a travelling-salesman DP state?",
+    "rule": "The visited vertex subset and current final vertex. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(2^n * n^2) typical · O(2^n*n) space bound without looking at the code.",
     "summary": "Encode the chosen subset in bits and transition by adding one unused item.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-dynamic-2d-b.png",

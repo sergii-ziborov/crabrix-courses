@@ -7,7 +7,7 @@
     "expectedAnswer": "9,8,7",
     "idea": "Keep a heap of only k winners and evict its smallest whenever it grows.",
     "patternID": "top-k-minheap",
-    "rustSketch": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn top_k(values:&[i32],k:usize)->Vec<i32> {\n    let mut heap=std::collections::BinaryHeap::new();\n    for &x in values { heap.push(std::cmp::Reverse(x)); if heap.len()>k { heap.pop(); } }\n    let mut out:Vec<_>=heap.into_iter().map(|std::cmp::Reverse(x)|x).collect(); out.sort_unstable_by(|a,b|b.cmp(a)); out\n}\n\nfn main() {\n    let result = csv(top_k(&[4,1,9,7,3,8],3));\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return the three largest values in descending order.",
     "useCases": "largest k values and bounded leaderboards",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Keep a heap of only k winners and evict its smallest whenever it grows.",
         "direction": "previous",
-        "title": "Top-K with a Min-Heap: Mental Model"
+        "title": "Top-K with a Min-Heap: Mental Model",
+        "concept": "Keep a heap of only k winners and evict its smallest whenever it grows."
       },
       {
-        "concept": "Return the three largest values in descending order.",
         "direction": "next",
-        "title": "Challenge: Top-K with a Min-Heap"
+        "title": "Challenge: Top-K with a Min-Heap",
+        "concept": "Return the three largest values in descending order."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "Its smallest retained value is the one to discard when a larger candidate arrives. With k=3, the heap retains the best three values seen so far. Reading [4,1,9,7,3,8] ultimately retains 7,8,9. Sorting just those retained values produces the required descending report 9,8,7.",
+    "misconception": "“A max-heap of all inputs always uses only k slots”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[4,1,9,7,3,8]`, write the state before the first update. Explain how it represents this claim: Keep a heap of only k winners and evict its smallest whenever it grows. A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded."
+        "title": "Concrete transition",
+        "detail": "With k=3, the heap retains the best three values seen so far. Reading [4,1,9,7,3,8] ultimately retains 7,8,9. Sorting just those retained values produces the required descending report 9,8,7."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `9,8,7`. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data."
+        "title": "Independent second fixture",
+        "detail": "Input `[1,2,3,4,5,6,7]` produces `7,6,5`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Defend the O(n log k) time · O(k) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[8,7,6,5,4,3,2]` produces `8,7,6`. Its smallest retained value is the one to discard when a larger candidate arrives. The stated work bound is O(n log k) time · O(k) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[4,1,9,7,3,8]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Top-K with a Min-Heap survives, which state must be updated, and whether the O(n log k) time · O(k) space bound still holds. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work."
+    "transferChallenge": "Compare the visible input `[4,1,9,7,3,8]` with `[3,3,3,3,3,3,3]`. Predict why their results are `9,8,7` and `3,3,3`. Then change one legal value and explain whether the same invariant, its smallest retained value is the one to discard when a larger candidate arrives, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.top-k-minheap.recognize",
@@ -54,21 +54,21 @@
   "title": "Top-K with a Min-Heap: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "largest k values and bounded leaderboards",
-      "Only problems with exactly one input value"
+      "`6,5`",
+      "`7,6,5`",
+      "`8,6,5`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Top-K with a Min-Heap",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Top-K with a Min-Heap",
-    "explanation": "A problem is a good match for Top-K with a Min-Heap when it asks for largest k values and bounded leaderboards. Here the concrete task is: Return the three largest values in descending order. The visible input `[4,1,9,7,3,8]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Keep a heap of only k winners and evict its smallest whenever it grows. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n log k) time · O(k) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `9,8,7` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: largest k values and bounded leaderboards.",
-    "practiceCode": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only top-k-minheap program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn top_k(values:&[i32],k:usize)->Vec<i32> {\n    let mut heap=std::collections::BinaryHeap::new();\n    for &x in values { heap.push(std::cmp::Reverse(x)); if heap.len()>k { heap.pop(); } }\n    let mut out:Vec<_>=heap.into_iter().map(|std::cmp::Reverse(x)|x).collect(); out.sort_unstable_by(|a,b|b.cmp(a)); out\n}\n\nfn main() {\n    let result = csv(top_k(&[4,1,9,7,3,8],3));\n    println!(\"{result}\");\n}\n",
+    "explanation": "With k=3, the heap retains the best three values seen so far. Reading [4,1,9,7,3,8] ultimately retains 7,8,9. Sorting just those retained values produces the required descending report 9,8,7.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the three largest values in descending order. The visible fixture is `[4,1,9,7,3,8]` and its example result is `9,8,7`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Top-K with a Min-Heap when it asks for largest k values and bounded leaderboards. Here the concrete task is: Return the three largest values in descending order. The visible input `[4,1,9,7,3,8]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Use it when only top-ranked candidates or repeated next-best extraction matters; sorting the entire stream may waste work. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Keep a heap of only k winners and evict its smallest whenever it grows. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A heap keeps the current extremum accessible while new items arrive. Explain what belongs in the heap and what may be discarded. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n log k) time · O(k) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `9,8,7` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check an empty stream, k equal to zero or to the input length, duplicate priorities, and stale entries if deletion is lazy. Rust `BinaryHeap` is a max-heap; Reverse can express a min-heap. Keep the heap's ordering key separate from unrelated payload data. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `7,6,5`. Its smallest retained value is the one to discard when a larger candidate arrives. Compare this independent fixture with the worked trace: With k=3, the heap retains the best three values seen so far. Reading [4,1,9,7,3,8] ultimately retains 7,8,9. Sorting just those retained values produces the required descending report 9,8,7.",
+    "practiceCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn top_k(values:&[i32],k:usize)->Vec<i32> {\n    let mut heap=std::collections::BinaryHeap::new();\n    for &x in values { heap.push(std::cmp::Reverse(x)); if heap.len()>k { heap.pop(); } }\n    let mut out:Vec<_>=heap.into_iter().map(|std::cmp::Reverse(x)|x).collect(); out.sort_unstable_by(|a,b|b.cmp(a)); out\n}\n\nfn main() {\n    let result = csv(top_k(&[4,1,9,7,3,8],3));\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Top-K with a Min-Heap on input `[1,2,3,4,5,6,7]`. Which result follows from the documented contract?",
+    "rule": "Its smallest retained value is the one to discard when a larger candidate arrives. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Top-K with a Min-Heap.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-heaps-streaming-a.png",

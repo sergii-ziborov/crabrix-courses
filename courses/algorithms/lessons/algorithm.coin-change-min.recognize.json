@@ -7,44 +7,44 @@
     "expectedAnswer": "3",
     "idea": "Let each amount state choose one coin plus the best smaller reachable amount.",
     "patternID": "coin-change-min",
-    "rustSketch": "fn ways(n: usize) -> usize {\n    let (mut previous, mut current) = (1, 1);\n    for _ in 0..n {\n        (previous, current) = (current, previous + current);\n    }\n    previous\n}",
+    "rustSketch": "fn fewest_coins(coins:&[usize],amount:usize)->i32 {\n    assert!(coins.iter().all(|&c|c>0)); let mut dp=vec![amount+1;amount+1]; dp[0]=0;\n    for total in 1..=amount { for &coin in coins { if coin<=total { dp[total]=dp[total].min(dp[total-coin]+1); } } }\n    if dp[amount]>amount { -1 } else { dp[amount] as i32 }\n}\n\nfn main() {\n    let result = fewest_coins(&[1,2,5],11).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return the fewest coins needed for amount 11.",
     "useCases": "minimum unbounded composition and denomination planning",
     "visibleInput": "coins=[1,2,5]"
   },
   "concept": "minimum unbounded composition and denomination planning",
-  "contentDigest": "fa1da2778d925725a4cdc5213589d2ccf1ea958c7b7681be96efc236a3fe45ed",
+  "contentDigest": "56bb9a3bb60a4e2480fb4d0d2fd36863d8fe67f8af5f56d82964e64b5c77f18b",
   "depth": {
     "connections": [
       {
-        "concept": "Let each amount state choose one coin plus the best smaller reachable amount.",
         "direction": "previous",
-        "title": "Coin Change Minimum: Mental Model"
+        "title": "Coin Change Minimum: Mental Model",
+        "concept": "Let each amount state choose one coin plus the best smaller reachable amount."
       },
       {
-        "concept": "Return the fewest coins needed for amount 11.",
         "direction": "next",
-        "title": "Challenge: Coin Change Minimum"
+        "title": "Challenge: Coin Change Minimum",
+        "concept": "Return the fewest coins needed for amount 11."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "Zero would falsely claim those amounts need no coins. For coins [1,2,5], amount 11 can use 5+5+1, so the minimum count is 3. With [2,4], amount 11 remains unreachable and reports -1. Increasing amount order permits reuse of each positive denomination.",
+    "misconception": "“Every amount is reachable with every denomination set”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `coins=[1,2,5]`, write the state before the first update. Explain how it represents this claim: Let each amount state choose one coin plus the best smaller reachable amount. A one-dimensional DP state summarizes a prefix or a single parameter. Define its meaning before writing a recurrence."
+        "title": "Concrete transition",
+        "detail": "For coins [1,2,5], amount 11 can use 5+5+1, so the minimum count is 3. With [2,4], amount 11 remains unreachable and reports -1. Increasing amount order permits reuse of each positive denomination."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `3`. Use `Option` or a safe sentinel for unreachable states, and choose an iteration direction that matches the recurrence's dependencies."
+        "title": "Independent second fixture",
+        "detail": "Input `coins=[2,4]` produces `-1`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test the base state, the first transition, impossible states, and whether an in-place update accidentally reuses an item twice. Defend the O(amount * coins) time · O(amount) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `coins=[3,5]` produces `3`. Zero would falsely claim those amounts need no coins. The stated work bound is O(amount * coins) time · O(amount) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `coins=[1,2,5]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Coin Change Minimum survives, which state must be updated, and whether the O(amount * coins) time · O(amount) space bound still holds. Choose a recurrence when subproblems overlap. `Some` patterns summarize a frontier instead of a full DP table; either representation needs an invariant, and any greedy shortcut needs proof."
+    "transferChallenge": "Compare the visible input `coins=[1,2,5]` with `coins=[1,3,4]`. Predict why their results are `3` and `3`. Then change one legal value and explain whether the same invariant, zero would falsely claim those amounts need no coins, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.coin-change-min.recognize",
@@ -54,21 +54,21 @@
   "title": "Coin Change Minimum: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "minimum unbounded composition and denomination planning",
-      "Only problems with exactly one input value"
+      "`0`",
+      "`-1`",
+      "`-2`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Coin Change Minimum",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Coin Change Minimum",
-    "explanation": "A problem is a good match for Coin Change Minimum when it asks for minimum unbounded composition and denomination planning. Here the concrete task is: Return the fewest coins needed for amount 11. The visible input `coins=[1,2,5]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Choose a recurrence when subproblems overlap. `Some` patterns summarize a frontier instead of a full DP table; either representation needs an invariant, and any greedy shortcut needs proof. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Let each amount state choose one coin plus the best smaller reachable amount. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A one-dimensional DP state summarizes a prefix or a single parameter. Define its meaning before writing a recurrence. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(amount * coins) time · O(amount) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `3` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test the base state, the first transition, impossible states, and whether an in-place update accidentally reuses an item twice. Use `Option` or a safe sentinel for unreachable states, and choose an iteration direction that matches the recurrence's dependencies. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: minimum unbounded composition and denomination planning.",
-    "practiceCode": "fn ways(n: usize) -> usize {\n    let (mut previous, mut current) = (1, 1);\n    for _ in 0..n {\n        (previous, current) = (current, previous + current);\n    }\n    previous\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only coin-change-min program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn fewest_coins(coins:&[usize],amount:usize)->i32 {\n    assert!(coins.iter().all(|&c|c>0)); let mut dp=vec![amount+1;amount+1]; dp[0]=0;\n    for total in 1..=amount { for &coin in coins { if coin<=total { dp[total]=dp[total].min(dp[total-coin]+1); } } }\n    if dp[amount]>amount { -1 } else { dp[amount] as i32 }\n}\n\nfn main() {\n    let result = fewest_coins(&[1,2,5],11).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "For coins [1,2,5], amount 11 can use 5+5+1, so the minimum count is 3. With [2,4], amount 11 remains unreachable and reports -1. Increasing amount order permits reuse of each positive denomination.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the fewest coins needed for amount 11. The visible fixture is `coins=[1,2,5]` and its example result is `3`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Coin Change Minimum when it asks for minimum unbounded composition and denomination planning. Here the concrete task is: Return the fewest coins needed for amount 11. The visible input `coins=[1,2,5]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Choose a recurrence when subproblems overlap. `Some` patterns summarize a frontier instead of a full DP table; either representation needs an invariant, and any greedy shortcut needs proof. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Let each amount state choose one coin plus the best smaller reachable amount. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A one-dimensional DP state summarizes a prefix or a single parameter. Define its meaning before writing a recurrence. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(amount * coins) time · O(amount) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `3` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test the base state, the first transition, impossible states, and whether an in-place update accidentally reuses an item twice. Use `Option` or a safe sentinel for unreachable states, and choose an iteration direction that matches the recurrence's dependencies. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `-1`. Zero would falsely claim those amounts need no coins. Compare this independent fixture with the worked trace: For coins [1,2,5], amount 11 can use 5+5+1, so the minimum count is 3. With [2,4], amount 11 remains unreachable and reports -1. Increasing amount order permits reuse of each positive denomination.",
+    "practiceCode": "fn fewest_coins(coins:&[usize],amount:usize)->i32 {\n    assert!(coins.iter().all(|&c|c>0)); let mut dp=vec![amount+1;amount+1]; dp[0]=0;\n    for total in 1..=amount { for &coin in coins { if coin<=total { dp[total]=dp[total].min(dp[total-coin]+1); } } }\n    if dp[amount]>amount { -1 } else { dp[amount] as i32 }\n}\n\nfn main() {\n    let result = fewest_coins(&[1,2,5],11).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Coin Change Minimum on input `coins=[2,4]`. Which result follows from the documented contract?",
+    "rule": "Zero would falsely claim those amounts need no coins. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Coin Change Minimum.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-dynamic-1d-b.png",

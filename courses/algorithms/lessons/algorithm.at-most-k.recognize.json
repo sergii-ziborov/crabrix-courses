@@ -7,44 +7,44 @@
     "expectedAnswer": "4",
     "idea": "Keep a frequency state and shrink while more than k distinct values are present.",
     "patternID": "at-most-k",
-    "rustSketch": "fn best_k(values: &[i32], k: usize) -> i32 {\n    let mut sum: i32 = values[..k].iter().sum();\n    let mut best = sum;\n    for right in k..values.len() {\n        sum += values[right] - values[right - k];\n        best = best.max(sum);\n    }\n    best\n}",
+    "rustSketch": "fn longest_k_distinct(values: &[i32], k: usize) -> usize {\n    let mut counts=std::collections::HashMap::new(); let (mut left,mut best)=(0,0);\n    for (right,&x) in values.iter().enumerate() {\n        *counts.entry(x).or_insert(0)+=1;\n        while counts.len()>k {\n            let old=values[left]; let count=counts.get_mut(&old).unwrap(); *count-=1;\n            if *count==0 { counts.remove(&old); } left+=1;\n        }\n        best=best.max(right+1-left);\n    }\n    best\n}\n\nfn main() {\n    let result = longest_k_distinct(&[1,2,1,2,3,2,2],2).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return the longest subarray containing at most two distinct values.",
     "useCases": "longest range with bounded distinct items",
     "visibleInput": "[1,2,1,2,3,2,2]"
   },
   "concept": "longest range with bounded distinct items",
-  "contentDigest": "3f0420fd14ab24e892dcb718f5bd6217648ad9c867edaec3236903c044e3e8f4",
+  "contentDigest": "231f10520623d4c882b57d63466d707362ad6e51363f268a2b2e175023ac6c12",
   "depth": {
     "connections": [
       {
-        "concept": "Keep a frequency state and shrink while more than k distinct values are present.",
         "direction": "previous",
-        "title": "At-Most-K Window: Mental Model"
+        "title": "At-Most-K Window: Mental Model",
+        "concept": "Keep a frequency state and shrink while more than k distinct values are present."
       },
       {
-        "concept": "Return the longest subarray containing at most two distinct values.",
         "direction": "next",
-        "title": "Challenge: At-Most-K Window"
+        "title": "Challenge: At-Most-K Window",
+        "concept": "Return the longest subarray containing at most two distinct values."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "While the number of positive-frequency keys exceeds k. For [1,2,1,2,3,2,2] and k=2, the first four values form a valid length-4 window. Adding 3 creates three keys, so remove left values until only two keys remain. Zero-frequency keys must be removed from the map.",
+    "misconception": "“Whenever any value occurs twice”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[1,2,1,2,3,2,2]`, write the state before the first update. Explain how it represents this claim: Keep a frequency state and shrink while more than k distinct values are present. A window is a contiguous interval with a maintained summary. Describe what entering the right edge adds and what leaving the left edge removes."
+        "title": "Concrete transition",
+        "detail": "For [1,2,1,2,3,2,2] and k=2, the first four values form a valid length-4 window. Adding 3 creates three keys, so remove left values until only two keys remain. Zero-frequency keys must be removed from the map."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `4`. Represent bounds as a half-open range when possible. Keep counts and the window length in sync when shrinking it."
+        "title": "Independent second fixture",
+        "detail": "Input `[1,2,3,4,5,6,7]` produces `2`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test an empty window, a window spanning the whole input, and a case where the left edge must advance several times. Defend the O(n) expected time · O(k) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[8,7,6,5,4,3,2]` produces `2`. While the number of positive-frequency keys exceeds k. The stated work bound is O(n) expected time · O(k) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[1,2,1,2,3,2,2]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from At-Most-K Window survives, which state must be updated, and whether the O(n) expected time · O(k) space bound still holds. Choose this family when a valid window can be repaired by moving one boundary; non-monotone constraints may need a different method."
+    "transferChallenge": "Compare the visible input `[1,2,1,2,3,2,2]` with `[3,3,3,3,3,3,3]`. Predict why their results are `4` and `7`. Then change one legal value and explain whether the same invariant, while the number of positive-frequency keys exceeds k, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.at-most-k.recognize",
@@ -54,21 +54,21 @@
   "title": "At-Most-K Window: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "longest range with bounded distinct items",
-      "Only problems with exactly one input value"
+      "`3`",
+      "`2`",
+      "`1`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for At-Most-K Window",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: At-Most-K Window",
-    "explanation": "A problem is a good match for At-Most-K Window when it asks for longest range with bounded distinct items. Here the concrete task is: Return the longest subarray containing at most two distinct values. The visible input `[1,2,1,2,3,2,2]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Choose this family when a valid window can be repaired by moving one boundary; non-monotone constraints may need a different method. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Keep a frequency state and shrink while more than k distinct values are present. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A window is a contiguous interval with a maintained summary. Describe what entering the right edge adds and what leaving the left edge removes. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) expected time · O(k) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `4` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test an empty window, a window spanning the whole input, and a case where the left edge must advance several times. Represent bounds as a half-open range when possible. Keep counts and the window length in sync when shrinking it. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: longest range with bounded distinct items.",
-    "practiceCode": "fn best_k(values: &[i32], k: usize) -> i32 {\n    let mut sum: i32 = values[..k].iter().sum();\n    let mut best = sum;\n    for right in k..values.len() {\n        sum += values[right] - values[right - k];\n        best = best.max(sum);\n    }\n    best\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only at-most-k program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn longest_k_distinct(values: &[i32], k: usize) -> usize {\n    let mut counts=std::collections::HashMap::new(); let (mut left,mut best)=(0,0);\n    for (right,&x) in values.iter().enumerate() {\n        *counts.entry(x).or_insert(0)+=1;\n        while counts.len()>k {\n            let old=values[left]; let count=counts.get_mut(&old).unwrap(); *count-=1;\n            if *count==0 { counts.remove(&old); } left+=1;\n        }\n        best=best.max(right+1-left);\n    }\n    best\n}\n\nfn main() {\n    let result = longest_k_distinct(&[1,2,1,2,3,2,2],2).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "For [1,2,1,2,3,2,2] and k=2, the first four values form a valid length-4 window. Adding 3 creates three keys, so remove left values until only two keys remain. Zero-frequency keys must be removed from the map.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the longest subarray containing at most two distinct values. The visible fixture is `[1,2,1,2,3,2,2]` and its example result is `4`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for At-Most-K Window when it asks for longest range with bounded distinct items. Here the concrete task is: Return the longest subarray containing at most two distinct values. The visible input `[1,2,1,2,3,2,2]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Choose this family when a valid window can be repaired by moving one boundary; non-monotone constraints may need a different method. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Keep a frequency state and shrink while more than k distinct values are present. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A window is a contiguous interval with a maintained summary. Describe what entering the right edge adds and what leaving the left edge removes. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) expected time · O(k) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `4` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test an empty window, a window spanning the whole input, and a case where the left edge must advance several times. Represent bounds as a half-open range when possible. Keep counts and the window length in sync when shrinking it. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `2`. While the number of positive-frequency keys exceeds k. Compare this independent fixture with the worked trace: For [1,2,1,2,3,2,2] and k=2, the first four values form a valid length-4 window. Adding 3 creates three keys, so remove left values until only two keys remain. Zero-frequency keys must be removed from the map.",
+    "practiceCode": "fn longest_k_distinct(values: &[i32], k: usize) -> usize {\n    let mut counts=std::collections::HashMap::new(); let (mut left,mut best)=(0,0);\n    for (right,&x) in values.iter().enumerate() {\n        *counts.entry(x).or_insert(0)+=1;\n        while counts.len()>k {\n            let old=values[left]; let count=counts.get_mut(&old).unwrap(); *count-=1;\n            if *count==0 { counts.remove(&old); } left+=1;\n        }\n        best=best.max(right+1-left);\n    }\n    best\n}\n\nfn main() {\n    let result = longest_k_distinct(&[1,2,1,2,3,2,2],2).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace At-Most-K Window on input `[1,2,3,4,5,6,7]`. Which result follows from the documented contract?",
+    "rule": "While the number of positive-frequency keys exceeds k. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing At-Most-K Window.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-sliding-window-a.png",

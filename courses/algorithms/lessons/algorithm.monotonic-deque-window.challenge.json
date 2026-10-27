@@ -7,7 +7,7 @@
     "expectedAnswer": "3,3,5,5,6,7",
     "idea": "Keep candidate indexes in decreasing value order and evict those outside the window.",
     "patternID": "monotonic-deque-window",
-    "rustSketch": "fn best_k(values: &[i32], k: usize) -> i32 {\n    let mut sum: i32 = values[..k].iter().sum();\n    let mut best = sum;\n    for right in k..values.len() {\n        sum += values[right] - values[right - k];\n        best = best.max(sum);\n    }\n    best\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn window_maxima(values: &[i32], k: usize) -> Vec<i32> {\n    assert!(k>0 && k<=values.len());\n    let mut deque=std::collections::VecDeque::new(); let mut result=Vec::new();\n    for (i,&x) in values.iter().enumerate() {\n        while deque.front().is_some_and(|&j|j+k<=i) { deque.pop_front(); }\n        while deque.back().is_some_and(|&j|values[j]<=x) { deque.pop_back(); }\n        deque.push_back(i);\n        if i+1>=k { result.push(values[*deque.front().unwrap()]); }\n    }\n    result\n}\n\nfn main() {\n    let result = csv(window_maxima(&[4,2,12,3],3));\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Return maxima for every window of length three.",
     "useCases": "sliding maximum or minimum",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "sliding maximum or minimum",
         "direction": "previous",
-        "title": "Monotonic Deque Window: When to Use It"
+        "title": "Monotonic Deque Window: When to Use It",
+        "concept": "sliding maximum or minimum"
       },
       {
-        "concept": "Update sufficient statistics as samples enter and leave rather than retaining every computation.",
         "direction": "next",
-        "title": "Rolling Mean and Variance: Mental Model"
+        "title": "Rolling Mean and Variance: Mental Model",
+        "concept": "Update sufficient statistics as samples enter and leave rather than retaining every computation."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "Indexes tell when a candidate expires from the window. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“A deque cannot store duplicate values”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[1,3,-1,-3,5,3,6,7]`, write the state before the first update. Explain how it represents this claim: Keep candidate indexes in decreasing value order and evict those outside the window. A window is a contiguous interval with a maintained summary. Describe what entering the right edge adds and what leaving the left edge removes."
+        "title": "Pattern-specific invariant",
+        "detail": "Indexes tell when a candidate expires from the window. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Represent bounds as a half-open range when possible. Keep counts and the window length in sync when shrinking it."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `[4,2,12,3]` and computes `12,12`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test an empty window, a window spanning the whole input, and a case where the left edge must advance several times. Defend the O(n) time · O(k) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `[8,7,6,5,4,3,2]`, the independently calculated result is `8,7,6,5,4`. The complexity discussion uses O(n) time · O(k) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `[1,3,-1,-3,5,3,6,7]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Monotonic Deque Window survives, which state must be updated, and whether the O(n) time · O(k) space bound still holds. Choose this family when a valid window can be repaired by moving one boundary; non-monotone constraints may need a different method."
+    "transferChallenge": "Change the independent fixture `[4,2,12,3]` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `[1,3,-1,-3,5,3,6,7]`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.monotonic-deque-window.challenge",
@@ -54,19 +54,19 @@
   "title": "Challenge: Monotonic Deque Window",
   "writing": {
     "answers": [
-      "O(n) time · O(k) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`8,7,6,5,4`",
+      "`7,6,5,4`",
+      "`9,7,6,5,4`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return maxima for every window of length three.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Monotonic Deque Window\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Return maxima for every window of length three. On input `[1,3,-1,-3,5,3,6,7]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Keep candidate indexes in decreasing value order and evict those outside the window. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A window is a contiguous interval with a maintained summary. Describe what entering the right edge adds and what leaving the left edge removes. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Represent bounds as a half-open range when possible. Keep counts and the window length in sync when shrinking it. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(k) space; explain which operation dominates it and how many times the input can trigger that operation. Test an empty window, a window spanning the whole input, and a case where the left edge must advance several times. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(n) time · O(k) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return maxima for every window of length three.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Monotonic Deque Window\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS monotonic-deque-window, and your explanation still meets O(n) time · O(k) space.",
+    "exampleCaption": "Complete std-only monotonic-deque-window program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn window_maxima(values: &[i32], k: usize) -> Vec<i32> {\n    assert!(k>0 && k<=values.len());\n    let mut deque=std::collections::VecDeque::new(); let mut result=Vec::new();\n    for (i,&x) in values.iter().enumerate() {\n        while deque.front().is_some_and(|&j|j+k<=i) { deque.pop_front(); }\n        while deque.back().is_some_and(|&j|values[j]<=x) { deque.pop_back(); }\n        deque.push_back(i);\n        if i+1>=k { result.push(values[*deque.front().unwrap()]); }\n    }\n    result\n}\n\nfn main() {\n    let result = csv(window_maxima(&[4,2,12,3],3));\n    println!(\"{result}\");\n}\n",
+    "explanation": "Indexes tell when a candidate expires from the window. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `[4,2,12,3]`, the worked program returns `12,12`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `[1,3,-1,-3,5,3,6,7]`; predict that result before opening the answer reveal. The precise contract is: Return maxima for every window of length three.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Return maxima for every window of length three. On input `[1,3,-1,-3,5,3,6,7]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Keep candidate indexes in decreasing value order and evict those outside the window. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A window is a contiguous interval with a maintained summary. Describe what entering the right edge adds and what leaving the left edge removes. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(k) space; explain which operation dominates it and how many times the input can trigger that operation. Test an empty window, a window spanning the whole input, and a case where the left edge must advance several times. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `8,7,6,5,4`. Indexes tell when a candidate expires from the window. Compare this independent fixture with the worked trace: For [1,3,-1,-3,5,3,6,7] and k=3, candidate 1 is dominated by 3 and removed. Later 5 dominates older smaller candidates. Expire indexes before i-k+1; the reported maxima are [3,3,5,5,6,7].",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return maxima for every window of length three.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement monotonic-deque-window\")\n}\n",
+    "question": "Boundary check for monotonic-deque-window: with input `[8,7,6,5,4,3,2]`, what result should solve return?",
+    "rule": "Indexes tell when a candidate expires from the window. Return maxima for every window of length three.",
+    "success": "The private harness prints PASS monotonic-deque-window. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Return maxima for every window of length three.",
     "task": "Return maxima for every window of length three."
   },

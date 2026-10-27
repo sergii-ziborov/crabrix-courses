@@ -7,44 +7,44 @@
     "expectedAnswer": "4",
     "idea": "Track the dominant count so replacements needed equal window length minus that count.",
     "patternID": "frequency-balanced-window",
-    "rustSketch": "fn best_k(values: &[i32], k: usize) -> i32 {\n    let mut sum: i32 = values[..k].iter().sum();\n    let mut best = sum;\n    for right in k..values.len() {\n        sum += values[right] - values[right - k];\n        best = best.max(sum);\n    }\n    best\n}",
+    "rustSketch": "fn replacement_length(text: &str, replacements: usize) -> usize {\n    assert!(text.bytes().all(|c|c.is_ascii_uppercase()));\n    let a=text.as_bytes(); let mut counts=[0;26]; let (mut left,mut best)=(0,0);\n    for right in 0..a.len() {\n        counts[(a[right]-b'A') as usize]+=1;\n        while right+1-left-counts.iter().max().unwrap()>replacements {\n            counts[(a[left]-b'A') as usize]-=1; left+=1;\n        }\n        best=best.max(right+1-left);\n    }\n    best\n}\n\nfn main() {\n    let result = replacement_length(\"ABC\",1).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "With at most one replacement, return the longest equal-character substring length.",
     "useCases": "character replacement and bounded edits",
     "visibleInput": "AABABBA"
   },
   "concept": "With at most one replacement, return the longest equal-character substring length.",
-  "contentDigest": "2ec51c47f2625ec48124ed88efce3102ba95b40eb7b92bda5ca43647a100c657",
+  "contentDigest": "cad4f3fc8ecebc976053babed5a0d64ccd6314b799044e89dc178e551552d5e3",
   "depth": {
     "connections": [
       {
-        "concept": "character replacement and bounded edits",
         "direction": "previous",
-        "title": "Frequency-Balanced Window: When to Use It"
+        "title": "Frequency-Balanced Window: When to Use It",
+        "concept": "character replacement and bounded edits"
       },
       {
-        "concept": "Expand until all required multiplicities are covered, then shrink while coverage remains.",
         "direction": "next",
-        "title": "Minimum Cover Window: Mental Model"
+        "title": "Minimum Cover Window: Mental Model",
+        "concept": "Expand until all required multiplicities are covered, then shrink while coverage remains."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "Window length minus its largest character frequency. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“Number of distinct characters minus one”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `AABABBA`, write the state before the first update. Explain how it represents this claim: Track the dominant count so replacements needed equal window length minus that count. A window is a contiguous interval with a maintained summary. Describe what entering the right edge adds and what leaving the left edge removes."
+        "title": "Pattern-specific invariant",
+        "detail": "Window length minus its largest character frequency. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Represent bounds as a half-open range when possible. Keep counts and the window length in sync when shrinking it."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `ABC` and computes `2`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test an empty window, a window spanning the whole input, and a case where the left edge must advance several times. Defend the O(n) time · O(alphabet) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `ABCDE`, the independently calculated result is `2`. The complexity discussion uses O(n) time · O(alphabet) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `AABABBA` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Frequency-Balanced Window survives, which state must be updated, and whether the O(n) time · O(alphabet) space bound still holds. Choose this family when a valid window can be repaired by moving one boundary; non-monotone constraints may need a different method."
+    "transferChallenge": "Change the independent fixture `ABC` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `AABABBA`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.frequency-balanced-window.challenge",
@@ -54,19 +54,19 @@
   "title": "Challenge: Frequency-Balanced Window",
   "writing": {
     "answers": [
-      "O(n) time · O(alphabet) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`2`",
+      "`3`",
+      "`1`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // With at most one replacement, return the longest equal-character substring length.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Frequency-Balanced Window\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: With at most one replacement, return the longest equal-character substring length. On input `AABABBA`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Track the dominant count so replacements needed equal window length minus that count. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A window is a contiguous interval with a maintained summary. Describe what entering the right edge adds and what leaving the left edge removes. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Represent bounds as a half-open range when possible. Keep counts and the window length in sync when shrinking it. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(alphabet) space; explain which operation dominates it and how many times the input can trigger that operation. Test an empty window, a window spanning the whole input, and a case where the left edge must advance several times. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(n) time · O(alphabet) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // With at most one replacement, return the longest equal-character substring length.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Frequency-Balanced Window\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS frequency-balanced-window, and your explanation still meets O(n) time · O(alphabet) space.",
+    "exampleCaption": "Complete std-only frequency-balanced-window program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn replacement_length(text: &str, replacements: usize) -> usize {\n    assert!(text.bytes().all(|c|c.is_ascii_uppercase()));\n    let a=text.as_bytes(); let mut counts=[0;26]; let (mut left,mut best)=(0,0);\n    for right in 0..a.len() {\n        counts[(a[right]-b'A') as usize]+=1;\n        while right+1-left-counts.iter().max().unwrap()>replacements {\n            counts[(a[left]-b'A') as usize]-=1; left+=1;\n        }\n        best=best.max(right+1-left);\n    }\n    best\n}\n\nfn main() {\n    let result = replacement_length(\"ABC\",1).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "Window length minus its largest character frequency. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `ABC`, the worked program returns `2`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `AABABBA`; predict that result before opening the answer reveal. The precise contract is: With at most one replacement, return the longest equal-character substring length.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: With at most one replacement, return the longest equal-character substring length. On input `AABABBA`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Track the dominant count so replacements needed equal window length minus that count. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A window is a contiguous interval with a maintained summary. Describe what entering the right edge adds and what leaving the left edge removes. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(alphabet) space; explain which operation dominates it and how many times the input can trigger that operation. Test an empty window, a window spanning the whole input, and a case where the left edge must advance several times. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `2`. Window length minus its largest character frequency. Compare this independent fixture with the worked trace: In AABABBA, a length-4 window such as AABA has maximum frequency 3, so one replacement suffices. Longer candidate windows exceed the one-replacement budget. The implementation recomputes the maximum from a fixed 26-letter count array.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // With at most one replacement, return the longest equal-character substring length.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement frequency-balanced-window\")\n}\n",
+    "question": "Boundary check for frequency-balanced-window: with input `ABCDE`, what result should solve return?",
+    "rule": "Window length minus its largest character frequency. With at most one replacement, return the longest equal-character substring length.",
+    "success": "The private harness prints PASS frequency-balanced-window. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "With at most one replacement, return the longest equal-character substring length.",
     "task": "With at most one replacement, return the longest equal-character substring length."
   },

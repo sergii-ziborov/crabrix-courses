@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS rabin-karp\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"0,7\".to_string()",
-      "String::from(\"0,7\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.rabin-karp.challenge",
     "patternID": "rabin-karp",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return every start index of the pattern.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Rabin–Karp\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Return every start index of the pattern.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement rabin-karp\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "0,7",
+        "kind": "visible",
         "input": "text=abracadabra pattern=abra",
-        "kind": "visible"
+        "expectedAnswer": "0,7"
       },
       {
-        "expectedAnswer": "0,1,2",
+        "kind": "boundary",
         "input": "text=aaaa pattern=aa",
-        "kind": "boundary"
+        "expectedAnswer": "0,1,2"
       },
       {
-        "expectedAnswer": "0,1,2",
-        "input": "\ntext=aaaa pattern=aa\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "text=abcabc pattern=bc",
+        "expectedAnswer": "1,4"
       },
       {
-        "expectedAnswer": "0,7",
+        "kind": "adversarial",
+        "input": "text=abc pattern=z",
+        "expectedAnswer": ""
+      },
+      {
+        "kind": "adversarial",
+        "input": "text=aaaaa pattern=aaa",
+        "expectedAnswer": "0,1,2"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \ntext=abracadabra pattern=abra\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "0,7"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\ntext=aaaaa pattern=aaa\n",
+        "expectedAnswer": "0,1,2"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"text=abracadabra pattern=abra\"#, r#\"0,7\"#),\n    (r#\"text=aaaa pattern=aa\"#, r#\"0,1,2\"#),\n    (r#\"\ntext=aaaa pattern=aa\n\"#, r#\"0,1,2\"#),\n    (r#\"  \ntext=abracadabra pattern=abra\n  \"#, r#\"0,7\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS rabin-karp\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"text=abracadabra pattern=abra\",\"0,7\"),\n        (\"text=aaaa pattern=aa\",\"0,1,2\"),\n        (\"text=abcabc pattern=bc\",\"1,4\"),\n        (\"text=abc pattern=z\",\"\"),\n        (\"text=aaaaa pattern=aaa\",\"0,1,2\"),\n        (\"  \\ntext=abracadabra pattern=abra\\n  \",\"0,7\"),\n        (\"\\ntext=aaaaa pattern=aaa\\n\",\"0,1,2\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS rabin-karp\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS rabin-karp\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"0,7\".to_string()",
-      "String::from(\"0,7\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

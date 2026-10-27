@@ -7,44 +7,44 @@
     "expectedAnswer": "0,1,4",
     "idea": "Store only existing neighbors so traversal cost follows vertices plus edges.",
     "patternID": "adjacency-list",
-    "rustSketch": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn neighbors(n:usize,edges:&[(usize,usize)],query:usize)->Vec<usize> {\n    let mut graph=vec![Vec::new();n];\n    for &(a,b) in edges { graph[a].push(b); graph[b].push(a); }\n    graph[query].sort_unstable(); graph[query].clone()\n}\n\nfn main() {\n    let result = csv(neighbors(3,&[(0,1),(1,2)],2));\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Build an undirected adjacency list and return sorted neighbors of node 2.",
     "useCases": "sparse graphs, networks, dependency relationships",
     "visibleInput": "n=5 edges=(0,2),(1,2),(2,4)"
   },
   "concept": "Build an undirected adjacency list and return sorted neighbors of node 2.",
-  "contentDigest": "1712d3c6c1c1b92a6946e2d36b8e0f8e9dadd9b7b54a1fe66c1c59f5a83e4cc2",
+  "contentDigest": "51b3fcf596a88f95d827742a4ad58da1c8f127c181a9e604b5942179571c69c3",
   "depth": {
     "connections": [
       {
-        "concept": "sparse graphs, networks, dependency relationships",
         "direction": "previous",
-        "title": "Adjacency List: When to Use It"
+        "title": "Adjacency List: When to Use It",
+        "concept": "sparse graphs, networks, dependency relationships"
       },
       {
-        "concept": "Explore one branch fully while marking nodes before following outgoing edges.",
         "direction": "next",
-        "title": "Graph DFS: Mental Model"
+        "title": "Graph DFS: Mental Model",
+        "concept": "Explore one branch fully while marking nodes before following outgoing edges."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "The input graph is undirected. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“Every Rust graph must be bidirectional”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `n=5 edges=(0,2),(1,2),(2,4)`, write the state before the first update. Explain how it represents this claim: Store only existing neighbors so traversal cost follows vertices plus edges. A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal."
+        "title": "Pattern-specific invariant",
+        "detail": "The input graph is undirected. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. An adjacency list and `VecDeque` make breadth-first work explicit. Mark before enqueuing to avoid duplicate frontier entries."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `n=3 edges=(0,1),(1,2)` and computes `1`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. Defend the O(V+E) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `n=3 edges=(1,2)`, the independently calculated result is `1`. The complexity discussion uses O(V+E) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `n=5 edges=(0,2),(1,2),(2,4)` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Adjacency List survives, which state must be updated, and whether the O(V+E) space bound still holds. Choose a representation for the operations first; when traversing, DFS explores depth and BFS follows equal-cost layers. Directed edges and disconnected components change the plan."
+    "transferChallenge": "Change the independent fixture `n=3 edges=(0,1),(1,2)` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `n=5 edges=(0,2),(1,2),(2,4)`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.adjacency-list.challenge",
@@ -54,19 +54,19 @@
   "title": "Challenge: Adjacency List",
   "writing": {
     "answers": [
-      "O(V+E) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`1`",
+      "`2`",
+      "`0`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Build an undirected adjacency list and return sorted neighbors of node 2.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Adjacency List\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Build an undirected adjacency list and return sorted neighbors of node 2. On input `n=5 edges=(0,2),(1,2),(2,4)`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Store only existing neighbors so traversal cost follows vertices plus edges. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. An adjacency list and `VecDeque` make breadth-first work explicit. Mark before enqueuing to avoid duplicate frontier entries. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(V+E) space; explain which operation dominates it and how many times the input can trigger that operation. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(V+E) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Build an undirected adjacency list and return sorted neighbors of node 2.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Adjacency List\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS adjacency-list, and your explanation still meets O(V+E) space.",
+    "exampleCaption": "Complete std-only adjacency-list program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn neighbors(n:usize,edges:&[(usize,usize)],query:usize)->Vec<usize> {\n    let mut graph=vec![Vec::new();n];\n    for &(a,b) in edges { graph[a].push(b); graph[b].push(a); }\n    graph[query].sort_unstable(); graph[query].clone()\n}\n\nfn main() {\n    let result = csv(neighbors(3,&[(0,1),(1,2)],2));\n    println!(\"{result}\");\n}\n",
+    "explanation": "The input graph is undirected. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `n=3 edges=(0,1),(1,2)`, the worked program returns `1`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `n=5 edges=(0,2),(1,2),(2,4)`; predict that result before opening the answer reveal. The precise contract is: Build an undirected adjacency list and return sorted neighbors of node 2.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Build an undirected adjacency list and return sorted neighbors of node 2. On input `n=5 edges=(0,2),(1,2),(2,4)`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Store only existing neighbors so traversal cost follows vertices plus edges. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(V+E) space; explain which operation dominates it and how many times the input can trigger that operation. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `1`. The input graph is undirected. Compare this independent fixture with the worked trace: Edges (0,2),(1,2),(2,4) contribute 0,1,4 to node 2's list, then its report is sorted. A node with no incident edge has an empty neighbor list. Parallel edges would be separate entries if allowed.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Build an undirected adjacency list and return sorted neighbors of node 2.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement adjacency-list\")\n}\n",
+    "question": "Boundary check for adjacency-list: with input `n=3 edges=(1,2)`, what result should solve return?",
+    "rule": "The input graph is undirected. Build an undirected adjacency list and return sorted neighbors of node 2.",
+    "success": "The private harness prints PASS adjacency-list. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Build an undirected adjacency list and return sorted neighbors of node 2.",
     "task": "Build an undirected adjacency list and return sorted neighbors of node 2."
   },

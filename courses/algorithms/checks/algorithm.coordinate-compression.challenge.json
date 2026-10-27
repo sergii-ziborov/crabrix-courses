@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS coordinate-compression\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"2,0,2,1\".to_string()",
-      "String::from(\"2,0,2,1\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.coordinate-compression.challenge",
     "patternID": "coordinate-compression",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return dense zero-based ranks for the values in original order.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Coordinate Compression\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Return dense zero-based ranks for the values in original order.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement coordinate-compression\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "2,0,2,1",
+        "kind": "visible",
         "input": "[100, -5, 100, 20]",
-        "kind": "visible"
+        "expectedAnswer": "2,0,2,1"
       },
       {
-        "expectedAnswer": "1,1,0",
+        "kind": "boundary",
         "input": "[5, 5, -1]",
-        "kind": "boundary"
+        "expectedAnswer": "1,1,0"
       },
       {
-        "expectedAnswer": "1,1,0",
-        "input": "\n[5, 5, -1]\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "[1,2,3,4,5,6,7]",
+        "expectedAnswer": "0,1,2,3,4,5,6"
       },
       {
-        "expectedAnswer": "2,0,2,1",
+        "kind": "adversarial",
+        "input": "[3,3,3,3,3,3,3]",
+        "expectedAnswer": "0,0,0,0,0,0,0"
+      },
+      {
+        "kind": "adversarial",
+        "input": "[8,7,6,5,4,3,2]",
+        "expectedAnswer": "6,5,4,3,2,1,0"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \n[100, -5, 100, 20]\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "2,0,2,1"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\n[8,7,6,5,4,3,2]\n",
+        "expectedAnswer": "6,5,4,3,2,1,0"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"[100, -5, 100, 20]\"#, r#\"2,0,2,1\"#),\n    (r#\"[5, 5, -1]\"#, r#\"1,1,0\"#),\n    (r#\"\n[5, 5, -1]\n\"#, r#\"1,1,0\"#),\n    (r#\"  \n[100, -5, 100, 20]\n  \"#, r#\"2,0,2,1\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS coordinate-compression\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"[100, -5, 100, 20]\",\"2,0,2,1\"),\n        (\"[5, 5, -1]\",\"1,1,0\"),\n        (\"[1,2,3,4,5,6,7]\",\"0,1,2,3,4,5,6\"),\n        (\"[3,3,3,3,3,3,3]\",\"0,0,0,0,0,0,0\"),\n        (\"[8,7,6,5,4,3,2]\",\"6,5,4,3,2,1,0\"),\n        (\"  \\n[100, -5, 100, 20]\\n  \",\"2,0,2,1\"),\n        (\"\\n[8,7,6,5,4,3,2]\\n\",\"6,5,4,3,2,1,0\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS coordinate-compression\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS coordinate-compression\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"2,0,2,1\".to_string()",
-      "String::from(\"2,0,2,1\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

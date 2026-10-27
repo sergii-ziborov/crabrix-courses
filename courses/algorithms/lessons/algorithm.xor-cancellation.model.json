@@ -7,7 +7,7 @@
     "expectedAnswer": "4",
     "idea": "Equal values cancel and zero is neutral, leaving an odd-occurring value.",
     "patternID": "xor-cancellation",
-    "rustSketch": "fn gcd(mut a: u64, mut b: u64) -> u64 {\n    while b != 0 {\n        (a, b) = (b, a % b);\n    }\n    a\n}",
+    "rustSketch": "fn single_value(values:&[i32])->i32 {\n    // Every other value occurs exactly twice.\n    values.iter().fold(0,|acc,&x|acc^x)\n}\n\nfn main() {\n    let result = single_value(&[4,1,2,1,2]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Every value occurs twice except one; return it.",
     "useCases": "single-number recovery and parity fingerprints",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Return masks whose selected values sum to 5.",
         "direction": "previous",
-        "title": "Challenge: Bitmask Enumeration"
+        "title": "Challenge: Bitmask Enumeration",
+        "concept": "Parse values and return, in increasing order, every zero-based position mask whose selected values sum to 5."
       },
       {
-        "concept": "single-number recovery and parity fingerprints",
         "direction": "next",
-        "title": "XOR Cancellation: When to Use It"
+        "title": "XOR Cancellation: When to Use It",
+        "concept": "single-number recovery and parity fingerprints"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "Every other value occurs exactly twice. XOR [4,1,2,1,2] cancels both 1s and both 2s, leaving 4. The order of cancellation does not matter. If other values occur arbitrary odd counts, this single-value interpretation no longer follows.",
+    "misconception": "“All values are sorted”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[4,1,2,1,2]`, write the state before the first update. Explain how it represents this claim: Equal values cancel and zero is neutral, leaving an odd-occurring value. An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds."
+        "title": "Concrete transition",
+        "detail": "XOR [4,1,2,1,2] cancels both 1s and both 2s, leaving 4. The order of cancellation does not matter. If other values occur arbitrary odd counts, this single-value interpretation no longer follows."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `4`. Use explicit integer widths and checked arithmetic when input bounds require them. Distinguish bit positions from numeric values."
+        "title": "Independent second fixture",
+        "detail": "Input `[7]` produces `7`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Defend the O(n) time · O(1) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[3,5,3,9,5]` produces `9`. Every other value occurs exactly twice. The stated work bound is O(n) time · O(1) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[4,1,2,1,2]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from XOR Cancellation survives, which state must be updated, and whether the O(n) time · O(1) space bound still holds. Check number size, sign, and modulus assumptions before using a shortcut; not every inverse or division exists."
+    "transferChallenge": "Compare the visible input `[4,1,2,1,2]` with `[0,2,2]`. Predict why their results are `4` and `0`. Then change one legal value and explain whether the same invariant, every other value occurs exactly twice, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.xor-cancellation.model",
@@ -54,21 +54,21 @@
   "title": "XOR Cancellation: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "Every other value occurs exactly twice",
+      "All values are sorted",
+      "The unique value must be numerically largest"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n) time · O(1) space",
-    "exampleCode": "fn gcd(mut a: u64, mut b: u64) -> u64 {\n    while b != 0 {\n        (a, b) = (b, a % b);\n    }\n    a\n}",
-    "explanation": "Begin with the concrete question: Every value occurs twice except one; return it. For the visible input `[4,1,2,1,2]`, the stated result is `4`. Before reading code, name the smallest piece of information that must survive from one step to the next. An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds. That is the mental model for XOR Cancellation; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Equal values cancel and zero is neutral, leaving an odd-occurring value. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use explicit integer widths and checked arithmetic when input bounds require them. Distinguish bit positions from numeric values. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn gcd(mut a: u64, mut b: u64) -> u64 {\n    while b != 0 {\n        (a, b) = (b, a % b);\n    }\n    a\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only xor-cancellation program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn single_value(values:&[i32])->i32 {\n    // Every other value occurs exactly twice.\n    values.iter().fold(0,|acc,&x|acc^x)\n}\n\nfn main() {\n    let result = single_value(&[4,1,2,1,2]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "XOR [4,1,2,1,2] cancels both 1s and both 2s, leaving 4. The order of cancellation does not matter. If other values occur arbitrary odd counts, this single-value interpretation no longer follows.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Every value occurs twice except one; return it. The visible fixture is `[4,1,2,1,2]` and its example result is `4`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Every value occurs twice except one; return it. For the visible input `[4,1,2,1,2]`, the stated result is `4`. Before reading code, name the smallest piece of information that must survive from one step to the next. An arithmetic or bitwise transformation relies on an identity. Write that identity and the domain in which it holds. That is the mental model for XOR Cancellation; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Equal values cancel and zero is neutral, leaving an odd-occurring value. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test zero, one, powers of two, maximum input size, and overflow or underflow around intermediate products. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "XOR [4,1,2,1,2] cancels both 1s and both 2s, leaving 4. The order of cancellation does not matter. If other values occur arbitrary odd counts, this single-value interpretation no longer follows.",
+    "practiceCode": "fn single_value(values:&[i32])->i32 {\n    // Every other value occurs exactly twice.\n    values.iter().fold(0,|acc,&x|acc^x)\n}\n\nfn main() {\n    let result = single_value(&[4,1,2,1,2]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Which input promise makes XOR return the unique single value?",
+    "rule": "Every other value occurs exactly twice. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(1) space bound without looking at the code.",
     "summary": "Equal values cancel and zero is neutral, leaving an odd-occurring value.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-math-bits-a.png",

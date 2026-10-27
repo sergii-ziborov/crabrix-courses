@@ -7,44 +7,44 @@
     "expectedAnswer": "2",
     "idea": "Maintain the first position that may still hold a value greater than or equal to target.",
     "patternID": "lower-bound",
-    "rustSketch": "fn lower_bound(values: &[i32], target: i32) -> usize {\n    let (mut low, mut high) = (0, values.len());\n    while low < high {\n        let mid = low + (high - low) / 2;\n        if values[mid] < target { low = mid + 1; } else { high = mid; }\n    }\n    low\n}",
+    "rustSketch": "fn lower_bound(a:&[i32],target:i32)->usize {\n    let (mut lo,mut hi)=(0,a.len());\n    while lo<hi { let mid=lo+(hi-lo)/2; if a[mid]<target { lo=mid+1; } else { hi=mid; } }\n    lo\n}\n\nfn main() {\n    let result = lower_bound(&[1,2,4,4,7],4).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return the first index whose value is at least 4.",
     "useCases": "insertion positions, first valid value, duplicate ranges",
     "visibleInput": "[1,2,4,4,7]"
   },
   "concept": "Maintain the first position that may still hold a value greater than or equal to target.",
-  "contentDigest": "7d2d5c12886cfde8330f525256067b5f2cc6bb58a52269b54c3cce822f87b943",
+  "contentDigest": "05282b4761952a44f226e17af8be983d22249bfc9c86b01d76721799663e0759",
   "depth": {
     "connections": [
       {
-        "concept": "Return the index of 9, or -1 if absent.",
         "direction": "previous",
-        "title": "Challenge: Exact Binary Search"
+        "title": "Challenge: Exact Binary Search",
+        "concept": "Return the index of 9, or -1 if absent."
       },
       {
-        "concept": "insertion positions, first valid value, duplicate ranges",
         "direction": "next",
-        "title": "Lower Bound: When to Use It"
+        "title": "Lower Bound: When to Use It",
+        "concept": "insertion positions, first valid value, duplicate ranges"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "value is at least the target. On [1,2,4,4,7], target 4 yields boundary 2, before both equal values. The half-open search interval starts [0,5) and discards positions whose values are provably below 4.",
+    "misconception": "“value is strictly greater than the target”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[1,2,4,4,7]`, write the state before the first update. Explain how it represents this claim: Maintain the first position that may still hold a value greater than or equal to target. Binary search maintains an interval that is still capable of containing the answer. State precisely why the discarded half cannot contain it."
+        "title": "Concrete transition",
+        "detail": "On [1,2,4,4,7], target 4 yields boundary 2, before both equal values. The half-open search interval starts [0,5) and discards positions whose values are provably below 4."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `2`. Use half-open bounds consistently and compute the midpoint without overflowing large integer indices."
+        "title": "Independent second fixture",
+        "detail": "Input `[1,4,4,8,9]` produces `1`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check no match, duplicate matches, the first and last valid positions, and an answer at the boundary of the search domain. Defend the O(log n) time · O(1) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[4,8,8,8,12]` produces `0`. value is at least the target. The stated work bound is O(log n) time · O(1) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[1,2,4,4,7]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Lower Bound survives, which state must be updated, and whether the O(log n) time · O(1) space bound still holds. It needs ordering, a monotone predicate, or another proved structure that lets one half be discarded; merely containing numbers is not enough."
+    "transferChallenge": "Compare the visible input `[1,2,4,4,7]` with `[0,2,6,10]`. Predict why their results are `2` and `2`. Then change one legal value and explain whether the same invariant, value is at least the target, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.lower-bound.model",
@@ -54,21 +54,21 @@
   "title": "Lower Bound: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "value is at least the target",
+      "value is strictly greater than the target",
+      "value equals the first input element"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(log n) time · O(1) space",
-    "exampleCode": "fn lower_bound(values: &[i32], target: i32) -> usize {\n    let (mut low, mut high) = (0, values.len());\n    while low < high {\n        let mid = low + (high - low) / 2;\n        if values[mid] < target { low = mid + 1; } else { high = mid; }\n    }\n    low\n}",
-    "explanation": "Begin with the concrete question: Return the first index whose value is at least 4. For the visible input `[1,2,4,4,7]`, the stated result is `2`. Before reading code, name the smallest piece of information that must survive from one step to the next. Binary search maintains an interval that is still capable of containing the answer. State precisely why the discarded half cannot contain it. That is the mental model for Lower Bound; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Maintain the first position that may still hold a value greater than or equal to target. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Use half-open bounds consistently and compute the midpoint without overflowing large integer indices. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(log n) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check no match, duplicate matches, the first and last valid positions, and an answer at the boundary of the search domain. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn lower_bound(values: &[i32], target: i32) -> usize {\n    let (mut low, mut high) = (0, values.len());\n    while low < high {\n        let mid = low + (high - low) / 2;\n        if values[mid] < target { low = mid + 1; } else { high = mid; }\n    }\n    low\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only lower-bound program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn lower_bound(a:&[i32],target:i32)->usize {\n    let (mut lo,mut hi)=(0,a.len());\n    while lo<hi { let mid=lo+(hi-lo)/2; if a[mid]<target { lo=mid+1; } else { hi=mid; } }\n    lo\n}\n\nfn main() {\n    let result = lower_bound(&[1,2,4,4,7],4).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "On [1,2,4,4,7], target 4 yields boundary 2, before both equal values. The half-open search interval starts [0,5) and discards positions whose values are provably below 4.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the first index whose value is at least 4. The visible fixture is `[1,2,4,4,7]` and its example result is `2`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return the first index whose value is at least 4. For the visible input `[1,2,4,4,7]`, the stated result is `2`. Before reading code, name the smallest piece of information that must survive from one step to the next. Binary search maintains an interval that is still capable of containing the answer. State precisely why the discarded half cannot contain it. That is the mental model for Lower Bound; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Maintain the first position that may still hold a value greater than or equal to target. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(log n) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Check no match, duplicate matches, the first and last valid positions, and an answer at the boundary of the search domain. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "On [1,2,4,4,7], target 4 yields boundary 2, before both equal values. The half-open search interval starts [0,5) and discards positions whose values are provably below 4.",
+    "practiceCode": "fn lower_bound(a:&[i32],target:i32)->usize {\n    let (mut lo,mut hi)=(0,a.len());\n    while lo<hi { let mid=lo+(hi-lo)/2; if a[mid]<target { lo=mid+1; } else { hi=mid; } }\n    lo\n}\n\nfn main() {\n    let result = lower_bound(&[1,2,4,4,7],4).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Which predicate is false before a lower bound and true from it onward?",
+    "rule": "value is at least the target. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(log n) time · O(1) space bound without looking at the code.",
     "summary": "Maintain the first position that may still hold a value greater than or equal to target.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-binary-search-a.png",

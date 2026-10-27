@@ -7,7 +7,7 @@
     "expectedAnswer": "8",
     "idea": "Reverse the input stack into an output stack only when the output side is empty.",
     "patternID": "queue-with-stacks",
-    "rustSketch": "fn balanced(text: &str) -> bool {\n    let mut stack = Vec::new();\n    for ch in text.chars() {\n        match ch {\n            '(' | '[' | '{' => stack.push(ch),\n            ')' => if stack.pop() != Some('(') { return false; },\n            ']' => if stack.pop() != Some('[') { return false; },\n            '}' => if stack.pop() != Some('{') { return false; },\n            _ => {}\n        }\n    }\n    stack.is_empty()\n}",
+    "rustSketch": "fn queue_front(operations:&[&str])->i32 {\n    let (mut incoming,mut outgoing)=(Vec::new(),Vec::new());\n    for op in operations {\n        if let Some(value)=op.strip_prefix(\"enqueue\") { incoming.push(value.parse::<i32>().unwrap()); continue; }\n        if outgoing.is_empty() { while let Some(x)=incoming.pop() { outgoing.push(x); } }\n        if *op==\"dequeue\" { outgoing.pop().unwrap(); }\n    }\n    *outgoing.last().unwrap()\n}\n\nfn main() {\n    let result = queue_front(&[\"enqueue1\",\"enqueue2\",\"dequeue\",\"front\"]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Execute the space-separated queue operations and return the value produced by front.",
     "useCases": "amortised FIFO from LIFO primitives",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "amortised FIFO from LIFO primitives",
         "direction": "previous",
-        "title": "Queue from Two Stacks: When to Use It"
+        "title": "Queue from Two Stacks: When to Use It",
+        "concept": "amortised FIFO from LIFO primitives"
       },
       {
-        "concept": "Keep unresolved indexes in decreasing value order and resolve them when a larger value appears.",
         "direction": "next",
-        "title": "Next Greater Element: Mental Model"
+        "title": "Next Greater Element: Mental Model",
+        "concept": "Keep unresolved indexes in decreasing value order and resolve them when a larger value appears."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "Reversing a whole batch restores FIFO order without disturbing older items. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“Every dequeue must transfer all items twice”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `enqueue3 enqueue5 enqueue8 dequeue dequeue enqueue2 front`, write the state before the first update. Explain how it represents this claim: Reverse the input stack into an output stack only when the output side is empty. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs."
+        "title": "Pattern-specific invariant",
+        "detail": "Reversing a whole batch restores FIFO order without disturbing older items. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. `Vec` works as a stack; `VecDeque` supplies efficient operations at both ends. Avoid removing from the front of a `Vec` in a long loop."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `enqueue1 enqueue2 dequeue front` and computes `2`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Defend the O(1) amortised operation · O(n) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `enqueue4 enqueue5 enqueue6 dequeue front`, the independently calculated result is `5`. The complexity discussion uses O(1) amortised operation · O(n) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `enqueue3 enqueue5 enqueue8 dequeue dequeue enqueue2 front` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Queue from Two Stacks survives, which state must be updated, and whether the O(1) amortised operation · O(n) space bound still holds. Look for nested structure, next-greater relationships, or ordered processing. A plain scan is enough when no unresolved state must be retained."
+    "transferChallenge": "Change the independent fixture `enqueue1 enqueue2 dequeue front` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `enqueue3 enqueue5 enqueue8 dequeue dequeue enqueue2 front`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.queue-with-stacks.challenge",
@@ -54,19 +54,19 @@
   "title": "Challenge: Queue from Two Stacks",
   "writing": {
     "answers": [
-      "O(1) amortised operation · O(n) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`5`",
+      "`6`",
+      "`4`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Execute the space-separated queue operations and return the value produced by front.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Queue from Two Stacks\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Execute the space-separated queue operations and return the value produced by front. On input `enqueue3 enqueue5 enqueue8 dequeue dequeue enqueue2 front`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Reverse the input stack into an output stack only when the output side is empty. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. `Vec` works as a stack; `VecDeque` supplies efficient operations at both ends. Avoid removing from the front of a `Vec` in a long loop. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(1) amortised operation · O(n) space; explain which operation dominates it and how many times the input can trigger that operation. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(1) amortised operation · O(n) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Execute the space-separated queue operations and return the value produced by front.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Queue from Two Stacks\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS queue-with-stacks, and your explanation still meets O(1) amortised operation · O(n) space.",
+    "exampleCaption": "Complete std-only queue-with-stacks program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn queue_front(operations:&[&str])->i32 {\n    let (mut incoming,mut outgoing)=(Vec::new(),Vec::new());\n    for op in operations {\n        if let Some(value)=op.strip_prefix(\"enqueue\") { incoming.push(value.parse::<i32>().unwrap()); continue; }\n        if outgoing.is_empty() { while let Some(x)=incoming.pop() { outgoing.push(x); } }\n        if *op==\"dequeue\" { outgoing.pop().unwrap(); }\n    }\n    *outgoing.last().unwrap()\n}\n\nfn main() {\n    let result = queue_front(&[\"enqueue1\",\"enqueue2\",\"dequeue\",\"front\"]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "Reversing a whole batch restores FIFO order without disturbing older items. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `enqueue1 enqueue2 dequeue front`, the worked program returns `2`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `enqueue3 enqueue5 enqueue8 dequeue dequeue enqueue2 front`; predict that result before opening the answer reveal. The precise contract is: Execute the space-separated queue operations and return the value produced by front.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Execute the space-separated queue operations and return the value produced by front. On input `enqueue3 enqueue5 enqueue8 dequeue dequeue enqueue2 front`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Reverse the input stack into an output stack only when the output side is empty. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(1) amortised operation · O(n) space; explain which operation dominates it and how many times the input can trigger that operation. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `5`. Reversing a whole batch restores FIFO order without disturbing older items. Compare this independent fixture with the worked trace: Enqueue 3,5,8 into incoming. Its transfer produces outgoing top 3; two dequeues remove 3 and 5. Enqueuing 2 remains in incoming while outgoing top 8 is still the correct front.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Execute the space-separated queue operations and return the value produced by front.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement queue-with-stacks\")\n}\n",
+    "question": "Boundary check for queue-with-stacks: with input `enqueue4 enqueue5 enqueue6 dequeue front`, what result should solve return?",
+    "rule": "Reversing a whole batch restores FIFO order without disturbing older items. Execute the space-separated queue operations and return the value produced by front.",
+    "success": "The private harness prints PASS queue-with-stacks. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Execute the space-separated queue operations and return the value produced by front.",
     "task": "Execute the space-separated queue operations and return the value produced by front."
   },

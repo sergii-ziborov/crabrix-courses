@@ -7,7 +7,7 @@
     "expectedAnswer": "2",
     "idea": "Expand until a constraint fails, then shrink until it is valid again.",
     "patternID": "variable-window",
-    "rustSketch": "fn best_k(values: &[i32], k: usize) -> i32 {\n    let mut sum: i32 = values[..k].iter().sum();\n    let mut best = sum;\n    for right in k..values.len() {\n        sum += values[right] - values[right - k];\n        best = best.max(sum);\n    }\n    best\n}",
+    "rustSketch": "fn shortest_sum(values: &[i32], target: i32) -> usize {\n    assert!(values.iter().all(|&x|x>0));\n    let (mut left,mut sum,mut best)=(0,0,usize::MAX);\n    for (right,&x) in values.iter().enumerate() {\n        sum+=x;\n        while sum>=target { best=best.min(right-left+1); sum-=values[left]; left+=1; }\n    }\n    if best==usize::MAX { 0 } else { best }\n}\n\nfn main() {\n    let result = shortest_sum(&[7],7).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "For positive values, return the minimum length with sum at least 7.",
     "useCases": "minimum or maximum contiguous ranges under a monotone constraint",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "minimum or maximum contiguous ranges under a monotone constraint",
         "direction": "previous",
-        "title": "Variable-Size Window: When to Use It"
+        "title": "Variable-Size Window: When to Use It",
+        "concept": "minimum or maximum contiguous ranges under a monotone constraint"
       },
       {
-        "concept": "Jump the left boundary past a repeated symbol using its latest position.",
         "direction": "next",
-        "title": "Last-Seen Unique Window: Mental Model"
+        "title": "Last-Seen Unique Window: Mental Model",
+        "concept": "Jump the left boundary past a repeated symbol using its latest position."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "All values are positive. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“Values are sorted”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[2,3,1,2,4,3]`, write the state before the first update. Explain how it represents this claim: Expand until a constraint fails, then shrink until it is valid again. A window is a contiguous interval with a maintained summary. Describe what entering the right edge adds and what leaving the left edge removes."
+        "title": "Pattern-specific invariant",
+        "detail": "All values are positive. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Represent bounds as a half-open range when possible. Keep counts and the window length in sync when shrinking it."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `[7]` and computes `1`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test an empty window, a window spanning the whole input, and a case where the left edge must advance several times. Defend the O(n) time · O(1) or state space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `[8,7,6,5,4,3,2]`, the independently calculated result is `1`. The complexity discussion uses O(n) time · O(1) or state space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `[2,3,1,2,4,3]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Variable-Size Window survives, which state must be updated, and whether the O(n) time · O(1) or state space bound still holds. Choose this family when a valid window can be repaired by moving one boundary; non-monotone constraints may need a different method."
+    "transferChallenge": "Change the independent fixture `[7]` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `[2,3,1,2,4,3]`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.variable-window.challenge",
@@ -54,19 +54,19 @@
   "title": "Challenge: Variable-Size Window",
   "writing": {
     "answers": [
-      "O(n) time · O(1) or state space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`1`",
+      "`2`",
+      "`0`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // For positive values, return the minimum length with sum at least 7.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Variable-Size Window\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: For positive values, return the minimum length with sum at least 7. On input `[2,3,1,2,4,3]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Expand until a constraint fails, then shrink until it is valid again. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A window is a contiguous interval with a maintained summary. Describe what entering the right edge adds and what leaving the left edge removes. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Represent bounds as a half-open range when possible. Keep counts and the window length in sync when shrinking it. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(1) or state space; explain which operation dominates it and how many times the input can trigger that operation. Test an empty window, a window spanning the whole input, and a case where the left edge must advance several times. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(n) time · O(1) or state space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // For positive values, return the minimum length with sum at least 7.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Variable-Size Window\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS variable-window, and your explanation still meets O(n) time · O(1) or state space.",
+    "exampleCaption": "Complete std-only variable-window program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn shortest_sum(values: &[i32], target: i32) -> usize {\n    assert!(values.iter().all(|&x|x>0));\n    let (mut left,mut sum,mut best)=(0,0,usize::MAX);\n    for (right,&x) in values.iter().enumerate() {\n        sum+=x;\n        while sum>=target { best=best.min(right-left+1); sum-=values[left]; left+=1; }\n    }\n    if best==usize::MAX { 0 } else { best }\n}\n\nfn main() {\n    let result = shortest_sum(&[7],7).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "All values are positive. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `[7]`, the worked program returns `1`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `[2,3,1,2,4,3]`; predict that result before opening the answer reveal. The precise contract is: For positive values, return the minimum length with sum at least 7.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: For positive values, return the minimum length with sum at least 7. On input `[2,3,1,2,4,3]`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Expand until a constraint fails, then shrink until it is valid again. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. A window is a contiguous interval with a maintained summary. Describe what entering the right edge adds and what leaving the left edge removes. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(n) time · O(1) or state space; explain which operation dominates it and how many times the input can trigger that operation. Test an empty window, a window spanning the whole input, and a case where the left edge must advance several times. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `1`. All values are positive. Compare this independent fixture with the worked trace: On [2,3,1,2,4,3] with target 7, expanding reaches a valid sum, then shrinking removes unnecessary left values. Near the end, [4,3] reaches 7 with length 2. Negative values would invalidate this simple monotone rule.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // For positive values, return the minimum length with sum at least 7.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement variable-window\")\n}\n",
+    "question": "Boundary check for variable-window: with input `[8,7,6,5,4,3,2]`, what result should solve return?",
+    "rule": "All values are positive. For positive values, return the minimum length with sum at least 7.",
+    "success": "The private harness prints PASS variable-window. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "For positive values, return the minimum length with sum at least 7.",
     "task": "For positive values, return the minimum length with sum at least 7."
   },

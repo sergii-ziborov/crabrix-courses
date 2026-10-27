@@ -7,44 +7,44 @@
     "expectedAnswer": "8",
     "idea": "Relax outgoing edges once in topological order because no path can return to an earlier node.",
     "patternID": "dag-shortest-path",
-    "rustSketch": "// Dijkstra invariant:\n// when the smallest tentative distance is popped and is current,\n// no later non-negative path can improve that node.",
+    "rustSketch": "fn dag_distance(graph:&[Vec<(usize,i64)>],start:usize,goal:usize)->i64 {\n    let n=graph.len(); let mut degree=vec![0;n]; for ns in graph { for &(u,_) in ns { degree[u]+=1; } }\n    let mut queue:std::collections::VecDeque<_>=(0..n).filter(|&v|degree[v]==0).collect();\n    let mut distance=vec![i64::MAX;n]; distance[start]=0; let mut visited=0;\n    while let Some(v)=queue.pop_front() {\n        visited+=1;\n        for &(u,w) in &graph[v] {\n            if distance[v]!=i64::MAX { distance[u]=distance[u].min(distance[v].checked_add(w).unwrap()); }\n            degree[u]-=1; if degree[u]==0 { queue.push_back(u); }\n        }\n    }\n    assert_eq!(visited,n); if distance[goal]==i64::MAX { -1 } else { distance[goal] }\n}\n\nfn main() {\n    let result = dag_distance(&[vec![(4,2)],vec![],vec![],vec![],vec![]],0,4).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "challenge",
     "task": "Return shortest distance from 0 to 4.",
     "useCases": "weighted acyclic dependency graphs",
     "visibleInput": "0->1:2,0->2:4,1->3:7,2->3:1,3->4:3"
   },
   "concept": "Return shortest distance from 0 to 4.",
-  "contentDigest": "8942c37b7c33214aa75fc8534fc5e83eae086db35f9924e4a8ae788ec3aad00f",
+  "contentDigest": "7e5eb7cb95afde1eaadd559a3f810d86083db2ca0d95d67ad7642c1e48a21e4d",
   "depth": {
     "connections": [
       {
-        "concept": "weighted acyclic dependency graphs",
         "direction": "previous",
-        "title": "DAG Shortest Path: When to Use It"
+        "title": "DAG Shortest Path: When to Use It",
+        "concept": "weighted acyclic dependency graphs"
       },
       {
-        "concept": "Grow one connected tree by repeatedly choosing the cheapest edge crossing its boundary.",
         "direction": "next",
-        "title": "Prim Minimum Spanning Tree: Mental Model"
+        "title": "Prim Minimum Spanning Tree: Mental Model",
+        "concept": "Grow one connected tree by repeatedly choosing the cheapest edge crossing its boundary."
       }
     ],
-    "correction": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "misconception": "“No complexity bound is needed”",
+    "correction": "Topological order processes every predecessor before its outgoing relaxations. The independent teaching fixture demonstrates this rule; predict the separate visible challenge before revealing its answer.",
+    "misconception": "“Every negative edge is first converted to zero”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `0->1:2,0->2:4,1->3:7,2->3:1,3->4:3`, write the state before the first update. Explain how it represents this claim: Relax outgoing edges once in topological order because no path can return to an earlier node. Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state."
+        "title": "Pattern-specific invariant",
+        "detail": "Topological order processes every predecessor before its outgoing relaxations. This is the property the named implementation maintains; explain which comparison, state update or recursive return in the worked program establishes it."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the output follows from the maintained state. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic."
+        "title": "Independent typed fixture",
+        "detail": "The worked call uses `0->4:2` and computes `2`. Keep parsing separate, then identify the core state before and after this call."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Defend the O(V+E) time · O(V) space bound by counting actual work."
+        "title": "Different legal case",
+        "detail": "For `0->1:1,1->2:1,2->3:1,3->4:1`, the independently calculated result is `4`. The complexity discussion uses O(V+E) time · O(V) space. Verify the state invariant before reasoning about the operation count."
       }
     ],
-    "transferChallenge": "Change the visible input `0->1:2,0->2:4,1->3:7,2->3:1,3->4:3` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from DAG Shortest Path survives, which state must be updated, and whether the O(V+E) time · O(V) space bound still holds. Inspect weight signs and graph direction: non-negative shortest paths, negative edges, and zero-one weights support different algorithms."
+    "transferChallenge": "Change the independent fixture `0->4:2` in a legal way, then compare the result with your prediction. Explain how the same invariant applies to the separate visible challenge `0->1:2,0->2:4,1->3:7,2->3:1,3->4:3`."
   },
   "exerciseKind": "algorithmChallenge",
   "id": "algorithm.dag-shortest-path.challenge",
@@ -54,19 +54,19 @@
   "title": "Challenge: DAG Shortest Path",
   "writing": {
     "answers": [
-      "O(V+E) time · O(V) space",
-      "No complexity bound is needed",
-      "Always O(n!) time"
+      "`4`",
+      "`5`",
+      "`3`"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Editable solution · verification data stays outside the project",
-    "exampleCode": "pub fn solve(input: &str) -> String {\n    // Return shortest distance from 0 to 4.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement DAG Shortest Path\")\n}",
-    "explanation": "Solve the exact task, not just the visible example: Return shortest distance from 0 to 4. On input `0->1:2,0->2:4,1->3:7,2->3:1,3->4:3`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Relax outgoing edges once in topological order because no path can return to an earlier node. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nUse the Rust sketch as a guide, not a substitute for a complete `solve` function. The supplied Rust sketch is an invariant note rather than a complete program. Turn it into explicit state and transitions before coding. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic. Keep parsing separate from the algorithm so a bad input assumption does not look like a logic bug. Make the return value reflect the computed state; printing or returning the visible expected answer directly only passes one example. Where the state owns data, be deliberate about borrowing and mutation instead of cloning to silence a compiler error.\n\nCheck both correctness and cost. The intended bound is O(V+E) time · O(V) space; explain which operation dominates it and how many times the input can trigger that operation. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
-    "feedback": "The intended target is O(V+E) time · O(V) space; defend any different tradeoff explicitly.",
-    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return shortest distance from 0 to 4.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement DAG Shortest Path\")\n}",
-    "question": "Which performance target should guide this solution?",
-    "rule": "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
-    "success": "The harness prints PASS dag-shortest-path, and your explanation still meets O(V+E) time · O(V) space.",
+    "exampleCaption": "Complete std-only dag-shortest-path program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn dag_distance(graph:&[Vec<(usize,i64)>],start:usize,goal:usize)->i64 {\n    let n=graph.len(); let mut degree=vec![0;n]; for ns in graph { for &(u,_) in ns { degree[u]+=1; } }\n    let mut queue:std::collections::VecDeque<_>=(0..n).filter(|&v|degree[v]==0).collect();\n    let mut distance=vec![i64::MAX;n]; distance[start]=0; let mut visited=0;\n    while let Some(v)=queue.pop_front() {\n        visited+=1;\n        for &(u,w) in &graph[v] {\n            if distance[v]!=i64::MAX { distance[u]=distance[u].min(distance[v].checked_add(w).unwrap()); }\n            degree[u]-=1; if degree[u]==0 { queue.push_back(u); }\n        }\n    }\n    assert_eq!(visited,n); if distance[goal]==i64::MAX { -1 } else { distance[goal] }\n}\n\nfn main() {\n    let result = dag_distance(&[vec![(4,2)],vec![],vec![],vec![],vec![]],0,4).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "Topological order processes every predecessor before its outgoing relaxations. The worked program demonstrates this invariant on an independent fixture, so you can study the implementation before predicting the challenge result.\n\nFor teaching input `0->4:2`, the worked program returns `2`. Its functions are complete and use only std. Adapt the same state transitions to the visible challenge input `0->1:2,0->2:4,1->3:7,2->3:1,3->4:3`; predict that result before opening the answer reveal. The precise contract is: Return shortest distance from 0 to 4.\n\nReturn canonical output: lowercase booleans, decimal integers without leading zeros, comma-separated values and semicolon-separated groups, with no extra whitespace or final newline. Whole medians use integer form and half medians use .5. Textual sentinels such as none and # retain their stated meaning. String and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nSolve the exact task, not just the visible example: Return shortest distance from 0 to 4. On input `0->1:2,0->2:4,1->3:7,2->3:1,3->4:3`, predict the output before opening the answer reveal. The revealed output is a test oracle for this case, while private checks exercise other legal cases. Start by stating the input grammar and output format in your own words. Parse the complete input, including surrounding whitespace, before relying on any convenient positions in the example.\n\nBuild the solution around one maintained claim: Relax outgoing edges once in topological order because no path can return to an earlier node. Decide what state represents that claim, how it is initialized, what a single update does, and when the algorithm stops. Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state. Trace the visible input by hand and record at least two intermediate states, not only the final answer. If the trace cannot justify your predicted output, there is a gap between the idea and the implementation.\n\nCheck both correctness and cost. The intended bound is O(V+E) time · O(V) space; explain which operation dominates it and how many times the input can trigger that operation. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Add one small case that should succeed, one boundary case, and one case chosen to challenge the invariant. Compare your hand result with the program's result, then use a failing case to fix the earliest incorrect state transition rather than patching the final output.",
+    "feedback": "For this input the result is `4`. Topological order processes every predecessor before its outgoing relaxations. Compare this independent fixture with the worked trace: Edges 0→2 at 4, 2→3 at 1, 3→4 at 3 give a route of total 8, better than 0→1→3→4. No cycle can repeatedly improve a distance. Unreachable sentinel values must not be added to edge weights.",
+    "practiceCode": "pub fn solve(input: &str) -> String {\n    // Return shortest distance from 0 to 4.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement dag-shortest-path\")\n}\n",
+    "question": "Boundary check for dag-shortest-path: with input `0->1:1,1->2:1,2->3:1,3->4:1`, what result should solve return?",
+    "rule": "Topological order processes every predecessor before its outgoing relaxations. Return shortest distance from 0 to 4.",
+    "success": "The private harness prints PASS dag-shortest-path. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Return shortest distance from 0 to 4.",
     "task": "Return shortest distance from 0 to 4."
   },

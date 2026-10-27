@@ -7,7 +7,7 @@
     "expectedAnswer": "24,12,8,6",
     "idea": "Combine the product before and after each index without division.",
     "patternID": "prefix-suffix-product",
-    "rustSketch": "fn prefix(values: &[i64]) -> Vec<i64> {\n    let mut sums = vec![0; values.len() + 1];\n    for i in 0..values.len() { sums[i + 1] = sums[i] + values[i]; }\n    sums\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn products_except_self(values: &[i64]) -> Vec<i64> {\n    let mut result = vec![1; values.len()];\n    let mut product = 1;\n    for i in 0..values.len() { result[i] = product; product *= values[i]; }\n    product = 1;\n    for i in (0..values.len()).rev() { result[i] *= product; product *= values[i]; }\n    result\n}\n\nfn main() {\n    let result = csv(products_except_self(&[1,2,3,4]));\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return the product of all values except the one at each position.",
     "useCases": "product-except-self and exclusion aggregates",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Apply +3 to indexes 1 through 3 and +2 to 2 through 4; return the final array.",
         "direction": "previous",
-        "title": "Challenge: Difference Array"
+        "title": "Challenge: Difference Array",
+        "concept": "Apply +3 to indexes 1 through 3 and +2 to 2 through 4; return the final array."
       },
       {
-        "concept": "product-except-self and exclusion aggregates",
         "direction": "next",
-        "title": "Prefix/Suffix Product: When to Use It"
+        "title": "Prefix/Suffix Product: When to Use It",
+        "concept": "product-except-self and exclusion aggregates"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "The method remains valid when an input contains zero. The left pass on [1,2,3,4] writes [1,1,2,6]. Multiplying the reverse suffix states gives [24,12,8,6]. For a zero, no division is attempted; arithmetic still requires a type large enough for the products.",
+    "misconception": "“Division always gives exact results for zero inputs”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[1,2,3,4]`, write the state before the first update. Explain how it represents this claim: Combine the product before and after each index without division. A range method summarizes intervals so the same information is not recomputed. A static prefix table and an updateable tree make different tradeoffs; define endpoint conventions first."
+        "title": "Concrete transition",
+        "detail": "The left pass on [1,2,3,4] writes [1,1,2,6]. Multiplying the reverse suffix states gives [24,12,8,6]. For a zero, no division is attempted; arithmetic still requires a type large enough for the products."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `24,12,8,6`. Allocate an extra prefix slot when a zero-length prefix simplifies indexing, and use a numeric type large enough for accumulated values."
+        "title": "Independent second fixture",
+        "detail": "Input `[1,2,3,4,5,6,7]` produces `5040,2520,1680,1260,1008,840,720`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test the first and last position, an empty range where permitted, and the boundary immediately after an update. Defend the O(n) time · O(1) output-excluded space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[8,7,6,5,4,3,2]` produces `5040,5760,6720,8064,10080,13440,20160`. The method remains valid when an input contains zero. The stated work bound is O(n) time · O(1) output-excluded space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[1,2,3,4]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Prefix/Suffix Product survives, which state must be updated, and whether the O(n) time · O(1) output-excluded space bound still holds. Precomputation pays when many ranges are queried. If values change between queries, an updateable structure may be needed; for one small query, a direct walk is simpler."
+    "transferChallenge": "Compare the visible input `[1,2,3,4]` with `[3,3,3,3,3,3,3]`. Predict why their results are `24,12,8,6` and `729,729,729,729,729,729,729`. Then change one legal value and explain whether the same invariant, the method remains valid when an input contains zero, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.prefix-suffix-product.model",
@@ -54,21 +54,21 @@
   "title": "Prefix/Suffix Product: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "The method remains valid when an input contains zero",
+      "Division always gives exact results for zero inputs",
+      "Division preserves the no-overflow guarantee"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n) time · O(1) output-excluded space",
-    "exampleCode": "fn prefix(values: &[i64]) -> Vec<i64> {\n    let mut sums = vec![0; values.len() + 1];\n    for i in 0..values.len() { sums[i + 1] = sums[i] + values[i]; }\n    sums\n}",
-    "explanation": "Begin with the concrete question: Return the product of all values except the one at each position. For the visible input `[1,2,3,4]`, the stated result is `24,12,8,6`. Before reading code, name the smallest piece of information that must survive from one step to the next. A range method summarizes intervals so the same information is not recomputed. A static prefix table and an updateable tree make different tradeoffs; define endpoint conventions first. That is the mental model for Prefix/Suffix Product; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Combine the product before and after each index without division. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Allocate an extra prefix slot when a zero-length prefix simplifies indexing, and use a numeric type large enough for accumulated values. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n) time · O(1) output-excluded space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test the first and last position, an empty range where permitted, and the boundary immediately after an update. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn prefix(values: &[i64]) -> Vec<i64> {\n    let mut sums = vec![0; values.len() + 1];\n    for i in 0..values.len() { sums[i + 1] = sums[i] + values[i]; }\n    sums\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only prefix-suffix-product program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn products_except_self(values: &[i64]) -> Vec<i64> {\n    let mut result = vec![1; values.len()];\n    let mut product = 1;\n    for i in 0..values.len() { result[i] = product; product *= values[i]; }\n    product = 1;\n    for i in (0..values.len()).rev() { result[i] *= product; product *= values[i]; }\n    result\n}\n\nfn main() {\n    let result = csv(products_except_self(&[1,2,3,4]));\n    println!(\"{result}\");\n}\n",
+    "explanation": "The left pass on [1,2,3,4] writes [1,1,2,6]. Multiplying the reverse suffix states gives [24,12,8,6]. For a zero, no division is attempted; arithmetic still requires a type large enough for the products.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the product of all values except the one at each position. The visible fixture is `[1,2,3,4]` and its example result is `24,12,8,6`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return the product of all values except the one at each position. For the visible input `[1,2,3,4]`, the stated result is `24,12,8,6`. Before reading code, name the smallest piece of information that must survive from one step to the next. A range method summarizes intervals so the same information is not recomputed. A static prefix table and an updateable tree make different tradeoffs; define endpoint conventions first. That is the mental model for Prefix/Suffix Product; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Combine the product before and after each index without division. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n) time · O(1) output-excluded space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test the first and last position, an empty range where permitted, and the boundary immediately after an update. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "The left pass on [1,2,3,4] writes [1,1,2,6]. Multiplying the reverse suffix states gives [24,12,8,6]. For a zero, no division is attempted; arithmetic still requires a type large enough for the products.",
+    "practiceCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn products_except_self(values: &[i64]) -> Vec<i64> {\n    let mut result = vec![1; values.len()];\n    let mut product = 1;\n    for i in 0..values.len() { result[i] = product; product *= values[i]; }\n    product = 1;\n    for i in (0..values.len()).rev() { result[i] *= product; product *= values[i]; }\n    result\n}\n\nfn main() {\n    let result = csv(products_except_self(&[1,2,3,4]));\n    println!(\"{result}\");\n}\n",
+    "question": "Why use prefix and suffix products instead of dividing the total?",
+    "rule": "The method remains valid when an input contains zero. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(1) output-excluded space bound without looking at the code.",
     "summary": "Combine the product before and after each index without division.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-ranges-a.png",

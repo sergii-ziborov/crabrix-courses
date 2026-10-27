@@ -7,44 +7,44 @@
     "expectedAnswer": "5",
     "idea": "Expand the smaller frontier from each endpoint until the visited sets meet.",
     "patternID": "bidirectional-bfs",
-    "rustSketch": "// Dijkstra invariant:\n// when the smallest tentative distance is popped and is current,\n// no later non-negative path can improve that node.",
+    "rustSketch": "fn ladder_length(start:&str,goal:&str,words:&[&str])->usize {\n    use std::collections::{HashMap,HashSet};\n    let mut front=HashSet::from([start.to_owned()]); let mut back=HashSet::from([goal.to_owned()]);\n    let mut left=HashMap::from([(start.to_owned(),1)]); let mut right=HashMap::from([(goal.to_owned(),1)]);\n    while !front.is_empty() && !back.is_empty() {\n        if front.len()>back.len() { std::mem::swap(&mut front,&mut back); std::mem::swap(&mut left,&mut right); }\n        let mut next=HashSet::new(); let mut best=usize::MAX;\n        for word in &front {\n            if let Some(&d)=right.get(word) { best=best.min(left[word]+d-1); }\n            for &candidate in words {\n                if candidate.len()!=word.len() || word.bytes().zip(candidate.bytes()).filter(|(a,b)|a!=b).count()!=1 { continue; }\n                let d=left[word]+1;\n                if let Some(&other)=right.get(candidate) { best=best.min(d+other-1); }\n                if !left.contains_key(candidate) { left.insert(candidate.to_owned(),d); next.insert(candidate.to_owned()); }\n            }\n        }\n        if best!=usize::MAX { return best; } front=next;\n    }\n    0\n}\n\nfn main() {\n    let result = ladder_length(\"hit\",\"cog\",&[\"hot\",\"dot\",\"dog\",\"lot\",\"log\",\"cog\"]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return word-ladder length changing one letter at a time.",
     "useCases": "unweighted shortest paths with one source and one target",
     "visibleInput": "hit -> cog via [hot,dot,dog,lot,log,cog]"
   },
   "concept": "unweighted shortest paths with one source and one target",
-  "contentDigest": "5702ae9b7378807acbeb0638ed1f157353f0c195f22cb9c6e0ce2206678b8c34",
+  "contentDigest": "42fd3aa56220e4c795656b2df85c1903f909f9c6c2d69e3bd00b5fc20e0812d7",
   "depth": {
     "connections": [
       {
-        "concept": "Expand the smaller frontier from each endpoint until the visited sets meet.",
         "direction": "previous",
-        "title": "Bidirectional BFS: Mental Model"
+        "title": "Bidirectional BFS: Mental Model",
+        "concept": "Expand the smaller frontier from each endpoint until the visited sets meet."
       },
       {
-        "concept": "Return word-ladder length changing one letter at a time.",
         "direction": "next",
-        "title": "Challenge: Bidirectional BFS"
+        "title": "Challenge: Bidirectional BFS",
+        "concept": "Return word-ladder length changing one letter at a time."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "Layer distances remain meaningful when the two searches meet. The ladder hit→hot→dot→dog→cog contains 5 words and 4 transformations. Search from both endpoints and expand the smaller frontier layer, comparing meeting distances. No valid connecting sequence yields the explicit result 0.",
+    "misconception": "“A single arbitrary branch always gives the shortest ladder”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `hit -> cog via [hot,dot,dog,lot,log,cog]`, write the state before the first update. Explain how it represents this claim: Expand the smaller frontier from each endpoint until the visited sets meet. Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state."
+        "title": "Concrete transition",
+        "detail": "The ladder hit→hot→dot→dog→cog contains 5 words and 4 transformations. Search from both endpoints and expand the smaller frontier layer, comparing meeting distances. No valid connecting sequence yields the explicit result 0."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `5`. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic."
+        "title": "Independent second fixture",
+        "detail": "Input `cat -> dog via [cot,cog,dog]` produces `4`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Defend the O(b^(d/2)) frontier typical · O(V) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `aaa -> bbb via [aab,abb,bbb]` produces `4`. Layer distances remain meaningful when the two searches meet. The stated work bound is O(b^(d/2)) frontier typical · O(V) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `hit -> cog via [hot,dot,dog,lot,log,cog]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Bidirectional BFS survives, which state must be updated, and whether the O(b^(d/2)) frontier typical · O(V) space bound still holds. Inspect weight signs and graph direction: non-negative shortest paths, negative edges, and zero-one weights support different algorithms."
+    "transferChallenge": "Compare the visible input `hit -> cog via [hot,dot,dog,lot,log,cog]` with `hit -> cog via [hot,dot]`. Predict why their results are `5` and `0`. Then change one legal value and explain whether the same invariant, layer distances remain meaningful when the two searches meet, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.bidirectional-bfs.recognize",
@@ -54,21 +54,21 @@
   "title": "Bidirectional BFS: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "unweighted shortest paths with one source and one target",
-      "Only problems with exactly one input value"
+      "`5`",
+      "`4`",
+      "`3`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Bidirectional BFS",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Bidirectional BFS",
-    "explanation": "A problem is a good match for Bidirectional BFS when it asks for unweighted shortest paths with one source and one target. Here the concrete task is: Return word-ladder length changing one letter at a time. The visible input `hit -> cog via [hot,dot,dog,lot,log,cog]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Inspect weight signs and graph direction: non-negative shortest paths, negative edges, and zero-one weights support different algorithms. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Expand the smaller frontier from each endpoint until the visited sets meet. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(b^(d/2)) frontier typical · O(V) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `5` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: unweighted shortest paths with one source and one target.",
-    "practiceCode": "// Dijkstra invariant:\n// when the smallest tentative distance is popped and is current,\n// no later non-negative path can improve that node.",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only bidirectional-bfs program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn ladder_length(start:&str,goal:&str,words:&[&str])->usize {\n    use std::collections::{HashMap,HashSet};\n    let mut front=HashSet::from([start.to_owned()]); let mut back=HashSet::from([goal.to_owned()]);\n    let mut left=HashMap::from([(start.to_owned(),1)]); let mut right=HashMap::from([(goal.to_owned(),1)]);\n    while !front.is_empty() && !back.is_empty() {\n        if front.len()>back.len() { std::mem::swap(&mut front,&mut back); std::mem::swap(&mut left,&mut right); }\n        let mut next=HashSet::new(); let mut best=usize::MAX;\n        for word in &front {\n            if let Some(&d)=right.get(word) { best=best.min(left[word]+d-1); }\n            for &candidate in words {\n                if candidate.len()!=word.len() || word.bytes().zip(candidate.bytes()).filter(|(a,b)|a!=b).count()!=1 { continue; }\n                let d=left[word]+1;\n                if let Some(&other)=right.get(candidate) { best=best.min(d+other-1); }\n                if !left.contains_key(candidate) { left.insert(candidate.to_owned(),d); next.insert(candidate.to_owned()); }\n            }\n        }\n        if best!=usize::MAX { return best; } front=next;\n    }\n    0\n}\n\nfn main() {\n    let result = ladder_length(\"hit\",\"cog\",&[\"hot\",\"dot\",\"dog\",\"lot\",\"log\",\"cog\"]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "The ladder hit→hot→dot→dog→cog contains 5 words and 4 transformations. Search from both endpoints and expand the smaller frontier layer, comparing meeting distances. No valid connecting sequence yields the explicit result 0.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return word-ladder length changing one letter at a time. The visible fixture is `hit -> cog via [hot,dot,dog,lot,log,cog]` and its example result is `5`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Bidirectional BFS when it asks for unweighted shortest paths with one source and one target. Here the concrete task is: Return word-ladder length changing one letter at a time. The visible input `hit -> cog via [hot,dot,dog,lot,log,cog]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Inspect weight signs and graph direction: non-negative shortest paths, negative edges, and zero-one weights support different algorithms. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Expand the smaller frontier from each endpoint until the visited sets meet. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Edge weights change what a path means. State whether the objective is minimum distance, a spanning structure, or feasible flow before choosing state. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(b^(d/2)) frontier typical · O(V) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `5` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check disconnected vertices, parallel edges, zero weights, and whether an unreachable result has a defined representation. Use numeric types wide enough for distances, weights, or capacities. In shortest-path heap variants, skip stale queue entries and guard sentinel arithmetic. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `4`. Layer distances remain meaningful when the two searches meet. Compare this independent fixture with the worked trace: The ladder hit→hot→dot→dog→cog contains 5 words and 4 transformations. Search from both endpoints and expand the smaller frontier layer, comparing meeting distances. No valid connecting sequence yields the explicit result 0.",
+    "practiceCode": "fn ladder_length(start:&str,goal:&str,words:&[&str])->usize {\n    use std::collections::{HashMap,HashSet};\n    let mut front=HashSet::from([start.to_owned()]); let mut back=HashSet::from([goal.to_owned()]);\n    let mut left=HashMap::from([(start.to_owned(),1)]); let mut right=HashMap::from([(goal.to_owned(),1)]);\n    while !front.is_empty() && !back.is_empty() {\n        if front.len()>back.len() { std::mem::swap(&mut front,&mut back); std::mem::swap(&mut left,&mut right); }\n        let mut next=HashSet::new(); let mut best=usize::MAX;\n        for word in &front {\n            if let Some(&d)=right.get(word) { best=best.min(left[word]+d-1); }\n            for &candidate in words {\n                if candidate.len()!=word.len() || word.bytes().zip(candidate.bytes()).filter(|(a,b)|a!=b).count()!=1 { continue; }\n                let d=left[word]+1;\n                if let Some(&other)=right.get(candidate) { best=best.min(d+other-1); }\n                if !left.contains_key(candidate) { left.insert(candidate.to_owned(),d); next.insert(candidate.to_owned()); }\n            }\n        }\n        if best!=usize::MAX { return best; } front=next;\n    }\n    0\n}\n\nfn main() {\n    let result = ladder_length(\"hit\",\"cog\",&[\"hot\",\"dot\",\"dog\",\"lot\",\"log\",\"cog\"]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Bidirectional BFS on input `cat -> dog via [cot,cog,dog]`. Which result follows from the documented contract?",
+    "rule": "Layer distances remain meaningful when the two searches meet. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Bidirectional BFS.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-weighted-graphs-b.png",

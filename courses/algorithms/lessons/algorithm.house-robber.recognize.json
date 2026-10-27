@@ -7,44 +7,44 @@
     "expectedAnswer": "12",
     "idea": "For each item compare skipping it with taking it plus the best compatible earlier state.",
     "patternID": "house-robber",
-    "rustSketch": "fn ways(n: usize) -> usize {\n    let (mut previous, mut current) = (1, 1);\n    for _ in 0..n {\n        (previous, current) = (current, previous + current);\n    }\n    previous\n}",
+    "rustSketch": "fn non_adjacent_sum(values:&[i32])->i32 {\n    let (mut previous,mut best)=(0,0);\n    for &value in values { let next=best.max(previous+value); previous=best; best=next; } best\n}\n\nfn main() {\n    let result = non_adjacent_sum(&[2,7,9,3,1]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return the maximum non-adjacent sum.",
     "useCases": "non-adjacent selection and weighted independent paths",
     "visibleInput": "[2,7,9,3,1]"
   },
   "concept": "non-adjacent selection and weighted independent paths",
-  "contentDigest": "07fd3d23da9968b8c89006acae6484b927a23b4186409761e5f71721da776aee",
+  "contentDigest": "41d54a917f597ec553cdc811da48799f1a1cc17e9ee9a3f82fecb6e7c4bb9a3f",
   "depth": {
     "connections": [
       {
-        "concept": "For each item compare skipping it with taking it plus the best compatible earlier state.",
         "direction": "previous",
-        "title": "Take-or-Skip DP: Mental Model"
+        "title": "Take-or-Skip DP: Mental Model",
+        "concept": "For each item compare skipping it with taking it plus the best compatible earlier state."
       },
       {
-        "concept": "Return the maximum non-adjacent sum.",
         "direction": "next",
-        "title": "Challenge: Take-or-Skip DP"
+        "title": "Challenge: Take-or-Skip DP",
+        "concept": "Return the maximum non-adjacent sum."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "Taking this item excludes its immediate predecessor. For [2,7,9,3,1], the best prefix totals are 2,7,11,11,12. Taking final 1 combines with total 11 from before its neighbor. The answer 12 comes from values 2,9,1, not the three largest values regardless of positions.",
+    "misconception": "“Every positive value can be taken independently”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[2,7,9,3,1]`, write the state before the first update. Explain how it represents this claim: For each item compare skipping it with taking it plus the best compatible earlier state. A one-dimensional DP state summarizes a prefix or a single parameter. Define its meaning before writing a recurrence."
+        "title": "Concrete transition",
+        "detail": "For [2,7,9,3,1], the best prefix totals are 2,7,11,11,12. Taking final 1 combines with total 11 from before its neighbor. The answer 12 comes from values 2,9,1, not the three largest values regardless of positions."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `12`. Use `Option` or a safe sentinel for unreachable states, and choose an iteration direction that matches the recurrence's dependencies."
+        "title": "Independent second fixture",
+        "detail": "Input `[1,2,3,4,5,6,7]` produces `16`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test the base state, the first transition, impossible states, and whether an in-place update accidentally reuses an item twice. Defend the O(n) time · O(1) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[8,7,6,5,4,3,2]` produces `20`. Taking this item excludes its immediate predecessor. The stated work bound is O(n) time · O(1) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[2,7,9,3,1]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Take-or-Skip DP survives, which state must be updated, and whether the O(n) time · O(1) space bound still holds. Choose a recurrence when subproblems overlap. `Some` patterns summarize a frontier instead of a full DP table; either representation needs an invariant, and any greedy shortcut needs proof."
+    "transferChallenge": "Compare the visible input `[2,7,9,3,1]` with `[3,3,3,3,3,3,3]`. Predict why their results are `12` and `12`. Then change one legal value and explain whether the same invariant, taking this item excludes its immediate predecessor, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.house-robber.recognize",
@@ -54,21 +54,21 @@
   "title": "Take-or-Skip DP: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "non-adjacent selection and weighted independent paths",
-      "Only problems with exactly one input value"
+      "`17`",
+      "`16`",
+      "`15`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Take-or-Skip DP",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Take-or-Skip DP",
-    "explanation": "A problem is a good match for Take-or-Skip DP when it asks for non-adjacent selection and weighted independent paths. Here the concrete task is: Return the maximum non-adjacent sum. The visible input `[2,7,9,3,1]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Choose a recurrence when subproblems overlap. `Some` patterns summarize a frontier instead of a full DP table; either representation needs an invariant, and any greedy shortcut needs proof. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: For each item compare skipping it with taking it plus the best compatible earlier state. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A one-dimensional DP state summarizes a prefix or a single parameter. Define its meaning before writing a recurrence. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(1) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `12` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test the base state, the first transition, impossible states, and whether an in-place update accidentally reuses an item twice. Use `Option` or a safe sentinel for unreachable states, and choose an iteration direction that matches the recurrence's dependencies. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: non-adjacent selection and weighted independent paths.",
-    "practiceCode": "fn ways(n: usize) -> usize {\n    let (mut previous, mut current) = (1, 1);\n    for _ in 0..n {\n        (previous, current) = (current, previous + current);\n    }\n    previous\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only house-robber program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn non_adjacent_sum(values:&[i32])->i32 {\n    let (mut previous,mut best)=(0,0);\n    for &value in values { let next=best.max(previous+value); previous=best; best=next; } best\n}\n\nfn main() {\n    let result = non_adjacent_sum(&[2,7,9,3,1]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "For [2,7,9,3,1], the best prefix totals are 2,7,11,11,12. Taking final 1 combines with total 11 from before its neighbor. The answer 12 comes from values 2,9,1, not the three largest values regardless of positions.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the maximum non-adjacent sum. The visible fixture is `[2,7,9,3,1]` and its example result is `12`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Take-or-Skip DP when it asks for non-adjacent selection and weighted independent paths. Here the concrete task is: Return the maximum non-adjacent sum. The visible input `[2,7,9,3,1]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Choose a recurrence when subproblems overlap. `Some` patterns summarize a frontier instead of a full DP table; either representation needs an invariant, and any greedy shortcut needs proof. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: For each item compare skipping it with taking it plus the best compatible earlier state. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A one-dimensional DP state summarizes a prefix or a single parameter. Define its meaning before writing a recurrence. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(1) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `12` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test the base state, the first transition, impossible states, and whether an in-place update accidentally reuses an item twice. Use `Option` or a safe sentinel for unreachable states, and choose an iteration direction that matches the recurrence's dependencies. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `16`. Taking this item excludes its immediate predecessor. Compare this independent fixture with the worked trace: For [2,7,9,3,1], the best prefix totals are 2,7,11,11,12. Taking final 1 combines with total 11 from before its neighbor. The answer 12 comes from values 2,9,1, not the three largest values regardless of positions.",
+    "practiceCode": "fn non_adjacent_sum(values:&[i32])->i32 {\n    let (mut previous,mut best)=(0,0);\n    for &value in values { let next=best.max(previous+value); previous=best; best=next; } best\n}\n\nfn main() {\n    let result = non_adjacent_sum(&[2,7,9,3,1]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Take-or-Skip DP on input `[1,2,3,4,5,6,7]`. Which result follows from the documented contract?",
+    "rule": "Taking this item excludes its immediate predecessor. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Take-or-Skip DP.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-dynamic-1d-a.png",

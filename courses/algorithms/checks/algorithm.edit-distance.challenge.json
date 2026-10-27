@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS edit-distance\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"3\".to_string()",
-      "String::from(\"3\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.edit-distance.challenge",
     "patternID": "edit-distance",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return Levenshtein distance.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Edit Distance\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Return Levenshtein distance.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement edit-distance\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "3",
+        "kind": "visible",
         "input": "horse -> ros",
-        "kind": "visible"
+        "expectedAnswer": "3"
       },
       {
-        "expectedAnswer": "1",
+        "kind": "boundary",
         "input": "a -> b",
-        "kind": "boundary"
+        "expectedAnswer": "1"
       },
       {
-        "expectedAnswer": "1",
-        "input": "\na -> b\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "cat -> cut",
+        "expectedAnswer": "1"
       },
       {
-        "expectedAnswer": "3",
+        "kind": "adversarial",
+        "input": "a -> aa",
+        "expectedAnswer": "1"
+      },
+      {
+        "kind": "adversarial",
+        "input": "same -> same",
+        "expectedAnswer": "0"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \nhorse -> ros\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "3"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\nsame -> same\n",
+        "expectedAnswer": "0"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"horse -> ros\"#, r#\"3\"#),\n    (r#\"a -> b\"#, r#\"1\"#),\n    (r#\"\na -> b\n\"#, r#\"1\"#),\n    (r#\"  \nhorse -> ros\n  \"#, r#\"3\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS edit-distance\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"horse -> ros\",\"3\"),\n        (\"a -> b\",\"1\"),\n        (\"cat -> cut\",\"1\"),\n        (\"a -> aa\",\"1\"),\n        (\"same -> same\",\"0\"),\n        (\"  \\nhorse -> ros\\n  \",\"3\"),\n        (\"\\nsame -> same\\n\",\"0\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS edit-distance\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS edit-distance\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"3\".to_string()",
-      "String::from(\"3\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

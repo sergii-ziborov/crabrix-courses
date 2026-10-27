@@ -7,44 +7,44 @@
     "expectedAnswer": "10",
     "idea": "When height decreases, pop bars whose right boundary is now known and compute their maximal width.",
     "patternID": "largest-histogram",
-    "rustSketch": "fn balanced(text: &str) -> bool {\n    let mut stack = Vec::new();\n    for ch in text.chars() {\n        match ch {\n            '(' | '[' | '{' => stack.push(ch),\n            ')' => if stack.pop() != Some('(') { return false; },\n            ']' => if stack.pop() != Some('[') { return false; },\n            '}' => if stack.pop() != Some('{') { return false; },\n            _ => {}\n        }\n    }\n    stack.is_empty()\n}",
+    "rustSketch": "fn largest_rectangle(heights:&[i32])->i32 {\n    let mut stack:Vec<usize>=Vec::new(); let mut best=0;\n    for i in 0..=heights.len() {\n        let h=heights.get(i).copied().unwrap_or(0);\n        while stack.last().is_some_and(|&j|heights[j]>h) {\n            let height=heights[stack.pop().unwrap()];\n            let left=stack.last().map_or(0,|&j|j+1); best=best.max(height*(i-left) as i32);\n        }\n        stack.push(i);\n    }\n    best\n}\n\nfn main() {\n    let result = largest_rectangle(&[2,1,5,6,2,3]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return the largest rectangle area under the histogram.",
     "useCases": "maximal rectangles and span-by-minimum problems",
     "visibleInput": "[2,1,5,6,2,3]"
   },
   "concept": "maximal rectangles and span-by-minimum problems",
-  "contentDigest": "de40ea6c98ddfb78035e6949c8bfdeb6f042879b523848f20462a37340c1fd5c",
+  "contentDigest": "9f0475349cf87af0ed81958de5463869f121c2cb6f69bc0f6f69ab4d8246febe",
   "depth": {
     "connections": [
       {
-        "concept": "When height decreases, pop bars whose right boundary is now known and compute their maximal width.",
         "direction": "previous",
-        "title": "Largest Histogram Rectangle: Mental Model"
+        "title": "Largest Histogram Rectangle: Mental Model",
+        "concept": "When height decreases, pop bars whose right boundary is now known and compute their maximal width."
       },
       {
-        "concept": "Return the largest rectangle area under the histogram.",
         "direction": "next",
-        "title": "Challenge: Largest Histogram Rectangle"
+        "title": "Challenge: Largest Histogram Rectangle",
+        "concept": "Return the largest rectangle area under the histogram."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "The current lower bar and the remaining previous lower bar. In [2,1,5,6,2,3], reading the second 2 pops height 6 with width 1, then height 5 with width 2. The latter gives area 10. A zero-height sentinel flushes bars whose rectangle reaches the end.",
+    "misconception": "“The total number of histogram bars”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[2,1,5,6,2,3]`, write the state before the first update. Explain how it represents this claim: When height decreases, pop bars whose right boundary is now known and compute their maximal width. A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs."
+        "title": "Concrete transition",
+        "detail": "In [2,1,5,6,2,3], reading the second 2 pops height 6 with width 1, then height 5 with width 2. The latter gives area 10. A zero-height sentinel flushes bars whose rectangle reaches the end."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `10`. `Vec` works as a stack; `VecDeque` supplies efficient operations at both ends. Avoid removing from the front of a `Vec` in a long loop."
+        "title": "Independent second fixture",
+        "detail": "Input `[1,2,3,4,5,6,7]` produces `16`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. Defend the O(n) time · O(n) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[8,7,6,5,4,3,2]` produces `20`. The current lower bar and the remaining previous lower bar. The stated work bound is O(n) time · O(n) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[2,1,5,6,2,3]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Largest Histogram Rectangle survives, which state must be updated, and whether the O(n) time · O(n) space bound still holds. Look for nested structure, next-greater relationships, or ordered processing. A plain scan is enough when no unresolved state must be retained."
+    "transferChallenge": "Compare the visible input `[2,1,5,6,2,3]` with `[3,3,3,3,3,3,3]`. Predict why their results are `10` and `21`. Then change one legal value and explain whether the same invariant, the current lower bar and the remaining previous lower bar, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.largest-histogram.recognize",
@@ -54,21 +54,21 @@
   "title": "Largest Histogram Rectangle: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "maximal rectangles and span-by-minimum problems",
-      "Only problems with exactly one input value"
+      "`17`",
+      "`16`",
+      "`15`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Largest Histogram Rectangle",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Largest Histogram Rectangle",
-    "explanation": "A problem is a good match for Largest Histogram Rectangle when it asks for maximal rectangles and span-by-minimum problems. Here the concrete task is: Return the largest rectangle area under the histogram. The visible input `[2,1,5,6,2,3]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for nested structure, next-greater relationships, or ordered processing. A plain scan is enough when no unresolved state must be retained. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: When height decreases, pop bars whose right boundary is now known and compute their maximal width. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(n) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `10` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. `Vec` works as a stack; `VecDeque` supplies efficient operations at both ends. Avoid removing from the front of a `Vec` in a long loop. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: maximal rectangles and span-by-minimum problems.",
-    "practiceCode": "fn balanced(text: &str) -> bool {\n    let mut stack = Vec::new();\n    for ch in text.chars() {\n        match ch {\n            '(' | '[' | '{' => stack.push(ch),\n            ')' => if stack.pop() != Some('(') { return false; },\n            ']' => if stack.pop() != Some('[') { return false; },\n            '}' => if stack.pop() != Some('{') { return false; },\n            _ => {}\n        }\n    }\n    stack.is_empty()\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only largest-histogram program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn largest_rectangle(heights:&[i32])->i32 {\n    let mut stack:Vec<usize>=Vec::new(); let mut best=0;\n    for i in 0..=heights.len() {\n        let h=heights.get(i).copied().unwrap_or(0);\n        while stack.last().is_some_and(|&j|heights[j]>h) {\n            let height=heights[stack.pop().unwrap()];\n            let left=stack.last().map_or(0,|&j|j+1); best=best.max(height*(i-left) as i32);\n        }\n        stack.push(i);\n    }\n    best\n}\n\nfn main() {\n    let result = largest_rectangle(&[2,1,5,6,2,3]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "In [2,1,5,6,2,3], reading the second 2 pops height 6 with width 1, then height 5 with width 2. The latter gives area 10. A zero-height sentinel flushes bars whose rectangle reaches the end.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the largest rectangle area under the histogram. The visible fixture is `[2,1,5,6,2,3]` and its example result is `10`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Largest Histogram Rectangle when it asks for maximal rectangles and span-by-minimum problems. Here the concrete task is: Return the largest rectangle area under the histogram. The visible input `[2,1,5,6,2,3]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for nested structure, next-greater relationships, or ordered processing. A plain scan is enough when no unresolved state must be retained. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: When height decreases, pop bars whose right boundary is now known and compute their maximal width. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A stack remembers unfinished work in last-in-first-out order; a queue processes work in first-in-first-out order. Say what each stored item still needs. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(n) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `10` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Check empty containers, one item, repeated equal values, and the work left in the structure after the input ends. `Vec` works as a stack; `VecDeque` supplies efficient operations at both ends. Avoid removing from the front of a `Vec` in a long loop. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `16`. The current lower bar and the remaining previous lower bar. Compare this independent fixture with the worked trace: In [2,1,5,6,2,3], reading the second 2 pops height 6 with width 1, then height 5 with width 2. The latter gives area 10. A zero-height sentinel flushes bars whose rectangle reaches the end.",
+    "practiceCode": "fn largest_rectangle(heights:&[i32])->i32 {\n    let mut stack:Vec<usize>=Vec::new(); let mut best=0;\n    for i in 0..=heights.len() {\n        let h=heights.get(i).copied().unwrap_or(0);\n        while stack.last().is_some_and(|&j|heights[j]>h) {\n            let height=heights[stack.pop().unwrap()];\n            let left=stack.last().map_or(0,|&j|j+1); best=best.max(height*(i-left) as i32);\n        }\n        stack.push(i);\n    }\n    best\n}\n\nfn main() {\n    let result = largest_rectangle(&[2,1,5,6,2,3]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Largest Histogram Rectangle on input `[1,2,3,4,5,6,7]`. Which result follows from the documented contract?",
+    "rule": "The current lower bar and the remaining previous lower bar. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Largest Histogram Rectangle.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-stacks-queues-b.png",

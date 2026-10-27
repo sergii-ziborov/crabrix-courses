@@ -7,44 +7,44 @@
     "expectedAnswer": "true",
     "idea": "Maintain the farthest reachable index and fail only when the scan moves beyond it.",
     "patternID": "jump-game",
-    "rustSketch": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "rustSketch": "fn can_reach(values:&[usize])->bool {\n    if values.is_empty() { return false; } let mut farthest=0;\n    for (i,&jump) in values.iter().enumerate() {\n        if i>farthest { return false; } farthest=farthest.max(i+jump);\n        if farthest>=values.len()-1 { return true; }\n    } false\n}\n\nfn main() {\n    let result = can_reach(&[2,3,1,1,4]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return whether the final index is reachable.",
     "useCases": "reachability with forward jump capacity",
     "visibleInput": "[2,3,1,1,4]"
   },
   "concept": "Maintain the farthest reachable index and fail only when the scan moves beyond it.",
-  "contentDigest": "bae0141c9c15f4106a8907a4003f072ebea2a671b39f2ece47102bd7774ee5ca",
+  "contentDigest": "da2bb2966473c8adcf2312e2b12bcf572a99087c59affe301a6e6545520550b5",
   "depth": {
     "connections": [
       {
-        "concept": "Return maximum simultaneous sessions; process ends before starts at equal time.",
         "direction": "previous",
-        "title": "Challenge: Sweep-Line Events"
+        "title": "Challenge: Sweep-Line Events",
+        "concept": "Return maximum simultaneous sessions; process ends before starts at equal time."
       },
       {
-        "concept": "reachability with forward jump capacity",
         "direction": "next",
-        "title": "Greedy Reach Frontier: When to Use It"
+        "title": "Greedy Reach Frontier: When to Use It",
+        "concept": "reachability with forward jump capacity"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "The greatest index reachable using the inspected positions. In [2,3,1,1,4], index 0 reaches through 2 and index 1 extends the frontier through 4. In [3,2,1,0,4], the frontier stalls at 3 and index 4 is unreachable. A zero at the final single position is already success.",
+    "misconception": "“The length of the largest input value”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[2,3,1,1,4]`, write the state before the first update. Explain how it represents this claim: Maintain the farthest reachable index and fail only when the scan moves beyond it. A greedy step commits to a local choice. Give the exchange or dominance reason that an optimal solution can still include that choice."
+        "title": "Concrete transition",
+        "detail": "In [2,3,1,1,4], index 0 reaches through 2 and index 1 extends the frontier through 4. In [3,2,1,0,4], the frontier stalls at 3 and index 4 is unreachable. A zero at the final single position is already success."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `true`. Keep interval endpoint conventions explicit where they apply. If sorting is part of the method, its Rust comparator must encode the proof's exact tie break."
+        "title": "Independent second fixture",
+        "detail": "Input `[0]` produces `true`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test touching intervals, equal endpoints, empty input, and a locally attractive choice that blocks a better future choice. Defend the O(n) time · O(1) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[4,0,0,0,0]` produces `true`. The greatest index reachable using the inspected positions. The stated work bound is O(n) time · O(1) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[2,3,1,1,4]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Greedy Reach Frontier survives, which state must be updated, and whether the O(n) time · O(1) space bound still holds. When the method sorts intervals or events, use the coordinate and tie break required by its proof. Other greedy walks keep an invariant without sorting."
+    "transferChallenge": "Compare the visible input `[2,3,1,1,4]` with `[1,0,1]`. Predict why their results are `true` and `false`. Then change one legal value and explain whether the same invariant, the greatest index reachable using the inspected positions, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.jump-game.model",
@@ -54,21 +54,21 @@
   "title": "Greedy Reach Frontier: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "The greatest index reachable using the inspected positions",
+      "The length of the largest input value",
+      "The minimum number of jumps already taken"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n) time · O(1) space",
-    "exampleCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
-    "explanation": "Begin with the concrete question: Return whether the final index is reachable. For the visible input `[2,3,1,1,4]`, the stated result is `true`. Before reading code, name the smallest piece of information that must survive from one step to the next. A greedy step commits to a local choice. Give the exchange or dominance reason that an optimal solution can still include that choice. That is the mental model for Greedy Reach Frontier; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Maintain the farthest reachable index and fail only when the scan moves beyond it. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Keep interval endpoint conventions explicit where they apply. If sorting is part of the method, its Rust comparator must encode the proof's exact tie break. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test touching intervals, equal endpoints, empty input, and a locally attractive choice that blocks a better future choice. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only jump-game program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn can_reach(values:&[usize])->bool {\n    if values.is_empty() { return false; } let mut farthest=0;\n    for (i,&jump) in values.iter().enumerate() {\n        if i>farthest { return false; } farthest=farthest.max(i+jump);\n        if farthest>=values.len()-1 { return true; }\n    } false\n}\n\nfn main() {\n    let result = can_reach(&[2,3,1,1,4]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "In [2,3,1,1,4], index 0 reaches through 2 and index 1 extends the frontier through 4. In [3,2,1,0,4], the frontier stalls at 3 and index 4 is unreachable. A zero at the final single position is already success.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return whether the final index is reachable. The visible fixture is `[2,3,1,1,4]` and its example result is `true`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return whether the final index is reachable. For the visible input `[2,3,1,1,4]`, the stated result is `true`. Before reading code, name the smallest piece of information that must survive from one step to the next. A greedy step commits to a local choice. Give the exchange or dominance reason that an optimal solution can still include that choice. That is the mental model for Greedy Reach Frontier; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Maintain the farthest reachable index and fail only when the scan moves beyond it. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n) time · O(1) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test touching intervals, equal endpoints, empty input, and a locally attractive choice that blocks a better future choice. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "In [2,3,1,1,4], index 0 reaches through 2 and index 1 extends the frontier through 4. In [3,2,1,0,4], the frontier stalls at 3 and index 4 is unreachable. A zero at the final single position is already success.",
+    "practiceCode": "fn can_reach(values:&[usize])->bool {\n    if values.is_empty() { return false; } let mut farthest=0;\n    for (i,&jump) in values.iter().enumerate() {\n        if i>farthest { return false; } farthest=farthest.max(i+jump);\n        if farthest>=values.len()-1 { return true; }\n    } false\n}\n\nfn main() {\n    let result = can_reach(&[2,3,1,1,4]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "What does farthest summarize after inspecting a reachable prefix?",
+    "rule": "The greatest index reachable using the inspected positions. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(1) space bound without looking at the code.",
     "summary": "Maintain the farthest reachable index and fail only when the scan moves beyond it.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-greedy-intervals-a.png",

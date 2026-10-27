@@ -7,7 +7,7 @@
     "expectedAnswer": "true",
     "idea": "Move across symbol boundaries deliberately rather than indexing arbitrary UTF-8 bytes.",
     "patternID": "string-two-pointers",
-    "rustSketch": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+    "rustSketch": "fn normalized_palindrome(text:&str)->bool {\n    assert!(text.is_ascii());\n    let mut symbols=text.bytes().filter(|c|c.is_ascii_alphanumeric()).map(|c|c.to_ascii_lowercase());\n    while let Some(first)=symbols.next() { if let Some(last)=symbols.next_back() { if first!=last { return false; } } }\n    true\n}\n\nfn main() {\n    let result = normalized_palindrome(\"A man, a plan, a canal: Panama\").to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return true after ignoring non-alphanumeric ASCII and case.",
     "useCases": "palindromes, trimming, mirrored comparison",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Move across symbol boundaries deliberately rather than indexing arbitrary UTF-8 bytes.",
         "direction": "previous",
-        "title": "String Two Pointers: Mental Model"
+        "title": "String Two Pointers: Mental Model",
+        "concept": "Move across symbol boundaries deliberately rather than indexing arbitrary UTF-8 bytes."
       },
       {
-        "concept": "Return true after ignoring non-alphanumeric ASCII and case.",
         "direction": "next",
-        "title": "Challenge: String Two Pointers"
+        "title": "Challenge: String Two Pointers",
+        "concept": "Return true after ignoring non-alphanumeric ASCII and case."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "It filters and compares symbols lazily from both ends. For A man, a plan, a canal: Panama, punctuation and spaces are skipped and remaining ASCII letters compare equal from both ends. For Rust, the first retained pair differs, so return false. The implementation explicitly restricts normalization to ASCII.",
+    "misconception": "“It builds a complete lowercase copy first”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `A man, a plan, a canal: Panama`, write the state before the first update. Explain how it represents this claim: Move across symbol boundaries deliberately rather than indexing arbitrary UTF-8 bytes. `String` algorithms compare symbols or prefixes, but a Rust `String` is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters."
+        "title": "Concrete transition",
+        "detail": "For A man, a plan, a canal: Panama, punctuation and spaces are skipped and remaining ASCII letters compare equal from both ends. For Rust, the first retained pair differs, so return false. The implementation explicitly restricts normalization to ASCII."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `true`. Use bytes only when the input contract permits byte-wise matching. Never index a `String` as though every character occupied one byte."
+        "title": "Independent second fixture",
+        "detail": "Input `abca` produces `false`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Defend the O(n) time · O(1) or decoded storage bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `x` produces `true`. It filters and compares symbols lazily from both ends. The stated work bound is O(n) time · O(1) or decoded storage. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `A man, a plan, a canal: Panama` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from `String` Two Pointers survives, which state must be updated, and whether the O(n) time · O(1) or decoded storage bound still holds. Look for repeated prefix queries or pattern matching before choosing a trie or preprocessing; a one-off short search may not need either."
+    "transferChallenge": "Compare the visible input `A man, a plan, a canal: Panama` with `No lemon, no melon`. Predict why their results are `true` and `true`. Then change one legal value and explain whether the same invariant, it filters and compares symbols lazily from both ends, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.string-two-pointers.recognize",
@@ -54,21 +54,21 @@
   "title": "String Two Pointers: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "palindromes, trimming, mirrored comparison",
-      "Only problems with exactly one input value"
+      "`true`",
+      "`false`",
+      "The valid input necessarily panics"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for `String` Two Pointers",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: String Two Pointers",
-    "explanation": "A problem is a good match for `String` Two Pointers when it asks for palindromes, trimming, mirrored comparison. Here the concrete task is: Return true after ignoring non-alphanumeric ASCII and case. The visible input `A man, a plan, a canal: Panama` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for repeated prefix queries or pattern matching before choosing a trie or preprocessing; a one-off short search may not need either. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Move across symbol boundaries deliberately rather than indexing arbitrary UTF-8 bytes. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? `String` algorithms compare symbols or prefixes, but a Rust `String` is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(1) or decoded storage; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `true` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Use bytes only when the input contract permits byte-wise matching. Never index a `String` as though every character occupied one byte. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: palindromes, trimming, mirrored comparison.",
-    "practiceCode": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only string-two-pointers program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn normalized_palindrome(text:&str)->bool {\n    assert!(text.is_ascii());\n    let mut symbols=text.bytes().filter(|c|c.is_ascii_alphanumeric()).map(|c|c.to_ascii_lowercase());\n    while let Some(first)=symbols.next() { if let Some(last)=symbols.next_back() { if first!=last { return false; } } }\n    true\n}\n\nfn main() {\n    let result = normalized_palindrome(\"A man, a plan, a canal: Panama\").to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "For A man, a plan, a canal: Panama, punctuation and spaces are skipped and remaining ASCII letters compare equal from both ends. For Rust, the first retained pair differs, so return false. The implementation explicitly restricts normalization to ASCII.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return true after ignoring non-alphanumeric ASCII and case. The visible fixture is `A man, a plan, a canal: Panama` and its example result is `true`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for `String` Two Pointers when it asks for palindromes, trimming, mirrored comparison. Here the concrete task is: Return true after ignoring non-alphanumeric ASCII and case. The visible input `A man, a plan, a canal: Panama` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Look for repeated prefix queries or pattern matching before choosing a trie or preprocessing; a one-off short search may not need either. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Move across symbol boundaries deliberately rather than indexing arbitrary UTF-8 bytes. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? `String` algorithms compare symbols or prefixes, but a Rust `String` is UTF-8 bytes. State whether the task means bytes, scalar values, or grapheme clusters. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(1) or decoded storage; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `true` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test empty pattern and text, repeated characters, overlapping matches, and non-ASCII input if the contract allows it. Use bytes only when the input contract permits byte-wise matching. Never index a `String` as though every character occupied one byte. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `false`. It filters and compares symbols lazily from both ends. Compare this independent fixture with the worked trace: For A man, a plan, a canal: Panama, punctuation and spaces are skipped and remaining ASCII letters compare equal from both ends. For Rust, the first retained pair differs, so return false. The implementation explicitly restricts normalization to ASCII.",
+    "practiceCode": "fn normalized_palindrome(text:&str)->bool {\n    assert!(text.is_ascii());\n    let mut symbols=text.bytes().filter(|c|c.is_ascii_alphanumeric()).map(|c|c.to_ascii_lowercase());\n    while let Some(first)=symbols.next() { if let Some(last)=symbols.next_back() { if first!=last { return false; } } }\n    true\n}\n\nfn main() {\n    let result = normalized_palindrome(\"A man, a plan, a canal: Panama\").to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace String Two Pointers on input `abca`. Which result follows from the documented contract?",
+    "rule": "It filters and compares symbols lazily from both ends. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing `String` Two Pointers.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-strings-tries-a.png",

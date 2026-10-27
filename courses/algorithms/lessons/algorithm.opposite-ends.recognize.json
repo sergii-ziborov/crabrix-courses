@@ -7,7 +7,7 @@
     "expectedAnswer": "true",
     "idea": "Move inward from both ends when ordering tells which side cannot improve.",
     "patternID": "opposite-ends",
-    "rustSketch": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
+    "rustSketch": "fn pair_exists(values: &[i32], target: i32) -> bool {\n    if values.len() < 2 { return false; }\n    let (mut left, mut right) = (0, values.len()-1);\n    while left < right {\n        let sum = values[left]+values[right];\n        if sum == target { return true; }\n        if sum < target { left += 1; } else { right -= 1; }\n    }\n    false\n}\n\nfn main() {\n    let result = pair_exists(&[1,2,4,6,9],10).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Return true if the sorted values contain a pair summing to 10.",
     "useCases": "sorted pairs, symmetry, boundary comparisons",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Move inward from both ends when ordering tells which side cannot improve.",
         "direction": "previous",
-        "title": "Opposite-End Pointers: Mental Model"
+        "title": "Opposite-End Pointers: Mental Model",
+        "concept": "Move inward from both ends when ordering tells which side cannot improve."
       },
       {
-        "concept": "Return true if the sorted values contain a pair summing to 10.",
         "direction": "next",
-        "title": "Challenge: Opposite-End Pointers"
+        "title": "Challenge: Opposite-End Pointers",
+        "concept": "Return true if the sorted values contain a pair summing to 10."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "Keeping the same left value and a smaller right value cannot increase the sum. For [1,2,4,6,9] and target 10, the first endpoint sum 1+9 already matches. With a smaller initial sum, only increasing the left endpoint can repair it. Stop when the two indexes meet; one element cannot be reused.",
+    "misconception": "“Advancing either pointer always has the same effect”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[1,2,4,6,9]`, write the state before the first update. Explain how it represents this claim: Move inward from both ends when ordering tells which side cannot improve. Two positions move according to a monotone fact: after one comparison, some candidates can be ruled out permanently. Name that fact."
+        "title": "Concrete transition",
+        "detail": "For [1,2,4,6,9] and target 10, the first endpoint sum 1+9 already matches. With a smaller initial sum, only increasing the left endpoint can repair it. Stop when the two indexes meet; one element cannot be reused."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `true`. Use explicit bounds for both indices. If the algorithm mutates a vector, separate read and write positions so ownership stays clear."
+        "title": "Independent second fixture",
+        "detail": "Input `[1,3,7,9]` produces `true`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test pointers meeting, crossing, duplicate values, and the smallest valid input; many off-by-one errors hide there. Defend the O(n) time · O(1) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[2,3,4]` produces `false`. Keeping the same left value and a smaller right value cannot increase the sum. The stated work bound is O(n) time · O(1) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[1,2,4,6,9]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Opposite-End Pointers survives, which state must be updated, and whether the O(n) time · O(1) space bound still holds. Check whether the input is sorted, whether you may reorder it, and whether moving a pointer preserves the answer you seek."
+    "transferChallenge": "Compare the visible input `[1,2,4,6,9]` with `[5,5]`. Predict why their results are `true` and `true`. Then change one legal value and explain whether the same invariant, keeping the same left value and a smaller right value cannot increase the sum, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.opposite-ends.recognize",
@@ -54,21 +54,21 @@
   "title": "Opposite-End Pointers: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "sorted pairs, symmetry, boundary comparisons",
-      "Only problems with exactly one input value"
+      "`false`",
+      "`true`",
+      "The valid input necessarily panics"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Opposite-End Pointers",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Opposite-End Pointers",
-    "explanation": "A problem is a good match for Opposite-End Pointers when it asks for sorted pairs, symmetry, boundary comparisons. Here the concrete task is: Return true if the sorted values contain a pair summing to 10. The visible input `[1,2,4,6,9]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Check whether the input is sorted, whether you may reorder it, and whether moving a pointer preserves the answer you seek. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Move inward from both ends when ordering tells which side cannot improve. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Two positions move according to a monotone fact: after one comparison, some candidates can be ruled out permanently. Name that fact. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(1) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `true` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test pointers meeting, crossing, duplicate values, and the smallest valid input; many off-by-one errors hide there. Use explicit bounds for both indices. If the algorithm mutates a vector, separate read and write positions so ownership stays clear. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: sorted pairs, symmetry, boundary comparisons.",
-    "practiceCode": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only opposite-ends program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn pair_exists(values: &[i32], target: i32) -> bool {\n    if values.len() < 2 { return false; }\n    let (mut left, mut right) = (0, values.len()-1);\n    while left < right {\n        let sum = values[left]+values[right];\n        if sum == target { return true; }\n        if sum < target { left += 1; } else { right -= 1; }\n    }\n    false\n}\n\nfn main() {\n    let result = pair_exists(&[1,2,4,6,9],10).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "For [1,2,4,6,9] and target 10, the first endpoint sum 1+9 already matches. With a smaller initial sum, only increasing the left endpoint can repair it. Stop when the two indexes meet; one element cannot be reused.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return true if the sorted values contain a pair summing to 10. The visible fixture is `[1,2,4,6,9]` and its example result is `true`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Opposite-End Pointers when it asks for sorted pairs, symmetry, boundary comparisons. Here the concrete task is: Return true if the sorted values contain a pair summing to 10. The visible input `[1,2,4,6,9]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Check whether the input is sorted, whether you may reorder it, and whether moving a pointer preserves the answer you seek. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Move inward from both ends when ordering tells which side cannot improve. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? Two positions move according to a monotone fact: after one comparison, some candidates can be ruled out permanently. Name that fact. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(1) space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `true` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Test pointers meeting, crossing, duplicate values, and the smallest valid input; many off-by-one errors hide there. Use explicit bounds for both indices. If the algorithm mutates a vector, separate read and write positions so ownership stays clear. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `true`. Keeping the same left value and a smaller right value cannot increase the sum. Compare this independent fixture with the worked trace: For [1,2,4,6,9] and target 10, the first endpoint sum 1+9 already matches. With a smaller initial sum, only increasing the left endpoint can repair it. Stop when the two indexes meet; one element cannot be reused.",
+    "practiceCode": "fn pair_exists(values: &[i32], target: i32) -> bool {\n    if values.len() < 2 { return false; }\n    let (mut left, mut right) = (0, values.len()-1);\n    while left < right {\n        let sum = values[left]+values[right];\n        if sum == target { return true; }\n        if sum < target { left += 1; } else { right -= 1; }\n    }\n    false\n}\n\nfn main() {\n    let result = pair_exists(&[1,2,4,6,9],10).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Opposite-End Pointers on input `[1,3,7,9]`. Which result follows from the documented contract?",
+    "rule": "Keeping the same left value and a smaller right value cannot increase the sum. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Opposite-End Pointers.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-two-pointers-a.png",

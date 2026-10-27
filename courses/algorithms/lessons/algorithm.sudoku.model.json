@@ -7,9 +7,9 @@
     "expectedAnswer": "4",
     "idea": "Choose an empty cell, try allowed symbols, and undo; picking the fewest candidates prunes harder.",
     "patternID": "sudoku",
-    "rustSketch": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
+    "rustSketch": "fn solve_sudoku(grid:&mut [[u8;9];9])->bool {\n    let empty=(0..9).flat_map(|r|(0..9).map(move |c|(r,c))).find(|&(r,c)|grid[r][c]==0);\n    let Some((r,c))=empty else { return true; };\n    for value in 1..=9 {\n        let row=(0..9).all(|i|grid[r][i]!=value); let col=(0..9).all(|i|grid[i][c]!=value);\n        let block=(r/3*3..r/3*3+3).all(|a|(c/3*3..c/3*3+3).all(|b|grid[a][b]!=value));\n        if row && col && block { grid[r][c]=value; if solve_sudoku(grid) { return true; } grid[r][c]=0; }\n    }\n    false\n}\n\nfn main() {\n    let result = { let mut grid=[[5,3,0,6,7,8,9,1,2],[6,7,2,1,9,5,3,4,8],[1,9,8,3,4,2,5,6,7],[8,5,9,7,6,1,4,2,3],[4,2,6,8,5,3,7,9,1],[7,1,3,9,2,4,8,5,6],[9,6,1,5,3,7,2,8,4],[2,8,7,4,1,9,6,3,5],[3,4,5,2,8,6,1,7,9]]; assert!(solve_sudoku(&mut grid)); grid[0][2].to_string() };\n    println!(\"{result}\");\n}\n",
     "stage": "model",
-    "task": "Return the missing digit in row 0 of the nearly solved grid.",
+    "task": "row0 contains digits 1..9 with exactly one missing position written as a dot. Return that missing digit. The worked program demonstrates full-board backtracking on a valid 9x9 fixture; the challenge itself is this bounded row-completion case.",
     "useCases": "exact constraint completion",
     "visibleInput": "row0=53.678912"
   },
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Return the number of solutions for a 5x5 board.",
         "direction": "previous",
-        "title": "Challenge: N-Queens"
+        "title": "Challenge: N-Queens",
+        "concept": "Parse n and return the number of placements of n non-attacking queens on an n-by-n board. Count the empty placement once for n=0."
       },
       {
-        "concept": "exact constraint completion",
         "direction": "next",
-        "title": "Sudoku Constraint Search: When to Use It"
+        "title": "Sudoku Constraint Search: When to Use It",
+        "concept": "exact constraint completion"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "The parent board state must be restored before trying another digit. The nearly solved first row 53.678912 lacks 4. In the full supplied solved-board fixture, row, column and 3×3 block checks allow 4 in that hole. The recursive implementation also supports trying and undoing choices for boards with multiple holes.",
+    "misconception": "“The reset marks a permanently solved cell”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `row0=53.678912`, write the state before the first update. Explain how it represents this claim: Choose an empty cell, try allowed symbols, and undo; picking the fewest candidates prunes harder. Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains."
+        "title": "Concrete transition",
+        "detail": "The nearly solved first row 53.678912 lacks 4. In the full supplied solved-board fixture, row, column and 3×3 block checks allow 4 in that hole. The recursive implementation also supports trying and undoing choices for boards with multiple holes."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `4`. For recursive search, push a choice, recurse, then undo it; for meet-in-the-middle, collect each half before matching them. In Rust, clone a path only when storing a completed answer."
+        "title": "Independent second fixture",
+        "detail": "Input `row0=.34678912` produces `5`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. Defend the Exponential worst case · O(empty cells) depth bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `row0=534678.12` produces `9`. The parent board state must be restored before trying another digit. The stated work bound is Exponential worst case · O(empty cells) depth. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `row0=53.678912` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Sudoku Constraint Search survives, which state must be updated, and whether the Exponential worst case · O(empty cells) depth bound still holds. Use pruning when partial choices can already be ruled out. Meet-in-the-middle instead trades two exhaustive half-enumerations for a smaller search space."
+    "transferChallenge": "Compare the visible input `row0=53.678912` with `row0=534.78912`. Predict why their results are `4` and `6`. Then change one legal value and explain whether the same invariant, the parent board state must be restored before trying another digit, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.sudoku.model",
@@ -54,21 +54,21 @@
   "title": "Sudoku Constraint Search: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "The parent board state must be restored before trying another digit",
+      "The reset marks a permanently solved cell",
+      "A failed digit should remain as a clue"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target Exponential worst case · O(empty cells) depth",
-    "exampleCode": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
-    "explanation": "Begin with the concrete question: Return the missing digit in row 0 of the nearly solved grid. For the visible input `row0=53.678912`, the stated result is `4`. Before reading code, name the smallest piece of information that must survive from one step to the next. Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains. That is the mental model for Sudoku Constraint Search; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Choose an empty cell, try allowed symbols, and undo; picking the fewest candidates prunes harder. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. For recursive search, push a choice, recurse, then undo it; for meet-in-the-middle, collect each half before matching them. In Rust, clone a path only when storing a completed answer. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, Exponential worst case · O(empty cells) depth. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only sudoku program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn solve_sudoku(grid:&mut [[u8;9];9])->bool {\n    let empty=(0..9).flat_map(|r|(0..9).map(move |c|(r,c))).find(|&(r,c)|grid[r][c]==0);\n    let Some((r,c))=empty else { return true; };\n    for value in 1..=9 {\n        let row=(0..9).all(|i|grid[r][i]!=value); let col=(0..9).all(|i|grid[i][c]!=value);\n        let block=(r/3*3..r/3*3+3).all(|a|(c/3*3..c/3*3+3).all(|b|grid[a][b]!=value));\n        if row && col && block { grid[r][c]=value; if solve_sudoku(grid) { return true; } grid[r][c]=0; }\n    }\n    false\n}\n\nfn main() {\n    let result = { let mut grid=[[5,3,0,6,7,8,9,1,2],[6,7,2,1,9,5,3,4,8],[1,9,8,3,4,2,5,6,7],[8,5,9,7,6,1,4,2,3],[4,2,6,8,5,3,7,9,1],[7,1,3,9,2,4,8,5,6],[9,6,1,5,3,7,2,8,4],[2,8,7,4,1,9,6,3,5],[3,4,5,2,8,6,1,7,9]]; assert!(solve_sudoku(&mut grid)); grid[0][2].to_string() };\n    println!(\"{result}\");\n}\n",
+    "explanation": "The nearly solved first row 53.678912 lacks 4. In the full supplied solved-board fixture, row, column and 3×3 block checks allow 4 in that hole. The recursive implementation also supports trying and undoing choices for boards with multiple holes.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: row0 contains digits 1..9 with exactly one missing position written as a dot. Return that missing digit. The worked program demonstrates full-board backtracking on a valid 9x9 fixture; the challenge itself is this bounded row-completion case. The visible fixture is `row0=53.678912` and its example result is `4`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: row0 contains digits 1..9 with exactly one missing position written as a dot. Return that missing digit. The worked program demonstrates full-board backtracking on a valid 9x9 fixture; the challenge itself is this bounded row-completion case. For the visible input `row0=53.678912`, the stated result is `4`. Before reading code, name the smallest piece of information that must survive from one step to the next. Most patterns here explore a decision tree; meet-in-the-middle instead enumerates two halves and combines them. Define the partial choice or subset summary that the pattern retains. That is the mental model for Sudoku Constraint Search; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Choose an empty cell, try allowed symbols, and undo; picking the fewest candidates prunes harder. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, Exponential worst case · O(empty cells) depth. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test no solution, one solution, duplicate inputs, and the order in which candidates are tried if output order is observable. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "The nearly solved first row 53.678912 lacks 4. In the full supplied solved-board fixture, row, column and 3×3 block checks allow 4 in that hole. The recursive implementation also supports trying and undoing choices for boards with multiple holes.",
+    "practiceCode": "fn solve_sudoku(grid:&mut [[u8;9];9])->bool {\n    let empty=(0..9).flat_map(|r|(0..9).map(move |c|(r,c))).find(|&(r,c)|grid[r][c]==0);\n    let Some((r,c))=empty else { return true; };\n    for value in 1..=9 {\n        let row=(0..9).all(|i|grid[r][i]!=value); let col=(0..9).all(|i|grid[i][c]!=value);\n        let block=(r/3*3..r/3*3+3).all(|a|(c/3*3..c/3*3+3).all(|b|grid[a][b]!=value));\n        if row && col && block { grid[r][c]=value; if solve_sudoku(grid) { return true; } grid[r][c]=0; }\n    }\n    false\n}\n\nfn main() {\n    let result = { let mut grid=[[5,3,0,6,7,8,9,1,2],[6,7,2,1,9,5,3,4,8],[1,9,8,3,4,2,5,6,7],[8,5,9,7,6,1,4,2,3],[4,2,6,8,5,3,7,9,1],[7,1,3,9,2,4,8,5,6],[9,6,1,5,3,7,2,8,4],[2,8,7,4,1,9,6,3,5],[3,4,5,2,8,6,1,7,9]]; assert!(solve_sudoku(&mut grid)); grid[0][2].to_string() };\n    println!(\"{result}\");\n}\n",
+    "question": "Why reset an attempted Sudoku digit to zero after a failed recursive branch?",
+    "rule": "The parent board state must be restored before trying another digit. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and Exponential worst case · O(empty cells) depth bound without looking at the code.",
     "summary": "Choose an empty cell, try allowed symbols, and undo; picking the fewest candidates prunes harder.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-backtracking-b.png",

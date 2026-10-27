@@ -7,44 +7,44 @@
     "expectedAnswer": "5",
     "idea": "Treat cells as graph nodes and traverse only neighbors satisfying the region predicate.",
     "patternID": "grid-flood-fill",
-    "rustSketch": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+    "rustSketch": "fn component_size(grid:&[Vec<i32>],start:(usize,usize))->usize {\n    let (rows,cols)=(grid.len(),grid[0].len()); let target=grid[start.0][start.1];\n    let mut seen=vec![vec![false;cols];rows]; let mut stack=vec![start]; let mut size=0;\n    while let Some((r,c))=stack.pop() {\n        if seen[r][c] || grid[r][c]!=target { continue; } seen[r][c]=true; size+=1;\n        if r>0 { stack.push((r-1,c)); } if c>0 { stack.push((r,c-1)); }\n        if r+1<rows { stack.push((r+1,c)); } if c+1<cols { stack.push((r,c+1)); }\n    }\n    size\n}\n\nfn main() {\n    let result = component_size(&[vec![1,0,0],vec![1,1,0],vec![0,1,1]],(1,1)).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return the size of the component containing row 1 column 1.",
     "useCases": "islands, image fill, maze regions",
     "visibleInput": "[[1,0,0],[1,1,0],[0,1,1]]"
   },
   "concept": "Treat cells as graph nodes and traverse only neighbors satisfying the region predicate.",
-  "contentDigest": "49a9ac7fcf69c502b49f98508ec6e95080d83faa1fd18201d39f6cece2d28f04",
+  "contentDigest": "0dde94ca342dff248a22d17518eb5f981b4da904998108389da5400aa3b6524f",
   "depth": {
     "connections": [
       {
-        "concept": "Return the number of undirected connected components.",
         "direction": "previous",
-        "title": "Challenge: Connected Components"
+        "title": "Challenge: Connected Components",
+        "concept": "Return the number of undirected connected components."
       },
       {
-        "concept": "islands, image fill, maze regions",
         "direction": "next",
-        "title": "Grid Flood Fill: When to Use It"
+        "title": "Grid Flood Fill: When to Use It",
+        "concept": "islands, image fill, maze regions"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "Four orthogonal moves to equal-valued cells. Starting at (1,1) in the sample reaches five connected 1 cells. Diagonal contact alone does not join components: [[1,0],[0,1]] has size 1 from (1,1). The visited set prevents counting a reachable cell twice.",
+    "misconception": "“All eight surrounding cells regardless of value”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[[1,0,0],[1,1,0],[0,1,1]]`, write the state before the first update. Explain how it represents this claim: Treat cells as graph nodes and traverse only neighbors satisfying the region predicate. A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal."
+        "title": "Concrete transition",
+        "detail": "Starting at (1,1) in the sample reaches five connected 1 cells. Diagonal contact alone does not join components: [[1,0],[0,1]] has size 1 from (1,1). The visited set prevents counting a reachable cell twice."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `5`. An adjacency list and `VecDeque` make breadth-first work explicit. Mark before enqueuing to avoid duplicate frontier entries."
+        "title": "Independent second fixture",
+        "detail": "Input `[[1,1],[1,1]]` produces `4`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. Defend the O(rows*cols) time · O(rows*cols) space worst bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[[1,1,0],[0,1,0],[0,0,0]]` produces `3`. Four orthogonal moves to equal-valued cells. The stated work bound is O(rows*cols) time · O(rows*cols) space worst. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[[1,0,0],[1,1,0],[0,1,1]]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Grid Flood Fill survives, which state must be updated, and whether the O(rows*cols) time · O(rows*cols) space worst bound still holds. Choose a representation for the operations first; when traversing, DFS explores depth and BFS follows equal-cost layers. Directed edges and disconnected components change the plan."
+    "transferChallenge": "Compare the visible input `[[1,0,0],[1,1,0],[0,1,1]]` with `[[0,0,0],[0,1,0],[0,0,0]]`. Predict why their results are `5` and `1`. Then change one legal value and explain whether the same invariant, four orthogonal moves to equal-valued cells, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.grid-flood-fill.model",
@@ -54,21 +54,21 @@
   "title": "Grid Flood Fill: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "Four orthogonal moves to equal-valued cells",
+      "All eight surrounding cells regardless of value",
+      "Only moves that increase both coordinates"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(rows*cols) time · O(rows*cols) space worst",
-    "exampleCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
-    "explanation": "Begin with the concrete question: Return the size of the component containing row 1 column 1. For the visible input `[[1,0,0],[1,1,0],[0,1,1]]`, the stated result is `5`. Before reading code, name the smallest piece of information that must survive from one step to the next. A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal. That is the mental model for Grid Flood Fill; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Treat cells as graph nodes and traverse only neighbors satisfying the region predicate. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. An adjacency list and `VecDeque` make breadth-first work explicit. Mark before enqueuing to avoid duplicate frontier entries. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(rows*cols) time · O(rows*cols) space worst. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only grid-flood-fill program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn component_size(grid:&[Vec<i32>],start:(usize,usize))->usize {\n    let (rows,cols)=(grid.len(),grid[0].len()); let target=grid[start.0][start.1];\n    let mut seen=vec![vec![false;cols];rows]; let mut stack=vec![start]; let mut size=0;\n    while let Some((r,c))=stack.pop() {\n        if seen[r][c] || grid[r][c]!=target { continue; } seen[r][c]=true; size+=1;\n        if r>0 { stack.push((r-1,c)); } if c>0 { stack.push((r,c-1)); }\n        if r+1<rows { stack.push((r+1,c)); } if c+1<cols { stack.push((r,c+1)); }\n    }\n    size\n}\n\nfn main() {\n    let result = component_size(&[vec![1,0,0],vec![1,1,0],vec![0,1,1]],(1,1)).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "Starting at (1,1) in the sample reaches five connected 1 cells. Diagonal contact alone does not join components: [[1,0],[0,1]] has size 1 from (1,1). The visited set prevents counting a reachable cell twice.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return the size of the component containing row 1 column 1. The visible fixture is `[[1,0,0],[1,1,0],[0,1,1]]` and its example result is `5`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return the size of the component containing row 1 column 1. For the visible input `[[1,0,0],[1,1,0],[0,1,1]]`, the stated result is `5`. Before reading code, name the smallest piece of information that must survive from one step to the next. A graph method needs an explicit vertex-and-edge representation. For traversal, define when a vertex becomes seen: on insertion into the frontier or on removal. That is the mental model for Grid Flood Fill; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Treat cells as graph nodes and traverse only neighbors satisfying the region predicate. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(rows*cols) time · O(rows*cols) space worst. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test an isolated vertex, a cycle, duplicate edges, and a graph whose starting vertex reaches only one component. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "Starting at (1,1) in the sample reaches five connected 1 cells. Diagonal contact alone does not join components: [[1,0],[0,1]] has size 1 from (1,1). The visited set prevents counting a reachable cell twice.",
+    "practiceCode": "fn component_size(grid:&[Vec<i32>],start:(usize,usize))->usize {\n    let (rows,cols)=(grid.len(),grid[0].len()); let target=grid[start.0][start.1];\n    let mut seen=vec![vec![false;cols];rows]; let mut stack=vec![start]; let mut size=0;\n    while let Some((r,c))=stack.pop() {\n        if seen[r][c] || grid[r][c]!=target { continue; } seen[r][c]=true; size+=1;\n        if r>0 { stack.push((r-1,c)); } if c>0 { stack.push((r,c-1)); }\n        if r+1<rows { stack.push((r+1,c)); } if c+1<cols { stack.push((r,c+1)); }\n    }\n    size\n}\n\nfn main() {\n    let result = component_size(&[vec![1,0,0],vec![1,1,0],vec![0,1,1]],(1,1)).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Which moves are legal in this component-size exercise?",
+    "rule": "Four orthogonal moves to equal-valued cells. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(rows*cols) time · O(rows*cols) space worst bound without looking at the code.",
     "summary": "Treat cells as graph nodes and traverse only neighbors satisfying the region predicate.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-graph-traversal-a.png",

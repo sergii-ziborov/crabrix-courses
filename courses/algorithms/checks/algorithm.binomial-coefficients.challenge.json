@@ -2,9 +2,7 @@
   "challenge": {
     "expectedOutput": "PASS binomial-coefficients\n",
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"38760\".to_string()",
-      "String::from(\"38760\")"
+      "todo!(\"implement"
     ],
     "lessonID": "algorithm.binomial-coefficients.challenge",
     "patternID": "binomial-coefficients",
@@ -14,30 +12,45 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return 20 choose 6.\n    // Parse the visible input into the structures your algorithm needs.\n    // Whitespace surrounding the complete input is insignificant.\n    let _ = input;\n    todo!(\"implement Binomial Coefficients\")\n}",
+    "source": "pub fn solve(input: &str) -> String {\n    // Parse n and k and return n choose k. The multiplicative example bounds n<=60; return 0 when k>n.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement binomial-coefficients\")\n}\n",
     "verificationCases": [
       {
-        "expectedAnswer": "38760",
+        "kind": "visible",
         "input": "n=20 k=6",
-        "kind": "visible"
+        "expectedAnswer": "38760"
       },
       {
-        "expectedAnswer": "10",
+        "kind": "boundary",
         "input": "n=5 k=2",
-        "kind": "boundary"
+        "expectedAnswer": "10"
       },
       {
-        "expectedAnswer": "10",
-        "input": "\nn=5 k=2\n",
-        "kind": "normalisation"
+        "kind": "adversarial",
+        "input": "n=0 k=0",
+        "expectedAnswer": "1"
       },
       {
-        "expectedAnswer": "38760",
+        "kind": "adversarial",
+        "input": "n=10 k=0",
+        "expectedAnswer": "1"
+      },
+      {
+        "kind": "adversarial",
+        "input": "n=7 k=3",
+        "expectedAnswer": "35"
+      },
+      {
+        "kind": "normalisation",
         "input": "  \nn=20 k=6\n  ",
-        "kind": "normalisation"
+        "expectedAnswer": "38760"
+      },
+      {
+        "kind": "normalisation",
+        "input": "\nn=7 k=3\n",
+        "expectedAnswer": "35"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn main() {\n    let cases = [\n    (r#\"n=20 k=6\"#, r#\"38760\"#),\n    (r#\"n=5 k=2\"#, r#\"10\"#),\n    (r#\"\nn=5 k=2\n\"#, r#\"10\"#),\n    (r#\"  \nn=20 k=6\n  \"#, r#\"38760\"#),\n    ];\n    for (case_index, (input, expected)) in cases.iter().enumerate() {\n        if solution::solve(input) != *expected {\n            eprintln!(\"PRIVATE CASE {} FAILED\", case_index + 1);\n            std::process::exit(1);\n        }\n    }\n    println!(\"PASS binomial-coefficients\");\n}"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"n=20 k=6\",\"38760\"),\n        (\"n=5 k=2\",\"10\"),\n        (\"n=0 k=0\",\"1\"),\n        (\"n=10 k=0\",\"1\"),\n        (\"n=7 k=3\",\"35\"),\n        (\"  \\nn=20 k=6\\n  \",\"38760\"),\n        (\"\\nn=7 k=3\\n\",\"35\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS binomial-coefficients\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
@@ -45,9 +58,7 @@
       "value": "PASS binomial-coefficients\n"
     },
     "forbiddenSourceFragments": [
-      "todo!(\"implement",
-      "\"38760\".to_string()",
-      "String::from(\"38760\")"
+      "todo!(\"implement"
     ],
     "kind": "algorithmChallenge",
     "requiredSourceFragments": [

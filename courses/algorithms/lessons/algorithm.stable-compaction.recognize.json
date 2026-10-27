@@ -7,7 +7,7 @@
     "expectedAnswer": "4,2,7",
     "idea": "Write kept elements forward so their relative order survives removal.",
     "patternID": "stable-compaction",
-    "rustSketch": "fn scan(values: &[i32]) -> Option<usize> {\n    for (index, value) in values.iter().enumerate() {\n        if *value < 0 { return Some(index); }\n    }\n    None\n}",
+    "rustSketch": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn compact_nonzero(values: &mut Vec<i32>) {\n    let mut write = 0;\n    for read in 0..values.len() {\n        if values[read] != 0 { values[write] = values[read]; write += 1; }\n    }\n    values.truncate(write);\n}\n\nfn main() {\n    let result = { let mut values=vec![0,4,0,2,7,0]; compact_nonzero(&mut values); csv(values) };\n    println!(\"{result}\");\n}\n",
     "stage": "recognize",
     "task": "Remove zeros stably and return the kept prefix as comma-separated values.",
     "useCases": "remove-in-place, filtering buffers, zero compaction",
@@ -18,33 +18,33 @@
   "depth": {
     "connections": [
       {
-        "concept": "Write kept elements forward so their relative order survives removal.",
         "direction": "previous",
-        "title": "Stable Compaction: Mental Model"
+        "title": "Stable Compaction: Mental Model",
+        "concept": "Write kept elements forward so their relative order survives removal."
       },
       {
-        "concept": "Remove zeros stably and return the kept prefix as comma-separated values.",
         "direction": "next",
-        "title": "Challenge: Stable Compaction"
+        "title": "Challenge: Stable Compaction",
+        "concept": "Remove zeros stably and return the kept prefix as comma-separated values."
       }
     ],
-    "correction": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
-    "misconception": "“Any problem that contains a `Vec`”",
+    "correction": "The end of the already retained prefix. In [0,4,0,2,7,0], reading 4 writes slot 0 and advances write to 1. Reading 2 writes slot 1; reading 7 writes slot 2. Truncating at write=3 leaves [4,2,7] in the original relative order.",
+    "misconception": "“The next unread source index”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `[0, 4, 0, 2, 7, 0]`, write the state before the first update. Explain how it represents this claim: Write kept elements forward so their relative order survives removal. A scan turns a sequence into a small piece of state. Say what the state means after the first i elements, before you describe a loop body."
+        "title": "Concrete transition",
+        "detail": "In [0,4,0,2,7,0], reading 4 writes slot 0 and advances write to 1. Reading 2 writes slot 1; reading 7 writes slot 2. Truncating at write=3 leaves [4,2,7] in the original relative order."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `4,2,7`. A borrowed slice and a for loop usually express the traversal clearly; distinguish an index you need to return from a value you merely read."
+        "title": "Independent second fixture",
+        "detail": "Input `[1,2,3,4,5,6,7]` produces `1,2,3,4,5,6,7`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Use an empty slice and a one-element slice as checks. Initial values must not silently assume that at least one item exists. Defend the O(n) time · O(1) extra space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `[8,7,6,5,4,3,2]` produces `8,7,6,5,4,3,2`. The end of the already retained prefix. The stated work bound is O(n) time · O(1) extra space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `[0, 4, 0, 2, 7, 0]` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Stable Compaction survives, which state must be updated, and whether the O(n) time · O(1) extra space bound still holds. Ask whether one pass is enough, whether order matters, and whether a later query will need information you already discarded."
+    "transferChallenge": "Compare the visible input `[0, 4, 0, 2, 7, 0]` with `[3,3,3,3,3,3,3]`. Predict why their results are `4,2,7` and `3,3,3,3,3,3,3`. Then change one legal value and explain whether the same invariant, the end of the already retained prefix, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.stable-compaction.recognize",
@@ -54,21 +54,21 @@
   "title": "Stable Compaction: When to Use It",
   "writing": {
     "answers": [
-      "Any problem that contains a Vec",
-      "remove-in-place, filtering buffers, zero compaction",
-      "Only problems with exactly one input value"
+      "`2,3,4,5,6,7`",
+      "`1,2,3,4,5,6,7`",
+      "`2,2,3,4,5,6,7`"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Classification checklist for Stable Compaction",
-    "exampleCode": "// 1. What structure or monotonic property is promised?\n// 2. What result must be maintained or optimised?\n// 3. Which edge case breaks the obvious approach?\n// Candidate: Stable Compaction",
-    "explanation": "A problem is a good match for Stable Compaction when it asks for remove-in-place, filtering buffers, zero compaction. Here the concrete task is: Remove zeros stably and return the kept prefix as comma-separated values. The visible input `[0, 4, 0, 2, 7, 0]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Ask whether one pass is enough, whether order matters, and whether a later query will need information you already discarded. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Write kept elements forward so their relative order survives removal. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A scan turns a sequence into a small piece of state. Say what the state means after the first i elements, before you describe a loop body. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(1) extra space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `4,2,7` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Use an empty slice and a one-element slice as checks. Initial values must not silently assume that at least one item exists. A borrowed slice and a for loop usually express the traversal clearly; distinguish an index you need to return from a value you merely read. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
-    "feedback": "The useful signal is the operation and guarantee: remove-in-place, filtering buffers, zero compaction.",
-    "practiceCode": "fn scan(values: &[i32]) -> Option<usize> {\n    for (index, value) in values.iter().enumerate() {\n        if *value < 0 { return Some(index); }\n    }\n    None\n}",
-    "question": "Which group is the strongest signal for this pattern?",
-    "rule": "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+    "exampleCaption": "Complete std-only stable-compaction program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn compact_nonzero(values: &mut Vec<i32>) {\n    let mut write = 0;\n    for read in 0..values.len() {\n        if values[read] != 0 { values[write] = values[read]; write += 1; }\n    }\n    values.truncate(write);\n}\n\nfn main() {\n    let result = { let mut values=vec![0,4,0,2,7,0]; compact_nonzero(&mut values); csv(values) };\n    println!(\"{result}\");\n}\n",
+    "explanation": "In [0,4,0,2,7,0], reading 4 writes slot 0 and advances write to 1. Reading 2 writes slot 1; reading 7 writes slot 2. Truncating at write=3 leaves [4,2,7] in the original relative order.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Remove zeros stably and return the kept prefix as comma-separated values. The visible fixture is `[0, 4, 0, 2, 7, 0]` and its example result is `4,2,7`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nA problem is a good match for Stable Compaction when it asks for remove-in-place, filtering buffers, zero compaction. Here the concrete task is: Remove zeros stably and return the kept prefix as comma-separated values. The visible input `[0, 4, 0, 2, 7, 0]` is an example, not a definition of the whole problem. Ask what operations the solution must support and what the input guarantees. Ask whether one pass is enough, whether order matters, and whether a later query will need information you already discarded. The right choice follows from those guarantees, not from a familiar noun in the prompt.\n\nThe decisive invariant is: Write kept elements forward so their relative order survives removal. Try to say why it applies to the task without quoting the implementation. Which fact becomes known after one update, and which possible answers remain? A scan turns a sequence into a small piece of state. Say what the state means after the first i elements, before you describe a loop body. If that claim cannot be maintained on a legal input, the pattern is wrong or one of its preconditions is missing. A counterexample is more useful than a vague warning: change one property of the sample, trace the first two steps, and identify the exact claim that fails.\n\nCompare costs before committing. The advertised bound is O(n) time · O(1) extra space; identify the operation responsible for it and the extra memory it needs. Then compare a straightforward alternative: a direct scan, full sort, or repeated recomputation may be easier but can pay for the same work many times. Do not choose the more elaborate method just because it has a famous name. For the sample, predict `4,2,7` and explain which part of the state lets the method reach that result.\n\nWhen the prompt is ambiguous, ask about input size, ordering, duplicates, and required output format. Use an empty slice and a one-element slice as checks. Initial values must not silently assume that at least one item exists. A borrowed slice and a for loop usually express the traversal clearly; distinguish an index you need to return from a value you merely read. The Rust sketch can show a useful primitive without proving that the whole task is solved; connect each primitive to the requested output. You should be able to name a fitting case, a near miss, and the assumption separating them before writing the first line.",
+    "feedback": "For this input the result is `1,2,3,4,5,6,7`. The end of the already retained prefix. Compare this independent fixture with the worked trace: In [0,4,0,2,7,0], reading 4 writes slot 0 and advances write to 1. Reading 2 writes slot 1; reading 7 writes slot 2. Truncating at write=3 leaves [4,2,7] in the original relative order.",
+    "practiceCode": "fn csv<T:std::fmt::Display>(a:impl IntoIterator<Item=T>)->String { a.into_iter().map(|x|x.to_string()).collect::<Vec<_>>().join(\",\") }\nfn compact_nonzero(values: &mut Vec<i32>) {\n    let mut write = 0;\n    for read in 0..values.len() {\n        if values[read] != 0 { values[write] = values[read]; write += 1; }\n    }\n    values.truncate(write);\n}\n\nfn main() {\n    let result = { let mut values=vec![0,4,0,2,7,0]; compact_nonzero(&mut values); csv(values) };\n    println!(\"{result}\");\n}\n",
+    "question": "Trace Stable Compaction on input `[1,2,3,4,5,6,7]`. Which result follows from the documented contract?",
+    "rule": "The end of the already retained prefix. State the input preconditions before applying this invariant.",
     "success": "You can justify the choice from constraints rather than from a remembered problem title.",
     "summary": "Recognise the problem shape before choosing Stable Compaction.",
-    "task": "Name two problem families that fit and one counterexample where this pattern is the wrong choice."
+    "task": "Compare the visible and independent fixtures. Explain the input assumption that makes this algorithm applicable, then identify a change that would invalidate it."
   },
   "illustration": {
     "path": "media/algorithms-scans-b.png",

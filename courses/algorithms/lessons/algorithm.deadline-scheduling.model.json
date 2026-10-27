@@ -7,44 +7,44 @@
     "expectedAnswer": "142",
     "idea": "Process jobs by deadline while a heap keeps only the best feasible set.",
     "patternID": "deadline-scheduling",
-    "rustSketch": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+    "rustSketch": "fn maximum_profit(jobs:&[(usize,i32)])->i32 {\n    fn free(parent:&mut [usize],x:usize)->usize {\n        if parent[x]!=x { parent[x]=free(parent,parent[x]); } parent[x]\n    }\n    let mut sorted=jobs.to_vec(); sorted.sort_by_key(|&(d,p)|(std::cmp::Reverse(p),d));\n    let n=jobs.len(); let mut parent:Vec<_>=(0..=n).collect(); let mut profit=0;\n    for (deadline,value) in sorted {\n        if value<=0 { continue; } let slot=free(&mut parent,deadline.min(n));\n        if slot>0 { profit+=value; parent[slot]=free(&mut parent,slot-1); }\n    } profit\n}\n\nfn main() {\n    let result = maximum_profit(&[(2,100),(1,19),(2,27),(1,25),(3,15)]).to_string();\n    println!(\"{result}\");\n}\n",
     "stage": "model",
     "task": "Return maximum profit using one slot per time and deadlines 1-based.",
     "useCases": "max reward under unit-time deadlines",
     "visibleInput": "jobs=(d2,p100),(d1,p19),(d2,p27),(d1,p25),(d3,p15)"
   },
   "concept": "Process jobs by deadline while a heap keeps only the best feasible set.",
-  "contentDigest": "97ba68648023369195ea41d7c1fef7518a2052785ebc3ca0025dc5309c753793",
+  "contentDigest": "0a35cb067194f23c5281d934798fbaf5b60672674636f0c47b92321d994136ae",
   "depth": {
     "connections": [
       {
-        "concept": "Return partition lengths.",
         "direction": "previous",
-        "title": "Challenge: Last-Occurrence Partition"
+        "title": "Challenge: Last-Occurrence Partition",
+        "concept": "Return partition lengths."
       },
       {
-        "concept": "max reward under unit-time deadlines",
         "direction": "next",
-        "title": "Deadline Profit Scheduling: When to Use It"
+        "title": "Deadline Profit Scheduling: When to Use It",
+        "concept": "max reward under unit-time deadlines"
       }
     ],
-    "correction": "Preserve the invariant first; the implementation is a consequence of it.",
-    "misconception": "“The shortest variable names”",
+    "correction": "Earlier slots remain available for jobs with tighter deadlines. Take profit 100 with deadline 2 into slot 2, then profit 27 into slot 1, and profit 15 into slot 3. Total profit is 142. DSU predecessor links find the latest free slot without scanning every earlier time.",
+    "misconception": "“Every job must occupy its deadline slot even if busy”",
     "traceSteps": [
       {
-        "title": "Define the state",
-        "detail": "For `jobs=(d2,p100),(d1,p19),(d2,p27),(d1,p25),(d3,p15)`, write the state before the first update. Explain how it represents this claim: Process jobs by deadline while a heap keeps only the best feasible set. A greedy step commits to a local choice. Give the exchange or dominance reason that an optimal solution can still include that choice."
+        "title": "Concrete transition",
+        "detail": "Take profit 100 with deadline 2 into slot 2, then profit 27 into slot 1, and profit 15 into slot 3. Total profit is 142. DSU predecessor links find the latest free slot without scanning every earlier time."
       },
       {
-        "title": "Trace a transition",
-        "detail": "Apply one legal update to the sample. Record what changes, what stays true, and why the result can still become `142`. Keep interval endpoint conventions explicit where they apply. If sorting is part of the method, its Rust comparator must encode the proof's exact tie break."
+        "title": "Independent second fixture",
+        "detail": "Input `jobs=(d1,p10),(d2,p20)` produces `30`. Execute the named function in the worked program with these typed arguments, then compare its actual result with this independently computed expectation."
       },
       {
-        "title": "Probe the boundary",
-        "detail": "Check a smallest input and a case that challenges the assumption. Test touching intervals, equal endpoints, empty input, and a locally attractive choice that blocks a better future choice. Defend the O(n log n) time · O(n) space bound by counting actual work."
+        "title": "Boundary and contract",
+        "detail": "Input `jobs=(d3,p5),(d1,p7),(d2,p8)` produces `20`. Earlier slots remain available for jobs with tighter deadlines. The stated work bound is O(n log n) time · O(n) space. Count actual state changes; a successful output test alone does not prove that bound."
       }
     ],
-    "transferChallenge": "Change the visible input `jobs=(d2,p100),(d1,p19),(d2,p27),(d1,p25),(d3,p15)` in one meaningful way: remove an item, repeat a key, alter an edge, or move a boundary as the task permits. Predict the new output before running code. State which part of the invariant from Deadline Profit Scheduling survives, which state must be updated, and whether the O(n log n) time · O(n) space bound still holds. When the method sorts intervals or events, use the coordinate and tie break required by its proof. Other greedy walks keep an invariant without sorting."
+    "transferChallenge": "Compare the visible input `jobs=(d2,p100),(d1,p19),(d2,p27),(d1,p25),(d3,p15)` with `jobs=(d1,p3),(d1,p9),(d1,p6)`. Predict why their results are `142` and `9`. Then change one legal value and explain whether the same invariant, earlier slots remain available for jobs with tighter deadlines, still applies."
   },
   "exerciseKind": "planned",
   "id": "algorithm.deadline-scheduling.model",
@@ -54,21 +54,21 @@
   "title": "Deadline Profit Scheduling: Mental Model",
   "writing": {
     "answers": [
-      "Its invariant and the state changed by one step",
-      "The shortest variable names",
-      "A recursive implementation in every case"
+      "Earlier slots remain available for jobs with tighter deadlines",
+      "Every job must occupy its deadline slot even if busy",
+      "Scheduling the least profitable job first is always optimal"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "Rust sketch · target O(n log n) time · O(n) space",
-    "exampleCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
-    "explanation": "Begin with the concrete question: Return maximum profit using one slot per time and deadlines 1-based. For the visible input `jobs=(d2,p100),(d1,p19),(d2,p27),(d1,p25),(d3,p15)`, the stated result is `142`. Before reading code, name the smallest piece of information that must survive from one step to the next. A greedy step commits to a local choice. Give the exchange or dominance reason that an optimal solution can still include that choice. That is the mental model for Deadline Profit Scheduling; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Process jobs by deadline while a heap keeps only the best feasible set. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nNow inspect the Rust sketch, not just its final expression. The supplied Rust sketch is a starting point. Identify what it stores, how one iteration changes it, and whether it already solves the exact task or only demonstrates a related operation. Keep interval endpoint conventions explicit where they apply. If sorting is part of the method, its Rust comparator must encode the proof's exact tie break. Translate the variable names into roles: input, carried state, temporary candidate, and output. Borrow data that only needs reading; copy or move data only when the algorithm actually needs ownership. If the sketch leaves out parsing or edge handling, list those missing steps before calling it a complete solution.\n\nFinally justify the stated bound, O(n log n) time · O(n) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test touching intervals, equal endpoints, empty input, and a locally attractive choice that blocks a better future choice. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
-    "feedback": "The invariant explains both correctness and which state may change.",
-    "practiceCode": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
-    "question": "What should you identify before translating this pattern into Rust?",
-    "rule": "Preserve the invariant first; the implementation is a consequence of it.",
+    "exampleCaption": "Complete std-only deadline-scheduling program for its typed teaching fixture. Parsing and output construction are separate from the core algorithm.",
+    "exampleCode": "fn maximum_profit(jobs:&[(usize,i32)])->i32 {\n    fn free(parent:&mut [usize],x:usize)->usize {\n        if parent[x]!=x { parent[x]=free(parent,parent[x]); } parent[x]\n    }\n    let mut sorted=jobs.to_vec(); sorted.sort_by_key(|&(d,p)|(std::cmp::Reverse(p),d));\n    let n=jobs.len(); let mut parent:Vec<_>=(0..=n).collect(); let mut profit=0;\n    for (deadline,value) in sorted {\n        if value<=0 { continue; } let slot=free(&mut parent,deadline.min(n));\n        if slot>0 { profit+=value; parent[slot]=free(&mut parent,slot-1); }\n    } profit\n}\n\nfn main() {\n    let result = maximum_profit(&[(2,100),(1,19),(2,27),(1,25),(3,15)]).to_string();\n    println!(\"{result}\");\n}\n",
+    "explanation": "Take profit 100 with deadline 2 into slot 2, then profit 27 into slot 1, and profit 15 into slot 3. Total profit is 142. DSU predecessor links find the latest free slot without scanning every earlier time.\n\nThe worked program is a complete executable for this pattern. Its core function uses typed input so the state transitions remain visible. The challenge input contract is: Return maximum profit using one slot per time and deadlines 1-based. The visible fixture is `jobs=(d2,p100),(d1,p19),(d2,p27),(d1,p25),(d3,p15)` and its example result is `142`. The implementation and additional semantic fixtures were checked against an independent reference calculation. Those bounded tests establish these examples; they are not a proof for all inputs or a measurement on an iPhone.\n\nReturn a canonical String from solve: lowercase true/false for booleans; decimal integers without extra signs, leading zeros or whitespace; comma-separated sequence values and semicolon-separated groups. Whole-number medians have no decimal suffix; half medians use .5. Do not append a newline to the returned value. Preserve the explicitly named textual sentinels such as none or #. Input fixtures are bounded so the demonstrated arithmetic fits its named Rust types; satisfy the stated input preconditions before applying the algorithm.\n\nString and character-grid fixtures use ASCII unless the lesson explicitly specifies Unicode scalar values.\n\nBegin with the concrete question: Return maximum profit using one slot per time and deadlines 1-based. For the visible input `jobs=(d2,p100),(d1,p19),(d2,p27),(d1,p25),(d3,p15)`, the stated result is `142`. Before reading code, name the smallest piece of information that must survive from one step to the next. A greedy step commits to a local choice. Give the exchange or dominance reason that an optimal solution can still include that choice. That is the mental model for Deadline Profit Scheduling; it gives you a reason for each update instead of a line of code to memorise.\n\nThe core mechanism is this: Process jobs by deadline while a heap keeps only the best feasible set. Treat it as a claim to test after every operation. Write down the state before the first operation, update it once, and ask which part of the claim is still true. If an item is skipped, inserted, or removed, explain why that action cannot destroy an answer that should be retained. A useful trace has columns for the current input position, the state before the step, the action, and the state afterward. Use the visible sample until the expected result becomes inevitable rather than merely plausible.\n\nFinally justify the stated bound, O(n log n) time · O(n) space. Count how often an item, edge, state, or candidate can enter the main operation; do not infer the bound from the number of loop keywords alone. Test touching intervals, equal endpoints, empty input, and a locally attractive choice that blocks a better future choice. Predict the result for a smallest legal input and for one case that stresses the invariant. If your prediction disagrees with a hand trace, repair the state definition before changing code.",
+    "feedback": "Take profit 100 with deadline 2 into slot 2, then profit 27 into slot 1, and profit 15 into slot 3. Total profit is 142. DSU predecessor links find the latest free slot without scanning every earlier time.",
+    "practiceCode": "fn maximum_profit(jobs:&[(usize,i32)])->i32 {\n    fn free(parent:&mut [usize],x:usize)->usize {\n        if parent[x]!=x { parent[x]=free(parent,parent[x]); } parent[x]\n    }\n    let mut sorted=jobs.to_vec(); sorted.sort_by_key(|&(d,p)|(std::cmp::Reverse(p),d));\n    let n=jobs.len(); let mut parent:Vec<_>=(0..=n).collect(); let mut profit=0;\n    for (deadline,value) in sorted {\n        if value<=0 { continue; } let slot=free(&mut parent,deadline.min(n));\n        if slot>0 { profit+=value; parent[slot]=free(&mut parent,slot-1); }\n    } profit\n}\n\nfn main() {\n    let result = maximum_profit(&[(2,100),(1,19),(2,27),(1,25),(3,15)]).to_string();\n    println!(\"{result}\");\n}\n",
+    "question": "Why place a profitable job in the latest currently free slot before its deadline?",
+    "rule": "Earlier slots remain available for jobs with tighter deadlines. State the input preconditions before applying this invariant.",
     "success": "You can explain the invariant, termination condition, and O(n log n) time · O(n) space bound without looking at the code.",
     "summary": "Process jobs by deadline while a heap keeps only the best feasible set.",
-    "task": "Trace the sketch by hand and name the state that changes after each iteration."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
   },
   "illustration": {
     "path": "media/algorithms-greedy-intervals-b.png",
