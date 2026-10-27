@@ -11,6 +11,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'editorial/academy_20261027'))
 from oracles import solve
 from rust_sources import CODE
+sys.path.insert(0, str(ROOT / 'tools'))
+from coursepack import read_course
+from recompute_digests import digest
 
 
 class AcademyCorrectionsTests(unittest.TestCase):
@@ -50,6 +53,15 @@ class AcademyCorrectionsTests(unittest.TestCase):
         for pattern, expected in [('imos-sweep', '5'), ('binary-search-answer', '21')]:
             path = ROOT / f'courses/algorithms/lessons/algorithm.{pattern}.model.json'
             self.assertEqual(json.loads(path.read_text())['algorithm']['expectedAnswer'], expected)
+
+    def test_nested_content_digests_match_authored_values(self):
+        for course_id in ['algorithms', 'ownership', 'projects', 'concurrency', 'systems', 'interview']:
+            course = read_course(ROOT / 'courses' / course_id)
+            self.assertEqual(course['contentDigest'], digest(course), course_id)
+            for unit in course['units']:
+                self.assertEqual(unit['contentDigest'], digest(unit), unit['id'])
+                for lesson in unit['lessons']:
+                    self.assertEqual(lesson['contentDigest'], digest(lesson), lesson['id'])
 
 
 if __name__ == '__main__':

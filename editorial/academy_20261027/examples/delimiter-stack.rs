@@ -1,13 +1,19 @@
-fn balanced(text:&str)->bool {
-    let mut stack=Vec::new();
+fn balanced(text: &str) -> bool {
+    let mut stack = Vec::new();
     for c in text.chars() {
         match c {
-            '('|'['|'{' => stack.push(c),
-            ')'|']'|'}' => {
-                let expected=match c { ')'=>'(', ']'=>'[', _=>'{' };
-                if stack.pop()!=Some(expected) { return false; }
+            '(' | '[' | '{' => stack.push(c),
+            ')' | ']' | '}' => {
+                let expected = match c {
+                    ')' => '(',
+                    ']' => '[',
+                    _ => '{',
+                };
+                if stack.pop() != Some(expected) {
+                    return false;
+                }
             }
-            _=>{}
+            _ => {}
         }
     }
     stack.is_empty()

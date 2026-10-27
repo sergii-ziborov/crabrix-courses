@@ -3,6 +3,6 @@ fn decreases(values: &[i32]) -> usize {
 }
 
 fn main() {
-    let result = decreases(&[3,5,4,4,1]).to_string();
+    let result = decreases(&[3, 5, 4, 4, 1]).to_string();
     println!("{result}");
 }

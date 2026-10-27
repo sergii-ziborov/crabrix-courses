@@ -56,8 +56,8 @@ edits and final source-image paths are recorded in `imagegen-prompts.json`.
 
 ## Native distribution
 
-Catalog sequence 14 updates Algorithms 1.0.5, Ownership 1.0.5, Projects 1.0.6,
-Concurrency 1.0.5, Systems 1.0.6 and Interview 1.0.7. Basics 1.0.6 and Examples
+Catalog sequence 15 updates Algorithms 1.0.6, Ownership 1.0.6, Projects 1.0.6,
+Concurrency 1.0.5, Systems 1.0.6 and Interview 1.0.8. Basics 1.0.6 and Examples
 1.0.4 retain their existing assets and URLs. Archives and descriptors are signed
 with an existing trusted production key; no keyring or application code changes
 are needed. The application's actual Swift verifier and planner accepted the six

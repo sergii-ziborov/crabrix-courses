@@ -4,6 +4,6 @@ fn has_duplicate(values: &[i32]) -> bool {
 }
 
 fn main() {
-    let result = has_duplicate(&[11,8,3,8]).to_string();
+    let result = has_duplicate(&[11, 8, 3, 8]).to_string();
     println!("{result}");
 }

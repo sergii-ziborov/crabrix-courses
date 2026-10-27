@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Compile and run each typed Rust fixture against independent Python answers."""
 import hashlib
+from functools import lru_cache
 import json
 from pathlib import Path
 import re
@@ -30,11 +31,13 @@ def inputs():
     except ModuleNotFoundError:pass
     return result
 
+@lru_cache(maxsize=None)
 def source(id,expression):
     code=CODE[id]
     helpers=''.join(h for word,h in HELPERS.items() if re.search(r'\b'+word+r'\b',code))
     formatting=(CSV if 'csv(' in expression or 'semicolon(' in expression else '')+(SEMI if 'semicolon(' in expression else '')
-    return helpers+formatting+code+'\nfn main() {\n    let result = '+expression+';\n    println!("{result}");\n}\n'
+    raw=helpers+formatting+code+'\nfn main() {\n    let result = '+expression+';\n    println!("{result}");\n}\n'
+    return subprocess.run(['rustfmt','--edition','2024','--emit','stdout'],input=raw,text=True,capture_output=True,check=True).stdout
 
 def main():
     WORK.mkdir(parents=True,exist_ok=True);(BASE/'examples').mkdir(exist_ok=True)

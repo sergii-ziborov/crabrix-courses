@@ -1,9 +1,20 @@
 #!/usr/bin/env python3
 """Apply the audited Rust corrections while retaining lesson and answer IDs."""
 import json
+import subprocess
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[2]/'courses'
+BASE_LESSONS=[('concurrency','pinning-intuition'),('projects','errors'),
+ ('systems','cfg-features'),('concurrency','async-cancellation'),
+ ('interview','q-indexes'),('interview','q-complexity'),
+ ('ownership','phantom-data'),('projects','doc-examples')]
+# Reapplying the pass must not repeatedly prepend replacement paragraphs.
+for course,id in BASE_LESSONS:
+ path=ROOT/course/'lessons'/f'{id}.json'
+ relative=path.relative_to(ROOT.parent).as_posix()
+ original=subprocess.check_output(['git','show','52b6751:'+relative],cwd=ROOT.parent)
+ path.write_bytes(original)
 CHANGED=[]
 def edit(course,id,**fields):
     path=ROOT/course/'lessons'/f'{id}.json';lesson=json.loads(path.read_text());w=lesson['writing'];w.update(fields)
@@ -92,6 +103,15 @@ CREATE INDEX events_tenant_kind_at ON events (tenant_id, kind, at);
 EXPLAIN SELECT tenant_id, kind, at
 FROM events
 WHERE kind = 'click' AND at > TIMESTAMP '2026-10-01';''',
+ practiceCode='''-- PostgreSQL SQL; use an existing events table and representative data.
+EXPLAIN SELECT tenant_id, kind, at
+FROM events
+WHERE tenant_id = 42 AND kind = 'click';
+
+EXPLAIN SELECT tenant_id, kind, at
+FROM events
+WHERE kind = 'click' AND at > TIMESTAMP '2026-10-01';''',
+ success='You can compare the plans for leading-column and later-column filters, explain selectivity, and name the index maintenance cost.',
  exampleCaption='Inspect EXPLAIN with representative data. An absent leading-column filter does not universally prohibit an index scan.',
  question='Can the index (tenant_id, kind, at) be ruled out solely because tenant_id is not filtered?',
  answers=['Yes, every database forbids using a non-leading index column','No; index and skip-scan choices depend on the database and data, so inspect EXPLAIN','The column names alone guarantee that the index will be chosen'],

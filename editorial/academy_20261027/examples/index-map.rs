@@ -10,6 +10,6 @@ fn nearest_repeat(values: &[i32]) -> Option<usize> {
 }
 
 fn main() {
-    let result = nearest_repeat(&[5,1,9,5,1]).map_or("-1".into(),|i|i.to_string());
+    let result = nearest_repeat(&[5, 1, 9, 5, 1]).map_or("-1".into(), |i| i.to_string());
     println!("{result}");
 }

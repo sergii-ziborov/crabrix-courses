@@ -9,6 +9,6 @@ fn largest_anagram_group(words: &[&str]) -> usize {
 }
 
 fn main() {
-    let result = largest_anagram_group(&["eat","tea","tan","ate","nat"]).to_string();
+    let result = largest_anagram_group(&["eat", "tea", "tan", "ate", "nat"]).to_string();
     println!("{result}");
 }
