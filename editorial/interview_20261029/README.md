@@ -26,7 +26,7 @@ Every new worked example executes. The 56 remaining blocks are explicitly
 contextual snippets (including SQL, dependencies and API sketches), or the
 intentional division-by-zero debugging example. They are not claimed to be 56
 successfully executed standalone Rust programs. Source digests accompany checks.
-Native WASI/app and publication verification are recorded separately after passing.
+The native production-signature installer, all 52 image decodes, old-session preservation and all twelve new worked examples passed on phone/iPad Simulator. The gate has 39 native checks and one UI flow per device; details are in native-qualification.json. Public delivery is recorded separately.
 
 All lessons retain an exact code-to-rule map or matching existing artwork.
 New/changed deterministic maps extend the existing `render_rust` lesson renderer;
