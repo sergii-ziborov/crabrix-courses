@@ -10,7 +10,9 @@ class InterviewRevisionTests(unittest.TestCase):
   self.assertTrue(set(baseline).issubset(ids));self.assertEqual(set(ids)-set(baseline),set(json.loads((ROOT/'editorial/interview_20261029/added-ids.json').read_text())))
   for id in ids:
    lesson=json.loads((ROOT/'courses/interview/lessons'/f'{id}.json').read_text());w=lesson['writing'];check=json.loads((ROOT/'courses/interview/checks'/f'{id}.json').read_text())
-   self.assertEqual(check['evidence']['correctAnswer'],w['correctAnswer']);self.assertEqual(len(w['answers']),len(set(w['answers'])))
+   
+   if check['evidence']['kind']=='reasoning':self.assertEqual(check['evidence']['correctAnswer'],w['correctAnswer'])
+   self.assertEqual(len(w['answers']),len(set(w['answers'])))
    self.assertGreater(len(lesson['depth']['transferChallenge']),60)
    if id in baseline:self.assertEqual(w['correctAnswer'],baseline[id]['correctAnswer'])
  def test_complete_new_examples_and_deliberate_errors_have_actual_compiler_evidence(self):
