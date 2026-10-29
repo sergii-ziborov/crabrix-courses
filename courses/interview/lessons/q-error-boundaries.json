@@ -1,0 +1,53 @@
+{
+  "id": "q-error-boundaries",
+  "title": "Error Types at API Boundaries",
+  "concept": "Absence, invalid input and contextual failure",
+  "minutes": 14,
+  "order": 1,
+  "parentID": "interview-api-boundaries",
+  "exerciseKind": "planned",
+  "contentDigest": "4a50c5271b8cadf2327cfe75a10d46b7669303c8e7f9b86a0798083c39d1c65a",
+  "writing": {
+    "summary": "An error type should preserve the distinctions the caller needs to handle.",
+    "explanation": "A missing optional value and an invalid supplied value describe different outcomes. Result<Option<T>, E> can express success with absence, success with a value, or failure. The example converts Option<Result<u16, ParseIntError>> using transpose, preserving all three cases without manufacturing a default port.\n\nAt an application boundary you may add contextual information such as a safe field name or a public operation ID. Preserve a useful source error when appropriate and avoid depending on human-readable error strings for control flow. A library can expose typed error cases, while an executable may aggregate errors for reporting. Type erasure through a trait object trades some structured matching for flexibility and may need Send + Sync bounds if the value crosses task boundaries.\n\nIn an interview, begin with what the caller can reasonably do: retry, prompt for input, treat absence as normal, or stop. A retry policy also needs to know whether an earlier effect may have committed. Returning Result alone does not make a side effect transactional or idempotent. Do not leak credentials or private paths into a shared diagnostic merely because an error type can store them.",
+    "exampleCode": "use std::num::ParseIntError;\nfn optional_port(raw: Option<&str>) -> Result<Option<u16>, ParseIntError> {\n    raw.map(str::parse::<u16>).transpose()\n}\nfn main() {\n    assert_eq!(optional_port(None), Ok(None));\n    assert_eq!(optional_port(Some(\"8080\")), Ok(Some(8080)));\n    assert!(optional_port(Some(\"not-a-port\")).is_err());\n}",
+    "exampleCaption": "transpose preserves absence separately from a supplied value that fails to parse.",
+    "rule": "Choose error structure from caller decisions; absence, failure and defaulting are different policies.",
+    "task": "Explain the example, predict the result, and justify your answer to the follow-up.",
+    "practiceCode": "use std::num::ParseIntError;\nfn optional_port(raw: Option<&str>) -> Result<Option<u16>, ParseIntError> {\n    raw.map(str::parse::<u16>).transpose()\n}\nfn main() { assert!(optional_port(Some(\"bad\")).is_err()); }",
+    "success": "Identify the relevant ownership or API contract and test the changed constraint.",
+    "question": "Which outcome should optional_port(Some(\"bad\")) produce under this contract?",
+    "answers": [
+      "Ok(None), because every parse failure means the field was absent.",
+      "Err carrying the parse error, because the supplied value is invalid.",
+      "Ok(Some(0)), because Result automatically chooses a numeric default."
+    ],
+    "correctAnswer": 1,
+    "feedback": "None represents absence; malformed supplied input follows the error path. Defaults require a separate documented policy."
+  },
+  "depth": {
+    "misconception": "Ok(Some(0)), because Result automatically chooses a numeric default.",
+    "correction": "None represents absence; malformed supplied input follows the error path. Defaults require a separate documented policy.",
+    "traceSteps": [
+      {
+        "title": "Observe the concrete input",
+        "detail": "transpose preserves absence separately from a supplied value that fails to parse."
+      },
+      {
+        "title": "Apply the contract",
+        "detail": "Choose error structure from caller decisions; absence, failure and defaulting are different policies."
+      },
+      {
+        "title": "Check the boundary",
+        "detail": "Where would you attach the field name and preserve the source error? Which details should be omitted from a shared public diagnostic?"
+      }
+    ],
+    "transferChallenge": "Where would you attach the field name and preserve the source error? Which details should be omitted from a shared public diagnostic?",
+    "connections": []
+  },
+  "illustration": {
+    "path": "media/q-error-boundaries.png",
+    "alt": "Diagram for Error Types at API Boundaries: the code flows to its exact contract and observed boundary.",
+    "caption": "transpose preserves absence separately from a supplied value that fails to parse."
+  }
+}

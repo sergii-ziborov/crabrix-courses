@@ -1,0 +1,53 @@
+{
+  "id": "q-trait-coherence",
+  "title": "Orphan Rules and Newtypes",
+  "concept": "Implementing foreign traits without conflicting implementations",
+  "minutes": 14,
+  "order": 2,
+  "parentID": "interview-api-boundaries",
+  "exerciseKind": "planned",
+  "contentDigest": "79a481eb260a9b14d0fffbc7a1f63ad1f8d7348846d5637487200999453fe3e4",
+  "writing": {
+    "summary": "A local wrapper creates a distinct type whose behaviour your crate can own.",
+    "explanation": "Rust’s coherence rules restrict trait implementations so that implementations can be selected consistently across crates. The orphan rules broadly require the trait or a relevant implementing type to be local, with additional rules for generic parameters and fundamental types. A type alias does not create a new local type for this purpose.\n\nThe example wraps Vec<u8> in a local Bytes type and implements the standard Display trait for that wrapper. It does not attempt to implement Display directly for Vec<u8>. The wrapper also creates an explicit API boundary: you can restrict construction, choose formatting and control which capabilities are exposed. Delegation is a design choice rather than an automatic consequence of wrapping.\n\nIn an interview, contrast a local trait implemented for a foreign type with a foreign trait implemented for a local wrapper. Explain why a type alias cannot make an otherwise conflicting implementation valid. Then discuss what a blanket implementation can prevent downstream crates from adding later. The rule is about which implementations exist and can coexist, not a runtime performance penalty. A newtype’s layout or FFI suitability still requires the relevant representation and ABI contract.",
+    "exampleCode": "use std::fmt;\nstruct Bytes(Vec<u8>);\nimpl fmt::Display for Bytes {\n    fn fmt(&self, out: &mut fmt::Formatter<'_>) -> fmt::Result {\n        write!(out, \"{} bytes\", self.0.len())\n    }\n}\nfn main() {\n    assert_eq!(Bytes(vec![1, 2, 3]).to_string(), \"3 bytes\");\n}",
+    "exampleCaption": "Display is implemented for a local wrapper, not directly for a foreign Vec type.",
+    "rule": "A newtype creates a distinct local type; an alias only gives an existing type another name.",
+    "task": "Explain the example, predict the result, and justify your answer to the follow-up.",
+    "practiceCode": "use std::fmt;\nstruct Bytes(Vec<u8>);\nimpl fmt::Display for Bytes {\n    fn fmt(&self, out: &mut fmt::Formatter<'_>) -> fmt::Result {\n        write!(out, \"{}\", self.0.len())\n    }\n}\nfn main() { assert_eq!(Bytes(vec![1]).to_string(), \"1\"); }",
+    "success": "Identify the relevant ownership or API contract and test the changed constraint.",
+    "question": "Why does this local Bytes wrapper permit the shown Display implementation?",
+    "answers": [
+      "The wrapper makes the standard Display trait local to this crate.",
+      "Any alias of Vec<u8> would create the same local implementation identity.",
+      "Bytes is a distinct local implementing type, satisfying the relevant orphan requirement."
+    ],
+    "correctAnswer": 2,
+    "feedback": "The trait remains foreign; the implementing wrapper is local. Generic coverage and overlap still need to satisfy coherence rules."
+  },
+  "depth": {
+    "misconception": "The wrapper makes the standard Display trait local to this crate.",
+    "correction": "The trait remains foreign; the implementing wrapper is local. Generic coverage and overlap still need to satisfy coherence rules.",
+    "traceSteps": [
+      {
+        "title": "Observe the concrete input",
+        "detail": "Display is implemented for a local wrapper, not directly for a foreign Vec type."
+      },
+      {
+        "title": "Apply the contract",
+        "detail": "A newtype creates a distinct local type; an alias only gives an existing type another name."
+      },
+      {
+        "title": "Check the boundary",
+        "detail": "Why does type Bytes = Vec<u8> not achieve the same result? What compatibility concern can a blanket impl create?"
+      }
+    ],
+    "transferChallenge": "Why does type Bytes = Vec<u8> not achieve the same result? What compatibility concern can a blanket impl create?",
+    "connections": []
+  },
+  "illustration": {
+    "path": "media/q-trait-coherence.png",
+    "alt": "Diagram for Orphan Rules and Newtypes: the code flows to its exact contract and observed boundary.",
+    "caption": "Display is implemented for a local wrapper, not directly for a foreign Vec type."
+  }
+}

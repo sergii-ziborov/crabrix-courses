@@ -1,6 +1,6 @@
 {
   "concept": "Making at-least-once safe",
-  "contentDigest": "9609209c83f59fb6c922dc2b5e5dfa0ed3c273a39a988721c2c47a66ddb2e43b",
+  "contentDigest": "34169743c664c83a96a458b25897e1a676422068e8c76ca8a4d788f211852163",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Caching and Invalidation"
       }
     ],
-    "correction": "At-least-once delivery plus an idempotency key gives effectively-once behaviour.",
-    "misconception": "“Nothing, the server deduplicates”",
+    "correction": "An idempotency key only helps when the server validates request identity and durably/atomically records its relation to the effect and response.",
+    "misconception": "A lost response necessarily rolls back the server’s committed operation.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "A retry is only safe if the operation is idempotent."
       },
       {
-        "detail": "Make a non-idempotent endpoint safe to retry.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "The key is what makes the second attempt safe."
       },
       {
-        "detail": "A duplicate request returns the original result and charges once.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "What happens if the server crashes between charging and recording the key? Define atomicity, key reuse checks and the retention window."
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on making at-least-once safe."
+    "transferChallenge": "What happens if the server crashes between charging and recording the key? Define atomicity, key reuse checks and the retention window."
   },
   "exerciseKind": "planned",
   "id": "q-idempotency",
@@ -40,25 +40,25 @@
   "title": "Idempotency and Retries",
   "writing": {
     "answers": [
-      "Nothing, the server deduplicates",
-      "The balance is increased twice",
-      "The request is rejected"
+      "Sending the same body automatically deduplicates every HTTP POST.",
+      "Retrying can apply the addition twice; a timeout does not prove the first attempt failed.",
+      "A lost response necessarily rolls back the server’s committed operation."
     ],
     "correctAnswer": 1,
-    "exampleCaption": "The key is what makes the second attempt safe.",
+    "exampleCaption": "HTTP client sketch: the server must implement the key contract; a header alone does not deduplicate a side effect.",
     "exampleCode": "let response = client\n    .post(url)\n    .header(\"Idempotency-Key\", request_id)\n    .json(&payment)\n    .send()\n    .await?;",
-    "explanation": "Retries and lost responses can cause the same logical request to reach a server more than once. Reads and overwrites are naturally idempotent; increments, appends, and charges are not. The fix is an idempotency key the server records with the result, so a repeat returns the first outcome instead of doing the work again. Retries also need jitter, or they synchronise into a thundering herd.\n\nA retry may repeat an operation when the caller cannot tell whether the first attempt succeeded. A timeout is ambiguous: the server might have committed the change and lost the response. Idempotency means repeating the same logical request has the same intended effect as performing it once. Setting a value to a fixed state can be idempotent; incrementing a balance or charging a card usually is not. Do not assume the network itself always delivers at least once or that every read has no side effects.\n\nGive each logical operation a stable idempotency key. The server records the key and outcome atomically with the operation where possible. A retry with the same key returns the recorded outcome rather than repeating the effect. Define how long keys live, what happens if the same key is reused with different parameters, and how concurrent duplicates race. A key stored after charging but before saving the result leaves a dangerous gap; the transaction boundary matters.\n\nFor an interview, draw the timeline: request sent, server commits, response lost, caller retries. Then explain how the dedupe record makes the second request safe. Add exponential backoff with jitter so clients do not all retry at once under overload. If an external provider is involved, propagate a stable key when it supports one and reconcile uncertain results. The goal is a recoverable outcome under ambiguity, not a promise that the network will behave exactly once.",
-    "feedback": "A relative update is not idempotent without a key to recognise it by.",
-    "practiceCode": "POST /accounts/7/balance  {\"add\": 10}",
-    "question": "What goes wrong when the client retries a timeout?",
-    "rule": "At-least-once delivery plus an idempotency key gives effectively-once behaviour.",
+    "explanation": "Retries can repeat an operation whose first outcome is unknown. A sound idempotency design binds a key to the request and outcome, coordinates deduplication with the business effect and defines expiry. Adding a header alone does not create exactly-once execution.\n\nA retry may repeat an operation when the caller cannot tell whether the first attempt succeeded. A timeout is ambiguous: the server might have committed the change and lost the response. Idempotency means repeating the same logical request has the same intended effect as performing it once. Setting a value to a fixed state can be idempotent; incrementing a balance or charging a card usually is not. Do not assume the network itself always delivers at least once or that every read has no side effects.\n\nGive each logical operation a stable idempotency key. The server records the key and outcome atomically with the operation where possible. A retry with the same key returns the recorded outcome rather than repeating the effect. Define how long keys live, what happens if the same key is reused with different parameters, and how concurrent duplicates race. A key stored after charging but before saving the result leaves a dangerous gap; the transaction boundary matters.\n\nFor an interview, draw the timeline: request sent, server commits, response lost, caller retries. Then explain how the dedupe record makes the second request safe. Add exponential backoff with jitter so clients do not all retry at once under overload. If an external provider is involved, propagate a stable key when it supports one and reconcile uncertain results. The goal is a recoverable outcome under ambiguity, not a promise that the network will behave exactly once.\n\nInterview follow-up: What happens if the server crashes between charging and recording the key? Define atomicity, key reuse checks and the retention window.",
+    "feedback": "An idempotency key only helps when the server validates request identity and durably/atomically records its relation to the effect and response.",
+    "practiceCode": "POST /accounts/7/balance\n{\"add\": 10}\n\n// The response is lost. The server may or may not have committed.",
+    "question": "After a timeout on this relative update, what must the client assume without a deduplication contract?",
+    "rule": "An idempotency key needs an enforced request/outcome contract, not just a header.",
     "success": "A duplicate request returns the original result and charges once.",
     "summary": "A retry is only safe if the operation is idempotent.",
     "task": "Make a non-idempotent endpoint safe to retry."
   },
   "illustration": {
     "path": "media/q-idempotency.png",
-    "alt": "A repeated request with the same key can return its stored result without repeating the local effect.",
-    "caption": "External effects still require coordinated handling."
+    "alt": "Diagram for Idempotency and Retries: the code flows to its exact contract and observed boundary.",
+    "caption": "HTTP client sketch: the server must implement the key contract; a header alone does not deduplicate a side effect."
   }
 }

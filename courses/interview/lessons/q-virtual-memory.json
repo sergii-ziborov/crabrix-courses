@@ -1,6 +1,6 @@
 {
   "concept": "Pages, faults, and resident size",
-  "contentDigest": "2ac70b54212886c3c493d223eb38efc32a487fe894e37152d093d075880df816",
+  "contentDigest": "e3b5452dc140d783c9cfd6980a7e2ca252e53a9752258906ff18219bf015bddb",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Syscalls and Buffering"
       }
     ],
-    "correction": "Allocation reserves addresses; the kernel supplies frames on first touch.",
-    "misconception": "“Twice the file size, once per mapping”",
+    "correction": "Mapping permits sharing; it does not fix RSS, residency, accounting, page-fault behaviour or overhead across operating systems.",
+    "misconception": "The mappings guarantee exactly one resident copy of every byte at all times.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "Every pointer you see is virtual, and the kernel decides what it means."
       },
       {
-        "detail": "Explain why a huge allocation can succeed and the first write still stall.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "This is a conceptual mapping trace, not a promise that Vec::with_capacity reserves virtual pages lazily."
       },
       {
-        "detail": "You mention pages, faults, and the difference between virtual and resident.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "Contrast virtual address reservation, resident pages and private copy-on-write pages. Which measurement answers your memory-budget question?"
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on pages, faults, and resident size."
+    "transferChallenge": "Contrast virtual address reservation, resident pages and private copy-on-write pages. Which measurement answers your memory-budget question?"
   },
   "exerciseKind": "planned",
   "id": "q-virtual-memory",
@@ -40,25 +40,25 @@
   "title": "Virtual Memory",
   "writing": {
     "answers": [
-      "Twice the file size, once per mapping",
-      "One copy — both mappings share the same page cache frames",
-      "Nothing — mapped pages are never resident"
+      "Each mapping must duplicate every file byte in physical RAM immediately.",
+      "The OS may share resident file pages, while page tables and other costs remain per mapping.",
+      "The mappings guarantee exactly one resident copy of every byte at all times."
     ],
     "correctAnswer": 1,
-    "exampleCaption": "The reservation is cheap; the first touch is what costs.",
-    "exampleCode": "// Reserves address space, no frames yet.\nlet mut buffer = Vec::with_capacity(1 << 30);\n// Each new page faults in on first write.\nbuffer.push(1u8);",
-    "explanation": "The MMU maps pages of your address space onto physical frames, so allocating memory usually just reserves address range. Touching a page for the first time causes a page fault the kernel resolves by finding a frame — which is why a large allocation can be instant and the first write to it slow. It also explains mmap, copy-on-write after fork, and why RSS is smaller than virtual size.\n\nA process uses virtual addresses. The operating system and hardware map regions of that address space to physical memory or backing storage as needed, with page tables mediating access. Reserving an address range is not the same as filling every page with committed physical memory. Many systems map pages lazily, so the first access can trigger a page fault that the kernel resolves. But allocation behavior varies by allocator, operating system, and mapping flags; do not promise that every large allocation is instant.\n\nThis model explains several useful observations. Resident set size counts memory currently resident, while virtual size can include reserved or mapped regions not resident. A shared library may be mapped into several processes without every page being physically duplicated. Copy-on-write lets processes share pages until one writes and needs a private copy. A page fault is not always an error: it can be normal lazy materialization. An invalid access, however, may produce a protection fault.\n\nFor an interview, walk through one address from a program pointer to a page-table translation and a physical frame. Then ask what happens on the first read, a write to a copy-on-write page, and an access outside a valid mapping. Distinguish address-space reservation, committed memory, and actual residency. This matters for profiling memory: a process can have a huge virtual range and modest physical use, or many small allocations that fragment memory and hurt locality.\n\nA mapped file can expose bytes through virtual memory without copying all of them into a separate user buffer at once, but access can still fault and I/O can still occur. Mapping is not a free read. Mention protection bits too: a virtual page can be readable, writable, executable, or inaccessible according to mapping policy.",
-    "feedback": "Read-only file mappings share frames through the page cache.",
-    "practiceCode": "// Same file, two processes, read-only.\nlet map = unsafe { Mmap::map(&file)? };",
-    "question": "What does mapping it twice cost in physical memory?",
-    "rule": "Allocation reserves addresses; the kernel supplies frames on first touch.",
+    "exampleCaption": "This is a conceptual mapping trace, not a promise that Vec::with_capacity reserves virtual pages lazily.",
+    "exampleCode": "// Conceptual OS-level sequence; no allocation is performed here.\n// 1. Reserve or map a virtual address range.\n// 2. Access pages under the mapping’s protection rules.\n// 3. Inspect resident/private/shared memory on that OS.\n// File-backed pages may be shared; mappings still have overhead.",
+    "explanation": "Virtual memory maps a process’s addresses to backing storage and physical pages under the operating system’s rules. Reservation, commitment and residency differ. Lazy allocation and shared file pages are common mechanisms, not guarantees of every Rust allocation or a fixed physical cost.\n\nA process uses virtual addresses. The operating system and hardware map regions of that address space to physical memory or backing storage as needed, with page tables mediating access. Reserving an address range is not the same as filling every page with committed physical memory. Many systems map pages lazily, so the first access can trigger a page fault that the kernel resolves. But allocation behavior varies by allocator, operating system, and mapping flags; do not promise that every large allocation is instant.\n\nThis model explains several useful observations. Resident set size counts memory currently resident, while virtual size can include reserved or mapped regions not resident. A shared library may be mapped into several processes without every page being physically duplicated. Copy-on-write lets processes share pages until one writes and needs a private copy. A page fault is not always an error: it can be normal lazy materialization. An invalid access, however, may produce a protection fault.\n\nFor an interview, walk through one address from a program pointer to a page-table translation and a physical frame. Then ask what happens on the first read, a write to a copy-on-write page, and an access outside a valid mapping. Distinguish address-space reservation, committed memory, and actual residency. This matters for profiling memory: a process can have a huge virtual range and modest physical use, or many small allocations that fragment memory and hurt locality.\n\nA mapped file can expose bytes through virtual memory without copying all of them into a separate user buffer at once, but access can still fault and I/O can still occur. Mapping is not a free read. Mention protection bits too: a virtual page can be readable, writable, executable, or inaccessible according to mapping policy.\n\nInterview follow-up: Contrast virtual address reservation, resident pages and private copy-on-write pages. Which measurement answers your memory-budget question?",
+    "feedback": "Mapping permits sharing; it does not fix RSS, residency, accounting, page-fault behaviour or overhead across operating systems.",
+    "practiceCode": "// OS-level scenario, not a portable Rust guarantee.\n// Two read-only mappings reference the same file.\n// Residency, mapping flags and allocator behaviour are not specified.",
+    "question": "What can be concluded from mapping one file read-only into two processes on an OS with shared file-backed pages?",
+    "rule": "Virtual size, committed memory and residency are different measurements; inspect the actual platform.",
     "success": "You mention pages, faults, and the difference between virtual and resident.",
     "summary": "Every pointer you see is virtual, and the kernel decides what it means.",
     "task": "Explain why a huge allocation can succeed and the first write still stall."
   },
   "illustration": {
     "path": "media/q-virtual-memory.png",
-    "alt": "Diagram for Virtual Memory: a Rust code example flows to the lesson rule and the key observation.",
-    "caption": "The reservation is cheap; the first touch is what costs."
+    "alt": "Diagram for Virtual Memory: the code flows to its exact contract and observed boundary.",
+    "caption": "This is a conceptual mapping trace, not a promise that Vec::with_capacity reserves virtual pages lazily."
   }
 }

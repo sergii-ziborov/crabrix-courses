@@ -36,7 +36,7 @@ class CoursePackTests(unittest.TestCase):
                 self.assertTrue(image.is_file(), image)
                 self.assertEqual(image.read_bytes()[:8], b"\x89PNG\r\n\x1a\n", image)
                 count += 1
-        self.assertEqual(count, 742)
+        self.assertEqual(count, 754)
 
     def test_migration_parity_reports_only_authored_constellation_revision(self):
         with tempfile.TemporaryDirectory() as temporary:

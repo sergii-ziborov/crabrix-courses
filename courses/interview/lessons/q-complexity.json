@@ -1,6 +1,6 @@
 {
   "concept": "Constants, cache, and amortised cost",
-  "contentDigest": "31dd4b81bf439c1455b253dffaa2d313be87c9ee3b288205716279f9ea71f252",
+  "contentDigest": "2482e43e6f91f73271d43bad7cee6ac0f08824f3b1f57cebdddcfda8590a2e03",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Hashing and Collisions"
       }
     ],
-    "correction": "Complexity predicts growth; constants decide which one is faster today.",
-    "misconception": "“Always O(1), the buffer never moves”",
+    "correction": "Amortized cost differs from one operation’s worst case. Reservation can avoid reallocations within the reserved capacity, not every future allocation.",
+    "misconception": "Each push is O(log n) because Vec stores values in a balanced tree.",
     "traceSteps": [
       {
-        "title": "Identify the operations",
-        "detail": "A linear scan may visit n entries; a balanced ordered tree descends through O(log n) levels."
+        "title": "Identify the contract",
+        "detail": "Big-O tells you how something scales, not how fast it is."
       },
       {
-        "title": "Separate growth from timing",
-        "detail": "These are different growth classes. Comparison cost, allocation, cache locality and constants still affect a measured run."
+        "title": "Trace the concrete example",
+        "detail": "Linear and logarithmic growth are different complexity classes. Constants and memory locality still affect measured performance at a particular size."
       },
       {
-        "title": "Measure a named workload",
-        "detail": "Compare representative sizes and key distributions. Report the environment and observations rather than a universal crossover size."
+        "title": "Test the changed constraint",
+        "detail": "Why might a small contiguous scan beat a structure with a better asymptotic bound? State n, cache locality and benchmark conditions."
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on constants, cache, and amortised cost."
+    "transferChallenge": "Why might a small contiguous scan beat a structure with a better asymptotic bound? State n, cache locality and benchmark conditions."
   },
   "exerciseKind": "planned",
   "id": "q-complexity",
@@ -40,17 +40,17 @@
   "title": "Complexity in Practice",
   "writing": {
     "answers": [
-      "Always O(1), the buffer never moves",
-      "O(1) amortised, with an O(n) copy when it reallocates",
-      "O(log n), like a balanced tree insert"
+      "Every push has worst-case O(1) time regardless of capacity or allocator.",
+      "Push is amortized O(1); a capacity-growing operation may relocate existing elements.",
+      "Each push is O(log n) because Vec stores values in a balanced tree."
     ],
     "correctAnswer": 1,
     "exampleCaption": "Linear and logarithmic growth are different complexity classes. Constants and memory locality still affect measured performance at a particular size.",
     "exampleCode": "// O(n), one cache line at a time\nitems.iter().find(|item| item.id == id)\n\n// O(log n), a pointer chase per level\ntree.get(&id)",
-    "explanation": "A linear scan of a contiguous Vec can beat a logarithmic tree for small inputs because locality and constant costs matter. These growth classes are different. Measure a named workload to find any observed crossover; there is no universal input size. Distinguish amortised cost too: Vec::push is O(1) amortised, while an individual reallocation can move O(n) elements.\n\nBig-O describes growth with input size, not wall-clock speed for one input. An O(n) scan over a small contiguous vector can beat an O(log n) tree search because of locality and simpler control flow. For large inputs, the growth rates can reverse that result. Explain the data size and operation mix before choosing. Also distinguish worst-case, average-case, and amortized analysis. `Vec::push` is amortized O(1), yet a particular push may reallocate and copy many elements.\n\nConsider a service that looks up one item once in a list of 20. Building a hash map first may cost more than scanning. If it performs millions of lookups on 100,000 items, an index or map is more plausible. The break-even point depends on key size, hash cost, memory, cache behavior, and update frequency. Measure representative cases instead of inventing a universal threshold.\n\nIn an interview, state the dominant input dimension and count the operation that repeats. A nested loop is not always O(n²) if the inner pointer advances monotonically across the whole input. A recursive call can use additional stack space even when its time is linear. If you optimize an algorithm, mention memory and implementation complexity too. A useful answer gives both the asymptotic bound and a practical reason the chosen approach fits the stated constraints.\n\nA complexity claim needs a model of the input. If you say O(n), specify whether n is items, bytes, vertices, or operations. For hash-based approaches, separate expected and worst-case behavior. For a recursive algorithm, count maximum call depth as space. These details let someone challenge the bound with a concrete counterexample.",
-    "feedback": "with_capacity removes the reallocation when the size is known.",
-    "practiceCode": "let mut v = Vec::new();\nfor item in stream { v.push(item); }",
-    "question": "What is the cost of one push?",
+    "explanation": "A linear scan of a contiguous Vec can beat a logarithmic tree for small inputs because locality and constant costs matter. These growth classes are different. Measure a named workload to find any observed crossover; there is no universal input size. Distinguish amortised cost too: Vec::push is O(1) amortised, while an individual reallocation can move O(n) elements.\n\nBig-O describes growth with input size, not wall-clock speed for one input. An O(n) scan over a small contiguous vector can beat an O(log n) tree search because of locality and simpler control flow. For large inputs, the growth rates can reverse that result. Explain the data size and operation mix before choosing. Also distinguish worst-case, average-case, and amortized analysis. `Vec::push` is amortized O(1), yet a particular push may reallocate and copy many elements.\n\nConsider a service that looks up one item once in a list of 20. Building a hash map first may cost more than scanning. If it performs millions of lookups on 100,000 items, an index or map is more plausible. The break-even point depends on key size, hash cost, memory, cache behavior, and update frequency. Measure representative cases instead of inventing a universal threshold.\n\nIn an interview, state the dominant input dimension and count the operation that repeats. A nested loop is not always O(n²) if the inner pointer advances monotonically across the whole input. A recursive call can use additional stack space even when its time is linear. If you optimize an algorithm, mention memory and implementation complexity too. A useful answer gives both the asymptotic bound and a practical reason the chosen approach fits the stated constraints.\n\nA complexity claim needs a model of the input. If you say O(n), specify whether n is items, bytes, vertices, or operations. For hash-based approaches, separate expected and worst-case behavior. For a recursive algorithm, count maximum call depth as space. These details let someone challenge the bound with a concrete counterexample.\n\nInterview follow-up: Why might a small contiguous scan beat a structure with a better asymptotic bound? State n, cache locality and benchmark conditions.",
+    "feedback": "Amortized cost differs from one operation’s worst case. Reservation can avoid reallocations within the reserved capacity, not every future allocation.",
+    "practiceCode": "fn main() {\n    let mut values = Vec::new();\n    for n in 0..100 { values.push(n); }\n    assert_eq!(values.len(), 100);\n}",
+    "question": "Which statement describes repeated Vec::push with ordinary geometric growth assumptions?",
     "rule": "Complexity predicts growth; constants decide which one is faster today.",
     "success": "Your answer mentions constants and cache behaviour, not only the exponent.",
     "summary": "Big-O tells you how something scales, not how fast it is.",

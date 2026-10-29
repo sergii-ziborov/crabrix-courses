@@ -1,6 +1,6 @@
 {
   "concept": "Describe conditions and controls, not one guilty person",
-  "contentDigest": "b29ccd08a5baf6889eb6b1c6ed8bcc085ab063ece7d947afe2d4ff222069bbdd",
+  "contentDigest": "6a499918cb380fa8bad829ef364deea7f2a43e7c0f778160774e49a35b0eed0c",
   "depth": {
     "connections": [
       {
@@ -9,23 +9,23 @@
         "title": "Review Rust Code"
       }
     ],
-    "correction": "A useful postmortem separates trigger, contributing conditions, detection gaps, impact, and durable actions.",
-    "misconception": "“A longer meeting”",
+    "correction": "A durable control changes a failure mechanism and has an owner and a verification method. Preserve a blameless account of contributing conditions.",
+    "misconception": "Record the incident timeline but leave admission and monitoring unchanged.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "Describe conditions and controls, not one guilty person."
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "The example makes the contract visible in code."
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "What would demonstrate the fix protects users during the next overload rather than merely improving average throughput?"
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on describe conditions and controls, not one guilty person."
+    "transferChallenge": "What would demonstrate the fix protects users during the next overload rather than merely improving average throughput?"
   },
   "exerciseKind": "planned",
   "id": "q-postmortem",
@@ -35,17 +35,17 @@
   "title": "Explain an Incident",
   "writing": {
     "answers": [
-      "A durable control",
-      "A longer meeting",
-      "One person's memory"
+      "Bound admission, define overload behaviour and verify it under sustained excess load.",
+      "Record the incident timeline but leave admission and monitoring unchanged.",
+      "Ask operators to remember to restart the service earlier next time."
     ],
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "struct Incident {\n    trigger: &'static str,\n    detection_gap: &'static str,\n    durable_action: &'static str,\n}",
-    "explanation": "A useful postmortem separates trigger, contributing conditions, detection gaps, impact, and durable actions. Prefer controls that make recurrence harder over promises to be more careful.\n\nA postmortem is a tool for learning from an incident, not for assigning blame to one operator. State the timeline in observable events: trigger, detection, mitigation, recovery, and customer impact. Then separate the immediate trigger from conditions that made the incident possible or prolonged it. An expired certificate may trigger an outage, while missing alerts, unclear ownership, and a fragile renewal process are contributing conditions. Treat uncertainty honestly when logs are incomplete.\n\nQuantify impact with the best available evidence: affected users, duration, failed requests, lost or delayed work, and whether data was at risk. Identify what worked during response as well as what failed. For actions, prefer controls that change the system: an automated renewal test, an alert on certificate expiry, a rollback path, or a runbook exercised in a drill. 'Be more careful' is not a measurable control.\n\nIn an interview, describe how each action maps to a failure mode, who owns it, and how completion will be verified. Avoid overloading the list with low-value tasks that no team can finish. Include follow-up monitoring to check whether the control actually works in production. A strong postmortem reduces the chance or impact of recurrence and gives future responders a clearer path, while preserving a truthful record of what happened.",
-    "feedback": "Correct: A durable control.",
-    "practiceCode": "struct Incident {\n    trigger: &'static str,\n    detection_gap: &'static str,\n    durable_action: &'static str,\n}",
-    "question": "What is stronger than 'be careful'?",
+    "explanation": "A useful postmortem separates trigger, contributing conditions, detection gaps, impact, and durable actions. Prefer controls that make recurrence harder over promises to be more careful.\n\nA postmortem is a tool for learning from an incident, not for assigning blame to one operator. State the timeline in observable events: trigger, detection, mitigation, recovery, and customer impact. Then separate the immediate trigger from conditions that made the incident possible or prolonged it. An expired certificate may trigger an outage, while missing alerts, unclear ownership, and a fragile renewal process are contributing conditions. Treat uncertainty honestly when logs are incomplete.\n\nQuantify impact with the best available evidence: affected users, duration, failed requests, lost or delayed work, and whether data was at risk. Identify what worked during response as well as what failed. For actions, prefer controls that change the system: an automated renewal test, an alert on certificate expiry, a rollback path, or a runbook exercised in a drill. 'Be more careful' is not a measurable control.\n\nIn an interview, describe how each action maps to a failure mode, who owns it, and how completion will be verified. Avoid overloading the list with low-value tasks that no team can finish. Include follow-up monitoring to check whether the control actually works in production. A strong postmortem reduces the chance or impact of recurrence and gives future responders a clearer path, while preserving a truthful record of what happened.\n\nInterview follow-up: What would demonstrate the fix protects users during the next overload rather than merely improving average throughput?",
+    "feedback": "A durable control changes a failure mechanism and has an owner and a verification method. Preserve a blameless account of contributing conditions.",
+    "practiceCode": "// Trigger: arrival rate exceeded worker throughput.\n// Detection gap: memory and queue age were not monitored.",
+    "question": "Which action directly reduces recurrence of an unbounded-queue incident?",
     "rule": "A useful postmortem separates trigger, contributing conditions, detection gaps, impact, and durable actions.",
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Describe conditions and controls, not one guilty person.",

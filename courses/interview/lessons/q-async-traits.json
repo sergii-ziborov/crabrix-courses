@@ -1,0 +1,53 @@
+{
+  "id": "q-async-traits",
+  "title": "Async Traits and dyn Compatibility",
+  "concept": "Native async methods, returned futures and explicit type erasure",
+  "minutes": 14,
+  "order": 0,
+  "parentID": "interview-api-boundaries",
+  "exerciseKind": "planned",
+  "contentDigest": "75bb3e84c8c40281426fa7ce5f8d854c14904000fd41b413cfaf3a3bb3811f49",
+  "writing": {
+    "summary": "Native async trait methods and dynamic dispatch are separate interface choices.",
+    "explanation": "Rust supports async methods in traits, but a method returning a hidden future is not directly dispatchable through a trait object under the current dyn-compatibility rules. A generic caller can retain the concrete implementation and future type. A dynamic interface can instead return an explicitly erased future, commonly behind Pin<Box<dyn Future<Output = T> + Send + lifetime>>.\n\nThe example deliberately writes that erased interface rather than relying on an attribute macro. Its returned future borrows self, so the lifetime is explicit. Send is also an explicit promise in the returned future type; it is not implied for every native async trait method. Boxing adds an ownership/allocation choice whose tradeoff should match the workload.\n\nA simple noop-waker poll demonstrates only the immediately ready example. Real pending work needs a runtime that arranges wakeups. In an interview, compare a generic implementation, an enum of a closed implementation set and a trait object for an open set. Ask which bounds callers need before choosing an async-trait macro or a boxed interface. Native support does not mean every trait is dyn-compatible, and dynamic dispatch does not inherently require every possible receiver to be heap allocated.",
+    "exampleCode": "use std::future::Future;\nuse std::pin::Pin;\nuse std::task::{Context, Poll, Waker};\ntrait Source {\n    fn value(&self) -> Pin<Box<dyn Future<Output = u32> + Send + '_>>;\n}\nstruct Fixed(u32);\nimpl Source for Fixed {\n    fn value(&self) -> Pin<Box<dyn Future<Output = u32> + Send + '_>> {\n        Box::pin(async move { self.0 })\n    }\n}\nfn main() {\n    let fixed = Fixed(7);\n    let source: &dyn Source = &fixed;\n    let mut future = source.value();\n    let mut cx = Context::from_waker(Waker::noop());\n    assert_eq!(future.as_mut().poll(&mut cx), Poll::Ready(7));\n}",
+    "exampleCaption": "The trait-object method returns one explicit erased future interface with a borrowing lifetime.",
+    "rule": "Check dyn compatibility, future lifetime and Send bounds independently.",
+    "task": "Explain the example, predict the result, and justify your answer to the follow-up.",
+    "practiceCode": "trait NativeSource {\n    async fn value(&self) -> u32;\n}\n// Conceptual attempted caller: fn read(source: &dyn NativeSource) {}\n// This native async method’s hidden future is not dyn-dispatchable.\nfn main() {}",
+    "success": "Identify the relevant ownership or API contract and test the changed constraint.",
+    "question": "Why does this native async method prevent using this trait directly as dyn NativeSource?",
+    "answers": [
+      "The async method has a hidden future return type that is not dyn-dispatchable here.",
+      "Rust forbids async methods in every trait declaration.",
+      "The trait becomes dyn-compatible solely by adding Send as a supertrait."
+    ],
+    "correctAnswer": 0,
+    "feedback": "Native async traits are supported, but this method is not directly dyn-dispatchable. Use a suitable generic, enum or explicit erased-future interface."
+  },
+  "depth": {
+    "misconception": "Rust forbids async methods in every trait declaration.",
+    "correction": "Native async traits are supported, but this method is not directly dyn-dispatchable. Use a suitable generic, enum or explicit erased-future interface.",
+    "traceSteps": [
+      {
+        "title": "Observe the concrete input",
+        "detail": "The trait-object method returns one explicit erased future interface with a borrowing lifetime."
+      },
+      {
+        "title": "Apply the contract",
+        "detail": "Check dyn compatibility, future lifetime and Send bounds independently."
+      },
+      {
+        "title": "Check the boundary",
+        "detail": "If the dynamic interface borrows self, why is returning a static future too strong in general? When does the caller actually require Send?"
+      }
+    ],
+    "transferChallenge": "If the dynamic interface borrows self, why is returning a static future too strong in general? When does the caller actually require Send?",
+    "connections": []
+  },
+  "illustration": {
+    "path": "media/q-async-traits.png",
+    "alt": "Diagram for Async Traits and dyn Compatibility: the code flows to its exact contract and observed boundary.",
+    "caption": "The trait-object method returns one explicit erased future interface with a borrowing lifetime."
+  }
+}

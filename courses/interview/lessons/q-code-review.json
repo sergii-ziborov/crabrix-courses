@@ -1,6 +1,6 @@
 {
   "concept": "Prioritize correctness, API contracts, then style",
-  "contentDigest": "623e7113862b74682f47ae3e48cf29aeadd951b5fce901e825534d4a20a5e7ed",
+  "contentDigest": "97b707e2fdadb8d40fb0ae0c230629be193544eb6d9ec4d48c558c562d8e1665",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Explain an Incident"
       }
     ],
-    "correction": "Start with soundness, data loss, and observable behavior before naming cosmetic issues.",
-    "misconception": "“The borrow is slow”",
+    "correction": "The returned borrow can remain tied to the input. Option expresses absence; cloning does not fix the invalid index.",
+    "misconception": "Clone values[0] before indexing to remove the empty-input failure.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "Prioritize correctness, API contracts, then style."
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "The example makes the contract visible in code."
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "When would Result be a better contract than Option? Add tests for empty input and a Unicode first string."
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on prioritize correctness, api contracts, then style."
+    "transferChallenge": "When would Result be a better contract than Option? Add tests for empty input and a Unicode first string."
   },
   "exerciseKind": "planned",
   "id": "q-code-review",
@@ -40,17 +40,17 @@
   "title": "Review Rust Code",
   "writing": {
     "answers": [
-      "Empty input panics",
-      "The borrow is slow",
-      "String is mutable"
+      "Return Option<&str> using values.first().map(String::as_str).",
+      "Clone values[0] before indexing to remove the empty-input failure.",
+      "Mark the function unsafe so indexing no longer checks its bounds."
     ],
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "fn first(values: &[String]) -> &str {\n    values[0].as_str()\n}",
-    "explanation": "Start with soundness, data loss, and observable behavior before naming cosmetic issues. Explain impact, point to evidence, and offer a smaller safer change instead of rewriting to personal taste.\n\nA review should help the author ship correct, maintainable code. Begin with user-visible behavior, data integrity, security assumptions, and concurrency or memory safety. Then examine API contracts and tests. Style matters when it obscures meaning or violates team conventions, but a naming preference is less urgent than a lost error result. Point to a concrete line, explain the failure scenario, and suggest a smaller change that addresses it. Separate a blocking issue from a suggestion.\n\nFor Rust code, watch for `unwrap()` on external input, cloned data hiding ownership confusion, a lock held across slow work, and `unsafe` code whose safety comment does not prove its preconditions. Also look for tests that cover only the happy path while a boundary case can break the function. Do not label every `unwrap()` a bug; a proven invariant in a test or startup configuration can justify it. Ask what input makes the line fail.\n\nIn an interview, review one issue at a time. Say what can happen, how likely it is given the inputs, and how you would verify a fix. Offer a test case when possible. If there is a larger refactor, explain whether it is necessary for the current change or can follow later. A good review is evidence and prioritization delivered respectfully, not an opportunity to rewrite another engineer's style.",
-    "feedback": "Correct: Empty input panics.",
+    "explanation": "Start with soundness, data loss, and observable behavior before naming cosmetic issues. Explain impact, point to evidence, and offer a smaller safer change instead of rewriting to personal taste.\n\nA review should help the author ship correct, maintainable code. Begin with user-visible behavior, data integrity, security assumptions, and concurrency or memory safety. Then examine API contracts and tests. Style matters when it obscures meaning or violates team conventions, but a naming preference is less urgent than a lost error result. Point to a concrete line, explain the failure scenario, and suggest a smaller change that addresses it. Separate a blocking issue from a suggestion.\n\nFor Rust code, watch for `unwrap()` on external input, cloned data hiding ownership confusion, a lock held across slow work, and `unsafe` code whose safety comment does not prove its preconditions. Also look for tests that cover only the happy path while a boundary case can break the function. Do not label every `unwrap()` a bug; a proven invariant in a test or startup configuration can justify it. Ask what input makes the line fail.\n\nIn an interview, review one issue at a time. Say what can happen, how likely it is given the inputs, and how you would verify a fix. Offer a test case when possible. If there is a larger refactor, explain whether it is necessary for the current change or can follow later. A good review is evidence and prioritization delivered respectfully, not an opportunity to rewrite another engineer's style.\n\nInterview follow-up: When would Result be a better contract than Option? Add tests for empty input and a Unicode first string.",
+    "feedback": "The returned borrow can remain tied to the input. Option expresses absence; cloning does not fix the invalid index.",
     "practiceCode": "fn first(values: &[String]) -> &str {\n    values[0].as_str()\n}",
-    "question": "What correctness risk appears first?",
+    "question": "Which API change handles empty input without returning a fabricated value?",
     "rule": "Start with soundness, data loss, and observable behavior before naming cosmetic issues.",
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Prioritize correctness, API contracts, then style.",

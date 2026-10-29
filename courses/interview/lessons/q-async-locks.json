@@ -1,0 +1,53 @@
+{
+  "id": "q-async-locks",
+  "title": "Lock Scope Across await",
+  "concept": "Synchronous blocking, suspension and cancellation-safe critical sections",
+  "minutes": 14,
+  "order": 3,
+  "parentID": "interview-async-contracts",
+  "exerciseKind": "planned",
+  "contentDigest": "0b3cde625891b66827e74c9be5baa706ae355320b5eeb7fbdb1a7858d6558d49",
+  "writing": {
+    "summary": "Keep synchronous critical sections short and make suspension while holding a guard an explicit design decision.",
+    "explanation": "A standard mutex can be a reasonable choice for a short critical section that does not cross await. Acquiring a contended synchronous mutex can block the executor worker. Holding its guard while a future suspends is a separate problem: it keeps the lock unavailable and can violate a Send bound or participate in a deadlock.\n\nThe example updates a counter inside a lexical scope, drops the guard and only then awaits. A compile-time Send check confirms this particular future does not retain the standard MutexGuard across suspension. It does not prove absence of every deadlock or that every acquisition is cheap.\n\nAn async mutex can yield while waiting for its lock, but it does not make arbitrary guarded work nonblocking. Avoid awaiting a child task that needs the same lock you hold. For cancellation, define what state is left behind when a task drops after a partial update; lock release is not a business transaction rollback. In an interview, draw lock acquisition, state update, guard drop and each suspension point before arguing about mutex brands.",
+    "exampleCode": "use std::sync::Mutex;\nfn require_send<T: Send>(_: T) {}\nfn main() {\n    let value = Mutex::new(0);\n    let future = async {\n        { let mut guard = value.lock().unwrap(); *guard += 1; }\n        std::future::ready(()).await;\n    };\n    require_send(future);\n}",
+    "exampleCaption": "The synchronous guard’s scope ends before await; the future passes this Send check.",
+    "rule": "Waiting for a lock, holding a lock during suspension and doing CPU work are separate concerns.",
+    "task": "Explain the example, predict the result, and justify your answer to the follow-up.",
+    "practiceCode": "use std::sync::Mutex;\nfn require_send<T: Send>(_: T) {}\nfn main() {\n    let value = Mutex::new(0);\n    let future = async {\n        let mut guard = value.lock().unwrap();\n        std::future::ready(()).await;\n        *guard += 1;\n    };\n    require_send(future); // deliberate compile error\n}",
+    "success": "Identify the relevant ownership or API contract and test the changed constraint.",
+    "question": "What change would make this future retain the standard MutexGuard across await?",
+    "answers": [
+      "Replacing Mutex with Arc makes every guard Send automatically.",
+      "Adding another await releases the guard before that await.",
+      "Using the guard after await keeps its non-Send state alive across suspension."
+    ],
+    "correctAnswer": 2,
+    "feedback": "The later use retains the guard in the future state. End the critical section before await when the design permits it."
+  },
+  "depth": {
+    "misconception": "Replacing Mutex with Arc makes every guard Send automatically.",
+    "correction": "The later use retains the guard in the future state. End the critical section before await when the design permits it.",
+    "traceSteps": [
+      {
+        "title": "Observe the concrete input",
+        "detail": "The synchronous guard’s scope ends before await; the future passes this Send check."
+      },
+      {
+        "title": "Apply the contract",
+        "detail": "Waiting for a lock, holding a lock during suspension and doing CPU work are separate concerns."
+      },
+      {
+        "title": "Check the boundary",
+        "detail": "Can an async mutex deadlock if a parent holds it while awaiting a child that needs it? Explain cancellation and state invariants separately."
+      }
+    ],
+    "transferChallenge": "Can an async mutex deadlock if a parent holds it while awaiting a child that needs it? Explain cancellation and state invariants separately.",
+    "connections": []
+  },
+  "illustration": {
+    "path": "media/q-async-locks.png",
+    "alt": "Diagram for Lock Scope Across await: the code flows to its exact contract and observed boundary.",
+    "caption": "The synchronous guard’s scope ends before await; the future passes this Send check."
+  }
+}

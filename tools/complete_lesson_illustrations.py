@@ -220,7 +220,7 @@ def main() -> None:
                 path.write_text(json.dumps(lesson, ensure_ascii=False, indent=2) + "\n")
                 count += 1
     lessons = [json.loads(path.read_text()) for path in ROOT.glob("*/lessons/*.json")]
-    if len(lessons) != 742 or any(not lesson.get("illustration") for lesson in lessons):
+    if len(lessons) != 754 or any(not lesson.get("illustration") for lesson in lessons):
         raise ValueError("Academy illustration coverage is incomplete")
     print(f"Filled {count} missing illustrations; refreshed {refreshed}; covered {len(lessons)} lessons")
 

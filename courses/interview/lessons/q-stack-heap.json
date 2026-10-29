@@ -1,6 +1,6 @@
 {
   "concept": "Where values live and what a move copies",
-  "contentDigest": "826fa20dc732f0ba5fa574ef6c0e5b60ad66929ff90b57024224de6ac292a93e",
+  "contentDigest": "1bb1f40f6015cff250d3dfcb1a9b14f14fd9cdaacf63421dce7bf5200a819f4c",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Virtual Memory"
       }
     ],
-    "correction": "The stack holds the handle; the heap holds the data the handle points at.",
-    "misconception": "“One million bytes, the whole buffer”",
+    "correction": "Vec has pointer, length and capacity metadata, but its field layout/order and emitted move instructions are not fixed here. The handle need not be physically on a stack; optimization may eliminate a move.",
+    "misconception": "Each element is copied into a newly allocated destination buffer.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "Where a value lives explains most of what Rust makes you write."
       },
       {
-        "detail": "Say where each part of a `Vec`<`String`> lives and what a move copies.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "The owned allocation is retained across this move; this does not measure emitted machine instructions."
       },
       {
-        "detail": "You can explain why moving a `String` is cheap but cloning it is not.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "How do Vec::clone, a borrowed slice and a moved Vec differ? What changes if the Vec handle is itself a field in a heap allocation?"
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on where values live and what a move copies."
+    "transferChallenge": "How do Vec::clone, a borrowed slice and a moved Vec differ? What changes if the Vec handle is itself a field in a heap allocation?"
   },
   "exerciseKind": "planned",
   "id": "q-stack-heap",
@@ -40,25 +40,25 @@
   "title": "Stack and Heap",
   "writing": {
     "answers": [
-      "One million bytes, the whole buffer",
-      "Three words: pointer, length, capacity",
-      "None at all — a move is just a reference"
+      "The move must copy exactly three machine words as observable work.",
+      "Ownership transfers without cloning every element or allocating a second buffer.",
+      "Each element is copied into a newly allocated destination buffer."
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Three words on the stack; the bytes are on the heap.",
-    "exampleCode": "let n = 42u64;             // 8 bytes, stack\nlet s = String::from(\"x\"); // ptr+len+cap\n                           // stack,\n                           // bytes heap",
-    "explanation": "A stack frame commonly holds fixed-size local values or handles. Heap allocations support storage whose size or lifetime needs more flexibility and require an owner to release them. `Box`, `Vec`, and `String` are heap values with a small stack handle, which is exactly why moving one is cheap and cloning one is not.\n\nA function call commonly creates a stack frame containing local values or handles whose sizes are known to the compiler. Heap allocation supports values whose storage needs to live independently of a particular stack frame or whose size is chosen at runtime. But ownership and physical location are separate questions. A `Vec<T>` value holds a pointer, length, and capacity as a small handle; its elements usually live in a heap allocation. Moving the `Vec` handle transfers ownership of that allocation without copying every element.\n\nCloning a `Vec` is different: it creates another allocation and copies or clones elements. A `Box<T>` puts a T allocation on the heap but has one owner. A `String` is a growable UTF-8 buffer with a small handle. A fixed array can live inside a stack frame, inside a heap allocation, or inside another struct depending on where its owner is stored. Do not claim that every dynamically sized value automatically goes to the heap or that stack memory is always faster for every use.\n\nIn an interview, draw the stack handle and heap allocation, then trace a move, a borrow, and a clone. Explain when Drop releases the allocation. Mention recursion and stack-size limits if relevant, but keep the answer tied to the code at hand. If asked about performance, say that allocation patterns, cache locality, and copying cost matter more than a slogan about stack versus heap. Measure a realistic workload before changing representation.\n\nA borrow does not move the allocation at all; it creates temporary access to the existing value. Use this contrast with move and clone in the diagram. Also mention that stack overflow is possible with deep recursion or large local arrays, even though stack allocation itself is cheap in the common case.",
-    "feedback": "A move copies the handle; the heap allocation never moves.",
-    "practiceCode": "let a = vec![1u8; 1_000_000];\nlet b = a;",
-    "question": "How many bytes does that move copy?",
-    "rule": "The stack holds the handle; the heap holds the data the handle points at.",
+    "exampleCaption": "The owned allocation is retained across this move; this does not measure emitted machine instructions.",
+    "exampleCode": "fn main() {\n    let before = vec![1u8, 2, 3];\n    let allocation = before.as_ptr();\n    let after = before;\n    assert_eq!(after.as_ptr(), allocation);\n    assert_eq!(after, [1, 2, 3]);\n}",
+    "explanation": "Storage location and ownership are separate. A Vec handle can be a local, a field inside another allocation or optimized away. For a nonempty u8 vector with allocated capacity, moving the Vec transfers its existing buffer; no fixed count of machine instructions or copied bytes follows.\n\nA function call commonly creates a stack frame containing local values or handles whose sizes are known to the compiler. Heap allocation supports values whose storage needs to live independently of a particular stack frame or whose size is chosen at runtime. But ownership and physical location are separate questions. A `Vec<T>` value holds a pointer, length, and capacity as a small handle; its elements usually live in a heap allocation. Moving the `Vec` handle transfers ownership of that allocation without copying every element.\n\nCloning a `Vec` is different: it creates another allocation and copies or clones elements. A `Box<T>` puts a T allocation on the heap but has one owner. A `String` is a growable UTF-8 buffer with a small handle. A fixed array can live inside a stack frame, inside a heap allocation, or inside another struct depending on where its owner is stored. Do not claim that every dynamically sized value automatically goes to the heap or that stack memory is always faster for every use.\n\nIn an interview, draw the owner’s handle and the allocation, then trace a move, a borrow, and a clone. Explain when Drop releases the allocation. Mention recursion and stack-size limits if relevant, but keep the answer tied to the code at hand. If asked about performance, say that allocation patterns, cache locality, and copying cost matter more than a slogan about stack versus heap. Measure a realistic workload before changing representation.\n\nA borrow does not move the allocation at all; it creates temporary access to the existing value. Use this contrast with move and clone in the diagram. Also mention that stack overflow is possible with deep recursion or large local arrays, even though stack allocation itself is cheap in the common case.\n\nInterview follow-up: How do Vec::clone, a borrowed slice and a moved Vec differ? What changes if the Vec handle is itself a field in a heap allocation?",
+    "feedback": "Vec has pointer, length and capacity metadata, but its field layout/order and emitted move instructions are not fixed here. The handle need not be physically on a stack; optimization may eliminate a move.",
+    "practiceCode": "fn main() {\n    let a = vec![7u8; 1024];\n    let pointer = a.as_ptr();\n    let b = a;\n    assert_eq!(b.as_ptr(), pointer);\n    assert_eq!(b.len(), 1024);\n}",
+    "question": "What does moving this Vec guarantee about its elements and allocation?",
+    "rule": "A move transfers ownership; handle placement and optimized instructions are not language guarantees.",
     "success": "You can explain why moving a `String` is cheap but cloning it is not.",
     "summary": "Where a value lives explains most of what Rust makes you write.",
     "task": "Say where each part of a `Vec`<`String`> lives and what a move copies."
   },
   "illustration": {
     "path": "media/q-stack-heap.png",
-    "alt": "A Vec handle and its elements occupy different places; moving it differs from cloning it.",
-    "caption": "Moving ownership does not copy the vector buffer; cloning does."
+    "alt": "Diagram for Stack and Heap: the code flows to its exact contract and observed boundary.",
+    "caption": "The owned allocation is retained across this move; this does not measure emitted machine instructions."
   }
 }

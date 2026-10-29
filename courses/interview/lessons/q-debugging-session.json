@@ -1,6 +1,6 @@
 {
   "concept": "Form a hypothesis and request one discriminating fact",
-  "contentDigest": "9f1850941e8fbc99b64006c52a2a7921d8212ed05993076e5094b99624926903",
+  "contentDigest": "a1f88b119a53dae47d9351d131ddc70671b5916695cde67bb77f1db3d9b13113",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Communicate a Tradeoff"
       }
     ],
-    "correction": "Do not edit randomly during an interview.",
-    "misconception": "“A sorted slice”",
+    "correction": "Define empty-input behaviour before patching. Also investigate sum overflow, narrowing len and the intended rounding policy.",
+    "misconception": "Borrowing an empty slice is itself undefined behaviour.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "Form a hypothesis and request one discriminating fact."
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "The example makes the contract visible in code."
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "Return Option<u32> with a safely widened accumulator, then test empty input, maxima and truncation of a fractional mean."
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on form a hypothesis and request one discriminating fact."
+    "transferChallenge": "Return Option<u32> with a safely widened accumulator, then test empty input, maxima and truncation of a fractional mean."
   },
   "exerciseKind": "planned",
   "id": "q-debugging-session",
@@ -40,17 +40,17 @@
   "title": "Debugging Out Loud",
   "writing": {
     "answers": [
-      "An empty slice",
-      "A sorted slice",
-      "A borrowed slice"
+      "The denominator is zero, so integer division panics.",
+      "Borrowing an empty slice is itself undefined behaviour.",
+      "The compiler rejects every call passing an empty slice to this function."
     ],
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "fn average(values: &[u32]) -> u32 {\n    let total: u32 = values.iter().sum();\n    total / values.len() as u32\n}",
-    "explanation": "Do not edit randomly during an interview. Restate the symptom, identify the first impossible state, propose one hypothesis, and choose the smallest observation that can disprove it.\n\nStart by restating the symptom in observable terms: which input, expected result, actual result, and whether the failure is repeatable. Separate a compile failure, runtime panic, wrong output, and performance regression because each suggests a different search path. Form one hypothesis that would explain the evidence. Then choose the smallest observation that could disprove it. Reading a diagnostic span or printing one value at a boundary is more useful than making three speculative edits at once.\n\nSuppose a function returns an empty list only on the second call. Ask whether state is reused between calls, whether the input differs, and whether a cache has an invalid key. Instrument before and after the suspected state change. If the values refute the hypothesis, update the model rather than defending the first guess. Reduce the failing case until one invariant becomes obvious. In Rust, ownership often prevents a class of memory errors, but application logic and concurrency ordering can still fail.\n\nDuring an interview, narrate the experiment and its result. A good answer says 'if X is true, this observation should be Y; otherwise I will inspect Z.' Once the cause is found, propose a minimal fix and a regression test for the exact boundary. Also consider how the issue escaped earlier checks. The interviewer is evaluating disciplined reasoning under uncertainty, not whether you can guess the bug in one sentence.",
-    "feedback": "Correct: An empty slice.",
-    "practiceCode": "fn average(values: &[u32]) -> u32 {\n    let total: u32 = values.iter().sum();\n    total / values.len() as u32\n}",
-    "question": "What edge case should be checked first?",
+    "explanation": "Do not edit randomly during an interview. Restate the symptom, identify the first impossible state, propose one hypothesis, and choose the smallest observation that can disprove it.\n\nStart by restating the symptom in observable terms: which input, expected result, actual result, and whether the failure is repeatable. Separate a compile failure, runtime panic, wrong output, and performance regression because each suggests a different search path. Form one hypothesis that would explain the evidence. Then choose the smallest observation that could disprove it. Reading a diagnostic span or printing one value at a boundary is more useful than making three speculative edits at once.\n\nSuppose a function returns an empty list only on the second call. Ask whether state is reused between calls, whether the input differs, and whether a cache has an invalid key. Instrument before and after the suspected state change. If the values refute the hypothesis, update the model rather than defending the first guess. Reduce the failing case until one invariant becomes obvious. In Rust, ownership often prevents a class of memory errors, but application logic and concurrency ordering can still fail.\n\nDuring an interview, narrate the experiment and its result. A good answer says 'if X is true, this observation should be Y; otherwise I will inspect Z.' Once the cause is found, propose a minimal fix and a regression test for the exact boundary. Also consider how the issue escaped earlier checks. The interviewer is evaluating disciplined reasoning under uncertainty, not whether you can guess the bug in one sentence.\n\nInterview follow-up: Return Option<u32> with a safely widened accumulator, then test empty input, maxima and truncation of a fractional mean.",
+    "feedback": "Define empty-input behaviour before patching. Also investigate sum overflow, narrowing len and the intended rounding policy.",
+    "practiceCode": "fn average(values: &[u32]) -> u32 {\n    let total: u32 = values.iter().sum();\n    total / values.len() as u32\n}\nfn main() { println!(\"{}\", average(&[])); }",
+    "question": "What failure does average(&[]) reveal in this implementation?",
     "rule": "Do not edit randomly during an interview.",
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Form a hypothesis and request one discriminating fact.",

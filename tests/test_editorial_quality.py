@@ -37,7 +37,7 @@ class EditorialQualityTests(unittest.TestCase):
 
     def test_all_lessons_have_illustrations_and_balanced_prose_code(self):
         paths = sorted(COURSES.glob("*/lessons/*.json"))
-        self.assertEqual(len(paths), 742)
+        self.assertEqual(len(paths), 754)
         for path in paths:
             lesson = json.loads(path.read_text(encoding="utf-8"))
             with self.subTest(lesson=lesson["id"]):

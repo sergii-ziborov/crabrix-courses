@@ -1,6 +1,6 @@
 {
   "concept": "Combine lookup speed with recency updates",
-  "contentDigest": "090d613a9466a305dc2b21edcdda8a7eceb977b22ebfce0c5b4f4d55786abb5b",
+  "contentDigest": "b023a8e94ebb5eec37ab4824c77fdacef7bb200fc93850fcb450afdf0fa2ac45",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Design a Parser"
       }
     ],
-    "correction": "Explain why a hash map alone cannot evict the least recent key in O(1).",
-    "misconception": "“Another capacity”",
+    "correction": "A standard VecDeque prototype can illustrate policy with O(n) scans. A production O(1)-update design also needs valid stable node IDs, edge handling and a capacity contract.",
+    "misconception": "A HashMap alone stores a permanent total order of most-recent use.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "Combine lookup speed with recency updates."
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "The example makes the contract visible in code."
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "What happens at capacity zero, when a key is updated, and when an arena slot is reused? Explain how stale node identities are prevented."
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on combine lookup speed with recency updates."
+    "transferChallenge": "What happens at capacity zero, when a key is updated, and when an arena slot is reused? Explain how stale node identities are prevented."
   },
   "exerciseKind": "planned",
   "id": "q-lru-design",
@@ -40,17 +40,17 @@
   "title": "Design an LRU Cache",
   "writing": {
     "answers": [
-      "An order list",
-      "Another capacity",
-      "A thread"
+      "The map locates a node directly and the list unlinks/relinks that node in constant time.",
+      "A HashMap alone stores a permanent total order of most-recent use.",
+      "A VecDeque scan gives worst-case O(1) lookup for arbitrary keys."
     ],
     "correctAnswer": 0,
-    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCaption": "Design sketch, not a complete O(1) cache implementation; map lookup and stable list nodes must maintain one recency invariant.",
     "exampleCode": "struct Lru<K, V> {\n    capacity: usize,\n    // map: K -> node\n    // order: most to least recent\n    marker: std::marker::PhantomData<(K, V)>,\n}",
-    "explanation": "Explain why a hash map alone cannot evict the least recent key in O(1). The usual design pairs lookup with an order structure and makes capacity, ownership, and mutation costs explicit.\n\nAn LRU cache evicts the least recently used entry when capacity is full. A hash map gives fast lookup by key but does not by itself maintain recency order. A doubly linked list or another order structure can move an accessed node to the most-recent end in O(1), while the map locates the node in expected O(1). The design becomes tricky at the boundary between the map and the list: both must refer to the same entry without leaving stale links or violating Rust's ownership rules.\n\nIn Rust, one practical solution is an indexed arena: store nodes in a `Vec` or slab, keep indices in the map, and maintain previous/next indices. Reuse removed slots carefully so stale indices cannot target a new node without validation. Another option is a well-tested library when the interview is about product design rather than pointer mechanics. Define capacity zero, replacement of an existing key, and whether a read updates recency. Eviction should remove the map entry and unlink the node together.\n\nTrace a cache of capacity two through put A, put B, get A, put C. The expected eviction is B. Then test updating A and inserting when capacity is zero. State that hash-map operations are expected O(1), while a balanced-tree alternative changes bounds and memory costs. If concurrent access matters, discuss a lock or sharding and whether recency updates on every read create contention. A strong answer names invariants and edge cases before optimizing.",
-    "feedback": "Correct: An order list.",
-    "practiceCode": "struct Lru<K, V> {\n    capacity: usize,\n    // map: K -> node\n    // order: most to least recent\n    marker: std::marker::PhantomData<(K, V)>,\n}",
-    "question": "What second structure tracks recency?",
+    "explanation": "Explain why a hash map alone cannot evict the least recent key in O(1). The usual design pairs lookup with an order structure and makes capacity, ownership, and mutation costs explicit.\n\nAn LRU cache evicts the least recently used entry when capacity is full. A hash map gives fast lookup by key but does not by itself maintain recency order. A doubly linked list or another order structure can move an accessed node to the most-recent end in O(1), while the map locates the node in expected O(1). The design becomes tricky at the boundary between the map and the list: both must refer to the same entry without leaving stale links or violating Rust's ownership rules.\n\nIn Rust, one practical solution is an indexed arena: store nodes in a `Vec` or slab, keep indices in the map, and maintain previous/next indices. Reuse removed slots carefully so stale indices cannot target a new node without validation. Another option is a well-tested library when the interview is about product design rather than pointer mechanics. Define capacity zero, replacement of an existing key, and whether a read updates recency. Eviction should remove the map entry and unlink the node together.\n\nTrace a cache of capacity two through put A, put B, get A, put C. The expected eviction is B. Then test updating A and inserting when capacity is zero. State that hash-map operations are expected O(1), while a balanced-tree alternative changes bounds and memory costs. If concurrent access matters, discuss a lock or sharding and whether recency updates on every read create contention. A strong answer names invariants and edge cases before optimizing.\n\nInterview follow-up: What happens at capacity zero, when a key is updated, and when an arena slot is reused? Explain how stale node identities are prevented.",
+    "feedback": "A standard VecDeque prototype can illustrate policy with O(n) scans. A production O(1)-update design also needs valid stable node IDs, edge handling and a capacity contract.",
+    "practiceCode": "// Design sketch: map K -> node ID, plus a doubly linked recency list.\n// get/put moves one existing node; eviction removes the tail.",
+    "question": "Which invariant supports O(1) expected lookup and recency updates in a full LRU design?",
     "rule": "Explain why a hash map alone cannot evict the least recent key in O(1).",
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Combine lookup speed with recency updates.",
@@ -59,6 +59,6 @@
   "illustration": {
     "path": "media/q-lru-design.png",
     "alt": "Diagram for Design an LRU Cache: a Rust code example flows to the lesson rule and the key observation.",
-    "caption": "The example makes the contract visible in code."
+    "caption": "Design sketch, not a complete O(1) cache implementation; map lookup and stable list nodes must maintain one recency invariant."
   }
 }

@@ -1,0 +1,53 @@
+{
+  "id": "q-copy-clone-cow",
+  "title": "Copy, Clone and Cow",
+  "concept": "Implicit duplication, explicit cloning and lazy ownership",
+  "minutes": 14,
+  "order": 1,
+  "parentID": "interview-values",
+  "exerciseKind": "planned",
+  "contentDigest": "4fba65d1a2ff48534b285882b72e0d909da271a40ccb1ee83c154ec5a917374a",
+  "writing": {
+    "summary": "Ask which bytes are shared, copied or allocated before choosing an ownership conversion.",
+    "explanation": "Copy permits implicit duplication of a value. Clone is an explicit operation whose cost and semantics depend on its implementation. Cloning an Rc or Arc normally creates another owner of the same allocation; cloning a String normally creates owned string storage. The word clone alone does not tell you which one happened.\n\nCow stores either borrowed or owned data behind one interface. A borrowed Cow<str> can read a caller’s string without making an owned String. Requesting mutable access through to_mut converts the borrowed form into owned storage when needed. The original borrowed string is not changed. If the Cow already owns a String, obtaining mutable access need not clone that String again.\n\nThe example starts with borrowed text, requests a modification and checks that the original remains unchanged. This is a useful API when many inputs pass through untouched and some need normalization. It is not a guarantee that every Cow-based design is faster: consider how often ownership is required and how long the borrowed source must live. State the input lifetime and resulting ownership clearly rather than advertising zero copies for every path.",
+    "exampleCode": "use std::borrow::Cow;\nfn main() {\n    let source = String::from(\"crab\");\n    let mut label: Cow<'_, str> = Cow::Borrowed(source.as_str());\n    assert!(matches!(label, Cow::Borrowed(_)));\n    label.to_mut().push('!');\n    assert!(matches!(label, Cow::Owned(_)));\n    assert_eq!(source, \"crab\");\n    assert_eq!(label, \"crab!\");\n}",
+    "exampleCaption": "Mutation converts this borrowed Cow into independent owned text.",
+    "rule": "Clone semantics depend on the type; Cow delays ownership conversion until an operation needs it.",
+    "task": "Explain the example, predict the result, and justify your answer to the follow-up.",
+    "practiceCode": "use std::borrow::Cow;\nfn main() {\n    let source = \"crab\";\n    let mut text: Cow<'_, str> = Cow::Borrowed(source);\n    text.to_mut().push('!');\n    assert_eq!(source, \"crab\");\n    assert_eq!(text, \"crab!\");\n}",
+    "success": "Identify the relevant ownership or API contract and test the changed constraint.",
+    "question": "What changes when to_mut is called on this borrowed Cow<str>?",
+    "answers": [
+      "It mutates the original borrowed str in place.",
+      "It keeps a mutable reference into the original immutable str.",
+      "It obtains owned storage and mutates that owned value."
+    ],
+    "correctAnswer": 2,
+    "feedback": "The borrowed branch becomes owned before mutation. Cow does not bypass str’s immutability or the lifetime of a borrowed source."
+  },
+  "depth": {
+    "misconception": "It mutates the original borrowed str in place.",
+    "correction": "The borrowed branch becomes owned before mutation. Cow does not bypass str’s immutability or the lifetime of a borrowed source.",
+    "traceSteps": [
+      {
+        "title": "Observe the concrete input",
+        "detail": "Mutation converts this borrowed Cow into independent owned text."
+      },
+      {
+        "title": "Apply the contract",
+        "detail": "Clone semantics depend on the type; Cow delays ownership conversion until an operation needs it."
+      },
+      {
+        "title": "Check the boundary",
+        "detail": "Compare cloning String, Arc<String> and Cow<str>. Which operations duplicate text, and which can merely add an owner?"
+      }
+    ],
+    "transferChallenge": "Compare cloning String, Arc<String> and Cow<str>. Which operations duplicate text, and which can merely add an owner?",
+    "connections": []
+  },
+  "illustration": {
+    "path": "media/q-copy-clone-cow.png",
+    "alt": "Diagram for Copy, Clone and Cow: the code flows to its exact contract and observed boundary.",
+    "caption": "Mutation converts this borrowed Cow into independent owned text."
+  }
+}

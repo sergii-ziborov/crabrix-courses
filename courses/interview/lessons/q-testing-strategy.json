@@ -1,6 +1,6 @@
 {
   "concept": "Unit, property, fuzz, integration",
-  "contentDigest": "98d9c45df91914eb392de6b389c70c89e7249f32cd681e6a8c49ff3a9c6f5c8e",
+  "contentDigest": "0b900f4c26a85cfdf74cb60d7e3cc46ea1c01f6a449cd56b2fbc35d1840b8926",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "API Design and Semver"
       }
     ],
-    "correction": "Examples check what you thought of; properties check what you did not.",
-    "misconception": "“More unit tests around the parser”",
+    "correction": "No technique is guaranteed to find a particular crash first. Combine known regression tests, properties, fuzzing and boundary integration tests.",
+    "misconception": "Line coverage alone establishes that every parser invariant is checked.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "Different bugs need different tests, and naming them is the answer."
       },
       {
-        "detail": "Choose the right kind of test for a parser, a cache, and an HTTP route.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "The property holds for every input, not for three of them."
       },
       {
-        "detail": "Each choice names the class of bug it is meant to catch.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "Why can encode/decode roundtrip still pass if both share the same bug? Add an independent oracle or known external vectors."
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on unit, property, fuzz, integration."
+    "transferChallenge": "Why can encode/decode roundtrip still pass if both share the same bug? Add an independent oracle or known external vectors."
   },
   "exerciseKind": "planned",
   "id": "q-testing-strategy",
@@ -40,25 +40,25 @@
   "title": "Choosing a Test",
   "writing": {
     "answers": [
-      "More unit tests around the parser",
-      "A fuzzer driving malformed input at it",
-      "An integration test over the whole flow"
+      "A single integration test proves correctness for every malformed byte sequence.",
+      "A focused fuzz target with assertions, resource bounds and retained counterexamples.",
+      "Line coverage alone establishes that every parser invariant is checked."
     ],
     "correctAnswer": 1,
-    "exampleCaption": "The property holds for every input, not for three of them.",
+    "exampleCaption": "Property-test sketch: requires proptest plus the application’s encode/decode functions; it is not a standalone std program.",
     "exampleCode": "#[test]\nfn roundtrip() {\n    proptest!(|(value: Vec<u8>)| {\n        let encoded = encode(&value);\n        prop_assert_eq!(decode(&encoded)?, value);\n    });\n}",
-    "explanation": "Unit tests pin down behaviour you already thought of. Property tests generate inputs and check an invariant, which finds the cases you did not. Fuzzing pushes malformed input at a parser until it panics. Integration tests check the seams. A candidate who reaches for all four in the right places is saying something a coverage number cannot.\n\nDifferent tests answer different questions. A unit test can pin one known rule with a small input. A property test generates many inputs and checks an invariant, such as parse-then-format preserving a value. A fuzz target feeds malformed or unexpected inputs to a parser and watches for crashes or violated assertions. An integration test checks boundaries among modules or a real storage adapter. `None` of these is a substitute for knowing what behavior matters to users.\n\nStart with a parser. Unit tests cover empty input, a normal record, and a known malformed delimiter. A property test can assert that valid generated records round-trip through serialization and parsing. Fuzzing can explore arbitrary bytes that a hand-written list never anticipated. An integration test can verify that a parsed record is stored and later retrieved through the public API. Keep a regression test for every serious bug found by fuzzing so it stays covered.\n\nIn an interview, prioritize by risk and cost. Pure functions are cheap to test often; network-dependent end-to-end tests may be slower and more fragile. Coverage percentage reports which lines ran, not whether the assertions were meaningful. Describe one failure mode each layer is meant to catch, how tests run in development, and what remains for manual or production observation. A good strategy is a set of evidence sources, not a pile of test labels.\n\nWhen a property test fails, save the minimized counterexample as a named regression test. When a fuzz target finds malformed input that panics, classify whether the panic violates the API contract. Add a resource limit for deeply nested or huge inputs as well; not every parser failure is a type or memory safety bug.",
-    "feedback": "Fuzzing explores the malformed space no one thinks to write down.",
-    "practiceCode": "// A parser for untrusted binary input.",
-    "question": "Which finds the crash first?",
-    "rule": "Examples check what you thought of; properties check what you did not.",
+    "explanation": "Examples, generated properties, fuzz targets and integration tests provide different evidence. None guarantees which bug is found first or that untested invariants hold. State what each test checks, then preserve minimized failures as regressions.\n\nDifferent tests answer different questions. A unit test can pin one known rule with a small input. A property test generates many inputs and checks an invariant, such as parse-then-format preserving a value. A fuzz target feeds malformed or unexpected inputs to a parser and watches for crashes or violated assertions. An integration test checks boundaries among modules or a real storage adapter. `None` of these is a substitute for knowing what behavior matters to users.\n\nStart with a parser. Unit tests cover empty input, a normal record, and a known malformed delimiter. A property test can assert that valid generated records round-trip through serialization and parsing. Fuzzing can explore arbitrary bytes that a hand-written list never anticipated. An integration test can verify that a parsed record is stored and later retrieved through the public API. Keep a regression test for every serious bug found by fuzzing so it stays covered.\n\nIn an interview, prioritize by risk and cost. Pure functions are cheap to test often; network-dependent end-to-end tests may be slower and more fragile. Coverage percentage reports which lines ran, not whether the assertions were meaningful. Describe one failure mode each layer is meant to catch, how tests run in development, and what remains for manual or production observation. A good strategy is a set of evidence sources, not a pile of test labels.\n\nWhen a property test fails, save the minimized counterexample as a named regression test. When a fuzz target finds malformed input that panics, classify whether the panic violates the API contract. Add a resource limit for deeply nested or huge inputs as well; not every parser failure is a type or memory safety bug.\n\nInterview follow-up: Why can encode/decode roundtrip still pass if both share the same bug? Add an independent oracle or known external vectors.",
+    "feedback": "No technique is guaranteed to find a particular crash first. Combine known regression tests, properties, fuzzing and boundary integration tests.",
+    "practiceCode": "// A parser accepts untrusted binary input.\n// Known examples and deterministic regression tests already exist.",
+    "question": "Which technique directly explores many malformed byte sequences for this parser?",
+    "rule": "Choose tests for named failure modes and independent evidence; test labels alone prove little.",
     "success": "Each choice names the class of bug it is meant to catch.",
     "summary": "Different bugs need different tests, and naming them is the answer.",
     "task": "Choose the right kind of test for a parser, a cache, and an HTTP route."
   },
   "illustration": {
     "path": "media/q-testing-strategy.png",
-    "alt": "Unit and integration checks cover different boundaries in a Rust project.",
-    "caption": "A useful testing strategy matches tests to failure boundaries."
+    "alt": "Diagram for Choosing a Test: the code flows to its exact contract and observed boundary.",
+    "caption": "Property-test sketch: requires proptest plus the application’s encode/decode functions; it is not a standalone std program."
   }
 }

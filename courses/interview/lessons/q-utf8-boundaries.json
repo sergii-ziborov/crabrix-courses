@@ -1,0 +1,53 @@
+{
+  "id": "q-utf8-boundaries",
+  "title": "UTF-8 and Editor Offsets",
+  "concept": "Bytes, Unicode scalars, graphemes and UTF-16 positions",
+  "minutes": 14,
+  "order": 2,
+  "parentID": "interview-values",
+  "exerciseKind": "planned",
+  "contentDigest": "14d88f25ab75751ebff090f0d07d3de3bbf140757e2b32a8e15f9a5e378ca793",
+  "writing": {
+    "summary": "Text positions need a declared coordinate system before they can be exchanged or sliced.",
+    "explanation": "Rust str is valid UTF-8. len counts bytes, and chars iterates Unicode scalar values. Neither operation counts user-perceived grapheme clusters in general. A decomposed accent can consist of two scalar values while users perceive one letter. Emoji can occupy several UTF-8 bytes and two UTF-16 code units even before considering combined sequences.\n\nString slicing uses byte offsets and requires valid UTF-8 boundaries. get returns None for an invalid range instead of panicking through indexing. char_indices supplies byte offsets at scalar boundaries; those positions are still not necessarily grapheme boundaries. The example uses a two-byte accented letter and checks both the valid whole-letter range and an invalid split.\n\nAn editor or collaboration protocol may exchange UTF-16 offsets. Convert explicitly between that coordinate system and Rust byte positions, and bind the coordinates to the same source revision. A valid offset in an earlier revision can point at a different expression after an edit. For a live interview, ask the candidate to trace one accented string and one emoji through the chosen coordinate system. Testing only ASCII conceals these boundary and synchronization errors.",
+    "exampleCode": "fn main() {\n    let text = \"é🦀\";\n    assert_eq!(text.len(), 6);\n    assert_eq!(text.chars().count(), 2);\n    assert_eq!(text.encode_utf16().count(), 3);\n    assert_eq!(text.get(0..2), Some(\"é\"));\n    assert_eq!(text.get(1..2), None);\n    assert_eq!(\"e\\u{301}\".chars().count(), 2);\n}",
+    "exampleCaption": "The same two scalar values occupy six UTF-8 bytes and three UTF-16 units.",
+    "rule": "Validate the coordinate system, source revision and UTF-8 boundaries before slicing text.",
+    "task": "Explain the example, predict the result, and justify your answer to the follow-up.",
+    "practiceCode": "fn main() {\n    let text = \"é\";\n    assert_eq!(text.len(), 2);\n    assert_eq!(text.get(1..2), None);\n}",
+    "success": "Identify the relevant ownership or API contract and test the changed constraint.",
+    "question": "Why does get(1..2) return None for the two-byte string é?",
+    "answers": [
+      "The starting byte offset splits the UTF-8 encoding of the scalar.",
+      "Rust rejects every string slice containing a non-ASCII value.",
+      "get interprets the range as UTF-16 positions rather than bytes."
+    ],
+    "correctAnswer": 0,
+    "feedback": "Byte 1 is a continuation byte, not the start of a scalar. Use checked byte ranges or explicitly convert from the editor’s coordinate system."
+  },
+  "depth": {
+    "misconception": "Rust rejects every string slice containing a non-ASCII value.",
+    "correction": "Byte 1 is a continuation byte, not the start of a scalar. Use checked byte ranges or explicitly convert from the editor’s coordinate system.",
+    "traceSteps": [
+      {
+        "title": "Observe the concrete input",
+        "detail": "The same two scalar values occupy six UTF-8 bytes and three UTF-16 units."
+      },
+      {
+        "title": "Apply the contract",
+        "detail": "Validate the coordinate system, source revision and UTF-8 boundaries before slicing text."
+      },
+      {
+        "title": "Check the boundary",
+        "detail": "What does chars().count() return for e plus a combining acute accent, and why is that not a grapheme-counting solution?"
+      }
+    ],
+    "transferChallenge": "What does chars().count() return for e plus a combining acute accent, and why is that not a grapheme-counting solution?",
+    "connections": []
+  },
+  "illustration": {
+    "path": "media/q-utf8-boundaries.png",
+    "alt": "Diagram for UTF-8 and Editor Offsets: the code flows to its exact contract and observed boundary.",
+    "caption": "The same two scalar values occupy six UTF-8 bytes and three UTF-16 units."
+  }
+}

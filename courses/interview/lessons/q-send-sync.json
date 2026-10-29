@@ -1,6 +1,6 @@
 {
   "concept": "Thread-safety marker traits",
-  "contentDigest": "ddfac7ecc1dc6e03f5ab315a54e254e950b539b793d0da10f6d72e9667e14f66",
+  "contentDigest": "e2ea7b8ecadc6e9ed09963e42e25465c59893aee32f30f5c4833fc386a250815",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Box, Rc, and Arc"
       }
     ],
-    "correction": "T is `Sync` exactly when &T is `Send`.",
-    "misconception": "“The closure is missing an explicit return type”",
+    "correction": "Arc<T> is Send and Sync only when the relevant T: Send + Sync bounds hold. Atomic reference counting alone does not make T thread-safe.",
+    "misconception": "The move closure borrows shared instead of taking ownership of it.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "Two marker traits decide what may cross a thread boundary."
       },
       {
-        "detail": "Explain why `Rc` cannot cross threads and `Arc` can.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "The bound is exactly what `thread::spawn` asks for."
       },
       {
-        "detail": "You name the atomic reference count as the deciding detail.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "Is Arc<RefCell<u32>> suitable for shared mutation across threads? Identify the missing Sync guarantee and a suitable alternative."
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on thread-safety marker traits."
+    "transferChallenge": "Is Arc<RefCell<u32>> suitable for shared mutation across threads? Identify the missing Sync guarantee and a suitable alternative."
   },
   "exerciseKind": "planned",
   "id": "q-send-sync",
@@ -40,17 +40,17 @@
   "title": "Send and Sync",
   "writing": {
     "answers": [
-      "Rc is not Send, because its count is not atomic",
-      "The closure is missing an explicit return type",
-      "An Rc value cannot be printed from a thread"
+      "Rc cannot transfer shared ownership across threads with its non-atomic count.",
+      "The move closure borrows shared instead of taking ownership of it.",
+      "Every thread closure must borrow its captures through a shared reference."
     ],
     "correctAnswer": 0,
     "exampleCaption": "The bound is exactly what `thread::spawn` asks for.",
     "exampleCode": "fn run<F>(job: F)\nwhere\n    F: FnOnce() + Send + 'static,\n{\n    std::thread::spawn(job);\n}",
-    "explanation": "`Send` means a value may be moved to another thread; `Sync` means &T may be shared with one. They are inferred from a type's fields, which is why `Rc` is rejected at compile time while `Arc` is accepted — the difference is an atomic count, and the type system knows it.\n\n`Send` allows ownership of a value to cross a thread boundary. `Sync` allows shared references to the value to be used from multiple threads; formally, `&T` is `Send` when `T` is `Sync`. These are marker traits, usually inferred from the fields of a type. A type may satisfy one but not the other. The distinction is about transfer versus shared access, so answer those as separate questions rather than saying a type is simply 'thread safe'.\n\n`Rc<T>` is not suitable across threads because its reference count is non-atomic. `Arc<T>` uses an atomic reference count, so it can share ownership across threads when the contained `T` meets the required bounds. That does not make arbitrary mutation of `T` safe. If workers need to update one value, combine `Arc` with a mutex or use a narrower atomic operation. If they only read immutable data, `Arc` alone may suffice.\n\nWhen the compiler rejects a value captured by `thread::spawn`, read whether the closure needs `Send`, whether a shared reference also needs `Sync`, and whether the captured value is owned or borrowed. Try moving a plain owned `String` first: transfer is fine. Then compare `Rc<String>` and `Arc<String>`. Do not add `unsafe impl Send` or `Sync` merely to satisfy a bound; those declarations promise safety to code you cannot inspect. The interview-quality answer gives both the trait definition and the design consequence.",
-    "feedback": "`Arc` pays for an atomic count and is therefore `Send` and `Sync`.",
-    "practiceCode": "let shared = std::rc::Rc::new(1);\nstd::thread::spawn(move || println!(\"{shared}\"));",
-    "question": "What does the compiler object to?",
+    "explanation": "Send permits ownership transfer across threads. Sync means that a shared reference can be sent safely; formally, T is Sync when &T is Send. Auto-trait implementations depend on the fields and inner types, so Arc alone cannot make an arbitrary payload thread-safe.\n\n`Send` allows ownership of a value to cross a thread boundary. `Sync` allows shared references to the value to be used from multiple threads; formally, `&T` is `Send` when `T` is `Sync`. These are marker traits, usually inferred from the fields of a type. A type may satisfy one but not the other. The distinction is about transfer versus shared access, so answer those as separate questions rather than saying a type is simply 'thread safe'.\n\n`Rc<T>` is not suitable across threads because its reference count is non-atomic. `Arc<T>` uses an atomic reference count, so it can share ownership across threads when the contained `T` meets the required bounds. That does not make arbitrary mutation of `T` safe. If workers need to update one value, combine `Arc` with a mutex or use a narrower atomic operation. If they only read immutable data, `Arc` alone may suffice.\n\nWhen the compiler rejects a value captured by `thread::spawn`, read whether the closure needs `Send`, whether a shared reference also needs `Sync`, and whether the captured value is owned or borrowed. Try moving a plain owned `String` first: transfer is fine. Then compare `Rc<String>` and `Arc<String>`. Do not add `unsafe impl Send` or `Sync` merely to satisfy a bound; those declarations promise safety to code you cannot inspect. The interview-quality answer gives both the trait definition and the design consequence.\n\nInterview follow-up: Is Arc<RefCell<u32>> suitable for shared mutation across threads? Identify the missing Sync guarantee and a suitable alternative.",
+    "feedback": "Arc<T> is Send and Sync only when the relevant T: Send + Sync bounds hold. Atomic reference counting alone does not make T thread-safe.",
+    "practiceCode": "fn main() {\n    let shared = std::rc::Rc::new(1);\n    std::thread::spawn(move || println!(\"{shared}\"));\n}",
+    "question": "Why does moving this Rc into thread::spawn fail its Send bound?",
     "rule": "T is `Sync` exactly when &T is `Send`.",
     "success": "You name the atomic reference count as the deciding detail.",
     "summary": "Two marker traits decide what may cross a thread boundary.",

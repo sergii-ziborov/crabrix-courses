@@ -1,6 +1,6 @@
 {
   "concept": "Dropping a future mid-await",
-  "contentDigest": "c36eb68c360570a647acee1d4dc8fcea5a1ec27bff2de37d6bd6e74374c8af50",
+  "contentDigest": "8b4f802d929c9b4126ed9665eaf61cbb8048b4c5b2c880a86e89612a43236e50",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Stack and Heap"
       }
     ],
-    "correction": "Cancellation is a drop; state between awaits must survive it or not exist.",
-    "misconception": "“Nothing — Rust rolls the whole `await` back”",
+    "correction": "Cancellation commonly drops this future’s state; it does not roll back completed effects. The storage API’s ownership and commit semantics decide whether retry is safe.",
+    "misconception": "Cancelling a caller always aborts every spawned task it created.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "In Rust, an `async` task is cancelled by dropping its future."
       },
       {
-        "detail": "Explain what cancel-safety means for a function that buffers between awaits.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "The losing branch is dropped, mid-`await`, with no warning."
       },
       {
-        "detail": "You can name one operation that is `unsafe` to cancel and why.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "Compare dropping a future, dropping a Tokio JoinHandle and explicitly aborting its task. What can still continue after a timeout?"
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on dropping a future mid-`await`."
+    "transferChallenge": "Compare dropping a future, dropping a Tokio JoinHandle and explicitly aborting its task. What can still continue after a timeout?"
   },
   "exerciseKind": "planned",
   "id": "q-cancellation",
@@ -40,17 +40,17 @@
   "title": "Cancellation Safety",
   "writing": {
     "answers": [
-      "Nothing — Rust rolls the whole await back",
-      "The bytes already read are dropped and silently lost",
-      "The socket closes and the peer is notified"
+      "Dropping any future reverses all earlier socket and database effects.",
+      "Consumed bytes may be lost with the dropped future unless their ownership survives cancellation.",
+      "Cancelling a caller always aborts every spawned task it created."
     ],
     "correctAnswer": 1,
-    "exampleCaption": "The losing branch is dropped, mid-`await`, with no warning.",
+    "exampleCaption": "Tokio select sketch: read_request, handle, timeout and log are application-provided; completed effects are not rolled back.",
     "exampleCode": "tokio::select! {\n    result = read_request() => handle(result),\n    _ = timeout => log(\"gave up\"),\n}",
-    "explanation": "Cancellation commonly drops a future when its owner stops polling it. Local values are dropped, but external effects already performed are not automatically reversed. That makes cleanup automatic but means a future must be cancel-safe — losing a half-consumed buffer or a partially applied write between awaits is the classic bug.\n\nCancellation in `async` Rust commonly occurs when the owner drops a future, often after an awaited operation yields. The future's local values are dropped, which can release in-process resources such as a mutex guard. External effects are different: a write already accepted by a database or a message already sent is not rolled back by dropping the future. Even an operation still running in another task or service may continue. A timeout tells the caller it stopped waiting; it does not prove the work never happened.\n\nDraw a two-step operation: save an order, then send a confirmation. Cancellation between the two leaves a saved order without a confirmation. If the caller retries the whole operation, it may create a duplicate. An idempotency key, transaction, or outbox can make the outcome recoverable. A stream parser that has consumed some bytes before cancellation needs a plan for what happens to those bytes; otherwise a later attempt may start in the wrong state.\n\nA strong interview answer names cancellation points, completed effects, and the retry behavior at each point. It also asks who owns a spawned task: dropping a join handle may detach rather than cancel it, depending on the runtime API. Avoid saying every future is cancelled only at an `.await` or that all in-flight work stops. State what the specific combinator and ownership pattern do, then design cleanup and idempotency around that behavior.\n\nIf a selected branch loses a race, inspect whether its future was owned by the selection expression or merely borrowed. That determines whether dropping the expression cancels the work or whether another owner can continue it. A cancellation-safety claim must be about the exact API and ownership pattern, not `async` code in general.",
-    "feedback": "The buffer lives in the future, so cancelling drops the read data.",
-    "practiceCode": "let mut buf = Vec::new();\nsocket.read_buf(&mut buf).await?;\nstore(buf).await?;",
-    "question": "What breaks if that is cancelled between the two awaits?",
+    "explanation": "Cancellation commonly drops a future when its owner stops polling it. Local values are dropped, but external effects already performed are not automatically reversed. That makes cleanup automatic but means a future must be cancel-safe — losing a half-consumed buffer or a partially applied write between awaits is the classic bug.\n\nCancellation in `async` Rust commonly occurs when the owner drops a future, often after an awaited operation yields. The future's local values are dropped, which can release in-process resources such as a mutex guard. External effects are different: a write already accepted by a database or a message already sent is not rolled back by dropping the future. Even an operation still running in another task or service may continue. A timeout tells the caller it stopped waiting; it does not prove the work never happened.\n\nDraw a two-step operation: save an order, then send a confirmation. Cancellation between the two leaves a saved order without a confirmation. If the caller retries the whole operation, it may create a duplicate. An idempotency key, transaction, or outbox can make the outcome recoverable. A stream parser that has consumed some bytes before cancellation needs a plan for what happens to those bytes; otherwise a later attempt may start in the wrong state.\n\nA strong interview answer names cancellation points, completed effects, and the retry behavior at each point. It also asks who owns a spawned task: dropping a join handle may detach rather than cancel it, depending on the runtime API. Avoid saying every future is cancelled only at an `.await` or that all in-flight work stops. State what the specific combinator and ownership pattern do, then design cleanup and idempotency around that behavior.\n\nIf a selected branch loses a race, inspect whether its future was owned by the selection expression or merely borrowed. That determines whether dropping the expression cancels the work or whether another owner can continue it. A cancellation-safety claim must be about the exact API and ownership pattern, not `async` code in general.\n\nInterview follow-up: Compare dropping a future, dropping a Tokio JoinHandle and explicitly aborting its task. What can still continue after a timeout?",
+    "feedback": "Cancellation commonly drops this future’s state; it does not roll back completed effects. The storage API’s ownership and commit semantics decide whether retry is safe.",
+    "practiceCode": "// Async pseudocode: socket and store are supplied by the caller.\nlet mut buf = Vec::new();\nsocket.read_buf(&mut buf).await?;\nstore(buf).await?;",
+    "question": "If this future owns buf, what risk follows from dropping it after the read but before store completes?",
     "rule": "Cancellation is a drop; state between awaits must survive it or not exist.",
     "success": "You can name one operation that is `unsafe` to cancel and why.",
     "summary": "In Rust, an `async` task is cancelled by dropping its future.",
@@ -59,6 +59,6 @@
   "illustration": {
     "path": "media/q-cancellation.png",
     "alt": "Diagram for Cancellation Safety: a Rust code example flows to the lesson rule and the key observation.",
-    "caption": "The losing branch is dropped, mid-await, with no warning."
+    "caption": "Tokio select sketch: read_request, handle, timeout and log are application-provided; completed effects are not rolled back."
   }
 }

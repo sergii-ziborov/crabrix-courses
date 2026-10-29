@@ -1,6 +1,6 @@
 {
   "concept": "Measure, change one thing, measure",
-  "contentDigest": "a820bc23b865f94573aa298aa98118893c4cfd41b273e0924c69566c033c289d",
+  "contentDigest": "c80f472cbca1cb5375cd84c1115cfa22e5cf62f7d898fa72a845d6de3d783d68",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "FFI and ABI"
       }
     ],
-    "correction": "Profile, change one thing, measure again. Guessing is not optimising.",
-    "misconception": "“Nothing — a debug build measures the same code”",
+    "correction": "Cargo defaults differ, but profiles are configurable. Development results can diagnose development behaviour; they do not establish production performance or a fixed speed ratio.",
+    "misconception": "Running cargo bench is the only way to obtain any useful performance evidence.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "Measure first: the bottleneck is almost never where it feels like it is."
       },
       {
-        "detail": "Profile a slow function and name the top cost before changing anything.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "The allocation per iteration is usually the whole finding."
       },
       {
-        "detail": "The change you make is the one the profile pointed at.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "How would you separate cold build, warm build, initialization and steady-state execution? Record variance and verify output correctness."
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on measure, change one thing, measure."
+    "transferChallenge": "How would you separate cold build, warm build, initialization and steady-state execution? Record variance and verify output correctness."
   },
   "exerciseKind": "planned",
   "id": "q-perf-profiling",
@@ -40,17 +40,17 @@
   "title": "Profiling First",
   "writing": {
     "answers": [
-      "Nothing — a debug build measures the same code",
-      "It is a debug build — release is often an order of magnitude apart",
-      "cargo bench is required for any timing"
+      "Every development profile has identical timing to a release profile.",
+      "Verify the actual profile, optimization settings and representative measurement conditions.",
+      "Running cargo bench is the only way to obtain any useful performance evidence."
     ],
     "correctAnswer": 1,
     "exampleCaption": "The allocation per iteration is usually the whole finding.",
     "exampleCode": "// Allocates a String on every iteration.\nfor row in rows {\n    out.push(format!(\"{}-{}\", row.a, row.b));\n}",
-    "explanation": "A profiler shows where time actually goes, and the usual answers are allocation, copying, and syscalls rather than arithmetic. In Rust specifically: check you built with --release, look for clones in a hot loop, prefer with_capacity over repeated growth, and confirm bounds checks are the problem before reaching for `unsafe`. A benchmark that is not statistically stable is not a benchmark.\n\nStart with a user-visible performance question and a baseline. Is the problem p95 request latency, startup time, battery use, memory footprint, or throughput? These metrics can move in different directions. A release build is necessary for a fair Rust measurement, but it is not enough. Keep input sizes representative, warm caches deliberately, repeat measurements, and record variance. A profiler points to expensive stacks or allocations; it does not automatically tell you which change is safe or worthwhile.\n\nSuppose a hot path clones a vector on every request. Profile allocation count and bytes, then change the API to borrow the slice if ownership is unnecessary. Verify the result with a correctness test and rerun the same workload. If the clone was actually off the hot path, the optimization may not matter. `Vec::with_capacity` helps when the final size is known, but over-reserving can waste memory. Bounds-check removal through `unsafe` should be a late, measured step with a soundness proof, not a reflex.\n\nIn an interview, describe the experiment you would run, not just a list of tools. State the control, treatment, sample size, and how you would detect regressions in another metric. Discuss tail latency and realistic load when relevant. A simple algorithmic improvement can beat a clever micro-optimization. The strongest answer ends with a measured conclusion and the tradeoff you accepted.\n\nIf a profiler points to a lock, do not immediately replace it with atomics. Check contention, critical-section duration, and whether a redesign can avoid shared mutation. A change that reduces average latency but worsens p99 under load may be unacceptable. Report the metric the user actually experiences.",
-    "feedback": "`Debug` disables optimisation and keeps every check; the numbers mean nothing.",
-    "practiceCode": "cargo build   # then benchmark",
-    "question": "What is wrong before the numbers even arrive?",
+    "explanation": "A benchmark measures a specific artifact and workload. Cargo profile names have defaults that can be changed; there is no universal debug-to-release speed ratio. Match production settings when answering a production question, and separate compilation, initialization and steady-state execution.\n\nStart with a user-visible performance question and a baseline. Is the problem p95 request latency, startup time, battery use, memory footprint, or throughput? These metrics can move in different directions. Match the compiled artifact to the question: production settings for production behaviour, development settings for a development-loop problem. Keep input sizes representative, warm caches deliberately, repeat measurements, and record variance. A profiler points to expensive stacks or allocations; it does not automatically tell you which change is safe or worthwhile.\n\nSuppose a hot path clones a vector on every request. Profile allocation count and bytes, then change the API to borrow the slice if ownership is unnecessary. Verify the result with a correctness test and rerun the same workload. If the clone was actually off the hot path, the optimization may not matter. `Vec::with_capacity` helps when the final size is known, but over-reserving can waste memory. Bounds-check removal through `unsafe` should be a late, measured step with a soundness proof, not a reflex.\n\nIn an interview, describe the experiment you would run, not just a list of tools. State the control, treatment, sample size, and how you would detect regressions in another metric. Discuss tail latency and realistic load when relevant. A simple algorithmic improvement can beat a clever micro-optimization. The strongest answer ends with a measured conclusion and the tradeoff you accepted.\n\nIf a profiler points to a lock, do not immediately replace it with atomics. Check contention, critical-section duration, and whether a redesign can avoid shared mutation. A change that reduces average latency but worsens p99 under load may be unacceptable. Report the metric the user actually experiences.\n\nInterview follow-up: How would you separate cold build, warm build, initialization and steady-state execution? Record variance and verify output correctness.",
+    "feedback": "Cargo defaults differ, but profiles are configurable. Development results can diagnose development behaviour; they do not establish production performance or a fixed speed ratio.",
+    "practiceCode": "cargo build\n# Then run a timing comparison.",
+    "question": "Before claiming production performance from this command, what should be checked?",
     "rule": "Profile, change one thing, measure again. Guessing is not optimising.",
     "success": "The change you make is the one the profile pointed at.",
     "summary": "Measure first: the bottleneck is almost never where it feels like it is.",

@@ -1,6 +1,6 @@
 {
   "concept": "Waiting versus computing",
-  "contentDigest": "7e1743aa8b0cfb5fbcc76bc1960987232c9cad5525e53b612edc98d342725bcc",
+  "contentDigest": "328470c38cf377e1aa9a44b956e36a4d77002132370e86206dd2f2a5ae1107f2",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Blocking an Executor"
       }
     ],
-    "correction": "Async wins on concurrency; threads win on parallel computation.",
-    "misconception": "“An `async` runtime with 500 tasks”",
+    "correction": "An async runtime can use multiple threads, but spawning tasks alone neither bounds CPU work nor makes a synchronous loop yield.",
+    "misconception": "Create one operating-system thread per image regardless of memory limits.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "Threads are for CPU work; `async` is for waiting."
       },
       {
-        "detail": "Decide between threads and `async` for two workloads and justify each.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "Ten thousand of these is routine; ten thousand threads is not."
       },
       {
-        "detail": "You separate waiting from computing rather than picking by fashion.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "How would the design change for mostly idle sockets? Name what remains bounded in both designs."
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on waiting versus computing."
+    "transferChallenge": "How would the design change for mostly idle sockets? Name what remains bounded in both designs."
   },
   "exerciseKind": "planned",
   "id": "q-async-vs-threads",
@@ -40,25 +40,25 @@
   "title": "Async vs Threads",
   "writing": {
     "answers": [
-      "An async runtime with 500 tasks",
-      "A thread pool sized to the cores",
-      "One thread per image"
+      "Spawn 500 async tasks and rely on await to parallelize each calculation.",
+      "Use bounded compute parallelism and queue admission sized for the workload.",
+      "Create one operating-system thread per image regardless of memory limits."
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Ten thousand of these is routine; ten thousand threads is not.",
+    "exampleCaption": "Async API sketch: the application supplies Body, Error and client; runtime and I/O support depend on the target.",
     "exampleCode": "async fn fetch(id: u32) -> Result<Body, Error> {\n    let response = client.get(id).await?;\n    Ok(response.body().await?)\n}",
-    "explanation": "A thread costs a stack and a scheduler slot, which is fine for a few hundred and painful for a hundred thousand. Async tasks are state machines sharing a small pool of threads, so waiting on ten thousand sockets is cheap — but a task that computes without yielding blocks everything sharing its thread. The dividing line is whether the work waits or works.\n\nA thread is an operating-system execution context; an `async` task is a future that an executor polls. The `async` task can yield during nonblocking waits, allowing one thread to serve many waiting operations. A thread can execute CPU work in parallel with other threads when cores are available. These distinctions are more useful than saying one technology is for all I/O and the other for all CPU. Small systems may use threads for I/O perfectly well, and `async` applications still use threads underneath.\n\nImagine ten thousand mostly idle connections. One thread per connection can consume considerable stack reservation and scheduling overhead; an `async` runtime can represent each wait as compact task state and wake only ready work. Now imagine image compression that runs for a second without yielding. Put it directly on an executor worker and other tasks sharing that worker wait. Offload CPU-heavy or blocking work to an appropriate pool, with a bound on how much can queue.\n\nFor an interview, ask what the workload does while it is not producing results. If it waits on sockets, choose an `async` I/O model or another scalable event-driven design. If it computes, decide how many cores and jobs are available and use threads or a compute pool. Add cancellation and shutdown to the answer: a detached task can outlive a request, while a thread needs a join or explicit lifecycle. Measure latency and memory under representative load rather than repeating one universal task-count threshold.",
-    "feedback": "It is CPU-bound, so parallelism is what helps, not concurrency.",
-    "practiceCode": "// Resize 500 images across 8 cores.\nlet plan = ???;",
-    "question": "Which is the better fit?",
-    "rule": "Async wins on concurrency; threads win on parallel computation.",
+    "explanation": "A thread costs a stack and a scheduler slot, which is fine for a few hundred and painful for a hundred thousand. Async tasks are state machines sharing a small pool of threads, so waiting on ten thousand sockets is cheap — but a task that computes without yielding blocks everything sharing its thread. The dividing line is whether the work waits or works.\n\nA thread is an operating-system execution context; an `async` task is a future that an executor polls. The `async` task can yield during nonblocking waits, allowing one thread to serve many waiting operations. A thread can execute CPU work in parallel with other threads when cores are available. These distinctions are more useful than saying one technology is for all I/O and the other for all CPU. Small systems may use threads for I/O perfectly well, and `async` applications still use threads underneath.\n\nImagine ten thousand mostly idle connections. One thread per connection can consume considerable stack reservation and scheduling overhead; an `async` runtime can represent each wait as compact task state and wake only ready work. Now imagine image compression that runs for a second without yielding. Put it directly on an executor worker and other tasks sharing that worker wait. Offload CPU-heavy or blocking work to an appropriate pool, with a bound on how much can queue.\n\nFor an interview, ask what the workload does while it is not producing results. If it waits on sockets, choose an `async` I/O model or another scalable event-driven design. If it computes, decide how many cores and jobs are available and use threads or a compute pool. Add cancellation and shutdown to the answer: a detached task can outlive a request, while a thread needs a join or explicit lifecycle. Measure latency and memory under representative load rather than repeating one universal task-count threshold.\n\nInterview follow-up: How would the design change for mostly idle sockets? Name what remains bounded in both designs.",
+    "feedback": "An async runtime can use multiple threads, but spawning tasks alone neither bounds CPU work nor makes a synchronous loop yield.",
+    "practiceCode": "// 500 images; bounded RAM; 8 available CPU cores.\n// Each resize performs a long calculation without yielding.",
+    "question": "Which execution plan fits sustained CPU-bound image resizing across available cores?",
+    "rule": "Choose concurrency and parallelism from the workload; async tasks still execute on threads.",
     "success": "You separate waiting from computing rather than picking by fashion.",
     "summary": "Threads are for CPU work; `async` is for waiting.",
     "task": "Decide between threads and `async` for two workloads and justify each."
   },
   "illustration": {
     "path": "media/q-async-vs-threads.png",
-    "alt": "Diagram for Async vs Threads: a Rust code example flows to the lesson rule and the key observation.",
-    "caption": "Ten thousand of these is routine; ten thousand threads is not."
+    "alt": "Diagram for Async vs Threads: the code flows to its exact contract and observed boundary.",
+    "caption": "Async API sketch: the application supplies Body, Error and client; runtime and I/O support depend on the target."
   }
 }

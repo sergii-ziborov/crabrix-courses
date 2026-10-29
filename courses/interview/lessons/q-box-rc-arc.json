@@ -1,6 +1,6 @@
 {
   "concept": "Ownership and allocation choices",
-  "contentDigest": "6b3bdde8678bd5d164460ce0b9ed3eb3fb48a02f4350618366f3819962b89f83",
+  "contentDigest": "cb5e7786cc9990320107a4900ff70e90a8bb03d68ccb2b5fa425206691717228",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "dyn Trait vs Generics"
       }
     ],
-    "correction": "Pick by ownership count first, then by thread boundary.",
-    "misconception": "“`Box`<Node>”",
+    "correction": "Rc shares ownership on one thread. Arc also shares ownership, but uses atomic counts and only crosses threads when its inner bounds permit it.",
+    "misconception": "Arc<Node> avoids all reference-count operations because its count is atomic.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "Three pointers, three different ownership questions."
       },
       {
-        "detail": "Match three scenarios to the narrowest pointer that satisfies them.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "Narrowest type that satisfies the requirement wins."
       },
       {
-        "detail": "Every choice names an ownership count and a thread boundary.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "Draw a strong reference cycle and replace a back-reference with Weak. Why does memory safety allow a leak?"
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on ownership and allocation choices."
+    "transferChallenge": "Draw a strong reference cycle and replace a back-reference with Weak. Why does memory safety allow a leak?"
   },
   "exerciseKind": "planned",
   "id": "q-box-rc-arc",
@@ -40,17 +40,17 @@
   "title": "Box, Rc, and Arc",
   "writing": {
     "answers": [
-      "Box<Node>",
-      "Rc<Node>",
-      "Arc<Node>"
+      "Box<Node> gives several independent owners of the same allocation.",
+      "Rc<Node> matches this single-threaded shared-ownership requirement.",
+      "Arc<Node> avoids all reference-count operations because its count is atomic."
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Narrowest type that satisfies the requirement wins.",
-    "exampleCode": "// one owner, on the heap\nlet boxed: Box<u32> = Box::new(1);\n\n// shared, single thread\nlet shared = std::rc::Rc::new(1);\n\n// shared, across threads\nlet threaded = std::sync::Arc::new(1);",
-    "explanation": "`Box` has exactly one owner and puts the value on the heap. `Rc` shares ownership on a single thread with a plain count. `Arc` does the same across threads with an atomic count, which costs more. Choosing the narrowest one that fits is the whole answer.\n\nAll three can place data behind a pointer, but they solve different ownership problems. `Box<T>` owns one heap allocation and is useful for recursive structures, large values, or a stable sized pointer to a trait object. `Rc<T>` lets several owners on one thread share one allocation through a non-atomic count. `Arc<T>` uses an atomic count for ownership shared across threads when the inner type permits it. Neither `Rc` nor `Arc` automatically grants mutable access to the shared value.\n\nUse a concrete data flow: one parser builds a tree and hands it to one consumer, so `Box` may be enough. Several UI nodes on one thread need a shared immutable model, so `Rc` can be appropriate. Workers on different threads read the same configuration, so `Arc` fits. If they edit shared state, add a mutex, channel, or another synchronization design. `Rc<RefCell<T>>` provides runtime borrow checking on one thread, not cross-thread safety.\n\nA strong answer includes costs and failure modes. Reference counting updates on clone and drop; `Arc` uses atomic operations, but that does not guarantee it is meaningfully slower in every application. Cycles of strong `Rc` or `Arc` links can leak; use `Weak` for back-references. Ask who should own the value and for how long before choosing a pointer. The simplest ownership model that expresses the required lifetime is usually easier to maintain.\n\nBefore reaching for `Arc`, ask if ownership can be transferred to one worker instead. Fewer shared owners simplify shutdown and error handling.",
-    "feedback": "Shared on one thread: `Rc`. `Arc` would pay for atomics you do not need.",
-    "practiceCode": "// Shared by several parents, one thread only.\ntype Node = ???;",
-    "question": "Which pointer type fits that requirement?",
+    "exampleCaption": "Rc shares ownership on one thread. Arc also shares ownership, but uses atomic counts and only crosses threads when its inner bounds permit it.",
+    "exampleCode": "struct Node { value: u32 }\nfn main() {\n    let first = std::rc::Rc::new(Node { value: 7 });\n    let second = std::rc::Rc::clone(&first);\n    assert_eq!(second.value, 7);\n}",
+    "explanation": "`Box` has exactly one owner and puts the value on the heap. `Rc` shares ownership on a single thread with a plain count. `Arc` does the same across threads with an atomic count, which costs more. Choosing the narrowest one that fits is the whole answer.\n\nAll three can place data behind a pointer, but they solve different ownership problems. `Box<T>` owns one heap allocation and is useful for recursive structures, large values, or a stable sized pointer to a trait object. `Rc<T>` lets several owners on one thread share one allocation through a non-atomic count. `Arc<T>` uses an atomic count for ownership shared across threads when the inner type permits it. Neither `Rc` nor `Arc` automatically grants mutable access to the shared value.\n\nUse a concrete data flow: one parser builds a tree and hands it to one consumer, so `Box` may be enough. Several UI nodes on one thread need a shared immutable model, so `Rc` can be appropriate. Workers on different threads read the same configuration, so `Arc` fits. If they edit shared state, add a mutex, channel, or another synchronization design. `Rc<RefCell<T>>` provides runtime borrow checking on one thread, not cross-thread safety.\n\nA strong answer includes costs and failure modes. Reference counting updates on clone and drop; `Arc` uses atomic operations, but that does not guarantee it is meaningfully slower in every application. Cycles of strong `Rc` or `Arc` links can leak; use `Weak` for back-references. Ask who should own the value and for how long before choosing a pointer. The simplest ownership model that expresses the required lifetime is usually easier to maintain.\n\nBefore reaching for `Arc`, ask if ownership can be transferred to one worker instead. Fewer shared owners simplify shutdown and error handling.\n\nInterview follow-up: Draw a strong reference cycle and replace a back-reference with Weak. Why does memory safety allow a leak?",
+    "feedback": "Rc shares ownership on one thread. Arc also shares ownership, but uses atomic counts and only crosses threads when its inner bounds permit it.",
+    "practiceCode": "struct Node { value: u32 }\nfn main() {\n    let first = std::rc::Rc::new(Node { value: 7 });\n    let second = std::rc::Rc::clone(&first);\n    assert_eq!(second.value, 7);\n}",
+    "question": "Which option expresses shared ownership on one thread without atomic reference counting?",
     "rule": "Pick by ownership count first, then by thread boundary.",
     "success": "Every choice names an ownership count and a thread boundary.",
     "summary": "Three pointers, three different ownership questions.",
@@ -58,7 +58,7 @@
   },
   "illustration": {
     "path": "media/q-box-rc-arc.png",
-    "alt": "Diagram for Box, Rc, and Arc: a Rust code example flows to the lesson rule and the key observation.",
-    "caption": "Narrowest type that satisfies the requirement wins."
+    "alt": "Diagram for Box, Rc, and Arc: the code flows to its exact contract and observed boundary.",
+    "caption": "Rc shares ownership on one thread. Arc also shares ownership, but uses atomic counts and only crosses threads when its inner bounds permit it."
   }
 }

@@ -1,0 +1,53 @@
+{
+  "id": "q-integer-boundaries",
+  "title": "Integer Boundaries and Conversion",
+  "concept": "Checked arithmetic and deliberate narrowing policies",
+  "minutes": 14,
+  "order": 3,
+  "parentID": "interview-api-boundaries",
+  "exerciseKind": "planned",
+  "contentDigest": "dfae70c50881dacbf90556d7b5edf585a841a97cb13552074c9a2b54490ad0b8",
+  "writing": {
+    "summary": "Input bounds and arithmetic policy are part of the algorithm’s contract.",
+    "explanation": "Integer operations need a policy when the mathematical result is outside the destination range. checked_add returns None on overflow, wrapping_add uses modular arithmetic, and saturating_add clamps at a boundary. A lossy as conversion can discard information; TryFrom can reject an out-of-range conversion. Choose behaviour that matches the domain instead of depending on the build’s overflow-check settings.\n\nThe example checks an addition at u32::MAX and rejects narrowing 300 to u8. It also widens i32 operands before computing their difference. Widening after an overflowing operation is too late. A wider type is sufficient only when the full input-domain calculation fits it; replacing u64 arithmetic with i64 is not a general widening strategy.\n\nIn an interview, ask for the input range, the result range and the required failure behaviour. A sum over many elements may overflow even if each element is valid, while a length cast can truncate on large inputs. Boundary tests should cover both sides of a conversion and the exact maximum or minimum. Explain the correctness argument separately from performance measurements and from memory safety: losing numeric information is not automatically undefined behaviour.",
+    "exampleCode": "fn main() {\n    assert_eq!(u32::MAX.checked_add(1), None);\n    assert_eq!(u32::MAX.saturating_add(1), u32::MAX);\n    assert!(u8::try_from(300u16).is_err());\n    let difference = i64::from(i32::MAX) - i64::from(i32::MIN);\n    assert_eq!(difference, 4_294_967_295);\n}",
+    "exampleCaption": "Checked operations report overflow and conversion failure; widening happens before subtraction.",
+    "rule": "Choose the numeric domain and overflow policy explicitly, and widen before the operation when that is the proof.",
+    "task": "Explain the example, predict the result, and justify your answer to the follow-up.",
+    "practiceCode": "fn main() {\n    let value = u8::try_from(300u16);\n    assert!(value.is_err());\n}",
+    "success": "Identify the relevant ownership or API contract and test the changed constraint.",
+    "question": "Which result does u8::try_from(300u16) report?",
+    "answers": [
+      "An error, because 300 cannot be represented as u8.",
+      "Ok(44), because TryFrom always uses modular narrowing.",
+      "A compile error, because integers cannot be converted at runtime."
+    ],
+    "correctAnswer": 0,
+    "feedback": "TryFrom checks representability. An as cast follows a different conversion contract and can lose numeric information."
+  },
+  "depth": {
+    "misconception": "Ok(44), because TryFrom always uses modular narrowing.",
+    "correction": "TryFrom checks representability. An as cast follows a different conversion contract and can lose numeric information.",
+    "traceSteps": [
+      {
+        "title": "Observe the concrete input",
+        "detail": "Checked operations report overflow and conversion failure; widening happens before subtraction."
+      },
+      {
+        "title": "Apply the contract",
+        "detail": "Choose the numeric domain and overflow policy explicitly, and widen before the operation when that is the proof."
+      },
+      {
+        "title": "Check the boundary",
+        "detail": "Why is i64::from(a - b) unsafe as an overflow strategy for arbitrary i32 inputs, while i64::from(a) - i64::from(b) fits?"
+      }
+    ],
+    "transferChallenge": "Why is i64::from(a - b) unsafe as an overflow strategy for arbitrary i32 inputs, while i64::from(a) - i64::from(b) fits?",
+    "connections": []
+  },
+  "illustration": {
+    "path": "media/q-integer-boundaries.png",
+    "alt": "Diagram for Integer Boundaries and Conversion: the code flows to its exact contract and observed boundary.",
+    "caption": "Checked operations report overflow and conversion failure; widening happens before subtraction."
+  }
+}

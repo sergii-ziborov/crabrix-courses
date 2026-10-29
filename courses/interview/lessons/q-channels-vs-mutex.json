@@ -1,6 +1,6 @@
 {
   "concept": "Moving ownership or sharing it",
-  "contentDigest": "1768d5a0c3aa708734a9a37454e43051b10885780d232467d791b302f10f8981",
+  "contentDigest": "88215f9b2b67e9c34859cd4f1403b1ebd411a03ce947592c0290419ee6d0c79e",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Async vs Threads"
       }
     ],
-    "correction": "Channels move ownership; a mutex shares it. Pick by data flow.",
-    "misconception": "“`Arc`<`Mutex`<`Vec`<Job>>>”",
+    "correction": "A channel models transfer, but does not eliminate capacity, shutdown or ordering design. A shared-state API can also be appropriate for a different access pattern.",
+    "misconception": "A mutex-protected Vec automatically supplies capacity limits and wakeups.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "Share memory by communicating, or communicate by sharing memory."
       },
       {
-        "detail": "Pick channel or mutex for a metrics counter and for a work queue.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "The value moves; no lock is needed on either side."
       },
       {
-        "detail": "Each choice names who owns the data and how often it is written.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "Explain why per-producer order does not necessarily define a meaningful global order for simultaneous requests."
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on moving ownership or sharing it."
+    "transferChallenge": "Explain why per-producer order does not necessarily define a meaningful global order for simultaneous requests."
   },
   "exerciseKind": "planned",
   "id": "q-channels-vs-mutex",
@@ -40,17 +40,17 @@
   "title": "Channels vs Mutex",
   "writing": {
     "answers": [
-      "Arc<Mutex<Vec<Job>>>",
-      "An mpsc channel",
-      "A global static"
+      "A channel guarantees one global real-time ordering for concurrent senders.",
+      "Define capacity, overload behaviour and the required ordering between producers.",
+      "A mutex-protected Vec automatically supplies capacity limits and wakeups."
     ],
     "correctAnswer": 1,
-    "exampleCaption": "The value moves; no lock is needed on either side.",
+    "exampleCaption": "Desktop std channel fragment: provide compute and a surrounding function; OS-thread support is target-dependent.",
     "exampleCode": "let (tx, rx) = std::sync::mpsc::channel();\nstd::thread::spawn(move || {\n    tx.send(compute()).unwrap();\n});\nlet value = rx.recv().unwrap();",
-    "explanation": "A channel moves ownership between threads, so there is nothing left to lock and the flow of data is visible in the code. A mutex keeps one copy that several threads mutate in place, which is better when the state is genuinely shared and read far more often than written. Choosing by shape rather than by habit is the answer being looked for.\n\nA channel and a mutex organize ownership in different ways. With a channel, producers send owned messages to a receiver that handles them. This works well when one task can own the state and commands describe the changes. A mutex lets multiple tasks access one shared object, with exclusive access while a guard is held. This works well when callers need immediate coordinated reads or updates to a shared invariant. Neither is universally faster or simpler; the workload and failure path decide.\n\nConsider an order book. A single owner task receiving add and cancel commands can serialize updates without exposing internal mutable state. If many workers only read an immutable configuration and rarely replace it, a read-oriented sharing strategy may be clearer than funneling every read through messages. A mutex around a small counter is straightforward, though an atomic may fit that narrow operation. Name the invariant before choosing the primitive.\n\nMention backpressure and shutdown in an interview answer. An unbounded channel can grow without limit if producers outpace the receiver. A bounded channel makes senders wait or fail when capacity fills. A receiving loop ends only after all sender handles are gone; an accidentally retained clone can keep it waiting. A mutex guard should not be held while doing slow I/O or calling unknown code. Show the interviewer how each design makes a particular failure visible, then explain the tradeoff in latency, ordering, and complexity.\n\nWhen a result is required from the owner task, include a reply channel or request identifier. That extra protocol cost can make a simple mutex more attractive for a tiny local operation. Conversely, a channel may make shutdown and audit logging cleaner because all state changes pass through one place.",
-    "feedback": "Many-producer, single-consumer is exactly what a channel is.",
-    "practiceCode": "// Many producers, one consumer, ordered work.\nlet queue = ???;",
-    "question": "Which coordination primitive fits better?",
+    "explanation": "A channel moves ownership between threads, so there is nothing left to lock and the flow of data is visible in the code. A mutex keeps one copy that several threads mutate in place, which is better when the state is genuinely shared and read far more often than written. Choosing by shape rather than by habit is the answer being looked for.\n\nA channel and a mutex organize ownership in different ways. With a channel, producers send owned messages to a receiver that handles them. This works well when one task can own the state and commands describe the changes. A mutex lets multiple tasks access one shared object, with exclusive access while a guard is held. This works well when callers need immediate coordinated reads or updates to a shared invariant. Neither is universally faster or simpler; the workload and failure path decide.\n\nConsider an order book. A single owner task receiving add and cancel commands can serialize updates without exposing internal mutable state. If many workers only read an immutable configuration and rarely replace it, a read-oriented sharing strategy may be clearer than funneling every read through messages. A mutex around a small counter is straightforward, though an atomic may fit that narrow operation. Name the invariant before choosing the primitive.\n\nMention backpressure and shutdown in an interview answer. An unbounded channel can grow without limit if producers outpace the receiver. A bounded channel makes senders wait or fail when capacity fills. A receiving loop ends only after all sender handles are gone; an accidentally retained clone can keep it waiting. A mutex guard should not be held while doing slow I/O or calling unknown code. Show the interviewer how each design makes a particular failure visible, then explain the tradeoff in latency, ordering, and complexity.\n\nWhen a result is required from the owner task, include a reply channel or request identifier. That extra protocol cost can make a simple mutex more attractive for a tiny local operation. Conversely, a channel may make shutdown and audit logging cleaner because all state changes pass through one place.\n\nInterview follow-up: Explain why per-producer order does not necessarily define a meaningful global order for simultaneous requests.",
+    "feedback": "A channel models transfer, but does not eliminate capacity, shutdown or ordering design. A shared-state API can also be appropriate for a different access pattern.",
+    "practiceCode": "// Several producers submit jobs to one worker.\n// The worker processes each accepted message.\n// The input rate can exceed the worker rate.",
+    "question": "What extra contract is needed for a multi-producer work queue?",
     "rule": "Channels move ownership; a mutex shares it. Pick by data flow.",
     "success": "Each choice names who owns the data and how often it is written.",
     "summary": "Share memory by communicating, or communicate by sharing memory.",
@@ -59,6 +59,6 @@
   "illustration": {
     "path": "media/q-channels-vs-mutex.png",
     "alt": "Channels transfer messages while mutexes coordinate access to shared state.",
-    "caption": "Choose communication or shared state according to ownership and contention."
+    "caption": "Desktop std channel fragment: provide compute and a surrounding function; OS-thread support is target-dependent."
   }
 }

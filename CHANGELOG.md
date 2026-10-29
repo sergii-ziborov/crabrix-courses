@@ -1,5 +1,12 @@
 # Changelog
 
+## Interview 1.1.0 — 29 October 2026
+
+- Review all 40 existing questions and retain their progress identities.
+- Add 12 focused Rust topics, code-to-rule maps and oral follow-ups.
+- Correct borrow/Arc/move/HTTP/quorum/idempotency/performance claims.
+- Validate 754 lessons and 48 executable/expected-diagnostic Rust checks.
+
 ## 20 October 2026 — Interview 1.0.6 follow-up
 
 Correct buffering and dynamic-dispatch rules, questions and complete worked

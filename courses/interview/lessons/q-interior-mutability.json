@@ -1,0 +1,53 @@
+{
+  "id": "q-interior-mutability",
+  "title": "Cell, RefCell and Runtime Borrows",
+  "concept": "Interior mutability without confusing Send and Sync",
+  "minutes": 14,
+  "order": 0,
+  "parentID": "interview-values",
+  "exerciseKind": "planned",
+  "contentDigest": "78f76a71ed559cc496f4a3b21410c22847f7097d94f2e7106419a03fa6022c50",
+  "writing": {
+    "summary": "Interior mutability changes how access is checked; it does not remove the safety contract.",
+    "explanation": "Cell<T> is useful when a value can be read or replaced through a shared reference without handing out a reference to its contents. RefCell<T> instead hands out guarded borrows and checks their exclusivity at runtime. borrow_mut can panic on a conflict; try_borrow_mut lets you handle that conflict as an error. The example retains a reader, observes a rejected writer, then drops the reader and mutates successfully.\n\nNeither type automatically supplies synchronized shared access between threads. RefCell<T> can be Send when T is Send, but it is not Sync: transferring a uniquely owned cell is different from sharing references to it concurrently. Arc<RefCell<T>> therefore does not become a thread-safe mutable container simply because Arc has an atomic reference count.\n\nChoose the smallest access contract your data flow needs. An exclusive &mut T is often sufficient. Runtime checking can support single-threaded shared ownership, while a mutex or a message protocol can coordinate cross-thread mutation. In an interview, explain the precise conflict, its error behaviour and how long each guard lives. A lexical scope or explicit drop can release a borrow before another operation; an extra Rc clone does not release a guard.",
+    "exampleCode": "use std::cell::RefCell;\nfn main() {\n    let value = RefCell::new(7);\n    let reader = value.borrow();\n    assert!(value.try_borrow_mut().is_err());\n    assert_eq!(*reader, 7);\n    drop(reader);\n    *value.borrow_mut() = 9;\n    assert_eq!(*value.borrow(), 9);\n}",
+    "exampleCaption": "The writer conflicts only while the shared borrow guard remains live.",
+    "rule": "Runtime borrow checking still enforces exclusivity; ownership transfer and concurrent sharing have different trait bounds.",
+    "task": "Explain the example, predict the result, and justify your answer to the follow-up.",
+    "practiceCode": "use std::cell::RefCell;\nfn main() {\n    let value = RefCell::new(7);\n    let reader = value.borrow();\n    let result = value.try_borrow_mut();\n    assert!(result.is_err());\n    println!(\"{}\", *reader);\n}",
+    "success": "Identify the relevant ownership or API contract and test the changed constraint.",
+    "question": "Why does try_borrow_mut return an error while reader is still retained?",
+    "answers": [
+      "RefCell forbids every mutation after construction.",
+      "A live shared guard prevents an overlapping mutable borrow.",
+      "Cloning the outer Rc would automatically end the shared borrow."
+    ],
+    "correctAnswer": 1,
+    "feedback": "The guard controls the runtime borrow lifetime. RefCell is not Sync, although an owned RefCell<T> can be Send when T is Send."
+  },
+  "depth": {
+    "misconception": "Cloning the outer Rc would automatically end the shared borrow.",
+    "correction": "The guard controls the runtime borrow lifetime. RefCell is not Sync, although an owned RefCell<T> can be Send when T is Send.",
+    "traceSteps": [
+      {
+        "title": "Observe the concrete input",
+        "detail": "The writer conflicts only while the shared borrow guard remains live."
+      },
+      {
+        "title": "Apply the contract",
+        "detail": "Runtime borrow checking still enforces exclusivity; ownership transfer and concurrent sharing have different trait bounds."
+      },
+      {
+        "title": "Check the boundary",
+        "detail": "Why can moving an owned RefCell<String> to one worker be allowed while sharing Arc<RefCell<String>> is not?"
+      }
+    ],
+    "transferChallenge": "Why can moving an owned RefCell<String> to one worker be allowed while sharing Arc<RefCell<String>> is not?",
+    "connections": []
+  },
+  "illustration": {
+    "path": "media/q-interior-mutability.png",
+    "alt": "Diagram for Cell, RefCell and Runtime Borrows: the code flows to its exact contract and observed boundary.",
+    "caption": "The writer conflicts only while the shared borrow guard remains live."
+  }
+}

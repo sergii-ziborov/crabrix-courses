@@ -1,0 +1,53 @@
+{
+  "id": "q-closure-traits",
+  "title": "Fn, FnMut and FnOnce",
+  "concept": "Capture ownership and how a closure uses its environment",
+  "minutes": 14,
+  "order": 0,
+  "parentID": "interview-async-contracts",
+  "exerciseKind": "planned",
+  "contentDigest": "2279f55f4b62d99a00c177237eb804b396cccd9f4736c98aa041f16d50076145",
+  "writing": {
+    "summary": "The call trait follows what the closure does with captures, not just whether move appears.",
+    "explanation": "Fn closures can be called through a shared reference, FnMut permits a mutable receiver, and FnOnce consumes its receiver. The traits form a hierarchy: a closure that implements Fn also works where FnMut or FnOnce is required. Every closure supports at least FnOnce, but consuming a captured non-Copy value can make a closure callable only once.\n\nThe move keyword determines how captures enter the closure. It does not alone make the closure FnOnce-only. A move closure that merely reads owned data may still implement Fn. Conversely, mutating captured state generally requires FnMut. The example borrows a counter mutably, calls the closure twice, then ends its scope before reading the counter directly.\n\nRead the implementation and the caller’s intended use together. A callback stored for repeated notifications needs a repeated-call contract, while a one-shot cleanup callback can accept FnOnce. If the callback crosses a thread or task boundary, Send and lifetime bounds are additional questions. In an interview, ask the candidate to change only the closure body from reading a String to returning the owned String and explain which call capability is lost.",
+    "exampleCode": "fn twice(mut callback: impl FnMut()) {\n    callback();\n    callback();\n}\nfn main() {\n    let mut count = 0;\n    { twice(|| count += 1); }\n    assert_eq!(count, 2);\n    let text = String::from(\"crab\");\n    let read = move || text.len();\n    assert_eq!(read(), 4);\n    assert_eq!(read(), 4);\n}",
+    "exampleCaption": "A mutating callback runs twice, while a read-only move closure remains repeatedly callable.",
+    "rule": "Move controls capture ownership; the closure body determines its call-trait capabilities.",
+    "task": "Explain the example, predict the result, and justify your answer to the follow-up.",
+    "practiceCode": "fn main() {\n    let text = String::from(\"crab\");\n    let length = move || text.len();\n    assert_eq!(length(), 4);\n    assert_eq!(length(), 4);\n}",
+    "success": "Identify the relevant ownership or API contract and test the changed constraint.",
+    "question": "Why can this move closure be called twice?",
+    "answers": [
+      "move makes every captured String implicitly Copy.",
+      "The captured String is recreated before every call.",
+      "The body reads the owned capture without consuming it."
+    ],
+    "correctAnswer": 2,
+    "feedback": "The closure owns text but only borrows it during each call. Returning text by value instead would consume that capture."
+  },
+  "depth": {
+    "misconception": "move makes every captured String implicitly Copy.",
+    "correction": "The closure owns text but only borrows it during each call. Returning text by value instead would consume that capture.",
+    "traceSteps": [
+      {
+        "title": "Observe the concrete input",
+        "detail": "A mutating callback runs twice, while a read-only move closure remains repeatedly callable."
+      },
+      {
+        "title": "Apply the contract",
+        "detail": "Move controls capture ownership; the closure body determines its call-trait capabilities."
+      },
+      {
+        "title": "Check the boundary",
+        "detail": "Change the body to return text itself. Which trait is then sufficient for the caller, and why is a second call rejected?"
+      }
+    ],
+    "transferChallenge": "Change the body to return text itself. Which trait is then sufficient for the caller, and why is a second call rejected?",
+    "connections": []
+  },
+  "illustration": {
+    "path": "media/q-closure-traits.png",
+    "alt": "Diagram for Fn, FnMut and FnOnce: the code flows to its exact contract and observed boundary.",
+    "caption": "A mutating callback runs twice, while a read-only move closure remains repeatedly callable."
+  }
+}

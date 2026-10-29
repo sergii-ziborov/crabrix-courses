@@ -1,6 +1,6 @@
 {
   "concept": "What happens during a partition",
-  "contentDigest": "fe98c22f3db6441324b1c51488bc8d9e3b22dfbc4e4e8b17ce706dabe4db9492",
+  "contentDigest": "6f775c7d804f230257f1f38e82881e9fdb261aed1948d2f9a36084a6759ba390",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Idempotency and Retries"
       }
     ],
-    "correction": "Partitions are not optional; C versus A is what you choose when one happens.",
-    "misconception": "“Reject the write to stay strongly consistent”",
+    "correction": "Overlapping sets are useful evidence, not a full protocol. CAP concerns availability and linearizability during a partition under specific definitions.",
+    "misconception": "Yes; the arithmetic also makes every minority partition writable.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "CAP is about what happens during a partition, not a menu of three."
       },
       {
-        "detail": "Describe what your service should do to writes during a partition.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "An overlapping read/write quorum still needs a protocol for versions, concurrency and partial failures."
       },
       {
-        "detail": "You give one concrete behaviour rather than restating the theorem.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "Design cart updates under a partition. How will quantities, removals, retries and concurrent adds be merged without silently losing intent?"
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on what happens during a partition."
+    "transferChallenge": "Design cart updates under a partition. How will quantities, removals, retries and concurrent adds be merged without silently losing intent?"
   },
   "exerciseKind": "planned",
   "id": "q-cap",
@@ -40,25 +40,25 @@
   "title": "CAP in Practice",
   "writing": {
     "answers": [
-      "Reject the write to stay strongly consistent",
-      "Accept it and merge the divergent carts later",
-      "Fail the whole session"
+      "Yes; any intersecting quorums implement a complete linearizable protocol.",
+      "No; intersection alone does not define conflict ordering or handle incomplete operations.",
+      "Yes; the arithmetic also makes every minority partition writable."
     ],
     "correctAnswer": 1,
-    "exampleCaption": "The quorum is where the choice is actually made.",
-    "exampleCode": "// 5 replicas, write quorum 3, read quorum 3.\n// 3 + 3 > 5, so a read sees the last write\n// and a minority partition cannot accept\n// writes at all.",
-    "explanation": "When the network splits you either refuse writes to stay consistent, or accept them and diverge. Everything else — quorums, leader election, eventual consistency, CRDTs — is a way of choosing where on that line to sit. Saying pick two is the answer that gets followed up; saying what your system does during a partition is the one that lands.\n\nThe CAP result is about what a distributed system can guarantee when a network partition separates participants. If it keeps accepting operations on both sides, it cannot also guarantee a single immediately consistent view of those operations. If it preserves a strong consistency contract, some requests may have to wait or fail until communication is restored. This is a narrower and more useful statement than treating consistency, availability, and partition tolerance as three features you choose on a normal day.\n\nDescribe a two-region account service during a partition. If both regions accept a withdrawal from the same balance without coordination, they may both approve against stale state and later conflict. If only the leader region accepts writes, clients in the isolated region may lose write availability. Another product, such as a collaborative notes app, may accept concurrent edits and reconcile them later. The right behavior depends on what inconsistency the domain can tolerate.\n\nA strong interview answer names the exact consistency requirement, the operation that must remain available, and what happens during a partition. Quorums and leader election are mechanisms with their own failure modes, not magic exceptions. Define 'available' carefully: in CAP it means every request to a nonfailed node receives a response, not merely that a website usually loads. Discuss recovery too: when links heal, how are divergent versions detected, merged, or rejected?\n\nDo not use CAP to explain every latency tradeoff. Even with no partition, a distributed system can trade consistency against latency, cost, and failure tolerance in ways CAP does not classify. Name the partition scenario first. Then discuss normal-operation choices separately, such as quorum size, placement, and caching, without calling them an escape from the theorem.",
-    "feedback": "Carts are merge-friendly, so availability is worth more than strictness.",
-    "practiceCode": "// Shopping cart, network split, user adds an item.",
-    "question": "Which behaviour usually fits a cart?",
-    "rule": "Partitions are not optional; C versus A is what you choose when one happens.",
+    "exampleCaption": "An overlapping read/write quorum still needs a protocol for versions, concurrency and partial failures.",
+    "exampleCode": "// Quorum sketch, not an executable consistency proof:\n// N=5, R=3, W=3 makes every R/W pair intersect.\n// Still specify: version ordering, concurrent writes,\n// partial failures, read repair and partition behaviour.",
+    "explanation": "CAP is about the guarantees a distributed system can provide when communication partitions occur. A cart may use a mergeable design, but that is an explicit product and conflict-resolution choice. Quorum intersection is not by itself proof of linearizability, consensus or last-write correctness.\n\nThe CAP result is about what a distributed system can guarantee when a network partition separates participants. If it keeps accepting operations on both sides, it cannot also guarantee a single immediately consistent view of those operations. If it preserves a strong consistency contract, some requests may have to wait or fail until communication is restored. This is a narrower and more useful statement than treating consistency, availability, and partition tolerance as three features you choose on a normal day.\n\nDescribe a two-region account service during a partition. If both regions accept a withdrawal from the same balance without coordination, they may both approve against stale state and later conflict. If only the leader region accepts writes, clients in the isolated region may lose write availability. Another product, such as a collaborative notes app, may accept concurrent edits and reconcile them later. The right behavior depends on what inconsistency the domain can tolerate.\n\nA strong interview answer names the exact consistency requirement, the operation that must remain available, and what happens during a partition. Quorums and leader election are mechanisms with their own failure modes, not magic exceptions. Define 'available' carefully: in CAP it means every request to a nonfailed node receives a response, not merely that a website usually loads. Discuss recovery too: when links heal, how are divergent versions detected, merged, or rejected?\n\nDo not use CAP to explain every latency tradeoff. Even with no partition, a distributed system can trade consistency against latency, cost, and failure tolerance in ways CAP does not classify. Name the partition scenario first. Then discuss normal-operation choices separately, such as quorum size, placement, and caching, without calling them an escape from the theorem.\n\nInterview follow-up: Design cart updates under a partition. How will quantities, removals, retries and concurrent adds be merged without silently losing intent?",
+    "feedback": "Overlapping sets are useful evidence, not a full protocol. CAP concerns availability and linearizability during a partition under specific definitions.",
+    "practiceCode": "// N = 5, R = 3, W = 3.\n// Version ordering, concurrent writes and failed partial writes are unspecified.",
+    "question": "Does read quorum + write quorum > replica count alone prove linearizable reads?",
+    "rule": "Specify the consistency model and failure protocol; quorum arithmetic alone is insufficient.",
     "success": "You give one concrete behaviour rather than restating the theorem.",
     "summary": "CAP is about what happens during a partition, not a menu of three.",
     "task": "Describe what your service should do to writes during a partition."
   },
   "illustration": {
     "path": "media/q-cap.png",
-    "alt": "Diagram for CAP in Practice: a Rust code example flows to the lesson rule and the key observation.",
-    "caption": "The quorum is where the choice is actually made."
+    "alt": "Diagram for CAP in Practice: the code flows to its exact contract and observed boundary.",
+    "caption": "An overlapping read/write quorum still needs a protocol for versions, concurrency and partial failures."
   }
 }

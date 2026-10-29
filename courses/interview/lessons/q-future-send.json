@@ -1,0 +1,53 @@
+{
+  "id": "q-future-send",
+  "title": "Send Across await",
+  "concept": "Task state, static bounds and non-Send locals",
+  "minutes": 14,
+  "order": 2,
+  "parentID": "interview-async-contracts",
+  "exerciseKind": "planned",
+  "contentDigest": "e13e826440d8faa6c9a5bc508f61bd02975e2b02ecc40f4f06f64ac1c83a4d12",
+  "writing": {
+    "summary": "Inspect which values survive a suspension before deciding whether a future satisfies Send.",
+    "explanation": "A suspended async computation stores the state needed for a later poll. If that state contains an Rc or another non-Send value, the future may fail a Send bound. A non-Send temporary can still be used inside a future when it does not survive a suspension. The example places Rc in a lexical scope that ends before await and asks the compiler to verify Send on the resulting future.\n\nTokio spawn requires a Send + static future and a Send + static output even on a current-thread runtime. A separate local-task API supports a different contract; changing the executor’s thread count does not silently change spawn’s signature. static on an owned task does not mean it must run forever: it means the value contains no shorter-lived borrows that would make this use invalid.\n\nThe standard-library example checks a type bound without starting Tokio or a network server. It can therefore isolate a compiler error from runtime setup. For an interview follow-up, retain Rc until after await, observe the compiler rejection and identify the retained state. async move can own captured values, but ownership alone does not make every captured type Send.",
+    "exampleCode": "use std::rc::Rc;\nfn require_send<T: Send>(_: T) {}\nfn main() {\n    let future = async {\n        { let local = Rc::new(7); assert_eq!(*local, 7); }\n        std::future::ready(()).await;\n    };\n    require_send(future);\n}",
+    "exampleCaption": "Rc is gone before suspension; this compile-time probe requires the future to be Send.",
+    "rule": "Send is determined by the future’s actual retained state; async move does not upgrade non-Send types.",
+    "task": "Explain the example, predict the result, and justify your answer to the follow-up.",
+    "practiceCode": "use std::rc::Rc;\nfn require_send<T: Send>(_: T) {}\nfn main() {\n    let future = async {\n        let local = Rc::new(7);\n        std::future::ready(()).await;\n        println!(\"{local}\");\n    };\n    require_send(future); // deliberate compile error\n}",
+    "success": "Identify the relevant ownership or API contract and test the changed constraint.",
+    "question": "Why does this intentionally failing Send check reject the future?",
+    "answers": [
+      "Every async function requires an operating-system thread for its whole lifetime.",
+      "Rc remains part of the future’s state across await and is not Send.",
+      "The ready future’s unit output is not Send on any runtime."
+    ],
+    "correctAnswer": 1,
+    "feedback": "Later use retains Rc across the await in the future’s state. Narrowing its lexical scope before await can remove it from that state."
+  },
+  "depth": {
+    "misconception": "The ready future’s unit output is not Send on any runtime.",
+    "correction": "Later use retains Rc across the await in the future’s state. Narrowing its lexical scope before await can remove it from that state.",
+    "traceSteps": [
+      {
+        "title": "Observe the concrete input",
+        "detail": "Rc is gone before suspension; this compile-time probe requires the future to be Send."
+      },
+      {
+        "title": "Apply the contract",
+        "detail": "Send is determined by the future’s actual retained state; async move does not upgrade non-Send types."
+      },
+      {
+        "title": "Check the boundary",
+        "detail": "Why does tokio::spawn still require Send on a current-thread runtime, and how does spawn_local deliberately differ?"
+      }
+    ],
+    "transferChallenge": "Why does tokio::spawn still require Send on a current-thread runtime, and how does spawn_local deliberately differ?",
+    "connections": []
+  },
+  "illustration": {
+    "path": "media/q-future-send.png",
+    "alt": "Diagram for Send Across await: the code flows to its exact contract and observed boundary.",
+    "caption": "Rc is gone before suspension; this compile-time probe requires the future to be Send."
+  }
+}

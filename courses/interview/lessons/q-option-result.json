@@ -1,6 +1,6 @@
 {
   "concept": "Absence, failure, and propagation",
-  "contentDigest": "4eaf3e54768f18286a90a0f93b5fe4fb739d94b8207150698d92e67a1556339a",
+  "contentDigest": "d2c1255449c5fa5a718da59d75deedc840030bb04d9adfa75ca6e0264f7e6b0c",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Send and Sync"
       }
     ],
-    "correction": "`Option`: absence is normal. `Result`: the caller needs the reason.",
-    "misconception": "“unwrap_or”",
+    "correction": "Option has no error payload. ok_or takes an error value; ok_or_else takes a closure. A missing value can be normal or erroneous depending on the API.",
+    "misconception": "map_err transforms the error already stored inside an Option.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "Pick the type that matches what the caller must decide."
       },
       {
-        "detail": "Choose between `Option` and `Result` for two APIs and justify each.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "Missing configuration and an invalid number reach different explicit error paths."
       },
       {
-        "detail": "Each choice is explained by what the caller needs to know.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "How would Result<Option<T>, E> distinguish absence from failure? Explain how transpose changes the nesting."
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on absence, failure, and propagation."
+    "transferChallenge": "How would Result<Option<T>, E> distinguish absence from failure? Explain how transpose changes the nesting."
   },
   "exerciseKind": "planned",
   "id": "q-option-result",
@@ -40,17 +40,17 @@
   "title": "Option vs Result",
   "writing": {
     "answers": [
-      "unwrap_or",
-      "ok_or",
-      "and_then"
+      "unwrap_or_else preserves the Option in a new Result wrapper.",
+      "ok_or_else supplies a lazily constructed error for an absent value.",
+      "map_err transforms the error already stored inside an Option."
     ],
     "correctAnswer": 1,
-    "exampleCaption": "ok_or promotes an absence into a reported failure.",
-    "exampleCode": "fn port(map: &Config) -> Result<u16, String> {\n    map.get(\"port\")\n        .ok_or(\"port is missing\".to_string())?\n        .parse()\n        .map_err(|_| \"not a number\".into())\n}",
-    "explanation": "`Option` says a value may be absent and that is unremarkable. `Result` says an operation failed and carries why. Converting between them is routine — ok_or turns absence into an error when the caller does need a reason.\n\nChoose the enum according to the decision the caller must make. `Option<T>` represents an ordinary absence: a lookup may find no element. `Result<T, E>` represents a success or a failure whose reason is useful: parsing text can fail because the input is malformed. These meanings affect error messages, retries, and control flow. `unwrap()` removes the branch by panicking when the other variant appears, so it is a poor default at a user-input boundary.\n\nGive a layered example. A cache lookup can return `Option<Value>`. If a missing key is normal, the caller may supply a default. If a required key is absent, the caller can use `ok_or_else` to turn `None` into a domain error. A database lookup can return `Result<Option<Value>, DbError>` because 'not found' and 'database unavailable' are different outcomes. Collapsing both to `None` hides the operational failure.\n\nFor an interview answer, describe the successful type and each alternative with a real caller action. Match when the current layer can recover; use `?` to propagate an error when a higher layer owns the decision. Add context at the boundary where you know which operation failed. Avoid saying `Result` is always better because it carries more information. Extra information is useful only when the domain actually has a failure to explain.\n\nIf a caller needs both absence and a possible infrastructure failure, `Result<Option<T>, E>` can be clearer than inventing a sentinel error. Explain which layer turns `None` into an error, if any.",
-    "feedback": "ok_or supplies the error value that absence alone did not carry.",
-    "practiceCode": "let value: Option<u32> = map.get(\"k\");\nlet checked: Result<u32, String> = value.???;",
-    "question": "Which converts `Option` into `Result`?",
+    "exampleCaption": "Missing configuration and an invalid number reach different explicit error paths.",
+    "exampleCode": "use std::collections::HashMap;\nfn port(config: &HashMap<&str, &str>) -> Result<u16, String> {\n    config.get(\"port\")\n        .ok_or_else(|| \"port is missing\".to_owned())?\n        .parse()\n        .map_err(|_| \"port is not a u16\".to_owned())\n}\nfn main() {\n    assert_eq!(port(&HashMap::from([(\"port\", \"8080\")])), Ok(8080));\n}",
+    "explanation": "`Option` says a value may be absent and that is unremarkable. `Result` says an operation failed and carries why. Converting between them is routine — ok_or turns absence into an error when the caller does need a reason.\n\nChoose the enum according to the decision the caller must make. `Option<T>` represents an ordinary absence: a lookup may find no element. `Result<T, E>` represents a success or a failure whose reason is useful: parsing text can fail because the input is malformed. These meanings affect error messages, retries, and control flow. `unwrap()` removes the branch by panicking when the other variant appears, so it is a poor default at a user-input boundary.\n\nGive a layered example. A cache lookup can return `Option<Value>`. If a missing key is normal, the caller may supply a default. If a required key is absent, the caller can use `ok_or_else` to turn `None` into a domain error. A database lookup can return `Result<Option<Value>, DbError>` because 'not found' and 'database unavailable' are different outcomes. Collapsing both to `None` hides the operational failure.\n\nFor an interview answer, describe the successful type and each alternative with a real caller action. Match when the current layer can recover; use `?` to propagate an error when a higher layer owns the decision. Add context at the boundary where you know which operation failed. Avoid saying `Result` is always better because it carries more information. Extra information is useful only when the domain actually has a failure to explain.\n\nIf a caller needs both absence and a possible infrastructure failure, `Result<Option<T>, E>` can be clearer than inventing a sentinel error. Explain which layer turns `None` into an error, if any.\n\nInterview follow-up: How would Result<Option<T>, E> distinguish absence from failure? Explain how transpose changes the nesting.",
+    "feedback": "Option has no error payload. ok_or takes an error value; ok_or_else takes a closure. A missing value can be normal or erroneous depending on the API.",
+    "practiceCode": "fn main() {\n    let value: Option<u32> = Some(7);\n    let result = value.ok_or_else(|| String::from(\"missing\"));\n    assert_eq!(result, Ok(7));\n}",
+    "question": "Which conversion produces a Result and computes the error only for None?",
     "rule": "`Option`: absence is normal. `Result`: the caller needs the reason.",
     "success": "Each choice is explained by what the caller needs to know.",
     "summary": "Pick the type that matches what the caller must decide.",
@@ -58,7 +58,7 @@
   },
   "illustration": {
     "path": "media/q-option-result.png",
-    "alt": "Diagram for Option vs Result: a Rust code example flows to the lesson rule and the key observation.",
-    "caption": "ok_or promotes an absence into a reported failure."
+    "alt": "Diagram for Option vs Result: the code flows to its exact contract and observed boundary.",
+    "caption": "Missing configuration and an invalid number reach different explicit error paths."
   }
 }

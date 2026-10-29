@@ -1,6 +1,6 @@
 {
   "concept": "Streams, datagrams, and trade-offs",
-  "contentDigest": "53412d3a22be301ef8e9b17fd5585cfb0814ceba7c7abf900823cb75cf381546",
+  "contentDigest": "346f7377780d4aab89c82e7ec95cffec3eb9bd00b4e28ce2556eeb100bd25ba1",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "HTTP/1.1, 2, and 3"
       }
     ],
-    "correction": "TCP: ordered, reliable, head-of-line blocked. UDP: messages, no promises.",
-    "misconception": "“TCP, so nothing is ever lost”",
+    "correction": "UDP preserves datagrams but supplies no playback-deadline policy. The application protocol must handle timeliness, loss, ordering and congestion.",
+    "misconception": "TCP retransmission guarantees every audio frame arrives before its deadline.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "TCP gives you a reliable ordered stream; UDP gives you datagrams and nothing else."
       },
       {
-        "detail": "Choose a transport for a chat protocol and for live audio, and say why.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "One is a stream with no message boundaries; the other is not."
       },
       {
-        "detail": "Each choice names the guarantee you needed and the one you gave up.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "Why can QUIC use UDP while still providing reliable streams? Separate substrate from application guarantees."
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on streams, datagrams, and trade-offs."
+    "transferChallenge": "Why can QUIC use UDP while still providing reliable streams? Separate substrate from application guarantees."
   },
   "exerciseKind": "planned",
   "id": "q-tcp-udp",
@@ -40,17 +40,17 @@
   "title": "TCP vs UDP",
   "writing": {
     "answers": [
-      "TCP, so nothing is ever lost",
-      "UDP, so a late packet is simply skipped",
-      "Either — the difference does not matter here"
+      "Raw UDP automatically discards every packet that is late for the application.",
+      "Use a media protocol with deadlines, loss handling, congestion control and suitable transport.",
+      "TCP retransmission guarantees every audio frame arrives before its deadline."
     ],
     "correctAnswer": 1,
-    "exampleCaption": "One is a stream with no message boundaries; the other is not.",
+    "exampleCaption": "Desktop networking fragments: supply addresses, buffers and imports; the fixed offline WASI profile does not provide these sockets.",
     "exampleCode": "// Stream: framing is your problem.\nlet mut stream = TcpStream::connect(addr)?;\nstream.write_all(&length.to_be_bytes())?;\n\n// Datagram: the boundary is the message.\nlet socket = UdpSocket::bind(\"0.0.0.0:0\")?;\nsocket.send_to(&packet, addr)?;",
-    "explanation": "TCP adds connection setup and loss recovery to provide an ordered byte stream while the connection remains healthy. UDP hands you a message that may vanish, arrive twice, or arrive out of order, and leaves reliability to you — which is exactly why QUIC and real-time media build their own on top of it. The right answer names the trade-off rather than declaring one better.\n\nTCP provides a reliable, ordered byte stream while the connection remains healthy. It does not preserve application message boundaries: two writes may be read as one chunk, and one write may require several reads. The application must frame messages and handle connection failure. UDP sends datagrams, preserving message boundaries within size limits, but the network may drop, duplicate, or reorder them. Neither transport promises that a remote application has processed a request merely because local send returned success.\n\nFor a file transfer where ordered completeness matters, TCP is a natural default. For real-time media, late data may be worse than missing data, so a protocol built on UDP can prioritize timeliness. QUIC also uses UDP as a substrate but adds its own connection, reliability, security, and streams. The tradeoff is protocol behavior, not a claim that raw UDP is simply 'faster'. Congestion control, loss recovery, and security still have to be designed somewhere.\n\nIn an interview, ask about message size, ordering, loss tolerance, latency, and network environment. Show how you would detect a broken TCP connection and how you would avoid assuming one read equals one message. For UDP, mention packet size and fragmentation risk, sequence numbers when ordering matters, and rate control. The strongest answer ties a transport choice to an application's failure semantics instead of choosing from a slogan.\n\nA useful test case is a client timing out after sending a request. With either transport, the server may still process it. Application-level acknowledgements and idempotency are needed when the caller must know the business outcome. Transport reliability is narrower than exactly-once execution; make that distinction explicit when discussing payment or order APIs.",
-    "feedback": "Retransmitting audio that is already too late only adds delay.",
-    "practiceCode": "// Live voice: late audio is worse than none.\nlet transport = ???;",
-    "question": "Which transport fits that workload?",
+    "explanation": "TCP adds connection setup and loss recovery to provide an ordered byte stream while the connection remains healthy. UDP hands you a message that may vanish, arrive twice, or arrive out of order, and leaves reliability to you — which is exactly why QUIC and real-time media build their own on top of it. The right answer names the trade-off rather than declaring one better.\n\nTCP provides a reliable, ordered byte stream while the connection remains healthy. It does not preserve application message boundaries: two writes may be read as one chunk, and one write may require several reads. The application must frame messages and handle connection failure. UDP sends datagrams, preserving message boundaries within size limits, but the network may drop, duplicate, or reorder them. Neither transport promises that a remote application has processed a request merely because local send returned success.\n\nFor a file transfer where ordered completeness matters, TCP is a natural default. For real-time media, late data may be worse than missing data, so a protocol built on UDP can prioritize timeliness. QUIC also uses UDP as a substrate but adds its own connection, reliability, security, and streams. The tradeoff is protocol behavior, not a claim that raw UDP is simply 'faster'. Congestion control, loss recovery, and security still have to be designed somewhere.\n\nIn an interview, ask about message size, ordering, loss tolerance, latency, and network environment. Show how you would detect a broken TCP connection and how you would avoid assuming one read equals one message. For UDP, mention packet size and fragmentation risk, sequence numbers when ordering matters, and rate control. The strongest answer ties a transport choice to an application's failure semantics instead of choosing from a slogan.\n\nA useful test case is a client timing out after sending a request. With either transport, the server may still process it. Application-level acknowledgements and idempotency are needed when the caller must know the business outcome. Transport reliability is narrower than exactly-once execution; make that distinction explicit when discussing payment or order APIs.\n\nInterview follow-up: Why can QUIC use UDP while still providing reliable streams? Separate substrate from application guarantees.",
+    "feedback": "UDP preserves datagrams but supplies no playback-deadline policy. The application protocol must handle timeliness, loss, ordering and congestion.",
+    "practiceCode": "// The receiver can tolerate some missing audio.\n// It must not wait indefinitely for late data.",
+    "question": "For real-time media, which design addresses packets that arrive after their playback deadline?",
     "rule": "TCP: ordered, reliable, head-of-line blocked. UDP: messages, no promises.",
     "success": "Each choice names the guarantee you needed and the one you gave up.",
     "summary": "TCP gives you a reliable ordered stream; UDP gives you datagrams and nothing else.",
@@ -59,6 +59,6 @@
   "illustration": {
     "path": "media/q-tcp-udp.png",
     "alt": "Diagram for TCP vs UDP: a Rust code example flows to the lesson rule and the key observation.",
-    "caption": "One is a stream with no message boundaries; the other is not."
+    "caption": "Desktop networking fragments: supply addresses, buffers and imports; the fixed offline WASI profile does not provide these sockets."
   }
 }

@@ -1,6 +1,6 @@
 {
   "concept": "Identity, confidentiality, integrity",
-  "contentDigest": "77975bd14186dea36fc251500d49e61262db6efaaf090079f780df938c3bb3c8",
+  "contentDigest": "20f90575e0e3a746eca2140b253b0582f7387e797fb67555899026327603ccb5",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Backpressure"
       }
     ],
-    "correction": "Encryption without verified identity protects you from nobody in particular.",
-    "misconception": "“Nothing changes, it is only a warning”",
+    "correction": "An active interceptor may impersonate the endpoint. Encryption and integrity protect the negotiated connection, whose peer must first be authenticated.",
+    "misconception": "Disabling verification only changes handshake speed, not trust.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "TLS gives confidentiality, integrity, and identity — in that order of confusion."
       },
       {
-        "detail": "Say what a certificate proves, and what it does not.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "Verification is the part people disable and regret."
       },
       {
-        "detail": "You separate identity from encryption rather than treating them as one thing.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "What does forward secrecy protect after a long-term key compromise, and what does it not protect on a compromised endpoint?"
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on identity, confidentiality, integrity."
+    "transferChallenge": "What does forward secrecy protect after a long-term key compromise, and what does it not protect on a compromised endpoint?"
   },
   "exerciseKind": "planned",
   "id": "q-tls",
@@ -40,17 +40,17 @@
   "title": "What TLS Guarantees",
   "writing": {
     "answers": [
-      "Nothing changes, it is only a warning",
-      "Encryption to whoever answered — a MITM is now undetectable",
-      "Slower connections"
+      "TLS record encryption alone proves the requested hostname’s identity.",
+      "The client cannot rely on the TLS connection to authenticate the intended server.",
+      "Disabling verification only changes handshake speed, not trust."
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Verification is the part people disable and regret.",
+    "exampleCaption": "TLS configuration sketch: supply rustls, a trusted root store and hostname verification; configuration alone is not a completed handshake.",
     "exampleCode": "let config = ClientConfig::builder()\n    .with_root_certificates(roots)\n    .with_no_client_auth();",
-    "explanation": "The handshake authenticates the server through a certificate chain, agrees on keys with an ephemeral exchange, and switches to symmetric encryption because it is far faster. Skip the certificate check and a machine in the middle (MITM) can answer in the server's place, decrypt everything, and forward it on. Forward secrecy means recording traffic today and stealing the key tomorrow reveals nothing. Certificate pinning, mTLS, and SNI are the follow-up questions.\n\nTLS aims to authenticate the endpoint and protect data in transit with confidentiality and integrity. In a typical web connection, the client validates a certificate chain for the requested hostname and negotiates keys. The details depend on TLS version and configuration, but modern handshakes use ephemeral key exchange to establish secrets and symmetric cryptography to protect application records efficiently. If certificate validation is skipped, an attacker able to intercept traffic can impersonate the server even while the bytes appear encrypted.\n\nForward secrecy means that compromise of a long-term authentication key later does not, by itself, reveal past session traffic recorded under properly negotiated ephemeral secrets. It does not protect a compromised endpoint or keys stolen while a session is active. Mutual TLS adds client certificate authentication when both sides need that identity. SNI helps route a connection to the right server name; it is not itself proof of identity. Certificate pinning can reduce some trust paths but creates operational risks during key rotation.\n\nIn an interview, describe what the client verifies, what keys protect the data, and what threat remains. Then apply it to a concrete failure: wrong hostname, expired certificate, untrusted issuer, or a user clicking through a warning. Never suggest disabling validation as a normal workaround. If discussing performance, note resumption and connection reuse rather than claiming encryption is the dominant cost without evidence.\n\nAuthentication depends on which identity is checked. A valid certificate for the wrong hostname should fail. Encryption without trustworthy identity still allows an active attacker to interpose.",
-    "feedback": "Without verification the tunnel may simply terminate at the attacker.",
-    "practiceCode": "danger_accept_invalid_certs(true)",
-    "question": "What does that leave you with?",
+    "explanation": "TLS combines endpoint authentication and protection of traffic under its negotiated protocol. Correct certificate and hostname validation normally authenticates a web server. Forward secrecy limits retrospective exposure from a later long-term key compromise; it is conditional on the handshake and does not protect a compromised live endpoint.\n\nTLS aims to authenticate the endpoint and protect data in transit with confidentiality and integrity. In a typical web connection, the client validates a certificate chain for the requested hostname and negotiates keys. The details depend on TLS version and configuration, but modern handshakes use ephemeral key exchange to establish secrets and symmetric cryptography to protect application records efficiently. If certificate validation is skipped, an attacker able to intercept traffic can impersonate the server even while the bytes appear encrypted.\n\nForward secrecy means that compromise of a long-term authentication key later does not, by itself, reveal past session traffic recorded under properly negotiated ephemeral secrets. It does not protect a compromised endpoint or keys stolen while a session is active. Mutual TLS adds client certificate authentication when both sides need that identity. SNI helps route a connection to the right server name; it is not itself proof of identity. Certificate pinning can reduce some trust paths but creates operational risks during key rotation.\n\nIn an interview, describe what the client verifies, what keys protect the data, and what threat remains. Then apply it to a concrete failure: wrong hostname, expired certificate, untrusted issuer, or a user clicking through a warning. Never suggest disabling validation as a normal workaround. If discussing performance, note resumption and connection reuse rather than claiming encryption is the dominant cost without evidence.\n\nAuthentication depends on which identity is checked. A valid certificate for the wrong hostname should fail. Encryption without trustworthy identity still allows an active attacker to interpose.\n\nInterview follow-up: What does forward secrecy protect after a long-term key compromise, and what does it not protect on a compromised endpoint?",
+    "feedback": "An active interceptor may impersonate the endpoint. Encryption and integrity protect the negotiated connection, whose peer must first be authenticated.",
+    "practiceCode": "// A TLS client disables server certificate/hostname verification.\n// No independent pinning or authentication replaces it.",
+    "question": "Without certificate verification or another identity check, what security guarantee is missing?",
     "rule": "Encryption without verified identity protects you from nobody in particular.",
     "success": "You separate identity from encryption rather than treating them as one thing.",
     "summary": "TLS gives confidentiality, integrity, and identity — in that order of confusion.",
@@ -59,6 +59,6 @@
   "illustration": {
     "path": "media/q-tls.png",
     "alt": "Diagram for What TLS Guarantees: a Rust code example flows to the lesson rule and the key observation.",
-    "caption": "Verification is the part people disable and regret."
+    "caption": "TLS configuration sketch: supply rustls, a trusted root store and hostname verification; configuration alone is not a completed handshake."
   }
 }

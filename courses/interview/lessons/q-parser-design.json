@@ -1,6 +1,6 @@
 {
   "concept": "Separate tokenization, grammar, and diagnostics",
-  "contentDigest": "eb84b7a7e9882c70d9c95285df17170f130d06c0f1d92f667dc3f5fd0edfcb47",
+  "contentDigest": "fbdb4b629bd3cc58d942ac98fe49783c0ba8347c47837f150717d65baac832b7",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Debugging Out Loud"
       }
     ],
-    "correction": "A strong answer defines input ownership, source spans, recovery strategy, and whether the parser returns a tree or events.",
-    "misconception": "“Faster allocation”",
+    "correction": "Spans are coordinates, not ownership or proof of validity. Keep the correct source/version and use checked slicing at trust boundaries.",
+    "misconception": "Every byte offset is automatically a valid Unicode scalar boundary.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "Separate tokenization, grammar, and diagnostics."
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "The example makes the contract visible in code."
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "How do byte offsets, Unicode scalar positions, grapheme clusters and editor UTF-16 selections differ?"
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on separate tokenization, grammar, and diagnostics."
+    "transferChallenge": "How do byte offsets, Unicode scalar positions, grapheme clusters and editor UTF-16 selections differ?"
   },
   "exerciseKind": "planned",
   "id": "q-parser-design",
@@ -40,17 +40,17 @@
   "title": "Design a Parser",
   "writing": {
     "answers": [
-      "Precise diagnostics",
-      "Faster allocation",
-      "Automatic parsing"
+      "The range must be ordered, in bounds and aligned to UTF-8 character boundaries.",
+      "Every byte offset is automatically a valid Unicode scalar boundary.",
+      "Storing a Span automatically extends the lifetime of its source buffer."
     ],
     "correctAnswer": 0,
-    "exampleCaption": "The example makes the contract visible in code.",
-    "exampleCode": "struct Span { start: usize, end: usize }\nenum Token<'a> {\n    Word(&'a str, Span),\n    Number(u64, Span),\n}",
-    "explanation": "A strong answer defines input ownership, source spans, recovery strategy, and whether the parser returns a tree or events. Separate lexing from grammar only when that boundary improves errors or complexity.\n\nA parser design starts with the language and its error contract. Is input trusted? Must the parser preserve exact source positions? Should it return one tree, a stream of events, or partial results with diagnostics? Define a small grammar and one ambiguous case before choosing an algorithm. A tokenizer can simplify grammar code by turning characters into identifiers, numbers, and punctuation with spans. For a tiny format, a separate lexer may be unnecessary; choose the boundary that improves clarity and error messages.\n\nFor a configuration file, make the parser distinguish a missing field, an invalid number, and an unexpected token. Each diagnostic should point to a source span and explain what was expected. If recovery is required, decide where to resume after an error so one bad line does not hide every later issue. Avoid panic on malformed input. Parsing is the boundary from bytes or text into validated domain values, so a successful result should satisfy invariants the rest of the program can trust.\n\nIn an interview, show one input moving through tokenization, grammar recognition, AST construction, and validation. Discuss ownership of source text: copying every token into a `String` may be simple but expensive, while borrowing slices ties results to the input lifetime. Test empty input, nested structures, invalid UTF-8 if bytes are accepted, and a deeply nested case that could exhaust recursion. The answer should explain how errors help a user fix a file, not just how the happy path builds a tree.",
-    "feedback": "Correct: Precise diagnostics.",
-    "practiceCode": "struct Span { start: usize, end: usize }\nenum Token<'a> {\n    Word(&'a str, Span),\n    Number(u64, Span),\n}",
-    "question": "Why retain source spans?",
+    "exampleCaption": "Spans are coordinates, not ownership or proof of validity. Keep the correct source/version and use checked slicing at trust boundaries.",
+    "exampleCode": "struct Span { start: usize, end: usize }\nfn main() {\n    let source = \"café\";\n    let span = Span { start: 3, end: 5 };\n    assert_eq!(source.get(span.start..span.end), Some(\"é\"));\n}",
+    "explanation": "A strong answer defines input ownership, source spans, recovery strategy, and whether the parser returns a tree or events. Separate lexing from grammar only when that boundary improves errors or complexity.\n\nA parser design starts with the language and its error contract. Is input trusted? Must the parser preserve exact source positions? Should it return one tree, a stream of events, or partial results with diagnostics? Define a small grammar and one ambiguous case before choosing an algorithm. A tokenizer can simplify grammar code by turning characters into identifiers, numbers, and punctuation with spans. For a tiny format, a separate lexer may be unnecessary; choose the boundary that improves clarity and error messages.\n\nFor a configuration file, make the parser distinguish a missing field, an invalid number, and an unexpected token. Each diagnostic should point to a source span and explain what was expected. If recovery is required, decide where to resume after an error so one bad line does not hide every later issue. Avoid panic on malformed input. Parsing is the boundary from bytes or text into validated domain values, so a successful result should satisfy invariants the rest of the program can trust.\n\nIn an interview, show one input moving through tokenization, grammar recognition, AST construction, and validation. Discuss ownership of source text: copying every token into a `String` may be simple but expensive, while borrowing slices ties results to the input lifetime. Test empty input, nested structures, invalid UTF-8 if bytes are accepted, and a deeply nested case that could exhaust recursion. The answer should explain how errors help a user fix a file, not just how the happy path builds a tree.\n\nInterview follow-up: How do byte offsets, Unicode scalar positions, grapheme clusters and editor UTF-16 selections differ?",
+    "feedback": "Spans are coordinates, not ownership or proof of validity. Keep the correct source/version and use checked slicing at trust boundaries.",
+    "practiceCode": "struct Span { start: usize, end: usize }\nfn main() {\n    let source = \"café\";\n    let span = Span { start: 3, end: 5 };\n    assert_eq!(source.get(span.start..span.end), Some(\"é\"));\n}",
+    "question": "What must a byte span into a UTF-8 source preserve before it becomes a &str slice?",
     "rule": "A strong answer defines input ownership, source spans, recovery strategy, and whether the parser returns a tree or events.",
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Separate tokenization, grammar, and diagnostics.",
@@ -58,7 +58,7 @@
   },
   "illustration": {
     "path": "media/q-parser-design.png",
-    "alt": "A tokenizer and parser turn 1 + 2 * 3 into a syntax tree that respects precedence.",
-    "caption": "Good parsers preserve structure and report a source position on errors."
+    "alt": "Diagram for Design a Parser: the code flows to its exact contract and observed boundary.",
+    "caption": "Spans are coordinates, not ownership or proof of validity. Keep the correct source/version and use checked slicing at trust boundaries."
   }
 }

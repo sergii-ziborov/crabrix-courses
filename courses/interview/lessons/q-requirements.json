@@ -1,6 +1,6 @@
 {
   "concept": "Turn a broad prompt into boundaries and invariants",
-  "contentDigest": "49d2c22ded74f17035b4bb82e1c93bb61a485a5348752e26659ebd77bd9ce013",
+  "contentDigest": "95b7095b4ec901963a8f608a15f5c5eccfb31736715c3c9889086fc6d890a40e",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Review Rust Code"
       }
     ],
-    "correction": "Ask about scale, latency, durability, consistency, trust boundaries, and expected failure.",
-    "misconception": "“It names a type”",
+    "correction": "Scale and failure requirements determine viable designs. Define acknowledgement, durability, latency and trust boundaries in observable terms.",
+    "misconception": "Treat surviving restart as equivalent to keeping a value in process memory.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "Turn a broad prompt into boundaries and invariants."
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "The example makes the contract visible in code."
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "What changes if offline edits must survive a crash, but shared rooms deliberately expire and can end on server restart?"
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on turn a broad prompt into boundaries and invariants."
+    "transferChallenge": "What changes if offline edits must survive a crash, but shared rooms deliberately expire and can end on server restart?"
   },
   "exerciseKind": "planned",
   "id": "q-requirements",
@@ -40,17 +40,17 @@
   "title": "Clarify Requirements",
   "writing": {
     "answers": [
-      "It changes viable designs",
-      "It names a type",
-      "It avoids tests"
+      "Ask whether an acknowledged write must survive restart and how much loss is acceptable.",
+      "Treat surviving restart as equivalent to keeping a value in process memory.",
+      "Choose a data structure before establishing input size or failure semantics."
     ],
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "struct Requirements {\n    max_items: usize,\n    durable: bool,\n    latency_ms: u64,\n}",
-    "explanation": "Ask about scale, latency, durability, consistency, trust boundaries, and expected failure. Good clarifying questions shrink the design space and reveal which guarantee the interviewer actually wants explored.\n\nA broad design prompt hides choices that determine the architecture. Ask who the users are, what action they need, expected traffic, size of stored data, latency targets, and what must survive a failure. Then ask about consistency, security boundaries, retention, and existing systems. Prioritize questions that change the design. If the interviewer cannot give numbers, state reasonable assumptions and proceed; endless clarification can become a way to avoid making a design decision.\n\nFor a file-sharing service, the first questions might be maximum file size, whether recipients need accounts, whether links expire, and whether uploads must be resumable. These answers change storage, authentication, and API design. A million tiny text files and a thousand large videos are different workloads even if both are called 'file sharing'. Draw the success path and one failure path after the key assumptions are explicit.\n\nIn an interview, summarize the agreed contract back to the interviewer: 'We need uploads under X size, downloads within Y latency, and links that expire after Z.' Mark unknowns separately. Then choose a minimal architecture that meets those constraints and describe how it scales or fails. Good clarifying questions shrink the search space; they are not a performance of completeness. The goal is to expose the invariant you must protect and the metric by which success will be judged.",
-    "feedback": "Correct: It changes viable designs.",
-    "practiceCode": "struct Requirements {\n    max_items: usize,\n    durable: bool,\n    latency_ms: u64,\n}",
-    "question": "Why ask for scale before choosing storage?",
+    "explanation": "Ask about scale, latency, durability, consistency, trust boundaries, and expected failure. Good clarifying questions shrink the design space and reveal which guarantee the interviewer actually wants explored.\n\nA broad design prompt hides choices that determine the architecture. Ask who the users are, what action they need, expected traffic, size of stored data, latency targets, and what must survive a failure. Then ask about consistency, security boundaries, retention, and existing systems. Prioritize questions that change the design. If the interviewer cannot give numbers, state reasonable assumptions and proceed; endless clarification can become a way to avoid making a design decision.\n\nFor a file-sharing service, the first questions might be maximum file size, whether recipients need accounts, whether links expire, and whether uploads must be resumable. These answers change storage, authentication, and API design. A million tiny text files and a thousand large videos are different workloads even if both are called 'file sharing'. Draw the success path and one failure path after the key assumptions are explicit.\n\nIn an interview, summarize the agreed contract back to the interviewer: 'We need uploads under X size, downloads within Y latency, and links that expire after Z.' Mark unknowns separately. Then choose a minimal architecture that meets those constraints and describe how it scales or fails. Good clarifying questions shrink the search space; they are not a performance of completeness. The goal is to expose the invariant you must protect and the metric by which success will be judged.\n\nInterview follow-up: What changes if offline edits must survive a crash, but shared rooms deliberately expire and can end on server restart?",
+    "feedback": "Scale and failure requirements determine viable designs. Define acknowledgement, durability, latency and trust boundaries in observable terms.",
+    "practiceCode": "struct Requirements {\n    max_items: usize,\n    survives_restart: bool,\n    max_loss_seconds: u32,\n}",
+    "question": "Which clarification changes the storage design before implementation?",
     "rule": "Ask about scale, latency, durability, consistency, trust boundaries, and expected failure.",
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Turn a broad prompt into boundaries and invariants.",

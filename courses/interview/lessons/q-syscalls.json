@@ -1,6 +1,6 @@
 {
   "concept": "Where the cost of IO actually is",
-  "contentDigest": "d7992993b233183d6030e3763294e1dfae84586eaadf19e76a92505bc3a2b3d7",
+  "contentDigest": "abc5eeb612ae6d3a2dc1a17a65518c1fe5dcada920b07cb908ea5c1ccf1d91e9",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "TCP vs UDP"
       }
     ],
-    "correction": "Buffering can combine small writes; measure the boundary cost and handle errors explicitly.",
-    "misconception": "“It is not `async`, so it blocks the task”",
+    "correction": "Write can be buffered or user-defined. Errors are propagated by ?. Measure the actual boundary; batching still needs partial-write and flush policy.",
+    "misconception": "write_all guarantees this loop has exactly one kernel transition per byte.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "A syscall is a controlled trip into the kernel, and it is not free."
       },
       {
-        "detail": "Count the syscalls in a hot loop and remove the ones that are avoidable.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "This in-memory example checks identical output and explicit flush error handling. Vec is not a kernel file: this program does not measure syscalls. A real underlying writer may need multiple writes, and large writes can bypass the buffer."
       },
       {
-        "detail": "Explain the measured request count, flush policy, partial-write handling and latency tradeoff.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "When does flush differ from durability, and what happens to errors discovered while BufWriter is dropped?"
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on where the cost of io actually is."
+    "transferChallenge": "When does flush differ from durability, and what happens to errors discovered while BufWriter is dropped?"
   },
   "exerciseKind": "planned",
   "id": "q-syscalls",
@@ -40,17 +40,17 @@
   "title": "Syscalls and Buffering",
   "writing": {
     "answers": [
-      "It is not async, so it blocks the task",
-      "Many tiny writes may add avoidable I/O overhead; measure and consider batching.",
-      "write_all can fail and is never checked"
+      "Adding async syntax alone guarantees that all writes become one syscall.",
+      "Measure tiny-write overhead and consider batching while preserving latency and errors.",
+      "write_all guarantees this loop has exactly one kernel transition per byte."
     ],
     "correctAnswer": 1,
     "exampleCaption": "This in-memory example checks identical output and explicit flush error handling. Vec is not a kernel file: this program does not measure syscalls. A real underlying writer may need multiple writes, and large writes can bypass the buffer.",
     "exampleCode": "use std::io::{self, BufWriter, Write};\nfn write_lines<W: Write>(out: &mut W, lines: &[&str]) -> io::Result<()> {\n    for line in lines {\n        out.write_all(line.as_bytes())?;\n        out.write_all(b\"\\n\")?;\n    }\n    Ok(())\n}\nfn main() -> io::Result<()> {\n    let lines = [\"one\", \"two\"];\n    let mut direct = Vec::new();\n    write_lines(&mut direct, &lines)?;\n    let mut buffered = BufWriter::with_capacity(64, Vec::new());\n    write_lines(&mut buffered, &lines)?;\n    buffered.flush()?;\n    assert_eq!(&direct, buffered.get_ref());\n    println!(\"Both writers produced the same bytes\");\n    Ok(())\n}",
-    "explanation": "Operating-system file, socket and thread operations may enter the kernel. The transition and requested work can make many small operations expensive, but no fixed cost ratio applies to every workload. That is why buffering and batching can help when per-call overhead matters, while event loops can handle many mostly idle connections efficiently. Interviewers ask this to see whether you know where the cost of IO actually is.\n\nA system call crosses from user code into the kernel to request a privileged operation. The transition and work on the other side have cost, but there is no single fixed ratio to a function call: data size, caching, contention, device latency, and kernel path all matter. Buffered I/O can combine many small writes into fewer requests. Scatter/gather I/O can send several buffers in one call. Batching is valuable when per-call overhead is a measurable part of the workload, not as a rule to apply blindly.\n\nAn event loop uses readiness or completion notifications so a thread need not block separately on every mostly idle connection. `epoll` and `io_uring` expose different Linux models, but neither guarantees superiority for every operation. A simple blocking read may be the best choice for a small tool. In Rust, a crate's API may buffer or batch internally, so profile the actual program before assuming the source line maps to one syscall.\n\nIn an interview, describe one concrete path: a program calls write, the kernel validates the request and copies or references data according to the API, then the call returns a result that may be partial or an error. Explain why a loop must handle short writes. If the question is performance, propose a measurement: syscall count, bytes per call, time waiting on I/O, and tail latency. The answer should connect the kernel boundary to the observed workload, not just name a fashionable interface.\n\nBatching introduces a latency tradeoff: waiting to accumulate a large buffer can delay one small urgent write. Set a flush policy based on payload size or time budget. Partial I/O remains possible even after batching, so the loop must track bytes completed and retry the rest without duplicating already-sent data.\n\n`BufWriter` batches bytes for an underlying `Write` implementation, which need not be an operating-system file. A flush can perform multiple writes because of short writes; large payloads may go directly to the underlying writer. Call `flush()` and handle its result when buffered output must be submitted before continuing: errors during drop cannot be reported to your caller. Flushing is not a promise that bytes are durable on storage; durability needs the relevant file and filesystem policy.",
-    "feedback": "The question mark already propagates errors. Investigate the actual write count and latency before changing the buffering policy; async syntax alone does not batch the writes.",
-    "practiceCode": "for byte in data {\n    socket.write_all(&[byte])?;\n}",
-    "question": "What performance issue should you investigate in the byte-at-a-time socket loop?",
+    "explanation": "Operating-system file, socket and thread operations may enter the kernel. The transition and requested work can make many small operations expensive, but no fixed cost ratio applies to every workload. That is why buffering and batching can help when per-call overhead matters, while event loops can handle many mostly idle connections efficiently. Interviewers ask this to see whether you know where the cost of IO actually is.\n\nA system call crosses from user code into the kernel to request a privileged operation. The transition and work on the other side have cost, but there is no single fixed ratio to a function call: data size, caching, contention, device latency, and kernel path all matter. Buffered I/O can combine many small writes into fewer requests. Scatter/gather I/O can send several buffers in one call. Batching is valuable when per-call overhead is a measurable part of the workload, not as a rule to apply blindly.\n\nAn event loop uses readiness or completion notifications so a thread need not block separately on every mostly idle connection. `epoll` and `io_uring` expose different Linux models, but neither guarantees superiority for every operation. A simple blocking read may be the best choice for a small tool. In Rust, a crate's API may buffer or batch internally, so profile the actual program before assuming the source line maps to one syscall.\n\nIn an interview, describe one concrete path: a program calls write, the kernel validates the request and copies or references data according to the API, then the call returns a result that may be partial or an error. Explain why a loop must handle short writes. If the question is performance, propose a measurement: syscall count, bytes per call, time waiting on I/O, and tail latency. The answer should connect the kernel boundary to the observed workload, not just name a fashionable interface.\n\nBatching introduces a latency tradeoff: waiting to accumulate a large buffer can delay one small urgent write. Set a flush policy based on payload size or time budget. Partial I/O remains possible even after batching, so the loop must track bytes completed and retry the rest without duplicating already-sent data.\n\n`BufWriter` batches bytes for an underlying `Write` implementation, which need not be an operating-system file. A flush can perform multiple writes because of short writes; large payloads may go directly to the underlying writer. Call `flush()` and handle its result when buffered output must be submitted before continuing: errors during drop cannot be reported to your caller. Flushing is not a promise that bytes are durable on storage; durability needs the relevant file and filesystem policy.\n\nInterview follow-up: When does flush differ from durability, and what happens to errors discovered while BufWriter is dropped?",
+    "feedback": "Write can be buffered or user-defined. Errors are propagated by ?. Measure the actual boundary; batching still needs partial-write and flush policy.",
+    "practiceCode": "// Write implementation and input bytes are provided by the caller.\nfor byte in data {\n    socket.write_all(&[byte])?;\n}",
+    "question": "What should be investigated in this byte-at-a-time writer?",
     "rule": "Buffering can combine small writes; measure the boundary cost and handle errors explicitly.",
     "success": "Explain the measured request count, flush policy, partial-write handling and latency tradeoff.",
     "summary": "A syscall is a controlled trip into the kernel, and it is not free.",

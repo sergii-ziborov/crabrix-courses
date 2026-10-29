@@ -1,6 +1,6 @@
 {
   "concept": "What the borrow checker does not prevent",
-  "contentDigest": "60416853688b8e5c7d432fd1ac83496d06cc13a8cac982dead1a5d23ea18eefd",
+  "contentDigest": "83b42d2279e6cd09fc285cb92337849b43bc25e8a61a35fc553a5982e9369e98",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Channels vs Mutex"
       }
     ],
-    "correction": "Data-race freedom is a compile-time guarantee; deadlock freedom is a design one.",
-    "misconception": "“Use `RwLock` instead”",
+    "correction": "An ordering rule removes this circular wait if all relevant paths follow it. Sleeps change timing, not the possibility of a cycle.",
+    "misconception": "Replace both mutexes with RwLock while retaining the acquisition order.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "Rust prevents data races, not deadlocks."
       },
       {
-        "detail": "Name three ways to remove a deadlock without changing behaviour.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "Two orders, one hang. The types all check out."
       },
       {
-        "detail": "Your answer includes a lock order and one lock-free alternative.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "Would an async mutex remove an opposite-order cycle? Discuss reentrant calls, cancellation and lock scope separately."
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on what the borrow checker does not prevent."
+    "transferChallenge": "Would an async mutex remove an opposite-order cycle? Discuss reentrant calls, cancellation and lock scope separately."
   },
   "exerciseKind": "planned",
   "id": "q-deadlock",
@@ -40,17 +40,17 @@
   "title": "Deadlocks",
   "writing": {
     "answers": [
-      "Wrap both in one Mutex, or always take them in one fixed order",
-      "Use RwLock instead",
-      "Add a sleep between the locks"
+      "Use one documented lock order everywhere, or merge state behind one suitable lock.",
+      "Replace both mutexes with RwLock while retaining the acquisition order.",
+      "Delay the second acquisition by a fixed sleep on each worker."
     ],
     "correctAnswer": 0,
     "exampleCaption": "Two orders, one hang. The types all check out.",
     "exampleCode": "// thread 1\nlet _a = a.lock().unwrap();\nlet _b = b.lock().unwrap();\n\n// thread 2\nlet _b = b.lock().unwrap();\nlet _a = a.lock().unwrap();",
-    "explanation": "The borrow checker knows nothing about the order in which you take locks, so two threads taking `Mutex` A then `Mutex` B, and B then A, will still hang. The standard answers are a global lock order, holding one lock at a time, using try_lock with a timeout, or removing shared state entirely by moving to channels. Knowing Rust does not solve this is the point of the question.\n\nA deadlock is a cycle of waits. Worker A holds lock X and waits for Y; worker B holds Y and waits for X. Each lock protects data correctly, so Rust's data-race protections do not reject the program. The fix begins with a wait-for graph or a documented lock hierarchy. If every path acquires X before Y, that particular two-lock cycle cannot form. Another design is to avoid holding two locks at once by copying the needed data out or sending a message to an owner task.\n\nBe precise about alternatives. `try_lock` can fail rather than block, but a tight retry loop can livelock or burn CPU. A timeout detects a long wait but does not make partial state changes atomic. Dropping one lock before taking the next may remove the deadlock while introducing a race in the business invariant; review what must remain consistent. A channel can simplify ownership when work can be expressed as commands rather than shared mutation.\n\nIn an interview, start with the cycle and show one concrete break in it. Then describe how you would verify the rule in a larger codebase: document lock order beside the shared state, avoid callbacks while holding locks, and test representative interleavings. Do not promise that stress tests prove deadlock freedom. The convincing part is an invariant that prevents a cycle, supported by tests for the implementation.\n\nSelf-deadlock deserves mention: a function can acquire a non-reentrant mutex and call another helper that tries to acquire the same mutex. A global order among two different locks does not prevent that. Document which helpers require a lock to be held and which acquire it themselves, and avoid invoking unknown callbacks under a guard.",
-    "feedback": "One lock, or one documented order, removes the cycle entirely.",
-    "practiceCode": "let a = first.lock().unwrap();\nlet b = second.lock().unwrap();",
-    "question": "What is the cheapest fix across the whole codebase?",
+    "explanation": "The borrow checker knows nothing about the order in which you take locks, so two threads taking `Mutex` A then `Mutex` B, and B then A, will still hang. The standard answers are a global lock order, holding one lock at a time, using try_lock with a timeout, or removing shared state entirely by moving to channels. Knowing Rust does not solve this is the point of the question.\n\nA deadlock is a cycle of waits. Worker A holds lock X and waits for Y; worker B holds Y and waits for X. Each lock protects data correctly, so Rust's data-race protections do not reject the program. The fix begins with a wait-for graph or a documented lock hierarchy. If every path acquires X before Y, that particular two-lock cycle cannot form. Another design is to avoid holding two locks at once by copying the needed data out or sending a message to an owner task.\n\nBe precise about alternatives. `try_lock` can fail rather than block, but a tight retry loop can livelock or burn CPU. A timeout detects a long wait but does not make partial state changes atomic. Dropping one lock before taking the next may remove the deadlock while introducing a race in the business invariant; review what must remain consistent. A channel can simplify ownership when work can be expressed as commands rather than shared mutation.\n\nIn an interview, start with the cycle and show one concrete break in it. Then describe how you would verify the rule in a larger codebase: document lock order beside the shared state, avoid callbacks while holding locks, and test representative interleavings. Do not promise that stress tests prove deadlock freedom. The convincing part is an invariant that prevents a cycle, supported by tests for the implementation.\n\nSelf-deadlock deserves mention: a function can acquire a non-reentrant mutex and call another helper that tries to acquire the same mutex. A global order among two different locks does not prevent that. Document which helpers require a lock to be held and which acquire it themselves, and avoid invoking unknown callbacks under a guard.\n\nInterview follow-up: Would an async mutex remove an opposite-order cycle? Discuss reentrant calls, cancellation and lock scope separately.",
+    "feedback": "An ordering rule removes this circular wait if all relevant paths follow it. Sleeps change timing, not the possibility of a cycle.",
+    "practiceCode": "// Worker A acquires first, then second.\n// Worker B acquires second, then first.\n// Both may wait while holding their first lock.",
+    "question": "Which design change directly removes the opposite-lock-order cycle?",
     "rule": "Data-race freedom is a compile-time guarantee; deadlock freedom is a design one.",
     "success": "Your answer includes a lock order and one lock-free alternative.",
     "summary": "Rust prevents data races, not deadlocks.",

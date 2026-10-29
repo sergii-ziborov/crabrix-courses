@@ -1,0 +1,53 @@
+{
+  "id": "q-pin-future",
+  "title": "Pin, Unpin and Future Polling",
+  "concept": "Stable pointees without confusing the pointer with its allocation",
+  "minutes": 14,
+  "order": 1,
+  "parentID": "interview-async-contracts",
+  "exerciseKind": "planned",
+  "contentDigest": "c2fd2c9a7baaf697cf4560af14ef75e4d50d5a5177686844a26b234bd2a3be5e",
+  "writing": {
+    "summary": "Pin constrains moving a pointee through a pointer; moving that pointer can remain valid.",
+    "explanation": "A future’s poll method receives Pin<&mut Self>. Some futures may have address-sensitive state, so the polling interface must not allow callers to move that state out after pinning. Unpin marks types for which the pinning restriction can be relaxed. Pin is not a mutex and does not itself provide synchronization or permanent storage.\n\nThe example pins a compiler-generated async future in a Box, records the pointee’s address, moves the Pin<Box<_>> handle and polls through its pinned mutable reference. Moving the handle does not relocate its heap pointee. A noop waker is adequate only because this particular future completes immediately; it is not a general executor for I/O or pending tasks.\n\nSafe code should use supported pinning constructors and projection APIs instead of inventing unchecked pointer manipulations. A self-referential structure or pinned field needs a careful destruction and projection contract. In an interview, distinguish moving a pointer from moving the pointee, then explain why get_mut requires Unpin. Do not promise that every future is self-referential or that boxing every future is universally necessary.",
+    "exampleCode": "use std::future::Future;\nuse std::task::{Context, Poll, Waker};\nfn main() {\n    let first = Box::pin(async { 7u32 });\n    let address = first.as_ref().get_ref() as *const _;\n    let mut second = first;\n    assert_eq!(second.as_ref().get_ref() as *const _, address);\n    let mut cx = Context::from_waker(Waker::noop());\n    assert_eq!(second.as_mut().poll(&mut cx), Poll::Ready(7));\n}",
+    "exampleCaption": "Moving the pinned Box handle retains its pointee’s address and permits pinned polling.",
+    "rule": "Pin protects the pointee’s address-sensitive contract; Unpin governs safe access that can move it.",
+    "task": "Explain the example, predict the result, and justify your answer to the follow-up.",
+    "practiceCode": "fn main() {\n    let first = Box::pin(async { 7u32 });\n    let before = first.as_ref().get_ref() as *const _;\n    let second = first;\n    assert_eq!(second.as_ref().get_ref() as *const _, before);\n}",
+    "success": "Identify the relevant ownership or API contract and test the changed constraint.",
+    "question": "Which operation is demonstrated by moving first into second?",
+    "answers": [
+      "The Pin<Box<_>> handle moves while the pinned allocation stays at its address.",
+      "The future becomes Unpin because its Box handle was moved.",
+      "Pin copies the future into a new allocation on every assignment."
+    ],
+    "correctAnswer": 0,
+    "feedback": "The handle’s move does not move its pointee. The example does not establish Unpin for a compiler-generated async future."
+  },
+  "depth": {
+    "misconception": "The future becomes Unpin because its Box handle was moved.",
+    "correction": "The handle’s move does not move its pointee. The example does not establish Unpin for a compiler-generated async future.",
+    "traceSteps": [
+      {
+        "title": "Observe the concrete input",
+        "detail": "Moving the pinned Box handle retains its pointee’s address and permits pinned polling."
+      },
+      {
+        "title": "Apply the contract",
+        "detail": "Pin protects the pointee’s address-sensitive contract; Unpin governs safe access that can move it."
+      },
+      {
+        "title": "Check the boundary",
+        "detail": "Why cannot a generic function obtain &mut T from Pin<&mut T> without an Unpin bound through get_mut?"
+      }
+    ],
+    "transferChallenge": "Why cannot a generic function obtain &mut T from Pin<&mut T> without an Unpin bound through get_mut?",
+    "connections": []
+  },
+  "illustration": {
+    "path": "media/q-pin-future.png",
+    "alt": "Diagram for Pin, Unpin and Future Polling: the code flows to its exact contract and observed boundary.",
+    "caption": "Moving the pinned Box handle retains its pointee’s address and permits pinned polling."
+  }
+}

@@ -1,6 +1,6 @@
 {
   "concept": "Aliasing and mutation rules",
-  "contentDigest": "e7c4dc9ccd8c3cec230763db8d0535b86e6b3582dfe9d6c9768c5afa8a301c7f",
+  "contentDigest": "630174a1cdffff17c157241b69f7b6789bf5d917a86c81a7b9a9f3f153e7a526",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Lifetime Reasoning"
       }
     ],
-    "correction": "Aliasing XOR mutation, checked over the region a borrow is used.",
-    "misconception": "“The vector has to be declared immutable”",
+    "correction": "Both references are used by println, so their live regions overlap. Without the later uses, the original abbreviated example could compile under non-lexical lifetimes.",
+    "misconception": "Creating a reference to a Vec requires cloning its allocation first.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "The borrowing answer is about aliasing versus mutation."
       },
       {
-        "detail": "State the borrowing rule and why it prevents data races.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "Many readers, or one writer — never at the same time."
       },
       {
-        "detail": "You mention aliasing, mutation, and where each borrow ends.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "Move the writer’s final use before creating reader. Why does that version compile without adding clone?"
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on aliasing and mutation rules."
+    "transferChallenge": "Move the writer’s final use before creating reader. Why does that version compile without adding clone?"
   },
   "exerciseKind": "borrowDiagnostic",
   "id": "q-borrowing",
@@ -40,17 +40,17 @@
   "title": "Why Borrowing Works",
   "writing": {
     "answers": [
-      "The vector has to be declared immutable",
-      "A mutable borrow cannot coexist with a shared one",
-      "A Vec cannot be borrowed twice in one scope"
+      "Declaring two references in one lexical scope is always forbidden.",
+      "The mutable borrow is still used after the shared borrow is created.",
+      "Creating a reference to a Vec requires cloning its allocation first."
     ],
     "correctAnswer": 1,
     "exampleCaption": "Many readers, or one writer — never at the same time.",
     "exampleCode": "let mut v = vec![1, 2];\nlet a = &v[0];\nlet b = &v[1];   // two readers: fine\nprintln!(\"{a} {b}\");\nv.push(3);       // writer, after the readers end",
-    "explanation": "Say it as a rule about coexistence: you may have many readers or one writer, never both, and the compiler tracks the region where each borrow is live. That single constraint is what makes data races impossible for safe code without any runtime cost.\n\nBorrowing separates temporary access from ownership. With shared references, several readers may coexist. A mutable reference requires exclusive access to the same value for the region where it is live. Rust tracks uses of borrows, so the relevant region can end before the closing brace when the reference is no longer used. That is why a read can be followed by a mutation in one scope if the read borrow has truly ended. The rule concerns overlapping access, not a ban on ever having both forms in one function.\n\nShow the rule on a vector. Hold a shared reference to its first element, then attempt to push another element while that reference is still needed. A push may reallocate the vector, invalidating an element reference; the compiler rejects that overlap. Read or copy the needed value first, `let` the borrow end, and then push. This is a concrete safety story the interviewer can follow.\n\nBe careful with broad claims. Safe Rust prevents unsynchronized data races, but borrowing alone does not prove the program is logically correct, deadlock-free, or free of runtime panics. Interior mutability types may enforce their access rules at runtime. If asked how to fix a borrow error, first draw owner, readers, writer, and last uses. Then narrow a scope, change an API to borrow less, or move data only when that matches the desired ownership. A clone is one option, not the default answer.\n\nA borrowed reference also cannot outlive its owner. Explain this lifetime relationship when the example crosses a function boundary.",
-    "feedback": "One writer excludes all readers for as long as it is live.",
-    "practiceCode": "let mut v = vec![1];\nlet r = &mut v;\nlet s = &v;",
-    "question": "Why does the compiler reject that borrow?",
+    "explanation": "Shared reads and exclusive mutation of the same memory cannot overlap incompatibly. Rust tracks the uses that keep each borrow live, rather than banning both reference kinds from one lexical scope. Interior mutability provides additional APIs whose safety rules must still be respected.\n\nBorrowing separates temporary access from ownership. With shared references, several readers may coexist. A mutable reference requires exclusive access to the same value for the region where it is live. Rust tracks uses of borrows, so the relevant region can end before the closing brace when the reference is no longer used. That is why a read can be followed by a mutation in one scope if the read borrow has truly ended. The rule concerns overlapping access, not a ban on ever having both forms in one function.\n\nShow the rule on a vector. Hold a shared reference to its first element, then attempt to push another element while that reference is still needed. A push may reallocate the vector, invalidating an element reference; the compiler rejects that overlap. Read or copy the needed value first, `let` the borrow end, and then push. This is a concrete safety story the interviewer can follow.\n\nBe careful with broad claims. Safe Rust prevents unsynchronized data races, but borrowing alone does not prove the program is logically correct, deadlock-free, or free of runtime panics. Interior mutability types may enforce their access rules at runtime. If asked how to fix a borrow error, first draw owner, readers, writer, and last uses. Then narrow a scope, change an API to borrow less, or move data only when that matches the desired ownership. A clone is one option, not the default answer.\n\nA borrowed reference also cannot outlive its owner. Explain this lifetime relationship when the example crosses a function boundary.\n\nInterview follow-up: Move the writer’s final use before creating reader. Why does that version compile without adding clone?",
+    "feedback": "Both references are used by println, so their live regions overlap. Without the later uses, the original abbreviated example could compile under non-lexical lifetimes.",
+    "practiceCode": "fn main() {\n    let mut v = vec![1];\n    let writer = &mut v;\n    let reader = &v;\n    println!(\"{writer:?} {reader:?}\");\n}",
+    "question": "Which overlapping uses make this program fail to compile?",
     "rule": "Aliasing XOR mutation, checked over the region a borrow is used.",
     "success": "You mention aliasing, mutation, and where each borrow ends.",
     "summary": "The borrowing answer is about aliasing versus mutation.",

@@ -1,6 +1,6 @@
 {
   "concept": "Tie a choice to constraints and a failure mode",
-  "contentDigest": "4abc88fdb1f5a37eca7a07a18236cf253d0aa1e4480349d7ca4459fe13484a5f",
+  "contentDigest": "4bc086292b70414c0e71610d0580de3b3b4c7309fee5d00c791a01f1c9336a1d",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Clarify Requirements"
       }
     ],
-    "correction": "A senior answer does not call one tool universally best.",
-    "misconception": "“More jargon”",
+    "correction": "A useful recommendation states constraints, alternatives, a measurable outcome and the condition for revisiting it.",
+    "misconception": "List many implementation features without tying them to user constraints.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "Tie a choice to constraints and a failure mode."
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "The example makes the contract visible in code."
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "What metric would reveal that your chosen queue capacity harms tail latency? How would you gather that evidence?"
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on tie a choice to constraints and a failure mode."
+    "transferChallenge": "What metric would reveal that your chosen queue capacity harms tail latency? How would you gather that evidence?"
   },
   "exerciseKind": "planned",
   "id": "q-tradeoff-communication",
@@ -40,17 +40,17 @@
   "title": "Communicate a Tradeoff",
   "writing": {
     "answers": [
-      "Decision criteria",
-      "More jargon",
-      "One absolute rule"
+      "Choose a candidate, state the accepted cost and name evidence that would change the choice.",
+      "List many implementation features without tying them to user constraints.",
+      "Claim the faster asymptotic bound settles latency at every input size."
     ],
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "enum Choice {\n    Channel,\n    Mutex,\n}\n// Choose from ownership and workload facts.",
-    "explanation": "A senior answer does not call one tool universally best. Name the current constraint, compare at least two viable choices, state the cost you accept, and say what evidence would change the decision.\n\nA tradeoff answer begins with the constraint that matters now. For a mobile Rust editor, local compilation may improve privacy and offline capability while consuming more device resources and supporting a narrower toolchain target. A server compiler may support more crates but introduce network dependence and operational cost. Neither is universally superior. State which users and failure modes the current design serves, and which cost you are accepting.\n\nCompare at least two viable options on the same dimensions: correctness, latency, memory, maintenance, security boundary, and reversibility. Avoid a table of generic advantages that does not change a decision. If p95 latency is the requirement, define its measurement. If offline use matters, define which operations must work offline. If privacy is the requirement, identify exactly what data crosses a network boundary. A constraint becomes useful only when it can be observed or tested.\n\nIn an interview, make a provisional recommendation and name the evidence that would change it. 'I would start with option A because our workloads are small; if production traces show queue age above two seconds, I would revisit B' is stronger than claiming A is best. Mention migration cost if the choice becomes difficult to reverse. Clear communication is not certainty; it is a decision that another engineer can inspect, challenge, and update.",
-    "feedback": "Correct: Decision criteria.",
-    "practiceCode": "enum Choice {\n    Channel,\n    Mutex,\n}\n// Choose from ownership and workload facts.",
-    "question": "What makes a tradeoff answer testable?",
+    "explanation": "A senior answer does not call one tool universally best. Name the current constraint, compare at least two viable choices, state the cost you accept, and say what evidence would change the decision.\n\nA tradeoff answer begins with the constraint that matters now. For a mobile Rust editor, local compilation may improve privacy and offline capability while consuming more device resources and supporting a narrower toolchain target. A server compiler may support more crates but introduce network dependence and operational cost. Neither is universally superior. State which users and failure modes the current design serves, and which cost you are accepting.\n\nCompare at least two viable options on the same dimensions: correctness, latency, memory, maintenance, security boundary, and reversibility. Avoid a table of generic advantages that does not change a decision. If p95 latency is the requirement, define its measurement. If offline use matters, define which operations must work offline. If privacy is the requirement, identify exactly what data crosses a network boundary. A constraint becomes useful only when it can be observed or tested.\n\nIn an interview, make a provisional recommendation and name the evidence that would change it. 'I would start with option A because our workloads are small; if production traces show queue age above two seconds, I would revisit B' is stronger than claiming A is best. Mention migration cost if the choice becomes difficult to reverse. Clear communication is not certainty; it is a decision that another engineer can inspect, challenge, and update.\n\nInterview follow-up: What metric would reveal that your chosen queue capacity harms tail latency? How would you gather that evidence?",
+    "feedback": "A useful recommendation states constraints, alternatives, a measurable outcome and the condition for revisiting it.",
+    "practiceCode": "// Requirement: 16 MiB work budget, offline operation, bounded inputs.\n// Compare two implementations under those same constraints.",
+    "question": "Which answer connects a proposed design to a falsifiable decision criterion?",
     "rule": "A senior answer does not call one tool universally best.",
     "success": "You can apply the rule to a new snippet and defend the tradeoff.",
     "summary": "Tie a choice to constraints and a failure mode.",

@@ -1,0 +1,53 @@
+{
+  "id": "q-iterator-ownership",
+  "title": "Iterator Ownership and Laziness",
+  "concept": "Borrowing iteration, consuming iteration and deliberate collection",
+  "minutes": 14,
+  "order": 3,
+  "parentID": "interview-values",
+  "exerciseKind": "planned",
+  "contentDigest": "4c2ab867d642e07709da2377211a18a323ae6c393771810c350a269be65e7427",
+  "writing": {
+    "summary": "An iterator pipeline describes work; the item type and terminal operation determine ownership and execution.",
+    "explanation": "For a Vec<T>, iter normally yields &T, iter_mut yields &mut T and into_iter on an owned vector yields T. The chosen receiver matters: into_iter on a reference can still borrow. Read the actual item type before deciding whether an operation moves, copies or clones values.\n\nMost iterator adapters are lazy. map describes a transformation, while a consumer such as collect or sum drives it. Returning an iterator can avoid collecting an intermediate vector, but keeps any captured input borrows alive for the returned iterator’s lifetime. Calling cloned on an iterator of references requests Clone on its items; it is not a free conversion for every T.\n\nThe example computes lengths by borrowing the strings and then proves the original vector remains usable. A second pipeline consumes it into another collection. Explain both the data flow and when work occurs. In an interview, follow up by returning an impl Iterator<Item = &str> tied to the input. That exposes lifetime reasoning more clearly than naming adapter methods from memory.",
+    "exampleCode": "fn main() {\n    let words = vec![String::from(\"crab\"), String::from(\"rust\")];\n    let lengths: Vec<_> = words.iter().map(String::len).collect();\n    assert_eq!(lengths, [4, 4]);\n    assert_eq!(words.len(), 2);\n    let owned: Vec<String> = words.into_iter().collect();\n    assert_eq!(owned[0], \"crab\");\n}",
+    "exampleCaption": "Borrowing iteration preserves the input; owned into_iter consumes this vector.",
+    "rule": "Trace the receiver, iterator item type and consumer before making a move or allocation claim.",
+    "task": "Explain the example, predict the result, and justify your answer to the follow-up.",
+    "practiceCode": "fn main() {\n    let words = vec![String::from(\"crab\")];\n    let lengths: Vec<_> = words.iter().map(String::len).collect();\n    assert_eq!(words[0], \"crab\");\n    assert_eq!(lengths, [4]);\n}",
+    "success": "Identify the relevant ownership or API contract and test the changed constraint.",
+    "question": "Why can words still be read after collecting these lengths?",
+    "answers": [
+      "collect implicitly clones every String in the source vector.",
+      "iter yields shared references and the map produces lengths without moving strings.",
+      "Every iterator pipeline automatically returns ownership to its original container."
+    ],
+    "correctAnswer": 1,
+    "feedback": "The pipeline borrows &String values and collects usize results. A consuming receiver or a different adapter can change the ownership contract."
+  },
+  "depth": {
+    "misconception": "Every iterator pipeline automatically returns ownership to its original container.",
+    "correction": "The pipeline borrows &String values and collects usize results. A consuming receiver or a different adapter can change the ownership contract.",
+    "traceSteps": [
+      {
+        "title": "Observe the concrete input",
+        "detail": "Borrowing iteration preserves the input; owned into_iter consumes this vector."
+      },
+      {
+        "title": "Apply the contract",
+        "detail": "Trace the receiver, iterator item type and consumer before making a move or allocation claim."
+      },
+      {
+        "title": "Check the boundary",
+        "detail": "Return an iterator of &str instead of a Vec. Which lifetime connects that iterator to the input, and when is its map closure executed?"
+      }
+    ],
+    "transferChallenge": "Return an iterator of &str instead of a Vec. Which lifetime connects that iterator to the input, and when is its map closure executed?",
+    "connections": []
+  },
+  "illustration": {
+    "path": "media/q-iterator-ownership.png",
+    "alt": "Diagram for Iterator Ownership and Laziness: the code flows to its exact contract and observed boundary.",
+    "caption": "Borrowing iteration preserves the input; owned into_iter consumes this vector."
+  }
+}

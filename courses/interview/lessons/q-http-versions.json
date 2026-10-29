@@ -1,6 +1,6 @@
 {
   "concept": "Head-of-line blocking per layer",
-  "contentDigest": "5fdc89dd71795b9f442100aee0cf937c72fa09687c82b15fb591ad526134a135",
+  "contentDigest": "0f88b6a1621ebe519656e7dba43a8278037013519d909bd9b2b4f2b4de2a3a68",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "What TLS Guarantees"
       }
     ],
-    "correction": "HTTP/2 removes application blocking; only HTTP/3 removes transport blocking.",
-    "misconception": "“One — only the stream that lost the packet”",
+    "correction": "TCP delivers bytes in order. Work using already delivered bytes can continue; claiming every stream always stalls is too broad.",
+    "misconception": "Already delivered application data must be withdrawn from every stream.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "Each HTTP version fixed the blocking problem one layer lower."
       },
       {
-        "detail": "Explain what head-of-line blocking means at each layer.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "Same request, three different blocking stories underneath."
       },
       {
-        "detail": "You can say which version fixes which layer, and which one it does not.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "What does HTTP/3 remove at the transport-stream level, and which shared congestion or connection effects remain?"
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on head-of-line blocking per layer."
+    "transferChallenge": "What does HTTP/3 remove at the transport-stream level, and which shared congestion or connection effects remain?"
   },
   "exerciseKind": "planned",
   "id": "q-http-versions",
@@ -40,25 +40,25 @@
   "title": "HTTP/1.1, 2, and 3",
   "writing": {
     "answers": [
-      "One — only the stream that lost the packet",
-      "All ten, because they share one TCP connection",
-      "None — HTTP/2 streams are independent"
+      "Only frames belonging to the HTTP/2 stream that first experienced the loss.",
+      "New bytes after the TCP gap, even when they belong to other HTTP/2 streams.",
+      "Already delivered application data must be withdrawn from every stream."
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Same request, three different blocking stories underneath.",
+    "exampleCaption": "Protocol comparison and client API sketch; supply the client, URL, runtime and target-supported network transport.",
     "exampleCode": "// h1: persistent connections; pipelining exists but is uncommon\n// h2: many streams, one TCP connection\n// h3: many streams, QUIC over UDP\nlet response = client.get(url).send().await?;",
-    "explanation": "HTTP/1.1 can reuse connections, but response ordering and limited pipelining often led browsers to open multiple connections. HTTP/2 multiplexes streams over one TCP connection, which removes application-level blocking but not TCP's — one lost packet still stalls every stream. HTTP/3 moves onto QUIC over UDP, so loss recovery can proceed independently per affected stream; congestion control still applies to the connection. Its handshake integrates TLS.\n\nHTTP/1.1 can reuse connections, but responses on a connection are generally constrained by request ordering in common deployments. Pipelining exists in the protocol but saw limited browser use; clients often opened several connections to avoid waiting behind one slow response. HTTP/2 multiplexes streams over one TCP connection and compresses headers, improving concurrent request handling. Because all streams still share that TCP connection, packet loss can cause transport-level head-of-line blocking even when the HTTP streams are logically separate.\n\nHTTP/3 runs over QUIC, which uses UDP and implements independent streams and integrated TLS. Loss of data for one QUIC stream need not hold back application data on unaffected streams in the same way as TCP's ordered byte stream. A lost packet may carry frames for several streams, and congestion control can slow the whole connection. It does not make the network loss disappear, and congestion control still affects the whole connection. Connection setup, migration, proxies, and server support also matter in practice. Version numbers do not tell you whether a specific page will be faster without measuring its request pattern and network conditions.\n\nFor an interview, draw two requests where one response stalls. Explain which layer causes the delay in each version. Then mention compatibility and observability: TLS negotiation, middleboxes, fallback, and server configuration may determine what a client actually uses. Avoid a universal 'six connections' claim; browsers and workloads vary. The clean answer is about where multiplexing lives and which ordering constraint remains.\n\nA page load can mix versions because the browser negotiates each connection with its origin and intermediaries. Inspect the actual protocol in developer tools before attributing a measured improvement to HTTP/3. A CDN, proxy, or server configuration can dominate the result even when the browser supports the newer protocol.",
-    "feedback": "TCP must deliver in order, so the whole connection waits.",
-    "practiceCode": "// One dropped packet, HTTP/2, ten active streams.",
-    "question": "How many of the ten streams stall?",
-    "rule": "HTTP/2 multiplexes requests, while QUIC avoids TCP byte-stream head-of-line blocking across unaffected streams.",
+    "explanation": "HTTP/1.1 can reuse connections, but response ordering and limited pipelining often led browsers to open multiple connections. HTTP/2 multiplexes streams over one TCP connection, which removes application-level blocking but not TCP's — a gap in TCP delivery can delay later bytes belonging to multiple streams. HTTP/3 moves onto QUIC over UDP, so loss recovery can proceed independently per affected stream; congestion control still applies to the connection. Its handshake integrates TLS.\n\nHTTP/1.1 can reuse connections, but responses on a connection are generally constrained by request ordering in common deployments. Pipelining exists in the protocol but saw limited browser use; clients often opened several connections to avoid waiting behind one slow response. HTTP/2 multiplexes streams over one TCP connection and compresses headers, improving concurrent request handling. Because all streams still share that TCP connection, packet loss can cause transport-level head-of-line blocking even when the HTTP streams are logically separate.\n\nHTTP/3 runs over QUIC, which uses UDP and implements independent streams and integrated TLS. Loss of data for one QUIC stream need not hold back application data on unaffected streams in the same way as TCP's ordered byte stream. A lost packet may carry frames for several streams, and congestion control can slow the whole connection. It does not make the network loss disappear, and congestion control still affects the whole connection. Connection setup, migration, proxies, and server support also matter in practice. Version numbers do not tell you whether a specific page will be faster without measuring its request pattern and network conditions.\n\nFor an interview, draw two requests where one response stalls. Explain which layer causes the delay in each version. Then mention compatibility and observability: TLS negotiation, middleboxes, fallback, and server configuration may determine what a client actually uses. Avoid a universal 'six connections' claim; browsers and workloads vary. The clean answer is about where multiplexing lives and which ordering constraint remains.\n\nA page load can mix versions because the browser negotiates each connection with its origin and intermediaries. Inspect the actual protocol in developer tools before attributing a measured improvement to HTTP/3. A CDN, proxy, or server configuration can dominate the result even when the browser supports the newer protocol.\n\nInterview follow-up: What does HTTP/3 remove at the transport-stream level, and which shared congestion or connection effects remain?",
+    "feedback": "TCP delivers bytes in order. Work using already delivered bytes can continue; claiming every stream always stalls is too broad.",
+    "practiceCode": "// Several HTTP/2 streams share one TCP byte stream.\n// A gap prevents delivery of bytes after the missing TCP range.",
+    "question": "What can TCP packet loss delay for HTTP/2 streams on one connection?",
+    "rule": "HTTP/2 shares TCP’s ordered byte delivery; QUIC separates delivery of different streams.",
     "success": "You can say which version fixes which layer, and which one it does not.",
     "summary": "Each HTTP version fixed the blocking problem one layer lower.",
     "task": "Explain what head-of-line blocking means at each layer."
   },
   "illustration": {
     "path": "media/q-http-versions.png",
-    "alt": "HTTP/1.1 uses ordered exchanges per connection, HTTP/2 multiplexes over TCP, and HTTP/3 uses QUIC streams.",
-    "caption": "The versions differ in how concurrent requests share transport."
+    "alt": "Diagram for HTTP/1.1, 2, and 3: the code flows to its exact contract and observed boundary.",
+    "caption": "Protocol comparison and client API sketch; supply the client, URL, runtime and target-supported network transport."
   }
 }

@@ -1,6 +1,6 @@
 {
   "concept": "Staleness budgets and stampedes",
-  "contentDigest": "e80bb75aa0c0d769994d180a4a837a4b89e691549c5157221981dc99f4391a41",
+  "contentDigest": "2664ae32fddbf9e05fffc8b7fa37024d586be133f8f05ff9b9b291cdabfdb83e",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Complexity in Practice"
       }
     ],
-    "correction": "Every cache needs a bound, an eviction policy, and a stated staleness budget.",
-    "misconception": "“The cache refills quietly on the next read”",
+    "correction": "A stampede is possible, not a claim that every request always reaches the origin. Use a bounded single-flight or another explicit refresh policy.",
+    "misconception": "A TTL guarantees that only one caller can observe an expired entry.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "Caching is easy; deciding when the cache is wrong is not."
       },
       {
-        "detail": "Choose an invalidation strategy for two different kinds of data.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "Bounded, with a policy for what leaves and when."
       },
       {
-        "detail": "Each choice names the staleness it accepts and the eviction policy.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "What happens to single-flight waiters when the refresh fails or its initiating request is cancelled? Define stale-data policy too."
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on staleness budgets and stampedes."
+    "transferChallenge": "What happens to single-flight waiters when the refresh fails or its initiating request is cancelled? Define stale-data policy too."
   },
   "exerciseKind": "planned",
   "id": "q-caching",
@@ -40,17 +40,17 @@
   "title": "Caching and Invalidation",
   "writing": {
     "answers": [
-      "The cache refills quietly on the next read",
-      "Every request misses at once and stampedes the origin",
-      "Requests queue automatically behind one refill"
+      "The cache API automatically serializes every application’s refill function.",
+      "Several overlapping origin loads, increasing pressure during the refill interval.",
+      "A TTL guarantees that only one caller can observe an expired entry."
     ],
     "correctAnswer": 1,
-    "exampleCaption": "Bounded, with a policy for what leaves and when.",
+    "exampleCaption": "Cache pseudocode: supply the cache type, capacity API, error context and loader; concurrent refill needs an explicit policy.",
     "exampleCode": "let cache = LruCache::new(10_000);\nif let Some(hit) = cache.get(&key) {\n    return Ok(hit.clone());\n}\nlet value = load(&key).await?;\ncache.put(key, value.clone());",
-    "explanation": "A TTL trades staleness for simplicity, explicit invalidation trades simplicity for correctness, and write-through trades write latency for both. The failure modes are the interesting part: a stampede when a hot key expires, and unbounded growth without an eviction policy. Naming which staleness your product can tolerate is the real answer.\n\nA cache is a second copy of data, so every design must answer when that copy is valid. A time-to-live is easy to operate but permits bounded staleness. Explicit invalidation can reduce staleness but must account for every writer and failure path. Write-through updates cache and source together from the application's point of view, but partial failure and ordering still need a policy. The right choice depends on whether a stale value is harmless, confusing, or financially dangerous.\n\nSuppose a product page is read thousands of times but price changes rarely. A short TTL may be acceptable for descriptive text, while a checkout price needs a fresh authoritative check. When a hot key expires, many callers can stampede the database. Use request coalescing, a staggered expiry, or stale-while-revalidate where the product permits it. Put a capacity and eviction policy on the cache; otherwise high-cardinality keys can consume unbounded memory.\n\nFor an interview, write the read path, write path, failure path, and invalidation path on the board. Ask how the cache behaves when the source is down and how a client knows it got an old value. Measure hit rate alongside tail latency and database load; a high hit rate can still hide one critical uncached query. State the acceptable staleness as a product requirement before arguing about implementation.\n\nCache keys need versioning too. If an authorization rule or schema changes, a key that omits the relevant version can return a logically invalid result even before its TTL expires. Define whether negative results are cached and for how long; an absent item that soon appears is a common source of stale behavior. Test invalidation under concurrent writes.",
-    "feedback": "A single flight lock or early refresh is what stops the herd.",
-    "practiceCode": "// One very hot key, TTL expires, 5k requests\n// per second.",
-    "question": "What happens at the moment it expires?",
+    "explanation": "A TTL trades staleness for simplicity, explicit invalidation trades simplicity for correctness, and write-through trades write latency for both. The failure modes are the interesting part: a stampede when a hot key expires, and unbounded growth without an eviction policy. Naming which staleness your product can tolerate is the real answer.\n\nA cache is a second copy of data, so every design must answer when that copy is valid. A time-to-live is easy to operate but permits bounded staleness. Explicit invalidation can reduce staleness but must account for every writer and failure path. Write-through updates cache and source together from the application's point of view, but partial failure and ordering still need a policy. The right choice depends on whether a stale value is harmless, confusing, or financially dangerous.\n\nSuppose a product page is read thousands of times but price changes rarely. A short TTL may be acceptable for descriptive text, while a checkout price needs a fresh authoritative check. When a hot key expires, many callers can stampede the database. Use request coalescing, a staggered expiry, or stale-while-revalidate where the product permits it. Put a capacity and eviction policy on the cache; otherwise high-cardinality keys can consume unbounded memory.\n\nFor an interview, write the read path, write path, failure path, and invalidation path on the board. Ask how the cache behaves when the source is down and how a client knows it got an old value. Measure hit rate alongside tail latency and database load; a high hit rate can still hide one critical uncached query. State the acceptable staleness as a product requirement before arguing about implementation.\n\nCache keys need versioning too. If an authorization rule or schema changes, a key that omits the relevant version can return a logically invalid result even before its TTL expires. Define whether negative results are cached and for how long; an absent item that soon appears is a common source of stale behavior. Test invalidation under concurrent writes.\n\nInterview follow-up: What happens to single-flight waiters when the refresh fails or its initiating request is cancelled? Define stale-data policy too.",
+    "feedback": "A stampede is possible, not a claim that every request always reaches the origin. Use a bounded single-flight or another explicit refresh policy.",
+    "practiceCode": "// Many requests miss the same key before any refill completes.\n// Cache lookup and origin loading are separate operations.",
+    "question": "With no request coalescing, what can concurrent misses for one expired hot key cause?",
     "rule": "Every cache needs a bound, an eviction policy, and a stated staleness budget.",
     "success": "Each choice names the staleness it accepts and the eviction policy.",
     "summary": "Caching is easy; deciding when the cache is wrong is not.",
@@ -59,6 +59,6 @@
   "illustration": {
     "path": "media/q-caching.png",
     "alt": "Diagram for Caching and Invalidation: a Rust code example flows to the lesson rule and the key observation.",
-    "caption": "Bounded, with a policy for what leaves and when."
+    "caption": "Cache pseudocode: supply the cache type, capacity API, error context and loader; concurrent refill needs an explicit policy."
   }
 }

@@ -1,6 +1,6 @@
 {
   "concept": "Which anomaly each level allows",
-  "contentDigest": "554b57e66be26cc49d9d3a35ead06ebafc4a667ce8c4f2fec664bd876fb03f16",
+  "contentDigest": "3d236a43382224034d078eb7e6dcf5baa14890796b3fc5303cebaeb40239568f",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Indexes and B-trees"
       }
     ],
-    "correction": "Isolation is a spectrum; only serializable removes every anomaly.",
-    "misconception": "“No, a transaction sees one snapshot”",
+    "correction": "This is an engine-specific isolation contract. State the invariant and handle retryable conflicts when choosing stronger isolation.",
+    "misconception": "Only if the second SELECT explicitly takes an exclusive row lock.",
     "traceSteps": [
       {
-        "detail": "Start with the model, name the relevant constraint, then choose one concrete example and one failure mode that test the claim.",
-        "title": "Frame the answer"
+        "title": "Identify the contract",
+        "detail": "Isolation is the letter in ACID people actually get wrong."
       },
       {
-        "detail": "Name the anomaly each isolation level still permits.",
-        "title": "Predict before checking"
+        "title": "Trace the concrete example",
+        "detail": "The anomaly this allows depends entirely on the level."
       },
       {
-        "detail": "You can state your database default and one anomaly it allows.",
-        "title": "Compare with evidence"
+        "title": "Test the changed constraint",
+        "detail": "How would an atomic conditional UPDATE protect a nonnegative balance? Compare it with a read-then-write application sequence."
       }
     ],
-    "transferChallenge": "Give a 60-second answer using model → tradeoff → edge case → evidence, then answer a follow-up that changes one constraint. Keep the focus on which anomaly each level allows."
+    "transferChallenge": "How would an atomic conditional UPDATE protect a nonnegative balance? Compare it with a read-then-write application sequence."
   },
   "exerciseKind": "planned",
   "id": "q-acid",
@@ -40,25 +40,25 @@
   "title": "Transactions and Isolation",
   "writing": {
     "answers": [
-      "No, a transaction sees one snapshot",
-      "Yes — read committed permits non-repeatable reads",
-      "Only when an explicit lock is taken"
+      "No; BEGIN alone fixes one transaction-wide snapshot at Read Committed.",
+      "Yes; separate commands can observe different committed snapshots.",
+      "Only if the second SELECT explicitly takes an exclusive row lock."
     ],
     "correctAnswer": 1,
     "exampleCaption": "The anomaly this allows depends entirely on the level.",
     "exampleCode": "BEGIN;\nSELECT balance FROM account WHERE id = 1;\n-- another transaction commits here\nUPDATE account SET balance = balance - 10;\nCOMMIT;",
-    "explanation": "Atomicity, consistency, and durability are easy to state. Isolation is a dial: read committed still allows non-repeatable reads, repeatable read still allows phantoms in some engines, and serializable costs the most because it must behave as if transactions ran one at a time. Naming your database default is what separates a real answer from a memorised one.\n\nACID is a set of transaction properties, not a promise that every concurrent read sees the same snapshot. Atomicity means the transaction's changes commit together or are rolled back together under the database's contract. Consistency means the declared constraints and application invariants remain valid across a committed transaction. Isolation describes how concurrent transactions interact; durability describes what survives an acknowledged commit according to the storage system's guarantees. Each property depends on the database and configuration in use.\n\nUse a concrete isolation example. Two transactions read the same inventory count and both attempt to reserve the last item. Under a weak isolation pattern, both may make a decision based on stale information unless the update is conditional or locked appropriately. A unique constraint or compare-and-swap style update can protect a specific invariant even without the strongest global isolation level. Write down the anomaly you must prevent: dirty read, lost update, write skew, or phantom. Then choose a mechanism and test with concurrent transactions.\n\nAvoid treating isolation names as identical across every engine. Read committed, repeatable read, snapshot isolation, and serializable have implementation-specific details and costs. Serializable aims for an outcome equivalent to some serial order, often at the price of retries or contention. A strong interview answer names the engine's default, the invariant at risk, the chosen transaction boundaries, and how retryable conflicts are handled. That is more convincing than reciting the acronym.\n\nOne final distinction: a database constraint may protect one invariant even when a transaction uses a weaker isolation level. Ask whether a lost update, duplicate record, or inconsistent cross-row rule is the actual risk. Then choose the smallest mechanism that prevents that anomaly and describe the retry path.",
-    "feedback": "Each statement sees the latest commit, so the value can move.",
-    "practiceCode": "-- Read committed. Same row, read twice,\n-- one transaction.",
-    "question": "Can the second read return a different value?",
-    "rule": "Isolation is a spectrum; only serializable removes every anomaly.",
+    "explanation": "ACID describes distinct transaction properties whose exact guarantees depend on the engine and configuration. Serializable execution is equivalent to some serial order; it may require retries and does not automatically imply external consistency or correct application invariants.\n\nACID is a set of transaction properties, not a promise that every concurrent read sees the same snapshot. Atomicity means the transaction's changes commit together or are rolled back together under the database's contract. Consistency means the declared constraints and application invariants remain valid across a committed transaction. Isolation describes how concurrent transactions interact; durability describes what survives an acknowledged commit according to the storage system's guarantees. Each property depends on the database and configuration in use.\n\nUse a concrete isolation example. Two transactions read the same inventory count and both attempt to reserve the last item. Under a weak isolation pattern, both may make a decision based on stale information unless the update is conditional or locked appropriately. A unique constraint or compare-and-swap style update can protect a specific invariant even without the strongest global isolation level. Write down the anomaly you must prevent: dirty read, lost update, write skew, or phantom. Then choose a mechanism and test with concurrent transactions.\n\nAvoid treating isolation names as identical across every engine. Read committed, repeatable read, snapshot isolation, and serializable have implementation-specific details and costs. Serializable aims for an outcome equivalent to some serial order, often at the price of retries or contention. A strong interview answer names the engine's default, the invariant at risk, the chosen transaction boundaries, and how retryable conflicts are handled. That is more convincing than reciting the acronym.\n\nOne final distinction: a database constraint may protect one invariant even when a transaction uses a weaker isolation level. Ask whether a lost update, duplicate record, or inconsistent cross-row rule is the actual risk. Then choose the smallest mechanism that prevents that anomaly and describe the retry path.\n\nInterview follow-up: How would an atomic conditional UPDATE protect a nonnegative balance? Compare it with a read-then-write application sequence.",
+    "feedback": "This is an engine-specific isolation contract. State the invariant and handle retryable conflicts when choosing stronger isolation.",
+    "practiceCode": "-- PostgreSQL Read Committed; a concurrent transaction commits an update.\nBEGIN;\nSELECT balance FROM account WHERE id = 7;\n-- Concurrent COMMIT occurs here.\nSELECT balance FROM account WHERE id = 7;\nCOMMIT;",
+    "question": "Under PostgreSQL Read Committed, can a second SELECT observe a row committed after the first SELECT?",
+    "rule": "Choose transaction boundaries and isolation for a named invariant on a named database.",
     "success": "You can state your database default and one anomaly it allows.",
     "summary": "Isolation is the letter in ACID people actually get wrong.",
     "task": "Name the anomaly each isolation level still permits."
   },
   "illustration": {
     "path": "media/q-acid.png",
-    "alt": "Diagram for Transactions and Isolation: a Rust code example flows to the lesson rule and the key observation.",
+    "alt": "Diagram for Transactions and Isolation: the code flows to its exact contract and observed boundary.",
     "caption": "The anomaly this allows depends entirely on the level."
   }
 }
