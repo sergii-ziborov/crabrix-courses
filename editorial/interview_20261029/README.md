@@ -30,8 +30,8 @@ Native WASI/app and publication verification are recorded separately after passi
 
 All lessons retain an exact code-to-rule map or matching existing artwork.
 New/changed deterministic maps extend the existing `render_rust` lesson renderer;
-24 matching original illustrations were retained before contextual captions
-required a few additional maps. No app UI template, editor or theme was changed
+Matching existing illustrations were retained where code, rule and caption
+remained unchanged; changed contextual captions received updated maps. No app UI template, editor or theme was changed
 by the educational-content update. Diagrams do not use invented performance data.
 
 Primary references checked for current API contracts:
