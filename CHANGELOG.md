@@ -1,5 +1,16 @@
 # Changelog
 
+## Audit corrections — 1 November 2026
+
+Catalog sequence 17 updates Basics, Algorithms, Ownership, Projects and Systems to
+1.0.7, Concurrency to 1.0.6 and Interview to 1.1.1. Examples 1.0.4 is unchanged.
+All 754 lessons were reviewed against real rustc and Cargo runs. False claims,
+truncated rules, generic misconceptions, traces and transfers, stale images and
+inline markup are corrected. Atlas adds 117 adversarial cases (94 known wrong
+solutions now fail), 14 corrected programs and explicit task contracts.
+Lesson IDs, order and answer indices are unchanged.
+[Record](editorial/academy_20261101/README.md).
+
 ## Interview 1.1.0 — 29 October 2026
 
 - Review all 40 existing questions and retain their progress identities.

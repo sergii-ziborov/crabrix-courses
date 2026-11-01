@@ -29,6 +29,13 @@ The [Constellation Generator 1.0.4 verification](https://github.com/sergii-zibor
 
 The corrected Printing Values graphic has an editable SVG source at `artwork/print-formatting.svg`; `courses/basics/media/print-formatting.png` is its packaged raster export.
 
+## Audit corrections — 1 November 2026
+
+Catalog sequence 17 publishes reviewed versions of all seven courses. Atlas now
+has 117 more adversarial cases that reject 94 known wrong solutions, and 14 corrected
+programs. Lesson IDs, order and answer indices are unchanged. See the
+[changelog](CHANGELOG.md) and [record](editorial/academy_20261101/README.md).
+
 ## Interview Prep — 29 October 2026
 
 Interview 1.1.0 has 52 topics, including 12 new focused Rust/async/API questions.
