@@ -1,6 +1,6 @@
 {
   "concept": "Combine type bounds with borrow relationships",
-  "contentDigest": "6d8f16314b410d36467dbef8734038d926f905805a1f13d87645cdba16f029c9",
+  "contentDigest": "431b8d471e41e5a5da3771e28a024df747736ec92f4fc690dea9fde4828598bc",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Iterator Pipelines"
       }
     ],
-    "correction": "A function may be generic over both a data type and a lifetime.",
-    "misconception": "“Only T”",
+    "correction": "`T: PartialOrd` only permits `>`, and `'a` only ties both inputs to the result. Neither does the other's job, so no trait bound can keep the result valid once an input is gone.",
+    "misconception": "“A stronger bound on `T` could make the returned reference live longer.”",
     "traceSteps": [
       {
-        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
-        "title": "Map ownership first"
+        "detail": "`T: PartialOrd` allows `left > right`. `'a` says the returned reference is valid only while both inputs are, and it says nothing about the operations on `T`.",
+        "title": "Separate the parameters"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "detail": "Predict whether `choose(&1.5, &2.5)` is accepted, given that `f64` has no `Ord`. Then put `right` in an inner block and predict whether the result can be used after it.",
         "title": "Predict before checking"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "detail": "`f64` compiles and returns `2.5`, because only `PartialOrd` is required. Using the result after the block gets E0597; fix the use site, not the annotation.",
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &`mut` T. Before compiling, list which bindings remain usable after each call. Keep the focus on combine type bounds with borrow relationships."
+    "transferChallenge": "Change the bound to `T: Ord` and read the E0277 that `choose(&1.5, &2.5)` gets. Then remove the bound entirely and read the error on `left > right`."
   },
   "exerciseKind": "planned",
   "id": "generic-lifetimes",
@@ -42,19 +42,19 @@
     "answers": [
       "Both inputs and output",
       "Only T",
-      "The Ord impl"
+      "The PartialOrd impl"
     ],
     "correctAnswer": 0,
     "exampleCaption": "The example makes the contract visible in code.",
-    "exampleCode": "fn choose<'a, T>(left: &'a T, right: &'a T)\n    -> &'a T\nwhere T: Ord {\n    if left > right { left } else { right }\n}",
-    "explanation": "A function may be generic over both a data type and a lifetime. Keep each parameter only when the body needs it; extra bounds make an API less reusable without adding safety.\n\nThe `choose` signature has two independent kinds of abstraction. `T: Ord` says what operation the body may perform on the values: comparison. `'a` says how long the borrowed inputs and returned reference are related. These parameters solve different problems. Replacing the lifetime with a broader trait bound cannot make a dangling reference safe, and adding a lifetime cannot make an incomparable type satisfy `Ord`.\n\nThe result borrows one of the two inputs. Because the body may choose either, the caller must use it only while both candidate sources are valid. Suppose the left value lives throughout a function and the right value lives in an inner block. Calling `choose` and using the result inside the block is fine. Keeping the result for use after that block is not, because it might point to the right value. The generic type does not change this rule; it applies whether `T` is an integer, a string wrapper, or a custom ordered type.\n\nTry calling `choose` with two `i32` values, then with a custom type that implements `Ord`. Next, create one input in a smaller scope and observe the lifetime error when the result escapes it. Fix the use site, not the annotation label. Keep trait bounds as narrow as the implementation needs, and keep lifetime relationships as specific as the returned data requires. A clear signature explains both the operation and the ownership story.\n\nThe letter chosen for a lifetime has no special power. Rename it consistently and the contract is the same. The useful information is which references share the label and which output is tied to them.",
+    "exampleCode": "fn choose<'a, T>(left: &'a T, right: &'a T)\n    -> &'a T\nwhere T: PartialOrd {\n    if left > right { left } else { right }\n}",
+    "explanation": "A function may be generic over both a data type and a lifetime. Keep each parameter only when the body needs it; extra bounds make an API less reusable without adding safety.\n\nThe `choose` signature has two independent kinds of abstraction. `T: PartialOrd` says what operation the body may perform on the values: comparison. `'a` says how long the borrowed inputs and returned reference are related. These parameters solve different problems. Replacing the lifetime with a broader trait bound cannot make a dangling reference safe, and adding a lifetime cannot make an incomparable type satisfy `PartialOrd`.\n\nThe result borrows one of the two inputs. Because the body may choose either, the caller must use it only while both candidate sources are valid. Suppose the left value lives throughout a function and the right value lives in an inner block. Calling `choose` and using the result inside the block is fine. Keeping the result for use after that block is not, because it might point to the right value. The generic type does not change this rule; it applies whether `T` is an integer, a string wrapper, or a custom ordered type.\n\nTry calling `choose` with two `i32` values, then with a custom type that implements `PartialOrd`. Next, create one input in a smaller scope and observe the lifetime error when the result escapes it. Fix the use site, not the annotation label. Keep trait bounds as narrow as the implementation needs, and keep lifetime relationships as specific as the returned data requires. A clear signature explains both the operation and the ownership story.\n\nThe letter chosen for a lifetime has no special power. Rename it consistently and the contract is the same. The useful information is which references share the label and which output is tied to them.",
     "feedback": "Correct: Both inputs and output.",
-    "practiceCode": "fn choose<'a, T>(left: &'a T, right: &'a T)\n    -> &'a T\nwhere T: Ord {\n    if left > right { left } else { right }\n}",
-    "question": "What does 'a connect here?",
+    "practiceCode": "fn choose<'a, T>(left: &'a T, right: &'a T)\n    -> &'a T\nwhere T: PartialOrd {\n    if left > right { left } else { right }\n}",
+    "question": "What does `'a` connect here?",
     "rule": "A function may be generic over both a data type and a lifetime.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "You can call `choose` with two types, and show when its result stops being usable.",
     "summary": "Combine type bounds with borrow relationships.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Say what `T: PartialOrd` and `'a` each promise in `choose`."
   },
   "illustration": {
     "path": "media/generic-lifetimes.png",

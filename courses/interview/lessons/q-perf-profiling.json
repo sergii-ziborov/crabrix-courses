@@ -1,6 +1,6 @@
 {
   "concept": "Measure, change one thing, measure",
-  "contentDigest": "c80f472cbca1cb5375cd84c1115cfa22e5cf62f7d898fa72a845d6de3d783d68",
+  "contentDigest": "01beca64a626e366755974f3f013e9a8130ab5cf0ec5c7025662c5f97804700d",
   "depth": {
     "connections": [
       {
@@ -14,7 +14,7 @@
         "title": "FFI and ABI"
       }
     ],
-    "correction": "Cargo defaults differ, but profiles are configurable. Development results can diagnose development behaviour; they do not establish production performance or a fixed speed ratio.",
+    "correction": "`cargo bench` is one tool. Profilers, production traces and timed release runs are also evidence, if the artifact and workload match the question.",
     "misconception": "Running cargo bench is the only way to obtain any useful performance evidence.",
     "traceSteps": [
       {
@@ -23,7 +23,7 @@
       },
       {
         "title": "Trace the concrete example",
-        "detail": "The allocation per iteration is usually the whole finding."
+        "detail": "The allocation per iteration is a hypothesis to profile, not yet a finding."
       },
       {
         "title": "Test the changed constraint",
@@ -45,7 +45,7 @@
       "Running cargo bench is the only way to obtain any useful performance evidence."
     ],
     "correctAnswer": 1,
-    "exampleCaption": "The allocation per iteration is usually the whole finding.",
+    "exampleCaption": "The allocation per iteration is a hypothesis to profile, not yet a finding.",
     "exampleCode": "// Allocates a String on every iteration.\nfor row in rows {\n    out.push(format!(\"{}-{}\", row.a, row.b));\n}",
     "explanation": "A benchmark measures a specific artifact and workload. Cargo profile names have defaults that can be changed; there is no universal debug-to-release speed ratio. Match production settings when answering a production question, and separate compilation, initialization and steady-state execution.\n\nStart with a user-visible performance question and a baseline. Is the problem p95 request latency, startup time, battery use, memory footprint, or throughput? These metrics can move in different directions. Match the compiled artifact to the question: production settings for production behaviour, development settings for a development-loop problem. Keep input sizes representative, warm caches deliberately, repeat measurements, and record variance. A profiler points to expensive stacks or allocations; it does not automatically tell you which change is safe or worthwhile.\n\nSuppose a hot path clones a vector on every request. Profile allocation count and bytes, then change the API to borrow the slice if ownership is unnecessary. Verify the result with a correctness test and rerun the same workload. If the clone was actually off the hot path, the optimization may not matter. `Vec::with_capacity` helps when the final size is known, but over-reserving can waste memory. Bounds-check removal through `unsafe` should be a late, measured step with a soundness proof, not a reflex.\n\nIn an interview, describe the experiment you would run, not just a list of tools. State the control, treatment, sample size, and how you would detect regressions in another metric. Discuss tail latency and realistic load when relevant. A simple algorithmic improvement can beat a clever micro-optimization. The strongest answer ends with a measured conclusion and the tradeoff you accepted.\n\nIf a profiler points to a lock, do not immediately replace it with atomics. Check contention, critical-section duration, and whether a redesign can avoid shared mutation. A change that reduces average latency but worsens p99 under load may be unacceptable. Report the metric the user actually experiences.\n\nInterview follow-up: How would you separate cold build, warm build, initialization and steady-state execution? Record variance and verify output correctness.",
     "feedback": "Cargo defaults differ, but profiles are configurable. Development results can diagnose development behaviour; they do not establish production performance or a fixed speed ratio.",

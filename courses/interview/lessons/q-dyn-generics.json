@@ -1,6 +1,6 @@
 {
   "concept": "Dispatch and code size tradeoffs",
-  "contentDigest": "8723f4b5de749496f3803c56699422116d2b7724c90c257fff0aa8d4eac023f3",
+  "contentDigest": "013093e342300e6058c5dc7c0d168e3dd068e5c1c493d597f3b17b6cd0b2b4a5",
   "depth": {
     "connections": [
       {
@@ -14,7 +14,7 @@
         "title": "Reasoning About unsafe"
       }
     ],
-    "correction": "Dispatch and allocation are separate choices: &dyn Trait borrows existing storage; Box<dyn Trait> also owns allocated storage.",
+    "correction": "A `&dyn Shape` call is not monomorphized for the caller. It finds the method through the vtable at runtime; specializing per concrete type is what generics do.",
     "misconception": "Using dyn Trait requires all implementation methods to be monomorphized for the caller.",
     "traceSteps": [
       {
@@ -50,7 +50,7 @@
     "explanation": "Generic code can be specialized for concrete types, enabling direct calls and inlining. Trait objects provide a common interface with dynamic dispatch. Those mechanisms influence optimization and code size, but neither guarantees a speed or binary-size ranking: optimizations, method bodies and call sites all matter.\n\nWith a generic `T: Trait`, callers supply a concrete type and the compiler can specialize code for that type. This often permits inlining and avoids a per-call virtual dispatch, but different concrete instantiations can increase code size and compile time. With `dyn Trait`, a trait object pairs data with a vtable for methods allowed by object safety. Calls through it use dynamic dispatch, and a collection can hold different concrete implementations behind one pointer type.\n\nGive the interviewer a design example. A hot inner loop operating on one known iterator type may benefit from generics. A plugin registry holding several handler implementations may need `Box<dyn Handler>` because the concrete types differ at runtime. The actual speed difference must be measured; cache behavior and work inside each method can dominate dispatch overhead. Generic code can still be large for reasons beyond one simple 'copy per type' story, and trait objects still involve allocation only when you choose a heap-owning pointer such as `Box`.\n\nMention object safety when relevant: not every trait can become `dyn Trait`, especially methods returning `Self` or generic methods without suitable bounds. A trait object also encodes a lifetime for the underlying data. State the required flexibility, binary-size pressure, and call-site performance before choosing. The best answer is a decision tied to constraints, not a universal claim that one mechanism is faster.\n\nA borrowed `&dyn Trait` does not allocate by itself. `Box<dyn Trait>` additionally chooses heap ownership. An enum is another way to represent a closed set of alternatives, so heterogeneous data does not universally require `dyn`. Use trait objects when an open set of implementations should share a runtime interface; use an enum when a known finite set and exhaustive matching suit the design. The trait must be dyn-compatible for a trait-object interface.\n\nInterview follow-up: Why is an async method not directly dispatchable through dyn Trait? Compare a generic caller with an explicitly boxed future.",
     "feedback": "Dispatch and allocation are separate choices: &dyn Trait borrows existing storage; Box<dyn Trait> also owns allocated storage.",
     "practiceCode": "trait Shape { fn area(&self) -> u32; }\nstruct Square(u32);\nimpl Shape for Square { fn area(&self) -> u32 { self.0 * self.0 } }\nfn area(shape: &dyn Shape) -> u32 { shape.area() }\nfn main() { assert_eq!(area(&Square(3)), 9); }",
-    "question": "Which statement correctly describes passing &circle as &dyn Shape?",
+    "question": "Which statement correctly describes passing &Square(3) as &dyn Shape?",
     "rule": "Choose dispatch from API flexibility, ownership and measured performance; neither choice guarantees a smaller or faster program.",
     "success": "You mention monomorphisation, binary size, and the vtable.",
     "summary": "Generics preserve concrete types; trait objects provide a common interface with dynamic dispatch.",
@@ -58,7 +58,7 @@
   },
   "illustration": {
     "path": "media/q-dyn-generics.png",
-    "alt": "Generic and trait-object dispatch offer different ways to call behavior through a trait.",
+    "alt": "One generic function template compiled into separate functions for i32 and String at compile time, with no runtime type switch.",
     "caption": "The diagram shows the generic specialization model. Compare it with borrowed trait objects in the example; generated code and performance depend on optimization."
   }
 }

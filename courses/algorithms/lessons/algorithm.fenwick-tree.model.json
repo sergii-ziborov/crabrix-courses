@@ -14,7 +14,7 @@
     "visibleInput": "n=5 adds=(1,5),(3,2),(4,4) query=3"
   },
   "concept": "Store partial sums in power-of-two ranges and move indexes by their lowest set bit.",
-  "contentDigest": "2ccca45c7874dc24d5537f5d5b0584e81068919a4bf65cdb9377b297bc221286",
+  "contentDigest": "078ce8a05e37e50e4a6b08966930836ab72169930e670f1a039cc99746d834a4",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "Adding 5 at index 1 visits 1,2,4; adding 2 at 3 visits 3,4. Querying prefix 3 visits 3 then 2, collecting 2+5=7. Indexes are one-based, and an update at zero would not advance.",
     "practiceCode": "fn fenwick_prefix(n: usize, adds: &[(usize, i64)], query: usize) -> i64 {\n    let mut bit = vec![0; n + 1];\n    for &(index, value) in adds {\n        assert!(index > 0);\n        let mut i = index;\n        while i <= n {\n            bit[i] += value;\n            i += i & i.wrapping_neg();\n        }\n    }\n    let (mut i, mut sum) = (query, 0);\n    while i > 0 {\n        sum += bit[i];\n        i &= i - 1;\n    }\n    sum\n}\n\nfn main() {\n    let result = fenwick_prefix(5, &[(1, 5), (3, 2), (4, 4)], 3).to_string();\n    println!(\"{result}\");\n}\n",
     "question": "What does i & -i identify in a Fenwick index?",
-    "rule": "The size of the node's lowest-set-bit range. State the input preconditions before applying this invariant.",
+    "rule": "Store partial sums in power-of-two ranges and move indexes by their lowest set bit. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(log n) update/query · O(n) space bound without looking at the code.",
     "summary": "Store partial sums in power-of-two ranges and move indexes by their lowest set bit.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

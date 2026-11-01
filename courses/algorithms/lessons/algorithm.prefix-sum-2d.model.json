@@ -14,7 +14,7 @@
     "visibleInput": "[[1,2,3],[4,5,6],[7,8,9]]"
   },
   "concept": "Store each rectangle from the origin and use inclusion-exclusion for any subrectangle.",
-  "contentDigest": "273dfedbf501f3fd2f0f03a2efed8d45e57afc15f260500770a776a24f4a6c9a",
+  "contentDigest": "256122d7db055087d1f43f0acbc59947696893a713b41ffe2ff219c0160baf9c",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "For the 3×3 sample, rows 1..2 and columns 0..1 contain 4,5,7,8. Four prefix corners give 24. The extra top row and left column of zeros remove special cases at the matrix boundary.",
     "practiceCode": "fn rectangle_sum(a: &[Vec<i64>], r1: usize, c1: usize, r2: usize, c2: usize) -> i64 {\n    let (rows, cols) = (a.len(), a[0].len());\n    let mut p = vec![vec![0; cols + 1]; rows + 1];\n    for r in 0..rows {\n        for c in 0..cols {\n            p[r + 1][c + 1] = a[r][c] + p[r][c + 1] + p[r + 1][c] - p[r][c];\n        }\n    }\n    p[r2 + 1][c2 + 1] - p[r1][c2 + 1] - p[r2 + 1][c1] + p[r1][c1]\n}\n\nfn main() {\n    let result =\n        rectangle_sum(&[vec![1, 2, 3], vec![4, 5, 6], vec![7, 8, 9]], 1, 0, 2, 1).to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Why add the top-left overlap back in a rectangle query?",
-    "rule": "The two subtractions removed that overlap twice. State the input preconditions before applying this invariant.",
+    "rule": "Store each rectangle from the origin and use inclusion-exclusion for any subrectangle. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(rows*cols) build · O(1) query bound without looking at the code.",
     "summary": "Store each rectangle from the origin and use inclusion-exclusion for any subrectangle.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

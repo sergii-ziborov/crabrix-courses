@@ -1,6 +1,6 @@
 {
   "concept": "Match Rust syntax as nested tokens, not raw text",
-  "contentDigest": "a9a0cdb7c3c351b4581a23b89bc2dfb37d53cc5408d53a0772bbc72bf3032763",
+  "contentDigest": "8ece97638bd271e3cc86536574c82f517a2c82f5a9bb41b7f2d012aa4eee1134",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Proc-Macro Boundaries"
       }
     ],
-    "correction": "macro_rules! consumes token trees with balanced delimiters.",
-    "misconception": "“Any text”",
+    "correction": "`macro_rules!` consumes token trees with balanced delimiters, and fragments such as `expr` ask the parser for a checked shape.",
+    "misconception": "“A macro works on raw text, so it can split its input however it likes.”",
     "traceSteps": [
       {
-        "detail": "Write down what callers may assume, what the compiler cannot prove, and which boundary is responsible for preserving soundness or cost.",
-        "title": "State the invariant"
+        "detail": "`twice!(2 + 3)` gives `$value` the whole expression `2 + 3` as one `expr` fragment.",
+        "title": "Match the fragment"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "detail": "The transcriber writes `let once = 2 + 3;`, so the expression runs once, even if it has side effects.",
+        "title": "Expand with a temporary"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "detail": "`once + once` is the value of the block, so the call yields 10. The double braces make the expansion one block expression.",
+        "title": "Read the result"
       }
     ],
-    "transferChallenge": "Create the smallest counterexample that violates the sample's invariant, then repair the abstraction boundary instead of hiding the symptom. Keep the focus on match rust syntax as nested tokens, not raw text."
+    "transferChallenge": "Add an arm `($first:expr, $second:expr)` that returns `$first + $second`, then call `twice!(1, 2)` and `twice!(1)`. Predict the arm each call picks and why `twice!(1,)` fails."
   },
   "exerciseKind": "planned",
   "id": "token-trees",
@@ -45,16 +45,16 @@
       "A type only"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCaption": "`:expr` captures a whole expression, and the `let` evaluates it once before it is used twice.",
     "exampleCode": "macro_rules! twice {\n    ($value:expr) => {{\n        let once = $value;\n        once + once\n    }};\n}",
-    "explanation": "macro_rules! consumes token trees with balanced delimiters. Fragment specifiers such as expr and ty `let` the parser validate shapes before expansion, producing safer patterns than string substitution.\n\nRust tokenizes macro input into structured pieces. Identifiers, punctuation, and literals are tokens; balanced parentheses, brackets, and braces form delimited groups that can contain more tokens. A macro does not receive raw characters to split by hand. In a function-like invocation such as `show!({a, b})`, the name `show` selects the macro, while the input stream inside the invocation contains a brace group with `a`, a comma, and `b`. Keeping that boundary clear prevents confusion when reading a procedural macro parser.\n\nA `macro_rules!` pattern can ask the compiler to parse a fragment as an expression, type, identifier, or other supported shape. A pattern like `($value:expr)` rejects input that is not an expression before the transcriber runs. Repetition syntax can accept comma-separated lists, but test empty input, a single item, and a trailing comma explicitly. For the example, expand `twice!(2 + 3)` by hand and notice that the temporary evaluates the expression once before adding it to itself. That matters if the expression has side effects. Treat macros as syntax APIs: define accepted forms, produce readable errors, and avoid making a clever pattern harder to understand than an ordinary function.\n\nDelimiter groups matter for error reporting too: a missing closing brace changes the token tree before your macro matcher sees it. Distinguish lexical or parse errors from a pattern that simply did not match. Keep an example for every arm in documentation, especially if one arm accepts an optional comma or nested group; syntax APIs deserve the same testing care as functions.",
-    "feedback": "Correct: A Rust expression.",
-    "practiceCode": "macro_rules! twice {\n    ($value:expr) => {{\n        let once = $value;\n        once + once\n    }};\n}",
+    "explanation": "`macro_rules!` consumes token trees with balanced delimiters. Fragment specifiers such as `expr` and `ty` let the parser validate shapes before expansion, producing safer patterns than string substitution.\n\nRust tokenizes macro input into structured pieces. Identifiers, punctuation, and literals are tokens; balanced parentheses, brackets, and braces form delimited groups that can contain more tokens. A macro does not receive raw characters to split by hand. In a function-like invocation such as `show!({a, b})`, the name `show` selects the macro, while the input stream inside the invocation contains a brace group with `a`, a comma, and `b`. Keeping that boundary clear prevents confusion when reading a procedural macro parser.\n\nA `macro_rules!` pattern can ask the compiler to parse a fragment as an expression, type, identifier, or other supported shape. A pattern like `($value:expr)` rejects input that is not an expression before the transcriber runs. Repetition syntax can accept comma-separated lists, but test empty input, a single item, and a trailing comma explicitly. For the example, expand `twice!(2 + 3)` by hand and notice that the temporary evaluates the expression once before adding it to itself. That matters if the expression has side effects. Treat macros as syntax APIs: define accepted forms, produce readable errors, and avoid making a clever pattern harder to understand than an ordinary function.\n\nDelimiter groups matter for error reporting too: a missing closing brace changes the token tree before your macro matcher sees it. Distinguish lexical or parse errors from a pattern that simply did not match. Keep an example for every arm in documentation, especially if one arm accepts an optional comma or nested group; syntax APIs deserve the same testing care as functions.",
+    "feedback": "`:expr` asks the parser for a whole expression, so `2 + 3` matches as one fragment and `struct` is rejected before the transcriber runs.",
+    "practiceCode": "macro_rules! twice {\n    ($value:expr) => {{\n        let once = $value;\n        once + once\n    }};\n}\n\nfn main() {\n    println!(\"{}\", twice!(2 + 3));\n    println!(\"{}\", twice!(struct));\n}",
     "question": "What does :expr require?",
-    "rule": "macro_rules! consumes token trees with balanced delimiters.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "rule": "`macro_rules!` consumes token trees with balanced delimiters.",
+    "success": "You can say which input `:expr` and `:tt` each accept, and why `2 + 3` is one fragment for the first but three token trees for the second.",
     "summary": "Match Rust syntax as nested tokens, not raw text.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Predict which call the compiler rejects, and say whether the transcriber ever runs for it. Then change `:expr` to `:tt` and predict what happens to `2 + 3`."
   },
   "illustration": {
     "path": "media/token-trees.png",

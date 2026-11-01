@@ -14,7 +14,7 @@
     "visibleInput": "[2,3,7,11,15]"
   },
   "concept": "Compare the end-pair sum with the target and discard one impossible endpoint.",
-  "contentDigest": "aba1f0197afa6dfddf9d09221c6c915e92b660ca7ca871ad4edc1aa2112a0490",
+  "contentDigest": "b476ee0bece34ab5708ec9b6cec2b6d847dc4f626ae9e121b5c5313855406830",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "For [2,3,7,11,15], the outer values sum to 17, so zero-based (0,4) becomes output (1,5). On [1,8,9], the valid result is (2,3). Ordering enables pointer elimination without a map.",
     "practiceCode": "fn sorted_pair(values: &[i32], target: i32) -> Option<(usize, usize)> {\n    if values.len() < 2 {\n        return None;\n    }\n    let (mut left, mut right) = (0, values.len() - 1);\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Equal => return Some((left + 1, right + 1)),\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n        }\n    }\n    None\n}\n\nfn main() {\n    let result =\n        sorted_pair(&[2, 3, 7, 11, 15], 17).map_or(\"-1,-1\".into(), |(a, b)| format!(\"{a},{b}\"));\n    println!(\"{result}\");\n}\n",
     "question": "Why are returned indexes increased by one in this exercise?",
-    "rule": "The output contract uses one-based indexes. State the input preconditions before applying this invariant.",
+    "rule": "Compare the end-pair sum with the target and discard one impossible endpoint. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(1) space bound without looking at the code.",
     "summary": "Compare the end-pair sum with the target and discard one impossible endpoint.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

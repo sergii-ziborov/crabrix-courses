@@ -14,13 +14,13 @@
     "visibleInput": "1->2->3->4->5->6->7"
   },
   "concept": "Verify a complete group exists, reverse exactly that range, then reconnect both boundaries.",
-  "contentDigest": "dcbfbfb44054601f9ab7363d985a284b7ecc93829b54069803b3b4894a313dc0",
+  "contentDigest": "0e2fedeca50cb84eab07039ea608e34389b1f90eb0d621ceb38a2938a7481491",
   "depth": {
     "connections": [
       {
         "direction": "previous",
         "title": "Challenge: Copy with Random Links",
-        "concept": "Return copied values with random target indexes."
+        "concept": "Parse values, random (each a node index or null) and optional next (each node's next index or none; when absent, nodes link in array order). Every node is reachable from node 0. Deep-copy the list, following next, with an old-to-new map. Return value:target for each copied node in list order, where target is the random node's position in the copied list, or null. Values may repeat, so identify nodes by index."
       },
       {
         "direction": "next",
@@ -65,7 +65,7 @@
     "feedback": "For 1→2→3→4→5→6→7 with k=3, reverse the first group to 3→2→1 and the second to 6→5→4. Only one node remains, so attach 7 unchanged. The result is 3,2,1,6,5,4,7.",
     "practiceCode": "type Link = Option<Box<ListNode>>;\nstruct ListNode {\n    value: i32,\n    next: Link,\n}\nfn list(values: &[i32]) -> Link {\n    values.iter().rev().fold(None, |next, &value| {\n        Some(Box::new(ListNode { value, next }))\n    })\n}\nfn list_values(head: &Link) -> Vec<i32> {\n    let mut out = Vec::new();\n    let mut p = head.as_deref();\n    while let Some(n) = p {\n        out.push(n.value);\n        p = n.next.as_deref();\n    }\n    out\n}\nfn csv<T: std::fmt::Display>(a: impl IntoIterator<Item = T>) -> String {\n    a.into_iter()\n        .map(|x| x.to_string())\n        .collect::<Vec<_>>()\n        .join(\",\")\n}\nfn reverse_groups(mut head: Link, k: usize) -> Link {\n    assert!(k > 0);\n    let mut result = None;\n    let mut tail = &mut result;\n    loop {\n        let mut scan = head.as_deref();\n        let mut count = 0;\n        while count < k {\n            if let Some(n) = scan {\n                scan = n.next.as_deref();\n                count += 1;\n            } else {\n                break;\n            }\n        }\n        if count < k {\n            *tail = head;\n            break;\n        }\n        let mut group = None;\n        for _ in 0..k {\n            let mut n = head.take().unwrap();\n            head = n.next.take();\n            n.next = group;\n            group = Some(n);\n        }\n        *tail = group;\n        for _ in 0..k {\n            tail = &mut tail.as_mut().unwrap().next;\n        }\n    }\n    result\n}\n\nfn main() {\n    let result = csv(list_values(&reverse_groups(\n        list(&[1, 2, 3, 4, 5, 6, 7]),\n        3,\n    )));\n    println!(\"{result}\");\n}\n",
     "question": "Why count a complete group before reversing its links?",
-    "rule": "A short suffix must remain in its original order. State the input preconditions before applying this invariant.",
+    "rule": "Verify a complete group exists, reverse exactly that range, then reconnect both boundaries. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(1) links bound without looking at the code.",
     "summary": "Verify a complete group exists, reverse exactly that range, then reconnect both boundaries.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

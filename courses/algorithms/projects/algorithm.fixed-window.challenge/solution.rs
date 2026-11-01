@@ -1,5 +1,5 @@
 pub fn solve(input: &str) -> String {
-    // Return the greatest sum of any three adjacent values.
+    // Return the greatest sum of any three adjacent values; values may be negative.
     // Parse the visible input into the structures your algorithm needs.
     // Whitespace surrounding the complete input is insignificant.
     let _ = input;

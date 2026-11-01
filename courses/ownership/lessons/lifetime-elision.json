@@ -1,6 +1,6 @@
 {
   "concept": "The common lifetime relationships Rust infers",
-  "contentDigest": "cc2203105db0dbd4aa889216f3c99f7cf52e03aa08452a3e98f978224fa2315f",
+  "contentDigest": "abaa71357effd20a8a5d183ee9acfd03beec4c45d43de0e81b686b35374848a6",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Owned or Borrowed?"
       }
     ],
-    "correction": "Rust omits obvious lifetime annotations using a small set of rules.",
-    "misconception": "“Every `&str` already has a static lifetime”",
+    "correction": "`text` can borrow from any `String`; only literals are `'static`. The name can stay implied because with one input the result must borrow from `text`.",
+    "misconception": "“`first` needs no lifetime because every `&str` is `'static`.”",
     "traceSteps": [
       {
-        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
-        "title": "Map ownership first"
+        "detail": "Elision reads `fn first(text: &str) -> &str` as `fn first<'a>(text: &'a str) -> &'a str`: there is one input, so the output borrows from it.",
+        "title": "Expand the signature"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "detail": "Write the explicit form and predict whether it behaves differently. Then add `other: &str` as a second parameter and predict what the elided form does.",
         "title": "Predict before checking"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "detail": "The explicit form compiles and returns the same slice. With two borrowed inputs, the elided signature gets E0106 until you name which one the output borrows.",
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &`mut` T. Before compiling, list which bindings remain usable after each call. Keep the focus on the common lifetime relationships rust infers."
+    "transferChallenge": "Add a `needle: &str` parameter and call `text.split(needle)` in `first`. Annotate it so only `text` shares `'a` with the result, then show that the result can outlive the needle."
   },
   "exerciseKind": "planned",
   "id": "lifetime-elision",
@@ -52,9 +52,9 @@
     "practiceCode": "fn first(text: &str) -> &str {\n    text.split(' ').next().unwrap_or(text)\n}",
     "question": "Why does first need no named lifetime?",
     "rule": "Rust omits obvious lifetime annotations using a small set of rules.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "You can show the explicit signature, and say when a second borrowed input would require a name.",
     "summary": "The common lifetime relationships Rust infers.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Write out the lifetime the compiler infers for `first`, and say why it is unambiguous."
   },
   "illustration": {
     "path": "media/lifetime-elision.png",

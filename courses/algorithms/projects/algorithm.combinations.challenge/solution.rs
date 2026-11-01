@@ -1,5 +1,5 @@
 pub fn solve(input: &str) -> String {
-    // Return all size-two combinations in lexicographic order.
+    // The values are in strictly ascending order. Return all size-two combinations in lexicographic order, or an empty string when fewer than two values exist.
     // Parse the visible input into the structures your algorithm needs.
     // Whitespace surrounding the complete input is insignificant.
     let _ = input;

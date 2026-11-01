@@ -14,13 +14,13 @@
     "visibleInput": "2 7 + 3 * 4 -"
   },
   "concept": "Push operands and reduce the latest operands whenever an operator arrives.",
-  "contentDigest": "670a1ee7714ab53ddb0653f80ee37b24ff589ab8c390eefcf9611e9c27911432",
+  "contentDigest": "8d60c48a05eff2e23a9959a1add06f286e02aa56a8d3bfbf0af2d82c6d6fe537",
   "depth": {
     "connections": [
       {
         "direction": "previous",
         "title": "Challenge: Delimiter Stack",
-        "concept": "Return true when the delimiters are correctly nested."
+        "concept": "Return whether the delimiters are correctly nested."
       },
       {
         "direction": "next",
@@ -65,7 +65,7 @@
     "feedback": "In 2 7 + 3 * 4 -, the stack evolves [2], [2,7], [9], [9,3], [27], [27,4], [23]. Reversing operands at the final subtraction would incorrectly produce -23.",
     "practiceCode": "fn postfix(expression: &str) -> i32 {\n    let mut stack = Vec::new();\n    for token in expression.split_whitespace() {\n        if let Ok(value) = token.parse::<i32>() {\n            stack.push(value);\n            continue;\n        }\n        let right = stack.pop().unwrap();\n        let left = stack.pop().unwrap();\n        stack.push(match token {\n            \"+\" => left + right,\n            \"-\" => left - right,\n            \"*\" => left * right,\n            \"/\" => left / right,\n            _ => panic!(\"operator\"),\n        });\n    }\n    assert_eq!(stack.len(), 1);\n    stack[0]\n}\n\nfn main() {\n    let result = postfix(\"2 7 + 3 * 4 -\").to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Why pop the right operand before the left operand in postfix evaluation?",
-    "rule": "Operand order matters for subtraction and division. State the input preconditions before applying this invariant.",
+    "rule": "Push operands and reduce the latest operands whenever an operator arrives. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(n) space bound without looking at the code.",
     "summary": "Push operands and reduce the latest operands whenever an operator arrives.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

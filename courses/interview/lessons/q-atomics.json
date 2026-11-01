@@ -1,6 +1,6 @@
 {
   "concept": "Relaxed, Acquire/Release, SeqCst",
-  "contentDigest": "362f1bdc04fb65d647b04bc5ba353d5ccf951cd58958f89334ab3ccc2518c20d",
+  "contentDigest": "062ea589883af8dd3a5ea8ef75f2c023fb74965ae407a83554ae6a0ee14b72c2",
   "depth": {
     "connections": [
       {
@@ -14,7 +14,7 @@
         "title": "Deadlocks"
       }
     ],
-    "correction": "Atomic increments avoid lost updates; join establishes worker completion. A flag publishing other data needs a separate synchronization argument.",
+    "correction": "`Relaxed` increments are still atomic, so concurrent `fetch_add` calls lose no updates. What `Relaxed` omits is ordering with other data, which this counter does not need.",
     "misconception": "Relaxed becomes sufficient only when there are no concurrent increments.",
     "traceSteps": [
       {
@@ -23,7 +23,7 @@
       },
       {
         "title": "Trace the concrete example",
-        "detail": "Release publishes the writes before it; Acquire sees them."
+        "detail": "Four `fetch_add` calls lose no updates, and each `join` completes before the final load, so it reads 4. Nothing here uses Release or Acquire."
       },
       {
         "title": "Test the changed constraint",
@@ -58,7 +58,7 @@
   },
   "illustration": {
     "path": "media/q-atomics.png",
-    "alt": "Diagram for Atomics and Ordering: the code flows to its exact contract and observed boundary.",
+    "alt": "Lesson map: four threads calling fetch_add with Relaxed ordering and being joined, above the rule that atomicity and ordering are separate promises.",
     "caption": "Desktop OS-thread example: atomic increments and joins; this offline WASI runtime does not supply OS threads."
   }
 }

@@ -12,7 +12,7 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Place even values before odd values and return the boundary index after the evens.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement predicate-partition\")\n}\n",
+    "source": "pub fn solve(input: &str) -> String {\n    // Place even values before odd values and return the boundary index after the evens. Given arranged=[...] instead, return the rearranged values; any order with every even before every odd is accepted.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement predicate-partition\")\n}\n",
     "verificationCases": [
       {
         "kind": "visible",
@@ -40,6 +40,16 @@
         "expectedAnswer": "4"
       },
       {
+        "kind": "adversarial",
+        "input": "arranged=[5,2,8,1,4]",
+        "expectedAnswer": "2,8,4,1,5"
+      },
+      {
+        "kind": "adversarial",
+        "input": "arranged=[1,2]",
+        "expectedAnswer": "2,1"
+      },
+      {
         "kind": "normalisation",
         "input": "  \n[5, 2, 8, 1, 4]\n  ",
         "expectedAnswer": "3"
@@ -50,7 +60,7 @@
         "expectedAnswer": "4"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"[5, 2, 8, 1, 4]\",\"3\"),\n        (\"[1, 3]\",\"0\"),\n        (\"[1,2,3,4,5,6,7]\",\"3\"),\n        (\"[3,3,3,3,3,3,3]\",\"0\"),\n        (\"[8,7,6,5,4,3,2]\",\"4\"),\n        (\"  \\n[5, 2, 8, 1, 4]\\n  \",\"3\"),\n        (\"\\n[8,7,6,5,4,3,2]\\n\",\"4\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS predicate-partition\");\n}\n"
+    "verificationSource": "mod solution;\n\nfn valid(input: &str, actual: &str, expected: &str) -> bool {\n    if !input.contains(\"arranged=\") { return actual == expected; }\n    let parse = |text: &str| -> Option<Vec<i64>> { text.split(',').map(|x| x.trim().parse().ok()).collect() };\n    let (Some(got), Some(mut want)) = (parse(actual), parse(expected)) else { return false; };\n    let mut sorted = got.clone();\n    sorted.sort();\n    want.sort();\n    let evens = got.iter().take_while(|x| *x % 2 == 0).count();\n    sorted == want && got[evens..].iter().all(|x| x % 2 != 0)\n}\n\nfn main() {\n    let cases = [\n        (\"[5, 2, 8, 1, 4]\",\"3\"),\n        (\"[1, 3]\",\"0\"),\n        (\"[1,2,3,4,5,6,7]\",\"3\"),\n        (\"[3,3,3,3,3,3,3]\",\"0\"),\n        (\"[8,7,6,5,4,3,2]\",\"4\"),\n        (\"arranged=[5,2,8,1,4]\",\"2,8,4,1,5\"),\n        (\"arranged=[1,2]\",\"2,1\"),\n        (\"  \\n[5, 2, 8, 1, 4]\\n  \",\"3\"),\n        (\"\\n[8,7,6,5,4,3,2]\\n\",\"4\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS predicate-partition\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {

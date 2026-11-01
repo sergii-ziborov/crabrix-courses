@@ -14,13 +14,13 @@
     "visibleInput": "[7,2,5,4,9]"
   },
   "concept": "Let a read pointer inspect every item while a write pointer marks the kept prefix.",
-  "contentDigest": "6f885fddea9cbd0682b996682c98f4645e6d8f7862cb1b609fb15fe709de2316",
+  "contentDigest": "013137032a47792b9867dbc7519d37962e12b74cfb7fcda857cdc4754f4eb0bb",
   "depth": {
     "connections": [
       {
         "direction": "previous",
         "title": "Challenge: Opposite-End Pointers",
-        "concept": "Return true if the sorted values contain a pair summing to 10."
+        "concept": "Return whether two different positions of the sorted values sum to 10."
       },
       {
         "direction": "next",
@@ -65,7 +65,7 @@
     "feedback": "In [7,2,5,4,9], retain 7 at slot 0, skip 2, write 5 at slot 1, skip 4, and write 9 at slot 2. Truncate to three elements. The retained prefix [7,5,9] keeps source order.",
     "practiceCode": "fn csv<T: std::fmt::Display>(a: impl IntoIterator<Item = T>) -> String {\n    a.into_iter()\n        .map(|x| x.to_string())\n        .collect::<Vec<_>>()\n        .join(\",\")\n}\nfn keep_at_least(values: &mut Vec<i32>, threshold: i32) {\n    let mut write = 0;\n    for read in 0..values.len() {\n        if values[read] >= threshold {\n            values[write] = values[read];\n            write += 1;\n        }\n    }\n    values.truncate(write);\n}\n\nfn main() {\n    let result = {\n        let mut values = vec![7, 2, 5, 4, 9];\n        keep_at_least(&mut values, 5);\n        csv(values)\n    };\n    println!(\"{result}\");\n}\n",
     "question": "How does stable threshold filtering avoid overwriting unread input?",
-    "rule": "The write position never advances beyond the read position. State the input preconditions before applying this invariant.",
+    "rule": "Let a read pointer inspect every item while a write pointer marks the kept prefix. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(1) space bound without looking at the code.",
     "summary": "Let a read pointer inspect every item while a write pointer marks the kept prefix.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

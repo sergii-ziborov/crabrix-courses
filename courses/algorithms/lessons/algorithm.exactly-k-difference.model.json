@@ -14,7 +14,7 @@
     "visibleInput": "[1,2,1,2,3]"
   },
   "concept": "Count windows with at most k and subtract those with at most k-1.",
-  "contentDigest": "625b300bfcb53f9142f3521661202cac112b78029206803f648cbb7c420ee19c",
+  "contentDigest": "5810c08acdd17cb6066c24c696563cb61689aa87fd60caad53827acbbe5bc680",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "On [1,2,1,2,3], atMost(2)=12 and atMost(1)=5, giving 7 exactly-two-distinct subarrays. Each right endpoint contributes all valid start positions, not only one longest window.",
     "practiceCode": "fn exactly_k(values: &[i32], k: usize) -> usize {\n    fn at_most(a: &[i32], k: usize) -> usize {\n        let mut counts = std::collections::HashMap::new();\n        let (mut left, mut total) = (0, 0);\n        for (right, &x) in a.iter().enumerate() {\n            *counts.entry(x).or_insert(0) += 1;\n            while counts.len() > k {\n                let count = counts.get_mut(&a[left]).unwrap();\n                *count -= 1;\n                if *count == 0 {\n                    counts.remove(&a[left]);\n                }\n                left += 1;\n            }\n            total += right + 1 - left;\n        }\n        total\n    }\n    if k == 0 {\n        0\n    } else {\n        at_most(values, k) - at_most(values, k - 1)\n    }\n}\n\nfn main() {\n    let result = exactly_k(&[1, 2, 1, 2, 3], 2).to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Why subtract atMost(k-1) from atMost(k)?",
-    "rule": "The difference removes every window with fewer than k distinct values. State the input preconditions before applying this invariant.",
+    "rule": "Count windows with at most k and subtract those with at most k-1. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) expected time · O(k) space bound without looking at the code.",
     "summary": "Count windows with at most k and subtract those with at most k-1.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

@@ -12,7 +12,7 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return every start index of the pattern.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement rabin-karp\")\n}\n",
+    "source": "pub fn solve(input: &str) -> String {\n    // Return every start index of the pattern, ascending, or an empty string if absent. Confirm the bytes after a hash match.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement rabin-karp\")\n}\n",
     "verificationCases": [
       {
         "kind": "visible",
@@ -40,6 +40,11 @@
         "expectedAnswer": "0,1,2"
       },
       {
+        "kind": "adversarial",
+        "input": "text=ba pattern=ab",
+        "expectedAnswer": ""
+      },
+      {
         "kind": "normalisation",
         "input": "  \ntext=abracadabra pattern=abra\n  ",
         "expectedAnswer": "0,7"
@@ -50,7 +55,7 @@
         "expectedAnswer": "0,1,2"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"text=abracadabra pattern=abra\",\"0,7\"),\n        (\"text=aaaa pattern=aa\",\"0,1,2\"),\n        (\"text=abcabc pattern=bc\",\"1,4\"),\n        (\"text=abc pattern=z\",\"\"),\n        (\"text=aaaaa pattern=aaa\",\"0,1,2\"),\n        (\"  \\ntext=abracadabra pattern=abra\\n  \",\"0,7\"),\n        (\"\\ntext=aaaaa pattern=aaa\\n\",\"0,1,2\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS rabin-karp\");\n}\n"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"text=abracadabra pattern=abra\",\"0,7\"),\n        (\"text=aaaa pattern=aa\",\"0,1,2\"),\n        (\"text=abcabc pattern=bc\",\"1,4\"),\n        (\"text=abc pattern=z\",\"\"),\n        (\"text=aaaaa pattern=aaa\",\"0,1,2\"),\n        (\"text=ba pattern=ab\",\"\"),\n        (\"  \\ntext=abracadabra pattern=abra\\n  \",\"0,7\"),\n        (\"\\ntext=aaaaa pattern=aaa\\n\",\"0,1,2\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS rabin-karp\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {

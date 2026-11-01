@@ -14,7 +14,7 @@
     "visibleInput": "[1,2,1,2,3,2,2]"
   },
   "concept": "Keep a frequency state and shrink while more than k distinct values are present.",
-  "contentDigest": "0834af017ae36f03ea4bec29d81cdaa22e9188e627307a732c7729fa0fbaddb6",
+  "contentDigest": "7e7c1c3021cc20fb8093d7c253abf09ea6c919fc0b395253665b0c2b37a54ccd",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "For [1,2,1,2,3,2,2] and k=2, the first four values form a valid length-4 window. Adding 3 creates three keys, so remove left values until only two keys remain. Zero-frequency keys must be removed from the map.",
     "practiceCode": "fn longest_k_distinct(values: &[i32], k: usize) -> usize {\n    let mut counts = std::collections::HashMap::new();\n    let (mut left, mut best) = (0, 0);\n    for (right, &x) in values.iter().enumerate() {\n        *counts.entry(x).or_insert(0) += 1;\n        while counts.len() > k {\n            let old = values[left];\n            let count = counts.get_mut(&old).unwrap();\n            *count -= 1;\n            if *count == 0 {\n                counts.remove(&old);\n            }\n            left += 1;\n        }\n        best = best.max(right + 1 - left);\n    }\n    best\n}\n\nfn main() {\n    let result = longest_k_distinct(&[1, 2, 1, 2, 3, 2, 2], 2).to_string();\n    println!(\"{result}\");\n}\n",
     "question": "When must the distinct-count window shrink?",
-    "rule": "While the number of positive-frequency keys exceeds k. State the input preconditions before applying this invariant.",
+    "rule": "Keep a frequency state for the window, grow it on the right, and record the best valid length. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) expected time · O(k) space bound without looking at the code.",
     "summary": "Keep a frequency state and shrink while more than k distinct values are present.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

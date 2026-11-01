@@ -14,7 +14,7 @@
     "visibleInput": "bound=25 sum=5"
   },
   "concept": "Process digits with position, tight-bound, leading-zero, and property state.",
-  "contentDigest": "61a7cc96f676841c7ee3f669275204db33c2af950fe26a3c9da1f105f24bfcb8",
+  "contentDigest": "55ae0248bddc5b08cdd9aad499eac826ef5c92dc9ff61844e4ec851706bf9b81",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "Up to 25, digit sum 5 is achieved by 05,14,23, so the answer is 3. Once a prefix is smaller than 2, later digits can range freely. Leading zeros are part of one fixed-width representation and let zero be counted exactly once when target sum is zero.",
     "practiceCode": "fn digit_sum_count(bound: u64, target: usize) -> u64 {\n    fn count(\n        pos: usize,\n        left: usize,\n        tight: bool,\n        digits: &[u8],\n        memo: &mut [Vec<Option<u64>>],\n    ) -> u64 {\n        if pos == digits.len() {\n            return u64::from(left == 0);\n        }\n        if !tight {\n            if let Some(answer) = memo[pos][left] {\n                return answer;\n            }\n        }\n        let limit = if tight { digits[pos] } else { 9 };\n        let mut answer = 0;\n        for digit in 0..=limit {\n            if digit as usize <= left {\n                answer += count(\n                    pos + 1,\n                    left - digit as usize,\n                    tight && digit == limit,\n                    digits,\n                    memo,\n                );\n            }\n        }\n        if !tight {\n            memo[pos][left] = Some(answer);\n        }\n        answer\n    }\n    let digits: Vec<_> = bound.to_string().bytes().map(|c| c - b'0').collect();\n    count(\n        0,\n        target,\n        true,\n        &digits,\n        &mut vec![vec![None; target + 1]; digits.len()],\n    )\n}\n\nfn main() {\n    let result = digit_sum_count(25, 5).to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Why does digit DP retain whether its prefix still equals the upper-bound prefix?",
-    "rule": "A tight prefix restricts the next digit to the bound's digit. State the input preconditions before applying this invariant.",
+    "rule": "Process digits with position, tight-bound, leading-zero, and property state. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(digits * states * base) time bound without looking at the code.",
     "summary": "Process digits with position, tight-bound, leading-zero, and property state.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

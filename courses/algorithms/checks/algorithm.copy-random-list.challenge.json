@@ -12,7 +12,7 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return copied values with random target indexes.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement copy-random-list\")\n}\n",
+    "source": "pub fn solve(input: &str) -> String {\n    // Parse values, random (each a node index or null) and optional next (each node's next index or none; when absent, nodes link in array order). Every node is reachable from node 0. Deep-copy the list, following next, with an old-to-new map. Return value:target for each copied node in list order, where target is the random node's position in the copied list, or null. Values may repeat, so identify nodes by index.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement copy-random-list\")\n}\n",
     "verificationCases": [
       {
         "kind": "visible",
@@ -40,6 +40,16 @@
         "expectedAnswer": "3:2,4:null,5:0"
       },
       {
+        "kind": "adversarial",
+        "input": "values=[7,13,11] next=[2,none,1] random=[null,0,1]",
+        "expectedAnswer": "7:null,11:2,13:0"
+      },
+      {
+        "kind": "adversarial",
+        "input": "values=[5,5,5] next=[2,none,1] random=[1,0,2]",
+        "expectedAnswer": "5:2,5:1,5:0"
+      },
+      {
         "kind": "normalisation",
         "input": "  \nvalues=[7,13,11] random=[null,0,1]\n  ",
         "expectedAnswer": "7:null,13:0,11:1"
@@ -50,7 +60,7 @@
         "expectedAnswer": "3:2,4:null,5:0"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"values=[7,13,11] random=[null,0,1]\",\"7:null,13:0,11:1\"),\n        (\"values=[1] random=[null]\",\"1:null\"),\n        (\"values=[1,2] random=[1,0]\",\"1:1,2:0\"),\n        (\"values=[9] random=[0]\",\"9:0\"),\n        (\"values=[3,4,5] random=[2,null,0]\",\"3:2,4:null,5:0\"),\n        (\"  \\nvalues=[7,13,11] random=[null,0,1]\\n  \",\"7:null,13:0,11:1\"),\n        (\"\\nvalues=[3,4,5] random=[2,null,0]\\n\",\"3:2,4:null,5:0\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS copy-random-list\");\n}\n"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"values=[7,13,11] random=[null,0,1]\",\"7:null,13:0,11:1\"),\n        (\"values=[1] random=[null]\",\"1:null\"),\n        (\"values=[1,2] random=[1,0]\",\"1:1,2:0\"),\n        (\"values=[9] random=[0]\",\"9:0\"),\n        (\"values=[3,4,5] random=[2,null,0]\",\"3:2,4:null,5:0\"),\n        (\"values=[7,13,11] next=[2,none,1] random=[null,0,1]\",\"7:null,11:2,13:0\"),\n        (\"values=[5,5,5] next=[2,none,1] random=[1,0,2]\",\"5:2,5:1,5:0\"),\n        (\"  \\nvalues=[7,13,11] random=[null,0,1]\\n  \",\"7:null,13:0,11:1\"),\n        (\"\\nvalues=[3,4,5] random=[2,null,0]\\n\",\"3:2,4:null,5:0\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS copy-random-list\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {

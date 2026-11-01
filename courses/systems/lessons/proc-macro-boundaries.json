@@ -1,6 +1,6 @@
 {
   "concept": "Separate host-time generation from target code",
-  "contentDigest": "4bc5a60f5414adce37c8ccced61e1562efd3b4ec848eaa37c891afdefba949ce",
+  "contentDigest": "737e793a455cbdab07e9465b895cfb4239aa7f6eb5c581bcb1ebbbbd2f7ca0a9",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Raw Pointers"
       }
     ],
-    "correction": "A procedural macro is compiled for and runs on the build host, then emits tokens for the target crate.",
-    "misconception": "“Inside the target app”",
+    "correction": "A procedural macro is compiled for and runs on the build host, then emits tokens for the target crate. Only those emitted tokens reach the app.",
+    "misconception": "“A proc macro runs inside the app, so it can see the target's runtime state.”",
     "traceSteps": [
       {
-        "detail": "Write down what callers may assume, what the compiler cannot prove, and which boundary is responsible for preserving soundness or cost.",
-        "title": "State the invariant"
+        "detail": "`#[proc_macro_derive(Builder)]` registers `derive` as the function the compiler calls for `#[derive(Builder)]`.",
+        "title": "Find the attribute"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "detail": "`derive` receives the item's tokens as a `TokenStream` and hands them to `expand`, a helper in the same host crate.",
+        "title": "Follow the tokens"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "detail": "The `TokenStream` it returns becomes code compiled for the target. `derive` and `expand` themselves are not part of the target program.",
+        "title": "Cross the boundary"
       }
     ],
-    "transferChallenge": "Create the smallest counterexample that violates the sample's invariant, then repair the abstraction boundary instead of hiding the symptom. Keep the focus on separate host-time generation from target code."
+    "transferChallenge": "Make `expand` reject unsupported input by returning `compile_error!` tokens with a message. Predict which crate reports the error and at which point in the build."
   },
   "exerciseKind": "planned",
   "id": "proc-macro-boundaries",
@@ -45,20 +45,20 @@
       "In Cargo.toml"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCaption": "The function runs in the compiler's host process, and the tokens it returns join the crate being built.",
     "exampleCode": "// Host process:\n#[proc_macro_derive(Builder)]\npub fn derive(input: TokenStream)\n    -> TokenStream {\n    expand(input)\n}",
-    "explanation": "A procedural macro is compiled for and runs on the build host, then emits tokens for the target crate. It cannot depend on target runtime state and should emit spans that point errors back to useful input.\n\nProcedural macros run as host tools during compilation. They receive token input from the crate being built and return token output that the compiler later checks for the target. If you cross-compile from a Mac to a phone, the macro runs on the Mac; generated program code targets the phone. This is why host dependencies and target dependencies can have different requirements, and why a restricted on-device compiler may not support arbitrary proc-macro crates. Keep the generated program independent of accidental host-only paths or environment details.\n\nGood diagnostics are part of the macro's public API. A derive that rejects an unsupported enum should point to the enum or offending field rather than failing with a cryptic token-stream panic. Parse input using an appropriate syntax library when available, preserve useful spans, and add compile-fail examples for invalid forms. Avoid doing network or filesystem work at expansion time unless the build contract explicitly depends on it; such hidden inputs make builds difficult to reproduce. Test the macro in a separate consumer crate, including renamed dependencies and generic types. If a small trait implementation is clearer without generation, prefer it. A proc macro should remove mechanical repetition while making the generated contract easier, not harder, to audit.\n\nA procedural macro is code executed during the build, so dependency updates to that crate deserve the same review as other build tooling. `Pin` versions where reproducibility matters and avoid hidden environment-dependent output. If the macro emits code with an unexpected import, prefer absolute paths or documented helper crates. The generated API should still be understandable without reading the macro implementation.",
-    "feedback": "Correct: On the build host.",
-    "practiceCode": "// Host process:\n#[proc_macro_derive(Builder)]\npub fn derive(input: TokenStream)\n    -> TokenStream {\n    expand(input)\n}",
+    "explanation": "A procedural macro is compiled for and runs on the build host, then emits tokens for the target crate. It cannot depend on target runtime state and should emit spans that point errors back to useful input.\n\nProcedural macros run as host tools during compilation. They receive token input from the crate being built and return token output that the compiler later checks for the target. If you cross-compile from a Mac to a phone, the macro runs on the Mac; generated program code targets the phone. This is why host dependencies and target dependencies can have different requirements, and why a restricted on-device compiler may not support arbitrary proc-macro crates. Keep the generated program independent of accidental host-only paths or environment details.\n\nGood diagnostics are part of the macro's public API. A derive that rejects an unsupported enum should point to the enum or offending field rather than failing with a cryptic token-stream panic. Parse input using an appropriate syntax library when available, preserve useful spans, and add compile-fail examples for invalid forms. Avoid doing network or filesystem work at expansion time unless the build contract explicitly depends on it; such hidden inputs make builds difficult to reproduce. Test the macro in a separate consumer crate, including renamed dependencies and generic types. If a small trait implementation is clearer without generation, prefer it. A proc macro should remove mechanical repetition while making the generated contract easier, not harder, to audit.\n\nA procedural macro is code executed during the build, so dependency updates to that crate deserve the same review as other build tooling. Pin versions where reproducibility matters and avoid hidden environment-dependent output. If the macro emits code with an unexpected import, prefer absolute paths or documented helper crates. The generated API should still be understandable without reading the macro implementation.",
+    "feedback": "`host_os!` runs on the build host during compilation and pastes its answer into the target program as a string literal.",
+    "practiceCode": "// my_macros/src/lib.rs\nuse proc_macro::TokenStream;\n\n#[proc_macro]\npub fn host_os(_input: TokenStream) -> TokenStream {\n    format!(\"{:?}\", std::env::consts::OS).parse().unwrap()\n}\n\n// app/src/main.rs\nfn main() {\n    println!(\"{}\", my_macros::host_os!());\n}",
     "question": "Where does a proc macro execute?",
     "rule": "A procedural macro is compiled for and runs on the build host, then emits tokens for the target crate.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "You can say which value belongs to the build host and which to the target.",
     "summary": "Separate host-time generation from target code.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Predict what `host_os!` prints when `app` is cross-compiled on a Mac for another platform. Then change the macro so the generated code reads `std::env::consts::OS` at run time."
   },
   "illustration": {
     "path": "media/proc-macro-boundaries.png",
     "alt": "Diagram for Proc-Macro Boundaries: a Rust code example flows to the lesson rule and the key observation.",
-    "caption": "The example makes the contract visible in code."
+    "caption": "The function runs in the compiler's host process, and the tokens it returns join the crate being built."
   }
 }

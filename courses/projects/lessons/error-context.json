@@ -1,6 +1,6 @@
 {
   "concept": "Preserve a cause while explaining the failed operation",
-  "contentDigest": "b8493e27635d05add2f3cccec45ca23447f966a9f6e8c3574276ad72a43a1b19",
+  "contentDigest": "b2c77814e11d35fc829beecf634f653a03902cdb71cdd329a505f99b5b76e677",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Executable Documentation"
       }
     ],
-    "correction": "A useful error says what operation failed and retains the original cause.",
-    "misconception": "“Only a short label”",
+    "correction": "A useful error says what operation failed and retains the original cause. “invalid input” hides both the value and the reason.",
+    "misconception": "“Replacing a low-level error with one clear message is the same as adding context.”",
     "traceSteps": [
       {
-        "detail": "Separate source modules, public API, manifest data, dependency graph, and build evidence before changing any one of them.",
-        "title": "Map the project boundary"
+        "detail": "`text.parse()` infers `u16` from the return type, so `8080` gives `Ok(8080)` and the `map_err` closure never runs.",
+        "title": "Try the parse"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "detail": "For `abc`, `parse` returns `Err`, and `map_err` runs its closure with the `ParseIntError` as `error`.",
+        "title": "Hit the failure"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "detail": "`format!` produces `invalid port abc: invalid digit found in string`, so the text carries both the operation and the cause.",
+        "title": "Read the message"
       }
     ],
-    "transferChallenge": "Move one responsibility across a module or package boundary without changing behaviour. Predict which imports, tests, or lock data must change. Keep the focus on preserve a cause while explaining the failed operation."
+    "transferChallenge": "Replace the `String` with an enum that holds the `ParseIntError`, and implement `Display` and `Error::source`. Predict what a caller can now do that a formatted string did not allow."
   },
   "exerciseKind": "planned",
   "id": "error-context",
@@ -45,20 +45,20 @@
       "A stack address"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCaption": "`map_err` adds the operation and the value, and keeps the parser's message in the text.",
     "exampleCode": "fn port(text: &str) -> Result<u16, String> {\n    text.parse().map_err(|error| {\n        format!(\"invalid port {text}: {error}\")\n    })\n}",
     "explanation": "A useful error says what operation failed and retains the original cause. Add context at abstraction boundaries rather than replacing specific information with one vague message.\n\nAn error should carry enough information for someone at the boundary to understand what failed. `text.parse::<u16>()` can report a parsing failure, but a caller may need to know that this text was supposed to be a port. The example's `map_err` adds the offending value and the operation while preserving the underlying cause in the formatted message. At a higher layer, you might add which configuration file or command supplied that value.\n\nThe useful question is where to add context. A low-level parser knows syntax; a configuration loader knows the field name; a CLI knows what the user was trying to do. Each layer should add only the information it owns. Replacing every error with the same \"invalid input\" string erases evidence. Duplicating full messages at every layer produces noise. Structured error types or source chains can preserve machine-readable causes until the final presentation layer chooses wording.\n\nTry the port function with valid text, letters, and a number too large for `u16`. Check that the user-facing message distinguishes where the failure occurred without exposing irrelevant internal details. If recovery is possible, return `Result` so the caller can decide. If the error is logged, include enough context to reproduce it while avoiding secrets or full sensitive input. Good diagnostics are a collaboration between error type, call-site context, and final display—not a single catch-all message.",
-    "feedback": "Correct: The original cause.",
-    "practiceCode": "fn port(text: &str) -> Result<u16, String> {\n    text.parse().map_err(|error| {\n        format!(\"invalid port {text}: {error}\")\n    })\n}",
+    "feedback": "Context should add what the caller was doing without losing why it failed, so keep the parser's error in the message or as a source.",
+    "practiceCode": "fn port(text: &str) -> Result<u16, String> {\n    text.parse().map_err(|_| {\n        \"invalid input\".to_string()\n    })\n}",
     "question": "What should context preserve?",
     "rule": "A useful error says what operation failed and retains the original cause.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "Both failures name the value and keep the parser's own reason.",
     "summary": "Preserve a cause while explaining the failed operation.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Call this `port` with `abc` and with `99999`, then compare the two messages. Rewrite the `map_err` so each one says which value failed and why."
   },
   "illustration": {
     "path": "media/error-context.png",
     "alt": "Diagram for Error Context: a Rust code example flows to the lesson rule and the key observation.",
-    "caption": "The example makes the contract visible in code."
+    "caption": "`map_err` adds the operation and the value, and keeps the parser's message in the text."
   }
 }

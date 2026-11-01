@@ -14,7 +14,7 @@
     "visibleInput": "values=[5,4,7,2] update=(2,0) query=1..3"
   },
   "concept": "Represent intervals as a binary tree so a query visits only canonical covering nodes.",
-  "contentDigest": "e6dda4faa091ed94855a6dfb58e321b463938ff30920e5c76d385fa666de7a4a",
+  "contentDigest": "dfa0b119a41608f60089ffaaa05dfdbc8da1ed197d8009c301fc8142777aa071",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "Build minima for [5,4,7,2]. Updating index 2 to 0 changes its leaf and ancestors. Inclusive query [1,3] combines canonical ranges and returns 0; the query loop uses a half-open right endpoint internally.",
     "practiceCode": "fn updated_min(values: &[i32], update: (usize, i32), range: (usize, usize)) -> i32 {\n    let n = values.len().next_power_of_two();\n    let mut tree = vec![i32::MAX; 2 * n];\n    tree[n..n + values.len()].copy_from_slice(values);\n    for i in (1..n).rev() {\n        tree[i] = tree[2 * i].min(tree[2 * i + 1]);\n    }\n    let mut i = n + update.0;\n    tree[i] = update.1;\n    while i > 1 {\n        i /= 2;\n        tree[i] = tree[2 * i].min(tree[2 * i + 1]);\n    }\n    let (mut left, mut right) = (range.0 + n, range.1 + n + 1);\n    let mut result = i32::MAX;\n    while left < right {\n        if left % 2 == 1 {\n            result = result.min(tree[left]);\n            left += 1;\n        }\n        if right % 2 == 1 {\n            right -= 1;\n            result = result.min(tree[right]);\n        }\n        left /= 2;\n        right /= 2;\n    }\n    result\n}\n\nfn main() {\n    let result = updated_min(&[5, 4, 7, 2], (2, 0), (1, 3)).to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Why may an interval query combine only fully covered tree nodes?",
-    "rule": "Their disjoint canonical intervals cover the requested range. State the input preconditions before applying this invariant.",
+    "rule": "Represent intervals as a binary tree so a query visits only canonical covering nodes. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(log n) update/query · O(n) space bound without looking at the code.",
     "summary": "Represent intervals as a binary tree so a query visits only canonical covering nodes.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

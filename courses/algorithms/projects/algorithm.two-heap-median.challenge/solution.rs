@@ -1,5 +1,5 @@
 pub fn solve(input: &str) -> String {
-    // Return medians after inserting 5, 2, 10, 4.
+    // Return the running median after each inserted value.
     // Parse the visible input into the structures your algorithm needs.
     // Whitespace surrounding the complete input is insignificant.
     let _ = input;

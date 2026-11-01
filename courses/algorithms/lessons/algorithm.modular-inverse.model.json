@@ -14,13 +14,13 @@
     "visibleInput": "a=3 mod=11"
   },
   "concept": "Use extended Euclid when gcd is one, or Fermat under a known prime modulus.",
-  "contentDigest": "9c39290dd51c81724c2bee877da6f0cadf02196adb413cd4b85ac2529fd30468",
+  "contentDigest": "16975414749426929f3422386193c105ac156eb2ffe934119d6a3399ec1280bd",
   "depth": {
     "connections": [
       {
         "direction": "previous",
         "title": "Challenge: Binary Exponentiation",
-        "concept": "Parse base, exp and a positive mod; return base^exp modulo mod, including exp=0."
+        "concept": "Parse base, exp and a positive mod; return base^exp modulo mod, including exp=0, so mod=1 gives 0."
       },
       {
         "direction": "next",
@@ -65,7 +65,7 @@
     "feedback": "Extended Euclid for a=3,m=11 finds a coefficient equivalent to 4, and 3×4 mod 11=1. Normalize a negative coefficient with rem_euclid. The function returns None when the gcd is not one; fixtures requesting a numeric inverse use coprime arguments.",
     "practiceCode": "fn modular_inverse(a: i64, modulus: i64) -> Option<i64> {\n    assert!(modulus > 1);\n    let (mut old_r, mut r) = (a.rem_euclid(modulus), modulus);\n    let (mut old_s, mut s) = (1_i128, 0_i128);\n    while r != 0 {\n        let q = old_r / r;\n        (old_r, r) = (r, old_r - q * r);\n        (old_s, s) = (s, old_s - q as i128 * s);\n    }\n    (old_r == 1).then(|| old_s.rem_euclid(modulus as i128) as i64)\n}\n\nfn main() {\n    let result = modular_inverse(3, 11).unwrap().to_string();\n    println!(\"{result}\");\n}\n",
     "question": "When does a multiplicative inverse modulo m exist?",
-    "rule": "Exactly when gcd(a,m)=1. State the input preconditions before applying this invariant.",
+    "rule": "Use extended Euclid when gcd is one, or Fermat under a known prime modulus. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(log modulus) time · O(1) space bound without looking at the code.",
     "summary": "Use extended Euclid when gcd is one, or Fermat under a known prime modulus.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

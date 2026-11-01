@@ -1,5 +1,5 @@
 pub fn solve(input: &str) -> String {
-    // Return the number of unique triples summing to zero.
+    // Return the number of unique value triples summing to zero; triples with the same values count once.
     // Parse the visible input into the structures your algorithm needs.
     // Whitespace surrounding the complete input is insignificant.
     let _ = input;

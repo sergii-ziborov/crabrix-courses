@@ -1,6 +1,6 @@
 {
   "concept": "Borrow local data while threads are guaranteed to join",
-  "contentDigest": "256b50bd0e910d549ee874b5e5626e24553b8e8cf934652458828c0e3198f17a",
+  "contentDigest": "196834f0f7a3de01027cfe8208d52a9dd21552c87a506687d3190dbdd0aacf68",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Mutex Poisoning"
       }
     ],
-    "correction": "`thread::scope` proves every spawned thread finishes before borrowed stack data disappears.",
-    "misconception": "“Arrays are static”",
+    "correction": "`thread::scope` proves every spawned thread finishes before borrowed stack data disappears, so a scoped thread may borrow locals with no `Arc` or clone.",
+    "misconception": "“A thread can never borrow a local variable, so the data must go in an `Arc`.”",
     "traceSteps": [
       {
-        "detail": "Name each task or thread, the state it can reach, and every point where work can wait, race, block, or be cancelled.",
-        "title": "Draw the event timeline"
+        "detail": "`std::thread::scope` runs its closure and passes it `scope`, the handle that starts threads tied to this call.",
+        "title": "Open the scope"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "detail": "The spawned closure reads `values` through a shared borrow, with no `move`, so `values` stays usable by main.",
+        "title": "Borrow in the worker"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "detail": "The scope waits for the worker before returning, so `3` has printed by the time the line after the scope runs.",
+        "title": "Reach the join"
       }
     ],
-    "transferChallenge": "Add a second worker or cancellation point. Draw two possible event orders and state the invariant that both orders must preserve. Keep the focus on borrow local data while threads are guaranteed to join."
+    "transferChallenge": "Replace `scope.spawn` with `std::thread::spawn` in the example and predict the compiler error. Then add `move` and explain why `values` is still usable afterwards."
   },
   "exerciseKind": "planned",
   "id": "scoped-threads",
@@ -40,25 +40,25 @@
   "title": "Scoped Threads",
   "writing": {
     "answers": [
-      "The scope joins it",
-      "Arrays are static",
-      "spawn copies all"
+      "The scope joins them before values can go away",
+      "Arrays are stored in static memory",
+      "spawn copies the whole array"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCaption": "Every scoped thread finishes before `scope` returns, so borrowing `values` is allowed.",
     "exampleCode": "let values = [2, 4, 6];\nstd::thread::scope(|scope| {\n    scope.spawn(|| {\n        println!(\"{}\", values.len());\n    });\n});",
     "explanation": "`thread::scope` proves every spawned thread finishes before borrowed stack data disappears. It avoids unnecessary `Arc` or cloning when concurrency stays inside one lexical operation.\n\nOrdinary `thread::spawn` may outlive the function that created it, so its closure generally needs owned, thread-safe data. `thread::scope` sets a tighter boundary: every scoped thread finishes before the scope returns. Within that boundary, a worker can borrow local values that remain alive until all workers join. This is useful for parallel processing of disjoint parts of a collection without cloning the entire collection into `Arc`.\n\nThe safety promise is about lifetime, not completion without failure. A scoped worker can still panic; the scope joins all its workers and can propagate an unhandled panic. Write the error policy explicitly if a worker result matters. Also avoid making the borrow invalid yourself: if one worker reads a value, the usual borrowing rules still prevent an overlapping mutable borrow of that same value. A scope is no shortcut around aliasing or synchronization.\n\nTry dividing a slice into two non-overlapping mutable halves with `split_at_mut`, then process one half in each scoped worker. Predict why the compiler accepts those two borrows. Change the code so both workers try to mutate the entire slice and read the rejection. Finally compare the scoped form with an owned `Vec` moved into an ordinary spawned thread. Use the scope when the work naturally ends inside the current operation; use detached or longer-lived tasks only when you have an explicit ownership and shutdown plan.",
-    "feedback": "Correct: The scope joins it.",
-    "practiceCode": "let values = [2, 4, 6];\nstd::thread::scope(|scope| {\n    scope.spawn(|| {\n        println!(\"{}\", values.len());\n    });\n});",
-    "question": "Why may the thread borrow values?",
+    "feedback": "`thread::scope` joins every thread before it returns, so a borrow of `values` cannot outlive the array. `split_at_mut` keeps the two mutable borrows disjoint.",
+    "practiceCode": "let mut values = [2, 4, 6, 8];\nlet (left, right) = values.split_at_mut(2);\nstd::thread::scope(|scope| {\n    scope.spawn(|| left[0] += 1);\n    scope.spawn(|| right[0] += 1);\n});\nprintln!(\"{values:?}\");",
+    "question": "Why may these threads borrow from values?",
     "rule": "`thread::scope` proves every spawned thread finishes before borrowed stack data disappears.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "You can say why two disjoint `&mut` halves compile and why two mutable borrows of `values` do not.",
     "summary": "Borrow local data while threads are guaranteed to join.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Predict what this prints. Then make both workers change `values` directly instead of one half each, and read the rejection."
   },
   "illustration": {
     "path": "media/scoped-threads.png",
     "alt": "Diagram for Scoped Threads: a Rust code example flows to the lesson rule and the key observation.",
-    "caption": "The example makes the contract visible in code."
+    "caption": "Every scoped thread finishes before `scope` returns, so borrowing `values` is allowed."
   }
 }

@@ -14,13 +14,13 @@
     "visibleInput": "[2,7,9,3,1]"
   },
   "concept": "For each item compare skipping it with taking it plus the best compatible earlier state.",
-  "contentDigest": "ac9005eb8ae95d61a805c01d7e8b29a73bb646147bc77e6272365d01a49a3f06",
+  "contentDigest": "4b9e505d4b9e3be095de7b0ccbdb1ff5f4ce523bc88d307e886936116f6c2047",
   "depth": {
     "connections": [
       {
         "direction": "previous",
         "title": "Challenge: Rolling-State DP",
-        "concept": "Return the minimum cost to move beyond the final stair."
+        "concept": "Parse cost=[...]. Start on stair 0 or stair 1. Landing on a stair pays its cost, and from there you move up one or two stairs. Return the minimum total cost to move beyond the final stair."
       },
       {
         "direction": "next",
@@ -65,7 +65,7 @@
     "feedback": "For [2,7,9,3,1], the best prefix totals are 2,7,11,11,12. Taking final 1 combines with total 11 from before its neighbor. The answer 12 comes from values 2,9,1, not the three largest values regardless of positions.",
     "practiceCode": "fn non_adjacent_sum(values: &[i32]) -> i32 {\n    let (mut previous, mut best) = (0, 0);\n    for &value in values {\n        let next = best.max(previous + value);\n        previous = best;\n        best = next;\n    }\n    best\n}\n\nfn main() {\n    let result = non_adjacent_sum(&[2, 7, 9, 3, 1]).to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Why compare the previous best with the value plus the two-back best?",
-    "rule": "Taking this item excludes its immediate predecessor. State the input preconditions before applying this invariant.",
+    "rule": "For each item compare skipping it with taking it plus the best compatible earlier state. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(1) space bound without looking at the code.",
     "summary": "For each item compare skipping it with taking it plus the best compatible earlier state.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

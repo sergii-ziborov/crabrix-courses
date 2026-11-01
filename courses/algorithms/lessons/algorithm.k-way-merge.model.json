@@ -14,13 +14,13 @@
     "visibleInput": "[1,4,7];[2,5,8];[0,6,9]"
   },
   "concept": "Push one frontier item per sorted source and advance only the source that wins.",
-  "contentDigest": "cab596c3e93316ad255b478acacff78d0bd95ca61c6b56875705dd262b3aefa1",
+  "contentDigest": "e18ad44173d00008c64c5a014c46e2583af8b3c35d0c4ccf2866f7115f87cfa0",
   "depth": {
     "connections": [
       {
         "direction": "previous",
         "title": "Challenge: Kth Statistic in a Stream",
-        "concept": "With k=3, return the kth largest after adding 4, 5, 8, 2, 10."
+        "concept": "Parse the integer stream, written [...] with an optional stream= prefix. With k=3, return the third largest value after each insertion, starting once three values have arrived."
       },
       {
         "direction": "next",
@@ -65,7 +65,7 @@
     "feedback": "Source heads 1,2,0 yield 0 first; advance only its source to 6. The next heap heads 1,2,6 yield 1. Repeating merges [1,4,7], [2,5,8], [0,6,9] into 0,1,2,4,5,6,7,8,9.",
     "practiceCode": "fn csv<T: std::fmt::Display>(a: impl IntoIterator<Item = T>) -> String {\n    a.into_iter()\n        .map(|x| x.to_string())\n        .collect::<Vec<_>>()\n        .join(\",\")\n}\nfn merge_many(lists: &[Vec<i32>]) -> Vec<i32> {\n    let mut heap = std::collections::BinaryHeap::new();\n    let mut out = Vec::new();\n    for (i, list) in lists.iter().enumerate() {\n        if let Some(&x) = list.first() {\n            heap.push(std::cmp::Reverse((x, i, 0)));\n        }\n    }\n    while let Some(std::cmp::Reverse((x, i, j))) = heap.pop() {\n        out.push(x);\n        if let Some(&next) = lists[i].get(j + 1) {\n            heap.push(std::cmp::Reverse((next, i, j + 1)));\n        }\n    }\n    out\n}\n\nfn main() {\n    let result = csv(merge_many(&[vec![1, 4, 7], vec![2, 5, 8], vec![0, 6, 9]]));\n    println!(\"{result}\");\n}\n",
     "question": "Why push only the next unread item from each sorted source?",
-    "rule": "No later item from that source can precede its current head. State the input preconditions before applying this invariant.",
+    "rule": "Push one frontier item per sorted source and advance only the source that wins. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(N log k) time · O(k) space bound without looking at the code.",
     "summary": "Push one frontier item per sorted source and advance only the source that wins.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

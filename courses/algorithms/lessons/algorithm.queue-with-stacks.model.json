@@ -14,13 +14,13 @@
     "visibleInput": "enqueue3 enqueue5 enqueue8 dequeue dequeue enqueue2 front"
   },
   "concept": "Reverse the input stack into an output stack only when the output side is empty.",
-  "contentDigest": "a621e0491541b4dd14f5ad6dfd566158535d3a444423bb81f80e9a4f471683f1",
+  "contentDigest": "5bd7ee9dedd4d01c63f42fbbab5ec0556e7a3c2e390f8bb40ce8e4e1cbe40451",
   "depth": {
     "connections": [
       {
         "direction": "previous",
         "title": "Challenge: Min Stack",
-        "concept": "After push 5, push 2, push 4, pop, return the minimum."
+        "concept": "Tokens pushN, pop and a final min arrive separated by spaces. Apply them in order and return the minimum of the remaining stack at min. The stack is nonempty at every pop and at min."
       },
       {
         "direction": "next",
@@ -65,7 +65,7 @@
     "feedback": "Enqueue 3,5,8 into incoming. Its transfer produces outgoing top 3; two dequeues remove 3 and 5. Enqueuing 2 remains in incoming while outgoing top 8 is still the correct front.",
     "practiceCode": "fn queue_front(operations: &[&str]) -> i32 {\n    let (mut incoming, mut outgoing) = (Vec::new(), Vec::new());\n    for op in operations {\n        if let Some(value) = op.strip_prefix(\"enqueue\") {\n            incoming.push(value.parse::<i32>().unwrap());\n            continue;\n        }\n        if outgoing.is_empty() {\n            while let Some(x) = incoming.pop() {\n                outgoing.push(x);\n            }\n        }\n        if *op == \"dequeue\" {\n            outgoing.pop().unwrap();\n        }\n    }\n    *outgoing.last().unwrap()\n}\n\nfn main() {\n    let result = queue_front(&[\n        \"enqueue3\", \"enqueue5\", \"enqueue8\", \"dequeue\", \"dequeue\", \"enqueue2\", \"front\",\n    ])\n    .to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Why transfer incoming items only when the outgoing stack is empty?",
-    "rule": "Reversing a whole batch restores FIFO order without disturbing older items. State the input preconditions before applying this invariant.",
+    "rule": "Reverse the input stack into an output stack only when the output side is empty. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(1) amortised operation · O(n) space bound without looking at the code.",
     "summary": "Reverse the input stack into an output stack only when the output side is empty.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

@@ -1,6 +1,6 @@
 {
   "concept": "Named data and methods",
-  "contentDigest": "f14a2eda01191cedf0e9e336ad71f92742d2431c1544d2b1665c68ff9f480d35",
+  "contentDigest": "cec0ac4aaedab9855ad4fc9bdee57c67bb782af282ee2da41a6084db46aa9e7e",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Enums & Match"
       }
     ],
-    "correction": "self consumes, &self reads, &`mut` self modifies.",
-    "misconception": "“Nothing — a method may take self by value freely”",
+    "correction": "Taking `self` by value moves the counter into `bump`, so the second call is a use after move. Choose `&self` or `&mut self` when the caller should keep the value.",
+    "misconception": "“Nothing — taking `self` by value leaves the counter usable”",
     "traceSteps": [
       {
-        "detail": "Name each value's type and starting value, then mark the expression that produces the lesson's result.",
-        "title": "Inventory the values"
+        "detail": "`Rectangle` has two `u32` fields, `width` and `height`. `area` takes `&self`, so it borrows the rectangle instead of consuming it.",
+        "title": "Read the receiver"
       },
       {
-        "detail": "Model a Rectangle and add an area method.",
-        "title": "Predict before checking"
+        "detail": "Build `Rectangle { width: 4, height: 3 }`. The tail expression `self.width * self.height` gives `12`, so `area()` should return `12`.",
+        "title": "Predict the method"
       },
       {
-        "detail": "The method borrows the rectangle and prints the expected area.",
+        "detail": "Call `area()` twice and print both results. Confirm `12` both times; the second call compiles because the first only borrowed the value.",
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change one value, type, or boundary in the sample. Write the exact stdout or diagnostic you expect before asking rustc. Keep the focus on named data and methods."
+    "transferChallenge": "Change `area` to take `self` and call it twice on one `Rectangle`, then write the diagnostic you expect. Restore `&self`, add `fn widen(&mut self, by: u32)`, and predict what the calling `let` binding now needs."
   },
   "exerciseKind": "planned",
   "id": "structs",
@@ -40,21 +40,21 @@
   "title": "Structs",
   "writing": {
     "answers": [
-      "Nothing — a method may take self by value freely",
+      "Nothing — taking self by value leaves the counter usable",
       "self consumes the counter, so it cannot be used again",
       "It should return Self so the call can be chained"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "&self borrows, so the caller keeps ownership.",
+    "exampleCaption": "`&self` borrows, so the caller keeps ownership.",
     "exampleCode": "struct Rectangle {\n    width: u32,\n    height: u32,\n}\n\nimpl Rectangle {\n    fn area(&self) -> u32 {\n        self.width * self.height\n    }\n}",
-    "explanation": "`impl` blocks attach constructors and methods to the type. The receiver spells out the ownership contract: self consumes the value, &self borrows it for reading, and &`mut` self borrows it for modification — so a method signature tells you what it will do before you read the body.\n\nA struct groups values that belong to one concept. `Rectangle { width, height }` gives those numbers names, so the caller cannot silently confuse the two positions in a tuple. Choose field types that express the valid domain; unsigned dimensions reject negative values at the type level, though you still need to think about multiplication overflow for very large inputs. Construct one value, print its area, then change only its width to see how the named fields clarify the operation.\n\nAn `impl` block puts operations next to the type they describe. An associated function such as `Rectangle::new(width, height)` has no `self` receiver and can validate input during construction. A method such as `area(&self)` borrows an existing rectangle. This means several read-only calls can share the same value. A mutating method uses `&mut self` and requires a mutable receiver; a consuming method uses `self` and leaves the old binding unavailable afterward. The signature is a compact ownership contract for callers.\n\nIn the counter practice snippet, `bump(self)` consumes the counter and returns only a number. That could be deliberate for a one-shot conversion, but it is surprising for an operation named \"bump.\" If the goal is to retain and update the counter, use `fn bump(&mut self)` and increment its field; if the goal is to produce a modified copy, return a new `Counter` and name the method accordingly. Decide the desired post-call state first, then choose the receiver. This habit prevents ownership errors from turning into unnecessary clones.\n\nA struct combines fields that belong to one concept. A `User` with `name` and `age` is easier to understand than two unrelated variables passed together through many functions. The field names describe roles; the type groups them into one value. Constructing a struct requires values for every required field unless a constructor or default supplies them. Access a field with dot syntax, and make the binding mutable if you intend to change a field through it.\n\nTrace a value from construction to a function call: which code owns it, which fields are read, and whether it can still be used afterward. Then add a field and follow the compiler errors at each construction site; they show where your data model is used. If a field must never be invalid, consider a constructor that validates it and keeps the raw fields private. A struct gives data a shape, while methods and visibility rules can protect the meaning of that shape.",
-    "feedback": "&self or &`mut` self keeps the value usable after the call.",
-    "practiceCode": "impl Counter {\n    fn bump(self) -> u32 { self.value + 1 }\n}",
+    "explanation": "`impl` blocks attach constructors and methods to the type. The receiver spells out the ownership contract: `self` consumes the value, `&self` borrows it for reading, and `&mut self` borrows it for modification — so a method signature tells you what it will do before you read the body.\n\nA struct groups values that belong to one concept. `Rectangle { width, height }` gives those numbers names, so the caller cannot silently confuse the two positions in a tuple. Choose field types that express the valid domain; unsigned dimensions reject negative values at the type level, though you still need to think about multiplication overflow for very large inputs. Construct one value, print its area, then change only its width to see how the named fields clarify the operation.\n\nAn `impl` block puts operations next to the type they describe. An associated function such as `Rectangle::new(width, height)` has no `self` receiver and can validate input during construction. A method such as `area(&self)` borrows an existing rectangle. This means several read-only calls can share the same value. A mutating method uses `&mut self` and requires a mutable receiver; a consuming method uses `self` and leaves the old binding unavailable afterward. The signature is a compact ownership contract for callers.\n\nIn the counter practice snippet, `bump(self)` consumes the counter and returns only a number, so the second call is rejected. That could be deliberate for a one-shot conversion, but it is surprising for an operation named \"bump.\" If the goal is to retain and update the counter, use `fn bump(&mut self)` and increment its field; if the goal is to produce a modified copy, return a new `Counter` and name the method accordingly. Decide the desired post-call state first, then choose the receiver. This habit prevents ownership errors from turning into unnecessary clones.\n\nA struct combines fields that belong to one concept. A `User` with `name` and `age` is easier to understand than two unrelated variables passed together through many functions. The field names describe roles; the type groups them into one value. Constructing a struct requires values for every required field unless a constructor or default supplies them. Access a field with dot syntax, and make the binding mutable if you intend to change a field through it.\n\nTrace a value from construction to a function call: which code owns it, which fields are read, and whether it can still be used afterward. Then add a field and follow the compiler errors at each construction site; they show where your data model is used. If a field must never be invalid, consider a constructor that validates it and keeps the raw fields private. A struct gives data a shape, while methods and visibility rules can protect the meaning of that shape.",
+    "feedback": "`&self` or `&mut self` keeps the value usable after the call.",
+    "practiceCode": "struct Counter {\n    value: u32,\n}\n\nimpl Counter {\n    fn bump(self) -> u32 { self.value + 1 }\n}\n\nlet counter = Counter { value: 1 };\nlet first = counter.bump();\nlet second = counter.bump();",
     "question": "What is wrong with that receiver?",
-    "rule": "self consumes, &self reads, &`mut` self modifies.",
+    "rule": "`self` consumes, `&self` reads, `&mut self` modifies.",
     "success": "The method borrows the rectangle and prints the expected area.",
     "summary": "Structs give related data names and a stable shape.",
-    "task": "Model a Rectangle and add an area method."
+    "task": "Model a `Rectangle` and add an `area` method."
   },
   "illustration": {
     "path": "media/structs.png",

@@ -1,6 +1,6 @@
 {
   "concept": "Move a checked borrow rule to runtime",
-  "contentDigest": "011970111748f0ec43a25e72ade5f8cdeebaf38dcfdbcdba8f86df7d85a206b5",
+  "contentDigest": "0b02ef7840ca71e3f2ed2113f07f4f600042b0d0a69e3619a9b17a76d6bf2e47",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Lifetime Elision"
       }
     ],
-    "correction": "`Cell` and `RefCell` allow mutation behind an immutable outer binding.",
-    "misconception": "“In Cargo.lock”",
+    "correction": "It enforces the same shared-or-exclusive rule, only at runtime. A `borrow()` while a `RefMut` guard is alive panics, and `try_borrow()` returns an error instead.",
+    "misconception": "“`RefCell` switches off the borrow rules.”",
     "traceSteps": [
       {
-        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
-        "title": "Map ownership first"
+        "detail": "`notes` is not `mut`, yet `borrow_mut()` returns a guard that lets `push` change the `Vec`. That temporary guard ends with the statement.",
+        "title": "Spot the guard"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "detail": "Predict what `notes.borrow().len()` prints. Then hold `let guard = notes.borrow_mut();` and predict what `notes.borrow()` does while `guard` is alive.",
         "title": "Predict before checking"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "detail": "The original prints `1`. With the guard held it still compiles, and then panics at runtime with an already-borrowed message.",
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &`mut` T. Before compiling, list which bindings remain usable after each call. Keep the focus on move a checked borrow rule to runtime."
+    "transferChallenge": "Hold `let guard = notes.borrow_mut();`, replace the later `borrow()` with `try_borrow()`, and handle the `Err`. Then call `drop(guard)` first and see the same call succeed."
   },
   "exerciseKind": "planned",
   "id": "interior-mutability-intro",
@@ -52,9 +52,9 @@
     "practiceCode": "use std::cell::RefCell;\nlet notes = RefCell::new(Vec::new());\nnotes.borrow_mut().push(\"ready\");\nprintln!(\"{}\", notes.borrow().len());",
     "question": "Where does `RefCell` check borrowing?",
     "rule": "`Cell` and `RefCell` allow mutation behind an immutable outer binding.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "You can say why the later `borrow()` succeeds, and what would make it panic.",
     "summary": "Move a checked borrow rule to runtime.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Find where the guard from `borrow_mut()` starts and ends, and where the check happens."
   },
   "illustration": {
     "path": "media/interior-mutability-intro.png",

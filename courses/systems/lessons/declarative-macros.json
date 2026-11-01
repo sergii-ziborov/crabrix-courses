@@ -1,6 +1,6 @@
 {
   "concept": "Pattern-based code generation",
-  "contentDigest": "fe4318ac3c21332da995035badfa8888701c9fc96e0a4963e9ab03947129a330",
+  "contentDigest": "d8e9031a52babd1678d1fc96317df2a2268c58fc76862b6dcfa96121294b1cb7",
   "depth": {
     "connections": [
       {
@@ -9,23 +9,23 @@
         "title": "Procedural Macros"
       }
     ],
-    "correction": "Macros work on tokens before type checking, which is why they can vary in arity.",
-    "misconception": "“ident”",
+    "correction": "Macros work on tokens before type checking, so a captured `expr` is pasted wherever the transcriber repeats it. Bind it once with `let` if it may have side effects.",
+    "misconception": "“A captured `expr` is evaluated once, like a function argument.”",
     "traceSteps": [
       {
-        "detail": "Write down what callers may assume, what the compiler cannot prove, and which boundary is responsible for preserving soundness or cost.",
-        "title": "State the invariant"
+        "detail": "`maximum!(3, 9, 2, 7)` has several arguments, so the first arm fails and the second binds `$first` to `3` and `$rest` to `9, 2, 7`.",
+        "title": "Match an arm"
       },
       {
-        "detail": "Write a macro that accepts a variable number of expressions.",
-        "title": "Predict before checking"
+        "detail": "The second arm calls `maximum!` again with one fewer argument, until only `7` remains and the first arm matches.",
+        "title": "Expand the tail"
       },
       {
-        "detail": "It expands correctly for one, two, and many arguments.",
-        "title": "Compare with evidence"
+        "detail": "Each level binds `first` and `rest` with `let`, so every argument is evaluated once and the result printed is 9.",
+        "title": "Compare once"
       }
     ],
-    "transferChallenge": "Create the smallest counterexample that violates the sample's invariant, then repair the abstraction boundary instead of hiding the symptom. Keep the focus on pattern-based code generation."
+    "transferChallenge": "Call the practice's `square!` with a block that prints when evaluated, and count the prints. Then bind `$value` with `let` so there is only one."
   },
   "exerciseKind": "planned",
   "id": "declarative-macros",
@@ -40,12 +40,12 @@
       "tt"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "One rule, any number of arguments, all checked after expansion.",
-    "exampleCode": "macro_rules! maximum {\n    ($first:expr) => { $first };\n    ($first:expr, $($rest:expr),+) => {\n        { let rest = maximum!($($rest),+);\n      if $first > rest { $first }\n          else { rest } }\n    };\n}\n\nprintln!(\"{}\", maximum!(3, 9, 2, 7));",
-    "explanation": "A declarative macro takes token trees, not values, so it can accept a variable number of arguments and shapes a function cannot. Fragment specifiers such as expr and ident say what each capture must be, and the expansion is type-checked afterwards like any other code.\n\nA `macro_rules!` definition contains arms. Each arm has a pattern that matches input syntax and a transcriber that emits output syntax. The compiler tries arms in order. In `maximum!`, the one-expression arm ends recursion; the repeated arm captures one expression and a nonempty comma-separated rest. That is a compile-time transformation. Values are evaluated only when the expanded Rust code runs, and the expansion is type-checked in the caller's context. A macro can accept shapes that an ordinary function signature cannot, but this flexibility raises the cost of reading errors and maintaining the API.\n\nTrace `maximum!(3, 9, 2)` on paper: the repeated arm reduces the tail, then compares the first expression with that result. Ask whether an argument with side effects is evaluated once. The temporary for the recursive result helps, but each arm still deserves review. Use a function when types and arity are fixed; use a macro when syntax transformation or variable arity is essential. Keep exported macros small, document accepted forms, and test both successful expansions and expected compile failures. When an error appears far inside generated code, inspect the expansion and simplify the invocation until the mismatched pattern is clear.\n\nMacro expansions can evaluate captured expressions more than once if the transcriber repeats them. For an expression with side effects, that changes program behavior. Use temporary bindings and inspect each arm. Also avoid returning a fragment with unexpected precedence; wrap a generated expression in a block or parentheses where its surrounding syntax could change how it is parsed.",
-    "feedback": "expr captures a whole expression and keeps its grouping.",
-    "practiceCode": "macro_rules! square {\n    ($value:???) => { $value * $value };\n}",
-    "question": "Which fragment specifier accepts any expression?",
+    "exampleCaption": "Two arms, any number of arguments, all checked after expansion.",
+    "exampleCode": "macro_rules! maximum {\n    ($first:expr) => { $first };\n    ($first:expr, $($rest:expr),+) => {{\n        let first = $first;\n        let rest = maximum!($($rest),+);\n        if first > rest { first } else { rest }\n    }};\n}\n\nprintln!(\"{}\", maximum!(3, 9, 2, 7));",
+    "explanation": "A declarative macro takes token trees, not values, so it can accept a variable number of arguments and shapes a function cannot. Fragment specifiers such as `expr` and `ident` say what each capture must be, and the expansion is type-checked afterwards like any other code.\n\nA `macro_rules!` definition contains arms. Each arm has a pattern that matches input syntax and a transcriber that emits output syntax. The compiler tries arms in order. In `maximum!`, the one-expression arm ends recursion; the repeated arm captures one expression and a nonempty comma-separated rest. That is a compile-time transformation. Values are evaluated only when the expanded Rust code runs, and the expansion is type-checked in the caller's context. A macro can accept shapes that an ordinary function signature cannot, but this flexibility raises the cost of reading errors and maintaining the API.\n\nTrace `maximum!(3, 9, 2)` on paper: the repeated arm reduces the tail, then compares the first expression with that result. Ask whether an argument with side effects is evaluated once. The temporaries `first` and `rest` keep each argument to one evaluation, and every arm deserves the same review. Use a function when types and arity are fixed; use a macro when syntax transformation or variable arity is essential. Keep exported macros small, document accepted forms, and test both successful expansions and expected compile failures. When an error appears far inside generated code, inspect the expansion and simplify the invocation until the mismatched pattern is clear.\n\nMacro expansions can evaluate captured expressions more than once if the transcriber repeats them. For an expression with side effects, that changes program behavior. Use temporary bindings and inspect each arm. Also avoid returning a fragment with unexpected precedence; wrap a generated expression in a block or parentheses where its surrounding syntax could change how it is parsed.",
+    "feedback": "`expr` captures a whole expression and keeps its grouping, so `square!(3 + 1)` is 16.",
+    "practiceCode": "macro_rules! square {\n    ($value:???) => { $value * $value };\n}\n\nprintln!(\"{}\", square!(3 + 1));",
+    "question": "Which fragment specifier replaces ??? so that $value accepts any expression?",
     "rule": "Macros work on tokens before type checking, which is why they can vary in arity.",
     "success": "It expands correctly for one, two, and many arguments.",
     "summary": "macro_rules! matches syntax patterns and expands to code.",

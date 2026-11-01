@@ -1,6 +1,6 @@
 {
   "concept": "Five powers and their invariants",
-  "contentDigest": "94cae6e0d91bab7d4501b43cab7d45b6a2fcb5593d4b4578215992a6609688f1",
+  "contentDigest": "3f203a43b415377e05b1c8fb8f9ea8121b07124e119be680ab39b4b5323f1dd0",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "FFI"
       }
     ],
-    "correction": "`unsafe` is a claim about an invariant, not permission to skip the rules.",
-    "misconception": "“Nothing — `unsafe` makes any dereference legal”",
+    "correction": "`unsafe` is a claim about an invariant, not permission to skip the rules. The pointer must still be valid, aligned, and point at a live, initialised value.",
+    "misconception": "“`unsafe` makes any dereference legal, so nothing else has to hold.”",
     "traceSteps": [
       {
-        "detail": "Write down what callers may assume, what the compiler cannot prove, and which boundary is responsible for preserving soundness or cost.",
-        "title": "State the invariant"
+        "detail": "`slice.is_empty()` returns early with `None`, so below that line the slice has at least one element.",
+        "title": "Check the input"
       },
       {
-        "detail": "Wrap an unchecked operation in a safe API that cannot be misused.",
-        "title": "Predict before checking"
+        "detail": "The `SAFETY` comment names that check, because `get_unchecked(0)` requires index 0 to be in bounds and does not test it.",
+        "title": "Read the proof"
       },
       {
-        "detail": "No safe caller can trigger undefined behaviour.",
-        "title": "Compare with evidence"
+        "detail": "`first(&[])` gives `None` and `first(&[5])` gives `Some(5)`. Both are safe calls, and no input reaches the read without the check.",
+        "title": "Test the boundary"
       }
     ],
-    "transferChallenge": "Create the smallest counterexample that violates the sample's invariant, then repair the abstraction boundary instead of hiding the symptom. Keep the focus on five powers and their invariants."
+    "transferChallenge": "Delete the `is_empty` check and find the input that now breaks the proof. Restore it, replace the block with `slice.first().copied()`, and say whether anything was lost."
   },
   "exerciseKind": "planned",
   "id": "unsafe",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "A small block, and the reason it is sound written next to it.",
     "exampleCode": "fn first(slice: &[u32]) -> Option<u32> {\n    if slice.is_empty() {\n        return None;\n    }\n    // SAFETY: the check above guarantees\n    // that index 0 exists.\n    Some(unsafe { *slice.get_unchecked(0) })\n}",
-    "explanation": "Inside an `unsafe` block you may dereference a raw pointer, call an `unsafe` function, access a mutable static, implement an `unsafe` trait, and read a union field. Everything else is checked exactly as before. The block is a promise that you have verified an invariant the compiler cannot, which is why the convention is to write that invariant down as a SAFETY comment.\n\nAn `unsafe` block permits a small set of operations whose safety conditions cannot be fully checked by the compiler. It does not relax ordinary borrowing rules for safe references or make a wrong pointer valid. The lesson's `get_unchecked(0)` example is safe only because the slice is known to contain index zero at that exact call site. The `SAFETY` comment should connect the preceding check to the API's precondition. If a future edit changes that control flow, the proof must be reviewed again.\n\nPrefer a safe operation when its cost is negligible or the optimizer can remove the check; `slice.first().copied()` is clearer here. Use `unsafe` only when a concrete boundary requires it, and make the boundary as small as possible. A safe wrapper around `unsafe` internals owes callers a sound contract for every input it accepts. Test edge cases such as empty slices, but remember tests cannot prove absence of undefined behavior. Audit aliasing, lifetimes, alignment, initialization, and thread interaction as applicable. Ask: what invariant is required, who establishes it, when can it stop holding, and can safe callers break it? That proof is the work behind the keyword, not an optional comment after the implementation.\n\nA `SAFETY` comment should survive code review as an argument, not a ritual phrase. If the proof depends on a length check, keep that check close; if it depends on another module, link the invariant clearly. Revisit the comment whenever data ownership or concurrency changes. Reducing `unsafe` code to one audited helper often makes the rest of the program both faster to review and safer to extend. The test is whether safe callers can violate the claimed invariant.",
+    "explanation": "`unsafe` unlocks five powers. Inside an `unsafe` block you may dereference a raw pointer, call an `unsafe` function, access a mutable static, and read a union field; the fifth, implementing an `unsafe` trait, is an `unsafe impl` item, not something a block grants. Everything else is checked exactly as before. The block is a promise that you have verified an invariant the compiler cannot, which is why the convention is to write that invariant down as a SAFETY comment.\n\nAn `unsafe` block permits a small set of operations whose safety conditions cannot be fully checked by the compiler. It does not relax ordinary borrowing rules for safe references or make a wrong pointer valid. The lesson's `get_unchecked(0)` example is safe only because the slice is known to contain index zero at that exact call site. The `SAFETY` comment should connect the preceding check to the API's precondition. If a future edit changes that control flow, the proof must be reviewed again.\n\nPrefer a safe operation when its cost is negligible or the optimizer can remove the check; `slice.first().copied()` is clearer here. Use `unsafe` only when a concrete boundary requires it, and make the boundary as small as possible. A safe wrapper around `unsafe` internals owes callers a sound contract for every input it accepts. Test edge cases such as empty slices, but remember tests cannot prove absence of undefined behavior. Audit aliasing, lifetimes, alignment, initialization, and thread interaction as applicable. Ask: what invariant is required, who establishes it, when can it stop holding, and can safe callers break it? That proof is the work behind the keyword, not an optional comment after the implementation.\n\nA `SAFETY` comment should survive code review as an argument, not a ritual phrase. If the proof depends on a length check, keep that check close; if it depends on another module, link the invariant clearly. Revisit the comment whenever data ownership or concurrency changes. Reducing `unsafe` code to one audited helper often makes the rest of the program both faster to review and safer to extend. The test is whether safe callers can violate the claimed invariant.",
     "feedback": "`unsafe` moves the obligation to you; it does not remove it.",
     "practiceCode": "let value = unsafe { *pointer };",
     "question": "What must be true for that to be sound?",

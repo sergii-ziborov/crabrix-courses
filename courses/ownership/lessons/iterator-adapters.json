@@ -1,6 +1,6 @@
 {
   "concept": "Transform lazily, then choose one consumer",
-  "contentDigest": "4a3c88c88c780a3a9979e970f0818c71450212cbe5157fcb8b22f6017e4ede84",
+  "contentDigest": "18530cc043859d6a42afa73b80bb3f8aaf73ac2953407b9f98d3b21a5c260603",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Closure Capture Modes"
       }
     ],
-    "correction": "Adapters such as map and filter describe work but do nothing until a consumer asks for values.",
-    "misconception": "“At .`iter()`”",
+    "correction": "`.iter()`, `filter`, and `map` only build the chain. `sum()` pulls each value through it one at a time, so the closures first run when `sum` asks.",
+    "misconception": "“The work happens at `.iter()`, one full pass per adapter, before `sum` runs.”",
     "traceSteps": [
       {
-        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
-        "title": "Map ownership first"
+        "detail": "`values.iter()` yields `&i32`, `filter` hands its closure `&&i32` so the sample writes `**v`, and `map` receives `&i32`.",
+        "title": "Write the item types"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "detail": "Add `.inspect(|v| println!(\"kept {v}\"))` after `filter` and predict the printed lines and `total`. Then predict both again with `.take(1)` before `sum()`.",
         "title": "Predict before checking"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "detail": "`kept 2` and `kept 4` print while `sum` runs, and `total` is `20`. With `.take(1)`, only `kept 2` prints, and `total` is `4`.",
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &`mut` T. Before compiling, list which bindings remain usable after each call. Keep the focus on transform lazily, then choose one consumer."
+    "transferChallenge": "Replace the array with a `Vec` and switch to `into_iter()`. Change `**v` to `*v`, confirm that `total` is still `20`, and then use the `Vec` again to see the move."
   },
   "exerciseKind": "planned",
   "id": "iterator-adapters",
@@ -47,14 +47,14 @@
     "correctAnswer": 1,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "let values = [1, 2, 3, 4];\nlet total: i32 = values.iter()\n    .filter(|v| **v % 2 == 0)\n    .map(|v| v * v)\n    .sum();",
-    "explanation": "Adapters such as map and filter describe work but do nothing until a consumer asks for values. A clear pipeline separates selection, transformation, and collection without temporary vectors.\n\nAn iterator pipeline can read like a data-processing sentence: choose items, transform each chosen item, then consume the result. The sample starts with borrowed values from an array, filters for even numbers, squares them, and sums the squares. The final answer is 20 for `[1, 2, 3, 4]`. The adapters are lazy; `sum()` repeatedly pulls the next item through the chain. No intermediate vector is required.\n\nLook closely at references. `values.iter()` yields `&i32`, while `filter` passes a reference to each item into its predicate, so the closure sees an extra reference layer and the example uses `**v`. The following `map` receives each iterator item and can use normal dereference arithmetic. Writing types beside the closures for one exercise can demystify those stars. If you use `into_iter()` on an owned vector instead, values are moved into the pipeline, changing what remains available afterward.\n\nUse `inspect` temporarily to see when each element reaches a stage. Then insert `.take(1)` before `sum()` and predict which elements are evaluated. Be careful where you place it: taking one input before a filter is different from taking one matched output after a filter. A pipeline becomes hard to read when it hides side effects in `map` or uses many conversions without names. Split it into intermediate bindings when the operations need explanation. The goal is a clear ownership and evaluation story, not the fewest lines.\n\nTry replacing the array with a vector and selecting `.iter()` versus `.into_iter()`. The numeric answer stays the same, but the ownership of the source changes. That is part of the API contract.",
+    "explanation": "Adapters such as map and filter describe work but do nothing until a consumer asks for values. A clear pipeline separates selection, transformation, and collection without temporary vectors.\n\nAn iterator pipeline can read like a data-processing sentence: choose items, transform each chosen item, then consume the result. The sample starts with borrowed values from an array, filters for even numbers, squares them, and sums the squares. The final answer is 20 for `[1, 2, 3, 4]`. The adapters are lazy; `sum()` repeatedly pulls the next item through the chain. No intermediate vector is required.\n\nLook closely at references. `values.iter()` yields `&i32`, while `filter` passes a reference to each item into its predicate, so the closure sees an extra reference layer and the example uses `**v`. The following `map` receives each item as a plain `&i32`, and `v * v` needs no star because multiplication is also implemented for references. Writing types beside the closures for one exercise can demystify those stars. If you use `into_iter()` on an owned vector instead, values are moved into the pipeline, changing what remains available afterward.\n\nUse `inspect` temporarily to see when each element reaches a stage. Then insert `.take(1)` before `sum()` and predict which elements are evaluated. Be careful where you place it: taking one input before a filter is different from taking one matched output after a filter. A pipeline becomes hard to read when it hides side effects in `map` or uses many conversions without names. Split it into intermediate bindings when the operations need explanation. The goal is a clear ownership and evaluation story, not the fewest lines.\n\nTry replacing the array with a vector and selecting `.iter()` versus `.into_iter()`. With `.into_iter()` the filter closure sees `&i32`, so `**v` must become `*v`. The numeric answer stays the same, but the ownership of the source changes. That is part of the API contract.",
     "feedback": "Correct: When sum consumes it.",
     "practiceCode": "let values = [1, 2, 3, 4];\nlet total: i32 = values.iter()\n    .filter(|v| **v % 2 == 0)\n    .map(|v| v * v)\n    .sum();",
     "question": "When does the pipeline perform work?",
     "rule": "Adapters such as map and filter describe work but do nothing until a consumer asks for values.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "You can say why nothing runs until `sum`, and why the filter needs `**v`.",
     "summary": "Transform lazily, then choose one consumer.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Mark each stage as adapter or consumer, and write the item type at each stage."
   },
   "illustration": {
     "path": "media/iterator-adapters.png",

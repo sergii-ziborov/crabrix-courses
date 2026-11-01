@@ -14,7 +14,7 @@
     "visibleInput": "n=5 unions=(0,1),(1,2),(3,4)"
   },
   "concept": "Compress find paths and attach smaller trees beneath larger roots.",
-  "contentDigest": "e3fb0ed897f1dcb093eecc790ad3d510ce6cd59e30b6fd5a14e5f3b522b64dc0",
+  "contentDigest": "c1bb4f73b2fd7d8d16e5e01d967946f14a2cf8199ab73ea43b1cd97ddbbbb954",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "With n=5, unions (0,1),(1,2),(3,4) reduce the component count from 5 to 2. A repeated union within one component changes nothing. Parent links describe representatives, not original graph edges.",
     "practiceCode": "struct Dsu {\n    parent: Vec<usize>,\n    size: Vec<usize>,\n    count: usize,\n}\nimpl Dsu {\n    fn new(n: usize) -> Self {\n        Self {\n            parent: (0..n).collect(),\n            size: vec![1; n],\n            count: n,\n        }\n    }\n    fn root(&mut self, mut x: usize) -> usize {\n        while x != self.parent[x] {\n            self.parent[x] = self.parent[self.parent[x]];\n            x = self.parent[x];\n        }\n        x\n    }\n    fn join(&mut self, a: usize, b: usize) -> bool {\n        let (mut a, mut b) = (self.root(a), self.root(b));\n        if a == b {\n            return false;\n        }\n        if self.size[a] < self.size[b] {\n            std::mem::swap(&mut a, &mut b);\n        }\n        self.parent[b] = a;\n        self.size[a] += self.size[b];\n        self.count -= 1;\n        true\n    }\n}\nfn components_after_unions(n: usize, unions: &[(usize, usize)]) -> usize {\n    let mut sets = Dsu::new(n);\n    for &(a, b) in unions {\n        sets.join(a, b);\n    }\n    sets.count\n}\n\nfn main() {\n    let result = components_after_unions(5, &[(0, 1), (1, 2), (3, 4)]).to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Why join smaller DSU trees under larger roots?",
-    "rule": "It bounds tree depth before path compression further shortens finds. State the input preconditions before applying this invariant.",
+    "rule": "Compress find paths and attach smaller trees beneath larger roots. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and Almost O(1) amortised · O(n) space bound without looking at the code.",
     "summary": "Compress find paths and attach smaller trees beneath larger roots.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

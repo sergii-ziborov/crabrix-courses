@@ -14,13 +14,13 @@
     "visibleInput": "[100, -5, 100, 20]"
   },
   "concept": "Replace large ordered values with dense ranks while preserving comparisons.",
-  "contentDigest": "f72bfa91656a3fb63d053733f725abd541956cd0b2cb5345f73bc8c77812a562",
+  "contentDigest": "4a35a66fdfc6b018a1231648f199e591dd7640b2936e3f9c4ac76203a7203cf7",
   "depth": {
     "connections": [
       {
         "direction": "previous",
         "title": "Challenge: Value-to-Index Map",
-        "concept": "Return the shortest distance between equal values."
+        "concept": "Return the shortest distance between two equal values, or -1 when no value repeats."
       },
       {
         "direction": "next",
@@ -65,7 +65,7 @@
     "feedback": "Sort and deduplicate [100,-5,100,20] to [-5,20,100]. Their zero-based ranks are 0,1,2. Mapping in original order gives [2,0,2,1], so equal 100 values retain equal rank.",
     "practiceCode": "fn csv<T: std::fmt::Display>(a: impl IntoIterator<Item = T>) -> String {\n    a.into_iter()\n        .map(|x| x.to_string())\n        .collect::<Vec<_>>()\n        .join(\",\")\n}\nfn ranks(values: &[i32]) -> Vec<usize> {\n    let mut keys = values.to_vec();\n    keys.sort_unstable();\n    keys.dedup();\n    values\n        .iter()\n        .map(|x| keys.binary_search(x).unwrap())\n        .collect()\n}\n\nfn main() {\n    let result = csv(ranks(&[100, -5, 100, 20]));\n    println!(\"{result}\");\n}\n",
     "question": "What must compression preserve while replacing values with ranks?",
-    "rule": "Equality and relative numerical order. State the input preconditions before applying this invariant.",
+    "rule": "Replace large ordered values with dense ranks while preserving comparisons. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n log n) time · O(n) space bound without looking at the code.",
     "summary": "Replace large ordered values with dense ranks while preserving comparisons.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

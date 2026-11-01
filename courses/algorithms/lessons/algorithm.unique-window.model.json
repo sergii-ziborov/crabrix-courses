@@ -14,13 +14,13 @@
     "visibleInput": "abcabcbb"
   },
   "concept": "Jump the left boundary past a repeated symbol using its latest position.",
-  "contentDigest": "eedbf1caaf61f8c89094720b2e78b6349fe662266301741ed6304da6f3e84a58",
+  "contentDigest": "68e29d8f03d37821243744cbcb3b9c6449169bdedb84f8b77691c4089b003271",
   "depth": {
     "connections": [
       {
         "direction": "previous",
         "title": "Challenge: Variable-Size Window",
-        "concept": "For positive values, return the minimum length with sum at least 7."
+        "concept": "For positive values, return the minimum length of a contiguous subarray with sum at least 7, or 0 when no such subarray exists."
       },
       {
         "direction": "next",
@@ -65,7 +65,7 @@
     "feedback": "For abba, the second b advances left from 0 to 2. The final a was previously at 0, outside the current window, so left stays 2. The answer is 2, not 3 from accidentally moving left backward.",
     "practiceCode": "fn longest_unique(text: &str) -> usize {\n    // The exercise uses ASCII; byte positions are character positions here.\n    assert!(text.is_ascii());\n    let mut last = [None; 256];\n    let (mut left, mut best) = (0, 0);\n    for (right, c) in text.bytes().enumerate() {\n        if let Some(previous) = last[c as usize] {\n            left = left.max(previous + 1);\n        }\n        last[c as usize] = Some(right);\n        best = best.max(right - left + 1);\n    }\n    best\n}\n\nfn main() {\n    let result = longest_unique(\"abcabcbb\").to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Why move left to max(left, previous+1) after a repeat?",
-    "rule": "An old occurrence outside the current window must not move left backward. State the input preconditions before applying this invariant.",
+    "rule": "Jump the left boundary past a repeated symbol using its latest position. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) time for ASCII · O(256) last-seen state bound without looking at the code.",
     "summary": "Jump the left boundary past a repeated symbol using its latest position.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

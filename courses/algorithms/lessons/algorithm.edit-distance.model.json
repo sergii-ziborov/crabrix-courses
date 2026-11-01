@@ -14,7 +14,7 @@
     "visibleInput": "horse -> ros"
   },
   "concept": "Each state chooses insert, delete, or replace from adjacent smaller prefixes.",
-  "contentDigest": "0fd304a67c309157ca758c6a52e99f007ef4597ca5162cbd26c9913c66fab469",
+  "contentDigest": "adce9a7b2a99ee9f21953660aee3c036ae8879abde11e5ac805eb0f3e743995c",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "Transform horse to ros using three edits under the unit-cost model. In the DP row update, current-left+1 is insertion, old-above+1 deletion, and old-diagonal plus a mismatch bit substitution. Equal characters use diagonal cost unchanged.",
     "practiceCode": "fn edit_distance(a: &str, b: &str) -> usize {\n    assert!(a.is_ascii() && b.is_ascii());\n    let mut dp: Vec<_> = (0..=b.len()).collect();\n    for (i, x) in a.bytes().enumerate() {\n        let mut next = vec![i + 1];\n        for (j, y) in b.bytes().enumerate() {\n            next.push(\n                (next[j] + 1)\n                    .min(dp[j + 1] + 1)\n                    .min(dp[j] + usize::from(x != y)),\n            );\n        }\n        dp = next;\n    }\n    dp[b.len()]\n}\n\nfn main() {\n    let result = edit_distance(\"horse\", \"ros\").to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Which three transitions define Levenshtein edit distance?",
-    "rule": "Insert, delete and substitute, each with unit cost. State the input preconditions before applying this invariant.",
+    "rule": "Each state takes the cheapest single edit from adjacent smaller prefixes. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n*m) time · O(m) row state in this example bound without looking at the code.",
     "summary": "Each state chooses insert, delete, or replace from adjacent smaller prefixes.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

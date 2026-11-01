@@ -14,7 +14,7 @@
     "visibleInput": "values=[1,2,4]"
   },
   "concept": "Use each bit as an include/exclude choice for one item.",
-  "contentDigest": "3cf9c03eb14326912c5ac90f3262992903e16e208016e8a1da42661983f6c970",
+  "contentDigest": "d4a4860f483c1d7c0262d080196d6b62fa7328efe9ba170d40eeb05b222fcb97",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "For values [1,2,4], mask 5 is binary 101 and selects 1 and 4, sum 5. For [2,3], mask 3 selects both and also sums to 5. Different positions remain distinct even when their values coincide.",
     "practiceCode": "fn csv<T: std::fmt::Display>(a: impl IntoIterator<Item = T>) -> String {\n    a.into_iter()\n        .map(|x| x.to_string())\n        .collect::<Vec<_>>()\n        .join(\",\")\n}\nfn matching_masks(values: &[i32], target: i32) -> Vec<usize> {\n    assert!(values.len() < usize::BITS as usize);\n    (0..1_usize << values.len())\n        .filter(|&mask| {\n            values\n                .iter()\n                .enumerate()\n                .filter(|(i, _)| mask >> i & 1 == 1)\n                .map(|(_, x)| x)\n                .sum::<i32>()\n                == target\n        })\n        .collect()\n}\n\nfn main() {\n    let result = csv(matching_masks(&[1, 2, 4], 5));\n    println!(\"{result}\");\n}\n",
     "question": "How does bit i relate to a value in a subset mask?",
-    "rule": "It selects input position i, including when values repeat. State the input preconditions before applying this invariant.",
+    "rule": "Use each bit as an include/exclude choice for one item. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(2^n*n) time · O(1) state excluding output bound without looking at the code.",
     "summary": "Use each bit as an include/exclude choice for one item.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

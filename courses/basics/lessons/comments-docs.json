@@ -1,6 +1,6 @@
 {
   "concept": "/// doc comments and examples",
-  "contentDigest": "33a30338f8b9e02278ab14f2f4fe7469dcab844b208db8b96b083cf3ff6f5261",
+  "contentDigest": "eef4b98582c87736f02f3831b886b66619b3982e5d52844d453f333111398d32",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Structs"
       }
     ],
-    "correction": "A doc example is a test, so documentation cannot silently rot.",
+    "correction": "Doc comments are not stripped for testing. In a library crate, `cargo test` extracts the code block, compiles it separately, and runs it, so this `assert_eq!` panics and the doctest fails.",
     "misconception": "“Nothing runs; doc comments are stripped before tests”",
     "traceSteps": [
       {
-        "detail": "Name each value's type and starting value, then mark the expression that produces the lesson's result.",
-        "title": "Inventory the values"
+        "detail": "`///` documents `larger`, the item that follows. The code block under `# Examples` imports it with `use lesson_docs::larger;` and calls it as a caller would.",
+        "title": "Read the documentation"
       },
       {
-        "detail": "Document a public function and include one example.",
-        "title": "Predict before checking"
+        "detail": "Run `cargo test` in the `lesson_docs` library crate. `larger(2, 7)` returns `7`, so the `assert_eq!` holds and you should expect one passing doctest.",
+        "title": "Predict the doctest"
       },
       {
-        "detail": "The example states the behaviour and would fail if the code changed.",
+        "detail": "Find that doctest in the output. Then change the expected value, confirm the doctest fails, and confirm that `cargo build` still succeeds.",
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change one value, type, or boundary in the sample. Write the exact stdout or diagnostic you expect before asking rustc. Keep the focus on /// doc comments and examples."
+    "transferChallenge": "Change the assertion in the `larger` example to `assert_eq!(larger(2, 7), 2);` and predict the left and right values in the failure. Restore it, remove the `use lesson_docs::larger;` line, and predict the new error."
   },
   "exerciseKind": "planned",
   "id": "comments-docs",
@@ -45,20 +45,20 @@
       "It prints a warning but the test suite still passes"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "In a library crate named lesson_docs, `cargo test` compiles and runs this example.",
-    "exampleCode": "/// Returns the larger of two values.\n///\n/// # Examples\n///\n/// ```\n/// use lesson_docs::larger;\n/// assert_eq!(larger(2, 7), 7);\n/// ```\npub fn larger(a: i32, b: i32) -> i32 {\n    if a > b { a } else { b }\n}",
-    "explanation": "/// documents the item that follows and //! documents the enclosing module or crate. Code blocks inside doc comments are compiled and executed by `cargo test`, so an example that drifts out of date fails the build instead of quietly misleading the next reader.\n\nComments are most useful when they preserve a reason the code alone cannot show. `//` is suitable for a local decision, such as why a limit exists or why a case is skipped. Repeating the next expression in English makes the reader maintain two copies of the same fact. If the code needs a long explanation of what it does, first see whether clearer names or a smaller function would help.\n\nDocumentation comments have a different audience. Place `///` immediately before an item to explain its purpose, parameters, return value, and conditions that matter to callers. Use `//!` for an overview of the containing module or crate. A short example makes the contract concrete: it should demonstrate a representative call and assert the expected result. In a Cargo project, `cargo test` runs valid Rust code blocks in documentation as doctests. A doctest is compiled separately, so it must import the documented public item through the crate's actual name or otherwise define everything it uses. A bare call to a library function without an import can fail even when the function itself is correct.\n\nFor the practice snippet, the assertion expects five while the function returns four. Predict the failure before running it, then fix the expectation and add an edge case such as zero. Keep an example short enough that a reader can verify the claim at a glance. If an example needs setup, hide only incidental setup lines with rustdoc's `#` marker; do not hide the behaviour being taught. Treat doc failures as feedback that either code or its promised behaviour changed.\n\nIn a published crate, write the actual crate import in the example so the doctest exercises the public function instead of a copy of its logic. Run the test after renaming an API as well as after changing its result.\n\nA comment should explain a decision the code cannot show, such as why a boundary is excluded or why a particular failure is safe to retry. Restating `count += 1` as 'increment count' adds little. Rust doc comments beginning with `///` attach documentation to an item, and fenced Rust examples in documentation can be compiled and tested by `cargo test` in a suitable crate. That lets an API example fail visibly when the API changes.\n\nWrite one doc comment for a small public function: what it returns, what happens on invalid input, and a short example using the actual crate path. Run its documentation test. Then deliberately change the function signature and see the example fail until you update it. Use ordinary `//` comments for local reasoning and reserve `///` for the contract readers need at the API boundary. Keep examples small enough that someone can copy them without guessing missing imports.",
+    "exampleCaption": "In a library crate named `lesson_docs`, `cargo test` compiles and runs this example.",
+    "exampleCode": "/// Returns the larger of two values.\n///\n/// # Examples\n/// ```\n/// use lesson_docs::larger;\n/// assert_eq!(larger(2, 7), 7);\n/// ```\npub fn larger(a: i32, b: i32) -> i32 {\n    if a > b { a } else { b }\n}",
+    "explanation": "`///` documents the item that follows and `//!` documents the enclosing module or crate. In a library crate, code blocks inside doc comments are compiled and executed by `cargo test`, so an example that drifts out of date fails the test run instead of quietly misleading the next reader.\n\nComments are most useful when they preserve a reason the code alone cannot show. `//` is suitable for a local decision, such as why a limit exists or why a case is skipped. Repeating the next expression in English makes the reader maintain two copies of the same fact. If the code needs a long explanation of what it does, first see whether clearer names or a smaller function would help.\n\nDocumentation comments have a different audience. Place `///` immediately before an item to explain its purpose, parameters, return value, and conditions that matter to callers. Use `//!` for an overview of the containing module or crate. A short example makes the contract concrete: it should demonstrate a representative call and assert the expected result. In a Cargo library crate, `cargo test` runs valid Rust code blocks in documentation as doctests; a binary-only crate does not run them. A doctest is compiled separately, so it must import the documented public item through the crate's actual name or otherwise define everything it uses. A bare call to a library function without an import can fail even when the function itself is correct.\n\nFor the practice snippet, the assertion expects five while the function returns four. Predict the failure before running it, then fix the expectation and add an edge case such as zero. Keep an example short enough that a reader can verify the claim at a glance. If an example needs setup, hide only incidental setup lines with rustdoc's `#` marker; do not hide the behaviour being taught. Treat doc failures as feedback that either code or its promised behaviour changed.\n\nIn a published crate, write the actual crate import in the example so the doctest exercises the public function instead of a copy of its logic. Run the test after renaming an API as well as after changing its result.\n\nA comment should explain a decision the code cannot show, such as why a boundary is excluded or why a particular failure is safe to retry. Restating `count += 1` as 'increment count' adds little. Rust doc comments beginning with `///` attach documentation to an item, and fenced Rust examples in documentation can be compiled and tested by `cargo test` in a suitable crate. That lets an API example fail visibly when the API changes.\n\nWrite one doc comment for a small public function: what it returns, what happens on invalid input, and a short example using the actual crate path. Run its documentation test. Then deliberately change the function signature and see the example fail until you update it. Use ordinary `//` comments for local reasoning and reserve `///` for the contract readers need at the API boundary. Keep examples small enough that someone can copy them without guessing missing imports.",
     "feedback": "Doc examples are compiled and asserted, so a wrong example is a failing test.",
-    "practiceCode": "/// Adds two numbers.\n///\n/// ```\n/// assert_eq!(add(2, 2), 5);\n/// ```\npub fn add(a: i32, b: i32) -> i32 { a + b }",
-    "question": "What happens when you run `cargo test` on that?",
-    "rule": "A doc example is a test, so documentation cannot silently rot.",
+    "practiceCode": "/// Adds two numbers.\n///\n/// ```\n/// use lesson_docs::add;\n/// assert_eq!(add(2, 2), 5);\n/// ```\npub fn add(a: i32, b: i32) -> i32 { a + b }",
+    "question": "What happens when you run `cargo test` on that in the `lesson_docs` library crate?",
+    "rule": "In a library crate, a doc example is a test, so `cargo test` catches an example that has drifted.",
     "success": "The example states the behaviour and would fail if the code changed.",
-    "summary": "Doc comments are compiled, and their examples are run as tests.",
+    "summary": "In a library crate, `cargo test` compiles the code examples in doc comments and runs them as tests.",
     "task": "Document a public function and include one example."
   },
   "illustration": {
     "path": "media/comments-docs.png",
-    "alt": "Item documentation uses three slashes, module documentation uses slash-slash-bang, and an example can become a doctest.",
-    "caption": "Documentation comments attach to code, and checked examples can serve as executable documentation."
+    "alt": "Diagram for Comments & Docs: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "In a library crate named lesson_docs, cargo test compiles and runs this example."
   }
 }

@@ -1,6 +1,6 @@
 {
   "concept": "Message passing with mpsc",
-  "contentDigest": "f8363cea665e73fda7051f400e31d0a8dd667eb619f43d1ec14cd7db9d9a49ee",
+  "contentDigest": "de8a4ae66690296ea964e43440ff678608faa253a8132dc6daabf0835c6793f1",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Shared State"
       }
     ],
-    "correction": "The loop ends when the last sender is dropped.",
-    "misconception": "“A channel receiver loops forever by design”",
+    "correction": "The loop ends when the last sender is dropped. Iterating a receiver stops once every `Sender` clone is gone, so the example needs `drop(tx)`, and the practice must drop `worker` too.",
+    "misconception": "“A receiver loop runs forever unless you send a sentinel message.”",
     "traceSteps": [
       {
-        "detail": "Name each task or thread, the state it can reach, and every point where work can wait, race, block, or be cancelled.",
-        "title": "Draw the event timeline"
+        "detail": "`mpsc::channel` returns one `tx`, and each pass of the loop clones it for a worker, so four senders are made in all; a worker may exit and drop its clone before the next one is made.",
+        "title": "Count the senders"
       },
       {
-        "detail": "`Send` results from several threads to one collector.",
-        "title": "Predict before checking"
+        "detail": "`send` moves the `String` into the channel. The three workers have no guaranteed order, so the lines can print in any order.",
+        "title": "Follow a message"
       },
       {
-        "detail": "The receiving loop finishes without a sentinel value.",
-        "title": "Compare with evidence"
+        "detail": "`drop(tx)` removes the original, and each worker drops its clone on exit. With no senders left, the `for` loop ends.",
+        "title": "Close the channel"
       }
     ],
-    "transferChallenge": "Add a second worker or cancellation point. Draw two possible event orders and state the invariant that both orders must preserve. Keep the focus on message passing with mpsc."
+    "transferChallenge": "Delete `drop(tx)` from the example and predict what the program does. Then restore it and have main send a fourth message first; predict how many lines print."
   },
   "exerciseKind": "planned",
   "id": "channels",
@@ -41,7 +41,7 @@
   "writing": {
     "answers": [
       "A channel receiver loops forever by design",
-      "The original tx is still alive, so the channel never closes",
+      "tx and its clone worker are still alive, so the channel never closes",
       "The receiver has to be declared mut to iterate"
     ],
     "correctAnswer": 1,
@@ -49,12 +49,12 @@
     "exampleCode": "use std::sync::mpsc;\nuse std::thread;\n\nlet (tx, rx) = mpsc::channel();\n\nfor id in 0..3 {\n    let tx = tx.clone();\n    thread::spawn(move || {\n        tx.send(format!(\"worker {id}\")).unwrap();\n    });\n}\ndrop(tx); // so the loop can end\n\nfor message in rx {\n    println!(\"{message}\");\n}",
     "explanation": "An mpsc channel moves values from many producers to one consumer, and the move is what makes it safe — once sent, the sender no longer owns the value. The receiver iterates until every sender is dropped, so the loop ends on its own rather than needing a sentinel message.\n\nA channel separates the producer of a value from its consumer. In a multi-producer, single-consumer channel, several senders can submit messages to one receiver. Sending an owned `String` moves it into the channel; the sender cannot keep changing the same object afterward. That ownership transfer is a simple way to avoid sharing mutable state. If the sender needs its own copy too, make that duplication explicit.\n\nThe receiver loop can continue until every sender handle is dropped. A cloned sender counts as another live producer, even when it never sends anything. Accidentally keeping one clone in the main thread can make a receiving loop wait forever, because the channel is still open. Track sender ownership on paper and drop unused handles deliberately. Also handle `send` failure: the receiver may already be gone, and the failed send can return the unsent value to the caller.\n\nTry spawning two producers that each send a labeled message. Do not assume which message arrives first unless you add an ordering mechanism. The receiver should process both and then finish once all senders are gone. Next, leave a sender clone alive and observe why the loop does not terminate; remove it and rerun. Channels work well when a task can be expressed as a stream of owned messages. A mutex is more suitable when workers truly need coordinated access to one shared object. Choose the communication shape before choosing the primitive.\n\nIf the consumer is slower than producers, an unbounded channel can accumulate messages and memory. A bounded channel gives backpressure: senders wait or receive an error when capacity is exhausted. Choose a capacity by measuring the burst you can afford to buffer and the latency you can tolerate.",
     "feedback": "Every live sender keeps the channel open; drop the ones you do not use.",
-    "practiceCode": "let (tx, rx) = mpsc::channel();\nlet worker = tx.clone();\nfor message in rx { println!(\"{message}\"); }",
+    "practiceCode": "use std::sync::mpsc;\n\nlet (tx, rx) = mpsc::channel::<String>();\nlet worker = tx.clone();\nfor message in rx { println!(\"{message}\"); }",
     "question": "Why might that loop never end?",
     "rule": "The loop ends when the last sender is dropped.",
     "success": "The receiving loop finishes without a sentinel value.",
     "summary": "Do not communicate by sharing memory; share memory by communicating.",
-    "task": "`Send` results from several threads to one collector."
+    "task": "Send results from several threads to one collector."
   },
   "illustration": {
     "path": "media/channels.png",

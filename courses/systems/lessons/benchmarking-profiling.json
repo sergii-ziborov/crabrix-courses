@@ -1,6 +1,6 @@
 {
   "concept": "Find the real bottleneck before optimizing",
-  "contentDigest": "490393651a7116d3b60c9f0dea94bf7be201331632a232df0503d7da0aeecd6b",
+  "contentDigest": "7e9a1fb2270d5c80a583b2d8ea64f44b308a686363f8ce7562e28aba7a87b460",
   "depth": {
     "connections": [
       {
@@ -9,23 +9,23 @@
         "title": "Unsafe Traits"
       }
     ],
-    "correction": "A benchmark measures a stable workload; a profiler explains where its time or allocations go.",
-    "misconception": "“Rewrite the hot loop from intuition”",
+    "correction": "A benchmark measures a stable workload; a profiler explains where its time or allocations go. One timing is too noisy, so compare repeated runs under the same conditions.",
+    "misconception": "“A single fast timing is enough to tell which version is better.”",
     "traceSteps": [
       {
-        "detail": "Write down what callers may assume, what the compiler cannot prove, and which boundary is responsible for preserving soundness or cost.",
-        "title": "State the invariant"
+        "detail": "`Instant::now()` is taken before the call, so the reading covers `workload()` and everything up to `elapsed()`.",
+        "title": "Start the clock"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "detail": "`black_box(answer)` discourages the compiler from treating `answer` as unused, so the timed work is harder to remove.",
+        "title": "Keep the result"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "detail": "`start.elapsed()` prints a single `Duration`, one sample that says nothing about variance. Repeat it before drawing a conclusion.",
+        "title": "Read one sample"
       }
     ],
-    "transferChallenge": "Create the smallest counterexample that violates the sample's invariant, then repair the abstraction boundary instead of hiding the symptom. Keep the focus on find the real bottleneck before optimizing."
+    "transferChallenge": "Wrap the example in a loop of 20 runs, sort the durations, and print the median and the slowest. Then profile the slowest case before changing `workload`."
   },
   "exerciseKind": "planned",
   "id": "benchmarking-profiling",
@@ -40,20 +40,20 @@
       "Raise opt-level blindly"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCaption": "`Instant` times one run of `workload`, and `black_box` discourages the compiler from removing it.",
     "exampleCode": "let start = std::time::Instant::now();\nlet answer = workload();\nstd::hint::black_box(answer);\nprintln!(\"{:?}\", start.elapsed());",
     "explanation": "A benchmark measures a stable workload; a profiler explains where its time or allocations go. Change one variable, protect against optimized-away work, and compare distributions rather than one lucky run.\n\nA benchmark asks how a specific workload behaves under controlled conditions. A profiler asks where time, allocations, or waits occur during that workload. Start with a question that matters to a user, such as median parse latency for a typical file or worst-case response time for a large project. Use a release build, warm up when appropriate, and keep input, hardware, and environment stable between comparisons. One `Instant` measurement is useful for a quick observation but too noisy to settle a small optimization.\n\nA compiler may remove work whose result is unused, so a benchmark must keep the result observable; `black_box` can help prevent an obvious optimization in a microbenchmark but does not make the benchmark realistic by itself. Record a distribution over repeated runs and look for variance from caching, scheduling, and I/O. Profile the slow case before changing code. If allocations dominate, reserve capacity or borrow data; if the algorithm scales poorly, a container or complexity change may matter more. Change one variable, rerun the same workload, and keep a correctness test. Report both the improvement and its cost in memory, code complexity, or startup time.\n\nFor a before-and-after report, include the input shape, sample count, median and slower-tail observations, build mode, and what you held constant. If the result is within the noise, say so. A useful profile names the expensive path and gives enough context to reproduce it; a colorful flame graph without a workload description is not an engineering conclusion.",
-    "feedback": "Correct: Measure a workload.",
-    "practiceCode": "let start = std::time::Instant::now();\nlet answer = workload();\nstd::hint::black_box(answer);\nprintln!(\"{:?}\", start.elapsed());",
+    "feedback": "A measured workload tells you what is slow and gives a number to compare after a change. A rewrite from intuition or a higher `opt-level` without one is a guess.",
+    "practiceCode": "use std::hint::black_box;\nuse std::time::Instant;\n\nfn main() {\n    let input: Vec<u64> = (0..1_000_000).collect();\n    let mut samples = Vec::new();\n    for _ in 0..5 {\n        let start = Instant::now();\n        let total: u64 = black_box(&input).iter().sum();\n        black_box(total);\n        samples.push(start.elapsed());\n    }\n    samples.sort();\n    println!(\"median {:?}\", samples[2]);\n}",
     "question": "What should happen before optimization?",
     "rule": "A benchmark measures a stable workload; a profiler explains where its time or allocations go.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "You can report sample count, median, and build mode, and say whether the change beats the noise.",
     "summary": "Find the real bottleneck before optimizing.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Run this in a debug and a release build and compare the medians. Then change `iter().sum()` to a version you think is faster, and report both numbers."
   },
   "illustration": {
     "path": "media/benchmarking-profiling.png",
     "alt": "Diagram for Benchmark & Profile: a Rust code example flows to the lesson rule and the key observation.",
-    "caption": "The example makes the contract visible in code."
+    "caption": "`Instant` times one run of `workload`, and `black_box` discourages the compiler from removing it."
   }
 }

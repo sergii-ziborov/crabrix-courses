@@ -1,6 +1,6 @@
 {
   "concept": "for, while, loop, break, and continue",
-  "contentDigest": "de99c825abf92bbbd59908b1b4b21c1301ba0df760c5ad939ac7ca8281e8164f",
+  "contentDigest": "582a4eac39d92272658b03d6f6e1ca66f99840dfd8fa2265dfd6905869e2acde",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Parsing Values"
       }
     ],
-    "correction": "Prefer for for iteration; use loop when break defines the exit.",
-    "misconception": "“()”",
+    "correction": "`break 7;` carries a value, so the `loop` expression evaluates to `7` and `value` stores it. Only a bare `break` would yield `()`.",
+    "misconception": "“`()`”",
     "traceSteps": [
       {
-        "detail": "Name each value's type and starting value, then mark the expression that produces the lesson's result.",
-        "title": "Inventory the values"
+        "detail": "`count` starts at `0` and is declared `mut`. `answer` receives whatever value the `loop` expression produces when it exits.",
+        "title": "Read the setup"
       },
       {
-        "detail": "Use loop with a valued break, then rewrite a fixed pass as for.",
-        "title": "Predict before checking"
+        "detail": "`count` becomes `1`, then `2`, then `3`. On the third pass `count == 3` is `true`, so `break count` leaves the loop and `answer` holds `3`.",
+        "title": "Follow each pass"
       },
       {
-        "detail": "Each loop has a visible reason to stop and prints the expected count.",
+        "detail": "Run it and confirm stdout is `3`. Rewrite the three passes as `for` over `0..3` and compare what stops each version.",
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change one value, type, or boundary in the sample. Write the exact stdout or diagnostic you expect before asking rustc. Keep the focus on for, while, loop, break, and continue."
+    "transferChallenge": "Change `count == 3` to `count == 5` and predict the output. Then replace `break count;` with a bare `break;` and write the diagnostic you expect from the `println!` line."
   },
   "exerciseKind": "planned",
   "id": "loops",
@@ -45,20 +45,20 @@
       "true"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "break returns count as the value of the loop expression.",
+    "exampleCaption": "`break` returns `count` as the value of the `loop` expression.",
     "exampleCode": "let mut count = 0;\nlet answer = loop {\n    count += 1;\n    if count == 3 { break count; }\n};\nprintln!(\"{answer}\");",
-    "explanation": "for consumes an iterator, while repeats while a condition remains true, and loop has no condition at all. A loop expression can return a value with break value. continue skips directly to the next iteration. Selecting the narrowest form makes termination easier to see and accidental infinite work harder to write.\n\nThe example chooses loop because the end condition is written inside the body. count starts at zero, increases once per pass, and when it reaches three, break count exits with the value 3. That value becomes answer. A bare break would yield (), so the type of answer depends on what every possible exit produces. This is a loop expression, not just a repeated statement.\n\nFor a known sequence, for usually says more with less code: it asks an iterator for the next item and stops when there are none. While repeats while its boolean condition remains true; it is useful when the condition itself is the central idea. An unconditional loop makes sense when the body must inspect data before deciding to stop, but every path through it should have a comprehensible exit plan. continue jumps to the next pass without running the remainder of the current body.\n\nTrace count on paper for each iteration and mark exactly where the break happens. Then rewrite a three-pass task with for index in 0..3 and compare the two versions. If you remove the break from the original loop, ask whether the program can ever finish. The most readable loop is the one whose termination rule a reader can see immediately.\n\nWhen choosing a loop form, ask whether the collection owns the elements after iteration. Iterating over `&items` borrows; iterating over `items` can move its elements. Try both and inspect whether the original collection is still available after the loop.\n\nChoose a loop based on what controls repetition. A `for` loop is natural when you already have a range or collection to traverse. A `while` loop repeats while a condition stays true. A plain `loop` continues until a `break` or other exit. Whichever form you choose, identify the state that changes and the condition that eventually stops the work. An accidental infinite loop is usually a missing state update or a boundary that can never be reached.\n\nTrace the example for the first three iterations in a table: counter before, condition, body effect, counter after. Then test an empty input and a one-item input. If you need both position and value, `enumerate()` often reads better than manual indexing. A `break` can also return a value from `loop`; a `continue` skips to the next iteration. Use each only when it makes the exit path easier to see.",
-    "feedback": "A value after break becomes the value produced by the loop expression.",
+    "explanation": "`for` consumes an iterator, `while` repeats while a condition remains true, and `loop` has no condition at all. A `loop` expression can return a value with `break value`. `continue` skips directly to the next iteration. Selecting the narrowest form makes termination easier to see and accidental infinite work harder to write.\n\nThe example chooses `loop` because the end condition is written inside the body. `count` starts at zero, increases once per pass, and when it reaches three, `break count` exits with the value `3`. That value becomes `answer`. A bare `break` would yield `()`, so the type of `answer` depends on what every possible exit produces. This is a `loop` expression, not just a repeated statement.\n\nFor a known sequence, `for` usually says more with less code: it asks an iterator for the next item and stops when there are none. `while` repeats while its boolean condition remains true; it is useful when the condition itself is the central idea. An unconditional `loop` makes sense when the body must inspect data before deciding to stop, but every path through it should have a comprehensible exit plan. `continue` jumps to the next pass without running the remainder of the current body.\n\nTrace `count` on paper for each iteration and mark exactly where the `break` happens. Then rewrite a three-pass task with `for index in 0..3` and compare the two versions. If you remove the `break` from the original loop, ask whether the program can ever finish. The most readable loop is the one whose termination rule a reader can see immediately.\n\nWhen choosing a loop form, ask whether the collection owns the elements after iteration. Iterating over `&items` borrows; iterating over `items` can move its elements. Try both and inspect whether the original collection is still available after the loop.\n\nChoose a loop based on what controls repetition. A `for` loop is natural when you already have a range or collection to traverse. A `while` loop repeats while a condition stays true. A plain `loop` continues until a `break` or other exit. Whichever form you choose, identify the state that changes and the condition that eventually stops the work. An accidental infinite loop is usually a missing state update or a boundary that can never be reached.\n\nTrace the example for all three iterations in a table: `count` before, condition, body effect, `count` after. Then run your `for` rewrite over an empty range and a one-item range and count the passes. If you need both position and value, `enumerate()` often reads better than manual indexing. A `break` can also return a value from `loop`; a `continue` skips to the next iteration. Use each only when it makes the exit path easier to see.",
+    "feedback": "A value after break becomes the value produced by the `loop` expression.",
     "practiceCode": "let value = loop {\n    break 7;\n};",
-    "question": "What is stored in value?",
-    "rule": "Prefer for for iteration; use loop when break defines the exit.",
+    "question": "What is stored in `value`?",
+    "rule": "Prefer `for` for iteration; use `loop` when `break` defines the exit.",
     "success": "Each loop has a visible reason to stop and prints the expected count.",
     "summary": "Choose the loop form that states why repetition ends.",
-    "task": "Use loop with a valued break, then rewrite a fixed pass as for."
+    "task": "Use `loop` with a valued `break`, then rewrite a fixed pass as `for`."
   },
   "illustration": {
     "path": "media/loops.png",
     "alt": "Three flows compare for, while, and loop, with break leaving an unconditional loop.",
-    "caption": "Choose for for iteration, while for a condition, and loop when an explicit break decides when to stop."
+    "caption": "Use a for loop for iteration, a while loop for a condition, and loop when an explicit break decides when to stop."
   }
 }

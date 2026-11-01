@@ -1,6 +1,6 @@
 {
   "concept": "Test the public API as an outside user",
-  "contentDigest": "cfc2ed75ec48ac61f3cb6f9fd2e6e224b399ed915269ef6770bef8ab8d3aec3e",
+  "contentDigest": "d8c469d07d6e13c2e5708eaac7b02f23af4778472f594b9b9a7353131c29faeb",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Error Context"
       }
     ],
-    "correction": "Files under tests/ compile as separate crates and can only use the library's public API.",
-    "misconception": "“Tests ban privacy”",
+    "correction": "Files under `tests/` compile as separate crates and can only use the library's public API. Reaching private logic is the job of a unit test beside the code.",
+    "misconception": "“A file under `tests/` is part of the library, so it can reach private helpers.”",
     "traceSteps": [
       {
-        "detail": "Separate source modules, public API, manifest data, dependency graph, and build evidence before changing any one of them.",
-        "title": "Map the project boundary"
+        "detail": "`use demo::answer;` imports through the library's crate name, because `tests/public_api.rs` is a separate crate.",
+        "title": "Name the crate"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "detail": "`#[test]` registers `answer_is_stable`, and `cargo test --test public_api` runs only this file.",
+        "title": "Reach the test"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "detail": "`assert_eq!(answer(), 42)` holds the public promise, so an internal rename that keeps that promise does not touch this test.",
+        "title": "Compare the result"
       }
     ],
-    "transferChallenge": "Move one responsibility across a module or package boundary without changing behaviour. Predict which imports, tests, or lock data must change. Keep the focus on test the public api as an outside user."
+    "transferChallenge": "Add `tests/edge_cases.rs` beside this file. Predict whether it can call functions defined in `public_api.rs`, then add a `pub fn` to the library only if the new test truly needs one."
   },
   "exerciseKind": "planned",
   "id": "integration-tests",
@@ -45,16 +45,16 @@
       "assert_eq! hides them"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCaption": "The test imports `demo::answer` by crate name, as any outside caller would.",
     "exampleCode": "// tests/public_api.rs\nuse demo::answer;\n\n#[test]\nfn answer_is_stable() {\n    assert_eq!(answer(), 42);\n}",
-    "explanation": "Files under tests/ compile as separate crates and can only use the library's public API. That boundary catches accidental reliance on private implementation details.\n\nAn integration test behaves like an external user of your library. Each file under `tests/` is compiled as a separate crate and imports the public API by crate name. It cannot reach private helpers simply because they exist in the same repository. That constraint is valuable: if a test can accomplish a real task through the public interface, downstream callers probably can too.\n\nThe sample test imports `demo::answer` and asserts a stable result. Add a second test for a boundary case and a third for an error path. Give each a name that describes the promised behavior. Avoid testing private implementation details through elaborate scaffolding; those tests can become brittle when you refactor without changing the external contract. Unit tests next to the code are still useful for focused private logic. The two test locations serve different levels of confidence.\n\nIf an integration test needs a binary or fixture, make setup explicit and keep test cases independent so order does not matter. A test that relies on shared mutable files or network state can fail intermittently and hide real regressions. Run `cargo test --test public_api` while developing that file, then `cargo test` for the full suite. When a test fails, distinguish a library behavior change from a test assumption that was never part of the public contract. A small, representative collection of black-box tests often gives more confidence than many tests coupled to internal functions.",
-    "feedback": "Correct: It is a separate crate.",
-    "practiceCode": "// tests/public_api.rs\nuse demo::answer;\n\n#[test]\nfn answer_is_stable() {\n    assert_eq!(answer(), 42);\n}",
+    "explanation": "Files under `tests/` compile as separate crates and can only use the library's public API. That boundary catches accidental reliance on private implementation details.\n\nAn integration test behaves like an external user of your library. Each file under `tests/` is compiled as a separate crate and imports the public API by crate name. It cannot reach private helpers simply because they exist in the same repository. That constraint is valuable: if a test can accomplish a real task through the public interface, downstream callers probably can too.\n\nThe sample test imports `demo::answer` and asserts a stable result. Add a second test for a boundary case and a third for an error path. Give each a name that describes the promised behavior. Avoid testing private implementation details through elaborate scaffolding; those tests can become brittle when you refactor without changing the external contract. Unit tests next to the code are still useful for focused private logic. The two test locations serve different levels of confidence.\n\nIf an integration test needs a binary or fixture, make setup explicit and keep test cases independent so order does not matter. A test that relies on shared mutable files or network state can fail intermittently and hide real regressions. Run `cargo test --test public_api` while developing that file, then `cargo test` for the full suite. When a test fails, distinguish a library behavior change from a test assumption that was never part of the public contract. A small, representative collection of black-box tests often gives more confidence than many tests coupled to internal functions.",
+    "feedback": "A file under `tests/` is compiled as its own crate, so it sees only `pub` items, just as a downstream user would.",
+    "practiceCode": "// src/lib.rs\npub fn answer() -> u32 { helper() }\nfn helper() -> u32 { 42 }\n\n// tests/public_api.rs\nuse demo::helper;\n\n#[test]\nfn helper_is_reachable() {\n    assert_eq!(helper(), 42);\n}",
     "question": "Why can this test not use private items?",
-    "rule": "Files under tests/ compile as separate crates and can only use the library's public API.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "rule": "Files under `tests/` compile as separate crates and can only use the library's public API.",
+    "success": "The test passes through the public API, and you can say what it no longer depends on.",
     "summary": "Test the public API as an outside user.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Predict the compiler error for this test. Then rewrite it so it checks the same behaviour through `answer`, leaving `helper` private."
   },
   "illustration": {
     "path": "media/integration-tests.png",

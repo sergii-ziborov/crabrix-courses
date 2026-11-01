@@ -1,6 +1,6 @@
 {
   "concept": "Clarify duplicates, indices, and complexity first",
-  "contentDigest": "083e97d59e67e3fb38f9d86391c01feb4e968c0af9e620a20596fe0a7fd9c362",
+  "contentDigest": "4f13ed7cb287b330bdc180ee17d0f77b5737939d15afbe052033187a9768ada5",
   "depth": {
     "connections": [
       {
@@ -14,7 +14,7 @@
         "title": "Design an LRU Cache"
       }
     ],
-    "correction": "The example uses i64 arithmetic for i32 inputs. It returns the first matching second index, preserving the earliest stored first index; absence is None.",
+    "correction": "The function returns at its first match, so it reports one pair. Lookup before insertion only stops an element from pairing with itself.",
     "misconception": "The lookup order guarantees all possible matching pairs are returned.",
     "traceSteps": [
       {
@@ -52,13 +52,13 @@
     "practiceCode": "use std::collections::HashMap;\nfn two_sum(values: &[i32], target: i32) -> Option<(usize, usize)> {\n    let mut seen = HashMap::new();\n    for (j, &value) in values.iter().enumerate() {\n        let needed = i64::from(target) - i64::from(value);\n        if let Some(&i) = seen.get(&needed) { return Some((i, j)); }\n        seen.entry(i64::from(value)).or_insert(j);\n    }\n    None\n}\nfn main() {\n    assert_eq!(two_sum(&[3, 3], 6), Some((0, 1)));\n    assert_eq!(two_sum(&[3], 6), None);\n}",
     "question": "Why must this scan look up the complement before inserting the current index?",
     "rule": "State the contract before reaching for `HashMap`: may one index be reused, can values repeat, and what should happen when no pair exists? Then explain the O(n) time and O(n) space tradeoff.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "You explain why lookup comes before insertion and why the complement is computed in `i64`.",
     "summary": "Clarify duplicates, indices, and complexity first.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Trace `two_sum` on `[3, 3]` with target 6, then state what it returns with no pair and with several pairs."
   },
   "illustration": {
     "path": "media/q-two-sum-rust.png",
-    "alt": "Diagram for Live Coding: Two Sum: the code flows to its exact contract and observed boundary.",
+    "alt": "Lesson map: the start of the two_sum HashMap scan with widened i64 arithmetic, above the rule to state the contract before reaching for HashMap.",
     "caption": "Lookup before insertion enforces distinct indices; widening i32 arithmetic avoids complement overflow."
   }
 }

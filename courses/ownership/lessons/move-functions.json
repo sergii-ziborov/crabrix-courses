@@ -1,6 +1,6 @@
 {
   "concept": "Parameters can take, borrow, or copy a value",
-  "contentDigest": "34af8fde03b4bb02eaf4c598da8260b83fc51e94cc3ba599f1760e9694c51c49",
+  "contentDigest": "d5acb28a46f391a559b77f7eb04f5b7ef5d5a4dfeaa984e01f87401b5eec2e43",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Mutable Borrows"
       }
     ],
-    "correction": "A parameter of type `String` takes ownership, while `&str` only borrows text.",
-    "misconception": "“`String` is Copy”",
+    "correction": "`String` is not `Copy`. `inspect` takes `&str`, so `&name` only lends the text. Change the parameter to `String` and the last `println!` fails with E0382.",
+    "misconception": "“`name` can be printed afterward because `String` is `Copy`.”",
     "traceSteps": [
       {
-        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
-        "title": "Map ownership first"
+        "detail": "`inspect` takes `text: &str`, so `inspect(&name)` lends the text, and `name` keeps ownership in the caller.",
+        "title": "Read the parameter"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "detail": "Predict what the snippet prints. Then predict what changes if `inspect` takes `text: String` and the call becomes `inspect(name)`.",
         "title": "Predict before checking"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "detail": "As written, `Ferris` prints twice. With `String`, the final `println!` gets E0382, because `name` moved into the call.",
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &`mut` T. Before compiling, list which bindings remain usable after each call. Keep the focus on parameters can take, borrow, or copy a value."
+    "transferChallenge": "Add `fn shout(text: &mut String)` that calls `text.push('!')`, and pass it `&mut name`. Decide which of `inspect` and `shout` can take a string literal, and check your answer."
   },
   "exerciseKind": "planned",
   "id": "move-functions",
@@ -52,9 +52,9 @@
     "practiceCode": "fn inspect(text: &str) {\n    println!(\"{text}\");\n}\nlet name = String::from(\"Ferris\");\ninspect(&name);\nprintln!(\"{name}\");",
     "question": "Why can name be printed after inspect?",
     "rule": "A parameter of type `String` takes ownership, while `&str` only borrows text.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "You can say why `name` stays usable, and what would change if `inspect` took `String`.",
     "summary": "Parameters can take, borrow, or copy a value.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Trace `name` through `inspect(&name)` and say who owns it at the last `println!`."
   },
   "illustration": {
     "path": "media/move-functions.png",

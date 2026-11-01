@@ -1,6 +1,6 @@
 {
   "concept": "Keep a global lock order and short critical sections",
-  "contentDigest": "8b25fa5e3f85e9a2e9d5dfd2ae09ec3b6c810a4ae255c870c8c6ffddda9a6fb8",
+  "contentDigest": "6990d8a9bcbded9d51aa5abcb0e29ee82f433dcd07b236bd5d83844a2d2281b2",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Pinning Intuition"
       }
     ],
-    "correction": "Rust prevents data races, not deadlocks.",
-    "misconception": "“More threads”",
+    "correction": "Rust prevents data races, not deadlocks. Code that locks in opposite orders compiles, so a consistent lock order has to come from your design.",
+    "misconception": "“Rust's ownership rules would reject a program that can deadlock.”",
     "traceSteps": [
       {
-        "detail": "Name each task or thread, the state it can reach, and every point where work can wait, race, block, or be cancelled.",
-        "title": "Draw the event timeline"
+        "detail": "`a_id < b_id` decides which account comes first, whichever way round the caller passed them.",
+        "title": "Compare the ids"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "detail": "The `if` returns a tuple of references, so `first` always names the lower id and `second` the higher.",
+        "title": "Take the pair"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "detail": "If every path locks `first` before `second`, no two transfers can hold one account while waiting on the other, so that cycle cannot form.",
+        "title": "Check the cycle"
       }
     ],
-    "transferChallenge": "Add a second worker or cancellation point. Draw two possible event orders and state the invariant that both orders must preserve. Keep the focus on keep a global lock order and short critical sections."
+    "transferChallenge": "Extend the example to lock `first` and then `second` and move a balance. Then decide what must happen when `a_id == b_id`, since both names would reach the same `Mutex`."
   },
   "exerciseKind": "planned",
   "id": "deadlock-avoidance",
@@ -40,21 +40,21 @@
   "title": "Deadlock Avoidance",
   "writing": {
     "answers": [
-      "One lock order",
-      "More threads",
+      "Both workers lock in one order",
+      "Running more threads",
       "A mutable borrow"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCaption": "Sorting by id gives every transfer the same first lock, so two transfers cannot wait on each other.",
     "exampleCode": "// Every path locks account id in ascending\n// order before transferring a balance.\nlet (first, second) = if a_id < b_id {\n    (&a, &b)\n} else {\n    (&b, &a)\n};",
-    "explanation": "Rust prevents data races, not deadlocks. A consistent order for acquiring multiple locks and avoiding calls into unknown code while locked remove common wait cycles.\n\nA deadlock can arise when worker A holds lock X while waiting for Y and worker B holds Y while waiting for X. Both workers may be perfectly data-race-free, yet neither can move. Rust's ownership rules do not decide a global lock order for your program. The simplest prevention is often a consistent acquisition order: if every path takes X before Y, the cycle cannot form from those two locks.\n\nDraw a wait-for graph with one node per task and an arrow when it waits for a resource held by another task. A cycle is the warning sign. Reduce the number of locks held at once, move expensive work outside locked sections, or combine related fields under a single mutex when the data model allows it. `try_lock` can avoid indefinite waiting in some designs, but a retry loop without backoff can livelock or waste CPU. Timeouts help detection and recovery; they do not automatically make a transfer atomic.\n\nBuild two workers that each need two locks. First write the `unsafe` ordering on paper, then rewrite both workers to acquire locks in the same order. Ask what happens if a callback called while holding X attempts to acquire X again: a non-reentrant mutex may self-deadlock. Avoid invoking unknown callbacks while a guard is alive. When reviewing a codebase, document the lock hierarchy near the shared state, not only in one caller. Tests can expose some schedules; a clear acquisition rule is the stronger argument that a cycle cannot occur.",
-    "feedback": "Correct: One lock order.",
-    "practiceCode": "// Every path locks account id in ascending\n// order before transferring a balance.\nlet (first, second) = if a_id < b_id {\n    (&a, &b)\n} else {\n    (&b, &a)\n};",
+    "explanation": "Rust prevents data races, not deadlocks. A consistent order for acquiring multiple locks and avoiding calls into unknown code while locked remove common wait cycles.\n\nA deadlock can arise when worker A holds lock X while waiting for Y and worker B holds Y while waiting for X. Both workers may be perfectly data-race-free, yet neither can move. Rust's ownership rules do not decide a global lock order for your program. The simplest prevention is often a consistent acquisition order: if every path takes X before Y, the cycle cannot form from those two locks.\n\nDraw a wait-for graph with one node per task and an arrow when it waits for a resource held by another task. A cycle is the warning sign. Reduce the number of locks held at once, move expensive work outside locked sections, or combine related fields under a single mutex when the data model allows it. `try_lock` can avoid indefinite waiting in some designs, but a retry loop without backoff can livelock or waste CPU. Timeouts help detection and recovery; they do not automatically make a transfer atomic.\n\nBuild two workers that each need two locks. First write the unsafe ordering on paper, then rewrite both workers to acquire locks in the same order. Ask what happens if a callback called while holding X attempts to acquire X again: a non-reentrant mutex may self-deadlock. Avoid invoking unknown callbacks while a guard is alive. When reviewing a codebase, document the lock hierarchy near the shared state, not only in one caller. Tests can expose some schedules; a clear acquisition rule is the stronger argument that a cycle cannot occur.",
+    "feedback": "Both workers take `X` before `Y`, so neither can hold `Y` while waiting for `X`, and that cycle cannot form.",
+    "practiceCode": "use std::sync::Mutex;\n\nstatic X: Mutex<i32> = Mutex::new(0);\nstatic Y: Mutex<i32> = Mutex::new(0);\n\nfn worker_a() {\n    let mut x = X.lock().unwrap();\n    let mut y = Y.lock().unwrap();\n    *x += 1;\n    *y += 1;\n}\n\nfn worker_b() {\n    let mut x = X.lock().unwrap();\n    let mut y = Y.lock().unwrap();\n    *y -= 1;\n    *x -= 1;\n}",
     "question": "What prevents the wait cycle here?",
     "rule": "Rust prevents data races, not deadlocks.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "You can point to the cycle in the swapped version and to the lock order that removes it.",
     "summary": "Keep a global lock order and short critical sections.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Swap the two `lock` lines in `worker_b` and draw the wait-for graph. Say which schedule hangs, and check that the compiler still accepts the code."
   },
   "illustration": {
     "path": "media/deadlock-avoidance.png",

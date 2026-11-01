@@ -1,6 +1,6 @@
 {
   "concept": "Represent an address without borrow guarantees",
-  "contentDigest": "7737d0cf6dd0f3673e0d3f6048d1833e65699af53eabd0247453da8603c379ed",
+  "contentDigest": "3d6910c0faad3f6daa766ed47aa4f97736e7c41914a9278e8ffbf60d705f924c",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Representation & Layout"
       }
     ],
-    "correction": "Creating *const T or *`mut` T is safe; dereferencing one is `unsafe` because validity, alignment, initialization, and aliasing are now the programmer's proof obligations.",
-    "misconception": "“Creating the pointer”",
+    "correction": "Creating `*const T` or `*mut T` is safe; only dereferencing one is `unsafe`, because validity, alignment, initialization, and aliasing are now the programmer's proof obligations.",
+    "misconception": "“Creating a raw pointer is the dangerous step, so it needs an `unsafe` block.”",
     "traceSteps": [
       {
-        "detail": "Write down what callers may assume, what the compiler cannot prove, and which boundary is responsible for preserving soundness or cost.",
-        "title": "State the invariant"
+        "detail": "`&value` coerces to `*const u32` with no `unsafe`, because making an address does not touch the memory behind it.",
+        "title": "Create the pointer"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "detail": "`value` is alive, aligned, and initialised at `*pointer`, since the pointer came from a valid reference in the same scope.",
+        "title": "Prove the read"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "detail": "`unsafe { *pointer }` copies the `u32` out, so `read` is 7 and `println!` prints it.",
+        "title": "Read through it"
       }
     ],
-    "transferChallenge": "Create the smallest counterexample that violates the sample's invariant, then repair the abstraction boundary instead of hiding the symptom. Keep the focus on represent an address without borrow guarantees."
+    "transferChallenge": "Rewrite the example with a `*mut u32` built from `&mut value`, and write through it. Add the `SAFETY` comment that justifies the write, then predict what printing `value` shows."
   },
   "exerciseKind": "planned",
   "id": "raw-pointers",
@@ -45,16 +45,16 @@
       "Printing the value"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCaption": "Creating the pointer from `&value` is safe; the `unsafe` block covers only the read, while `value` is alive.",
     "exampleCode": "let value = 7_u32;\nlet pointer: *const u32 = &value;\nlet read = unsafe { *pointer };\nprintln!(\"{read}\");",
-    "explanation": "Creating *const T or *`mut` T is safe; dereferencing one is `unsafe` because validity, alignment, initialization, and aliasing are now the programmer's proof obligations.\n\nA raw pointer such as `*const T` or `*mut T` can represent a location without the safety guarantees that a normal Rust reference carries. Constructing one from a valid reference is safe. Dereferencing it requires `unsafe` because the compiler cannot prove that the pointed-to object is still alive, aligned, initialized, in bounds, and accessed under valid aliasing rules. A raw pointer may carry provenance information about its allocation; treating it as merely a numeric address can miss part of the memory model.\n\nIn the example, `pointer` is created from `&value`, and `value` remains alive while the pointer is read. That local reasoning supports the `unsafe` dereference. Change the example conceptually so the pointer outlives `value`; now the proof fails even if the numeric address still looks plausible. Never use a runtime test as proof that dereferencing an invalid pointer is safe: undefined behavior may appear to work once. Keep the `unsafe` operation close to the checks that justify it, and expose a safe API only when callers cannot violate those assumptions. For FFI, additionally document who owns the allocation and when the foreign side may retain or free the pointer.\n\nPointer arithmetic adds more obligations: an offset must stay within the permitted allocation rules even if it is not dereferenced immediately. Do not infer validity from a non-null address alone. Prefer slices, references, and `NonNull`-based library APIs when they express the invariant safely; a raw pointer is useful at FFI and data-structure internals, where its proof can be tightly contained.",
-    "feedback": "Correct: Dereferencing.",
-    "practiceCode": "let value = 7_u32;\nlet pointer: *const u32 = &value;\nlet read = unsafe { *pointer };\nprintln!(\"{read}\");",
+    "explanation": "Creating `*const T` or `*mut T` is safe; dereferencing one is `unsafe` because validity, alignment, initialization, and aliasing are now the programmer's proof obligations.\n\nA raw pointer such as `*const T` or `*mut T` can represent a location without the safety guarantees that a normal Rust reference carries. Constructing one from a valid reference is safe. Dereferencing it requires `unsafe` because the compiler cannot prove that the pointed-to object is still alive, aligned, initialized, in bounds, and accessed under valid aliasing rules. A raw pointer may carry provenance information about its allocation; treating it as merely a numeric address can miss part of the memory model.\n\nIn the example, `pointer` is created from `&value`, and `value` remains alive while the pointer is read. That local reasoning supports the `unsafe` dereference. Change the example conceptually so the pointer outlives `value`; now the proof fails even if the numeric address still looks plausible. Never use a runtime test as proof that dereferencing an invalid pointer is safe: undefined behavior may appear to work once. Keep the `unsafe` operation close to the checks that justify it, and expose a safe API only when callers cannot violate those assumptions. For FFI, additionally document who owns the allocation and when the foreign side may retain or free the pointer.\n\nPointer arithmetic adds more obligations: an offset must stay within the permitted allocation rules even if it is not dereferenced immediately. Do not infer validity from a non-null address alone. Prefer slices, references, and `NonNull`-based library APIs when they express the invariant safely; a raw pointer is useful at FFI and data-structure internals, where its proof can be tightly contained.",
+    "feedback": "Creating and printing the pointer are safe, since neither touches the memory behind it. Only the dereference needs `unsafe`, and here its proof fails.",
+    "practiceCode": "let dangling: *const u32 = {\n    let value = 7_u32;\n    &value\n};\nprintln!(\"created {dangling:?}\");\n// let read = unsafe { *dangling };",
     "question": "Which operation needs `unsafe`?",
-    "rule": "Creating *const T or *`mut` T is safe; dereferencing one is `unsafe` because validity, alignment, initialization, and aliasing are now the programmer's proof obligations.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "rule": "Creating `*const T` or `*mut T` is safe; dereferencing one is `unsafe` because validity, alignment, initialization, and aliasing are now the programmer's proof obligations.",
+    "success": "You can name the proof the example has and this snippet lacks: `value` is still alive when the pointer is read.",
     "summary": "Represent an address without borrow guarantees.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Decide which lines need `unsafe`. Then explain why the commented-out read would be undefined behaviour even if it happened to print 7. Do not run it as proof."
   },
   "illustration": {
     "path": "media/raw-pointers.png",

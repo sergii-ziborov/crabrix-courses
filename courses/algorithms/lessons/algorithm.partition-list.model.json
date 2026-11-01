@@ -14,13 +14,13 @@
     "visibleInput": "1->4->3->2->5->2"
   },
   "concept": "Build two stable chains around a pivot and join them after traversal.",
-  "contentDigest": "71ee3d224cb4ca15eb92415b7e2b086ac869a16c7e287bf65cc8d1c572f20102",
+  "contentDigest": "3c643e424ab908149c87b12a6c0b97b21809bc2e0a256e75d3912aea197720eb",
   "depth": {
     "connections": [
       {
         "direction": "previous",
         "title": "Challenge: Pointer-Switch Intersection",
-        "concept": "Parse a_prefix, b_prefix and shared integer arrays. Build separate prefix nodes and attach both to the same shared tail. Return the first shared node value, or none when shared is empty. Equal values in separate prefixes do not identify shared nodes."
+        "concept": "Input is one of two forms. a_prefix, b_prefix and shared arrays: build separate prefix nodes and attach both to the same shared tail. Or values=[...] next=[...] a=i b=j: an arena of nodes where next holds each node's next index or none, and a and b are the two head indexes. Return the first shared node's value, or none when the lists share no node. Equal values do not identify shared nodes."
       },
       {
         "direction": "next",
@@ -65,7 +65,7 @@
     "feedback": "For 1→4→3→2→5→2 around pivot 3, the low chain becomes 1→2→2 and the high chain becomes 4→3→5. Joining the two tails produces 1,2,2,4,3,5 while preserving order within each group.",
     "practiceCode": "type Link = Option<Box<ListNode>>;\nstruct ListNode {\n    value: i32,\n    next: Link,\n}\nfn list(values: &[i32]) -> Link {\n    values.iter().rev().fold(None, |next, &value| {\n        Some(Box::new(ListNode { value, next }))\n    })\n}\nfn list_values(head: &Link) -> Vec<i32> {\n    let mut out = Vec::new();\n    let mut p = head.as_deref();\n    while let Some(n) = p {\n        out.push(n.value);\n        p = n.next.as_deref();\n    }\n    out\n}\nfn csv<T: std::fmt::Display>(a: impl IntoIterator<Item = T>) -> String {\n    a.into_iter()\n        .map(|x| x.to_string())\n        .collect::<Vec<_>>()\n        .join(\",\")\n}\nfn partition_list(mut head: Link, pivot: i32) -> Link {\n    let (mut low, mut high) = (None, None);\n    let (mut a, mut b) = (&mut low, &mut high);\n    while let Some(mut node) = head {\n        head = node.next.take();\n        if node.value < pivot {\n            *a = Some(node);\n            a = &mut a.as_mut().unwrap().next;\n        } else {\n            *b = Some(node);\n            b = &mut b.as_mut().unwrap().next;\n        }\n    }\n    *a = high;\n    low\n}\n\nfn main() {\n    let result = csv(list_values(&partition_list(list(&[1, 4, 3, 2, 5, 2]), 3)));\n    println!(\"{result}\");\n}\n",
     "question": "How does a two-chain partition keep equal-group order stable?",
-    "rule": "Append each detached node to the tail of its chosen chain. State the input preconditions before applying this invariant.",
+    "rule": "Build two stable chains around a pivot and join them after traversal. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(1) links bound without looking at the code.",
     "summary": "Build two stable chains around a pivot and join them after traversal.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

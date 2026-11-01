@@ -14,7 +14,7 @@
     "visibleInput": "ababa"
   },
   "concept": "Extend one character while cloning states when needed to preserve end-position equivalence classes.",
-  "contentDigest": "7db5d4473f1e53278e7bc8ae7e3d03f398261b1f4f74ef8c8eb5f64f2f6fc875",
+  "contentDigest": "3410621b84b60554c6ae5a70e63efe4242baf9130bf11df0232741cedc29935a",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "For ababa, the automaton represents 9 distinct nonempty substrings. A cloned state splits an existing length class without adding text. For aaa, the length intervals contribute only a,aa,aaa, giving 3 rather than counting repeated occurrences separately.",
     "practiceCode": "#[derive(Clone)]\nstruct SuffixState {\n    length: usize,\n    link: Option<usize>,\n    next: std::collections::BTreeMap<u8, usize>,\n}\nfn distinct_substrings(text: &str) -> usize {\n    let empty = SuffixState {\n        length: 0,\n        link: None,\n        next: std::collections::BTreeMap::new(),\n    };\n    let mut states = vec![empty.clone()];\n    let mut last = 0;\n    for c in text.bytes() {\n        let current = states.len();\n        states.push(SuffixState {\n            length: states[last].length + 1,\n            ..empty.clone()\n        });\n        let mut p = Some(last);\n        while let Some(v) = p {\n            if states[v].next.contains_key(&c) {\n                break;\n            }\n            states[v].next.insert(c, current);\n            p = states[v].link;\n        }\n        if let Some(v) = p {\n            let q = states[v].next[&c];\n            if states[v].length + 1 == states[q].length {\n                states[current].link = Some(q);\n            } else {\n                let clone = states.len();\n                let mut copied = states[q].clone();\n                copied.length = states[v].length + 1;\n                states.push(copied);\n                while let Some(v) = p {\n                    if states[v].next.get(&c) != Some(&q) {\n                        break;\n                    }\n                    states[v].next.insert(c, clone);\n                    p = states[v].link;\n                }\n                states[q].link = Some(clone);\n                states[current].link = Some(clone);\n            }\n        } else {\n            states[current].link = Some(0);\n        }\n        last = current;\n    }\n    states\n        .iter()\n        .skip(1)\n        .map(|s| s.length - states[s.link.unwrap()].length)\n        .sum()\n}\n\nfn main() {\n    let result = distinct_substrings(\"ababa\").to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Why does each non-root suffix-automaton state contribute len(state)-len(link) substrings?",
-    "rule": "It represents one new substring for each length in that interval. State the input preconditions before applying this invariant.",
+    "rule": "Extend one character while cloning states when needed to preserve end-position equivalence classes. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n log alphabet) with ordered transitions · O(n) states and transitions bound without looking at the code.",
     "summary": "Extend one character while cloning states when needed to preserve end-position equivalence classes.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

@@ -14,7 +14,7 @@
     "visibleInput": "[4,10,3,5,1]"
   },
   "concept": "Build a max heap and repeatedly move the maximum into its final suffix position.",
-  "contentDigest": "fbe337f819efb9b21e9ff80fe1f364823fbb41a0cafb243b96f0c0bb4e17e088",
+  "contentDigest": "510a361cd0dc84140e34f593d344553ad1e757ab011185742b44c5dcd02ef0a4",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "Build a max-heap for [4,10,3,5,1], swap root 10 to the last slot, then sift within the first four items. Repeat with the shrinking active heap. The finished suffix grows in ascending final positions.",
     "practiceCode": "fn csv<T: std::fmt::Display>(a: impl IntoIterator<Item = T>) -> String {\n    a.into_iter()\n        .map(|x| x.to_string())\n        .collect::<Vec<_>>()\n        .join(\",\")\n}\nfn heap_sort(a: &mut [i32]) {\n    fn sift(a: &mut [i32], mut root: usize, end: usize) {\n        while 2 * root + 1 < end {\n            let mut child = 2 * root + 1;\n            if child + 1 < end && a[child] < a[child + 1] {\n                child += 1;\n            }\n            if a[root] >= a[child] {\n                break;\n            }\n            a.swap(root, child);\n            root = child;\n        }\n    }\n    let n = a.len();\n    for i in (0..n / 2).rev() {\n        sift(a, i, n);\n    }\n    for end in (1..n).rev() {\n        a.swap(0, end);\n        sift(a, 0, end);\n    }\n}\n\nfn main() {\n    let result = {\n        let mut values = vec![4, 10, 3, 5, 1];\n        heap_sort(&mut values);\n        csv(values)\n    };\n    println!(\"{result}\");\n}\n",
     "question": "Why move the maximum heap element to the shrinking suffix?",
-    "rule": "That position is its final ascending-sort position. State the input preconditions before applying this invariant.",
+    "rule": "Build a max heap and repeatedly move the maximum into its final suffix position. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n log n) time · O(1) space bound without looking at the code.",
     "summary": "Build a max heap and repeatedly move the maximum into its final suffix position.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

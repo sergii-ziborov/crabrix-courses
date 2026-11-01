@@ -14,7 +14,7 @@
     "visibleInput": "[4,5,2,10,8]"
   },
   "concept": "Pop larger candidates so the stack represents the nearest smaller boundary.",
-  "contentDigest": "290767686952c9a6bb6337e985287c334d926dbdf0549b6d122b5d82adfcf036",
+  "contentDigest": "dab7d9e75085c369c9ae3fe2c9e03c3c18b46487487a64664eef38b4dad81f0c",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "On [4,5,2,10,8], 4 precedes 5 as its smaller value. Reading 2 removes both 5 and 4. Reading 8 removes 10 and reveals 2, producing [-1,4,-1,2,2].",
     "practiceCode": "fn csv<T: std::fmt::Display>(a: impl IntoIterator<Item = T>) -> String {\n    a.into_iter()\n        .map(|x| x.to_string())\n        .collect::<Vec<_>>()\n        .join(\",\")\n}\nfn previous_smaller(values: &[i32]) -> Vec<i32> {\n    let mut stack = Vec::new();\n    let mut result = Vec::new();\n    for &x in values {\n        while stack.last().is_some_and(|&old| old >= x) {\n            stack.pop();\n        }\n        result.push(stack.last().copied().unwrap_or(-1));\n        stack.push(x);\n    }\n    result\n}\n\nfn main() {\n    let result = csv(previous_smaller(&[4, 5, 2, 10, 8]));\n    println!(\"{result}\");\n}\n",
     "question": "Why pop values greater than or equal to the current value for previous-strictly-smaller queries?",
-    "rule": "Equal values do not satisfy the strict comparison. State the input preconditions before applying this invariant.",
+    "rule": "Pop larger candidates so the stack represents the nearest smaller boundary. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(n) space bound without looking at the code.",
     "summary": "Pop larger candidates so the stack represents the nearest smaller boundary.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

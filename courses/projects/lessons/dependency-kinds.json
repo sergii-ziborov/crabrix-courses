@@ -1,6 +1,6 @@
 {
   "concept": "Separate runtime, build, and test-only tools",
-  "contentDigest": "5d04ca453c2e8b432f339a8540764673f102d7332803fd3bea138baced8a9bf9",
+  "contentDigest": "58127601b4f8e7962be1f514515b06cbfea5395678c4c1ecae357ce5462c38ed",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Feature Design"
       }
     ],
-    "correction": "Normal dependencies become part of a target graph, build dependencies support build scripts, and dev dependencies exist for tests and examples.",
-    "misconception": "“profile.release”",
+    "correction": "Dev dependencies exist for tests and examples, so a test-only crate belongs under `[dev-dependencies]`. Normal dependencies become part of a target graph, and build dependencies support build scripts.",
+    "misconception": "“A crate used only in tests still has to be a normal dependency.”",
     "traceSteps": [
       {
-        "detail": "Separate source modules, public API, manifest data, dependency graph, and build evidence before changing any one of them.",
-        "title": "Map the project boundary"
+        "detail": "`log` is under `[dependencies]`, so library and binary code can import it, and consumers build it too.",
+        "title": "Read the normal section"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "detail": "`pretty_assertions` is under `[dev-dependencies]`, so only tests, examples, and benchmarks can import it.",
+        "title": "Read the test helper"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "detail": "`use pretty_assertions::assert_eq;` in `src/lib.rs` fails in `cargo build` as an unresolved import, though the same line works in `tests/`.",
+        "title": "Try the wrong import"
       }
     ],
-    "transferChallenge": "Move one responsibility across a module or package boundary without changing behaviour. Predict which imports, tests, or lock data must change. Keep the focus on separate runtime, build, and test-only tools."
+    "transferChallenge": "Add a `build.rs` and a crate it uses under `[build-dependencies]`. Predict whether `src/main.rs` can import that crate, then check with `cargo build`."
   },
   "exerciseKind": "planned",
   "id": "dependency-kinds",
@@ -45,20 +45,20 @@
       "workspace"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCaption": "`log` is part of the normal graph; `pretty_assertions` is available only to tests, examples, and benchmarks.",
     "exampleCode": "[dependencies]\nlog = \"0.4\"\n\n[dev-dependencies]\npretty_assertions = \"1\"",
     "explanation": "Normal dependencies become part of a target graph, build dependencies support build scripts, and dev dependencies exist for tests and examples. The distinction keeps production graphs smaller and clearer.\n\nCargo separates dependencies by the role they play in a package. Normal `[dependencies]` are needed to build the library or binary target. `[build-dependencies]` are available to a `build.rs` script that runs during the build, often to generate files or detect native libraries. `[dev-dependencies]` support tests, examples, and benchmarks but are not ordinary runtime dependencies of the published library. The distinction helps make a package's requirements understandable.\n\nRead the sample manifest and ask where each crate is used. A logging interface needed by production code belongs under normal dependencies. A prettier assertion formatter used only in tests belongs under dev dependencies. Moving it into normal dependencies may unnecessarily expand consumers' build graphs. Conversely, placing a production import under dev dependencies makes a normal build fail even if tests happen to compile in a different configuration.\n\nDependency kinds do not by themselves make a crate trustworthy or small. Versions, features, and transitive dependencies still matter. Use `cargo tree` with the relevant target or feature flags to inspect the resolved graph. Add one test-only helper and confirm `cargo build` does not need its API in production code. Then add a build script only if there is a real build-time task; generated code adds another layer to debug. Treat each manifest section as a statement of when that capability is actually required.",
-    "feedback": "Correct: dev-dependencies.",
-    "practiceCode": "[dependencies]\nlog = \"0.4\"\n\n[dev-dependencies]\npretty_assertions = \"1\"",
+    "feedback": "`[dev-dependencies]` are available to tests, examples, and benchmarks, and stay out of what consumers build.",
+    "practiceCode": "[dependencies]\nlog = \"0.4\"\npretty_assertions = \"1\"",
     "question": "Where does a test-only crate belong?",
     "rule": "Normal dependencies become part of a target graph, build dependencies support build scripts, and dev dependencies exist for tests and examples.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "`cargo tree -e normal` no longer lists it, and `cargo test` still compiles the tests.",
     "summary": "Separate runtime, build, and test-only tools.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "`pretty_assertions` is used only by the tests. Move it to the right section, then compare `cargo tree -e normal` before and after."
   },
   "illustration": {
     "path": "media/dependency-kinds.png",
     "alt": "Diagram for Dependency Kinds: a Rust code example flows to the lesson rule and the key observation.",
-    "caption": "The example makes the contract visible in code."
+    "caption": "`log` is part of the normal graph; `pretty_assertions` is available only to tests, examples, and benchmarks."
   }
 }

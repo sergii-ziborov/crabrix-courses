@@ -14,13 +14,13 @@
     "visibleInput": "tree=[3,5,1,6,2,0,8,null,null,7,4]"
   },
   "concept": "Combine child evidence; the first node reached from both targets is their lowest shared ancestor.",
-  "contentDigest": "315ba11e9da69e4cae4de6a6e31cc0c8ad372c4041b90149efa9bf563657587b",
+  "contentDigest": "f85d967ca94aa9afa684d6bdb1803d5703e559f5d8ee329a8224c5d919a16f93",
   "depth": {
     "connections": [
       {
         "direction": "previous",
         "title": "Challenge: BST Search and Insert",
-        "concept": "Parse the level-order BST, insert 5 (equal keys go right), then return inorder values."
+        "concept": "Parse the level-order BST, insert 5 (equal keys go right), then return inorder values. With a trailing order=preorder, return preorder values instead, which reveal where 5 landed."
       },
       {
         "direction": "next",
@@ -65,7 +65,7 @@
     "feedback": "In the sample, target 5 is in the root's left subtree and target 1 is in its right subtree, so root 3 is their LCA. If one target is itself an ancestor of the other, returning that target is correct under the both-present contract.",
     "practiceCode": "type Tree = Option<Box<Node>>;\nstruct Node {\n    value: i32,\n    left: Tree,\n    right: Tree,\n}\nfn node(value: i32, left: Tree, right: Tree) -> Tree {\n    Some(Box::new(Node { value, left, right }))\n}\nfn ancestor(root: &Tree, a: i32, b: i32) -> Option<i32> {\n    // Contract: both distinct target values exist in the tree and are unique.\n    match root {\n        None => None,\n        Some(n) if n.value == a || n.value == b => Some(n.value),\n        Some(n) => match (ancestor(&n.left, a, b), ancestor(&n.right, a, b)) {\n            (Some(_), Some(_)) => Some(n.value),\n            (left, right) => left.or(right),\n        },\n    }\n}\n\nfn main() {\n    let result = ancestor(\n        &node(\n            3,\n            node(\n                5,\n                node(6, None, None),\n                node(2, node(7, None, None), node(4, None, None)),\n            ),\n            node(1, node(0, None, None), node(8, None, None)),\n        ),\n        5,\n        1,\n    )\n    .unwrap()\n    .to_string();\n    println!(\"{result}\");\n}\n",
     "question": "What does it mean when both recursive LCA branches return a target?",
-    "rule": "The current node is the lowest common ancestor. State the input preconditions before applying this invariant.",
+    "rule": "Combine child evidence; the first node reached from both targets is their lowest shared ancestor. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(h) stack bound without looking at the code.",
     "summary": "Combine child evidence; the first node reached from both targets is their lowest shared ancestor.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

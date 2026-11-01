@@ -8,9 +8,8 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / 'editorial/academy_20261027'))
-from oracles import solve
-from rust_sources import CODE
+sys.path.insert(0, str(ROOT / 'editorial/academy_20261101'))
+from atlas_overlay import CODE, solve
 sys.path.insert(0, str(ROOT / 'tools'))
 from coursepack import read_course
 from recompute_digests import digest

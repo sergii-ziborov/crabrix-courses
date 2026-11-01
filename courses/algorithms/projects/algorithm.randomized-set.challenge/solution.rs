@@ -1,5 +1,5 @@
 pub fn solve(input: &str) -> String {
-    // After add 4, add 9, remove 4, add 7, return the dense storage in any valid order shown sorted.
+    // Tokens addN and removeN arrive separated by spaces. Adding a value already present and removing an absent value change nothing. Apply them to dense vector storage, then return the remaining values sorted ascending, or an empty string when nothing remains.
     // Parse the visible input into the structures your algorithm needs.
     // Whitespace surrounding the complete input is insignificant.
     let _ = input;

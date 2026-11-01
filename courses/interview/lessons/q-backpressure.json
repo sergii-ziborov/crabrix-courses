@@ -1,6 +1,6 @@
 {
   "concept": "Bounded queues and load shedding",
-  "contentDigest": "f694f0c18669f6fca4727622d24ab9ff37d7d0e0571208b66a6aa83388beb3df",
+  "contentDigest": "dc1d0dbb4277f73758238789cbe52dea671c25f8af511d2e0305af2783bf00fc",
   "depth": {
     "connections": [
       {
@@ -14,7 +14,7 @@
         "title": "Transactions and Isolation"
       }
     ],
-    "correction": "The outcome may be increasing delay, allocation failure, shutdown or an OOM kill. Unbounded does not promise one specific failure mechanism.",
+    "correction": "An unbounded queue has no capacity to wait for, so the send succeeds at once and the backlog grows. Only a bounded queue can make a sender wait.",
     "misconception": "The sender automatically awaits a capacity slot in the unbounded queue.",
     "traceSteps": [
       {
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Tokio channel fragment: supply job and the enclosing async Result context; a receiver and shutdown policy are still required.",
     "exampleCode": "let (tx, rx) = tokio::sync::mpsc::channel(256);\n// Waits once 256 are queued, instead of\n// growing until the process dies.\ntx.send(job).await?;",
-    "explanation": "When a producer is faster than a consumer, an unbounded channel converts a throughput problem into a memory problem and then an OOM. Backpressure means the queue has a bound and the producer waits, sheds load, or fails fast when it is full. A bounded `async` send may `await` capacity; a synchronous bounded send may block, while a nonblocking send can fail immediately.\n\nBackpressure keeps a fast producer from accumulating unlimited unfinished work. A bounded queue sets a maximum number of pending items; when full, the producer can wait, reject, drop according to a policy, or reduce its input rate. Those choices change user-visible behavior. Waiting can propagate pressure upstream; rejecting with a clear retry signal can protect latency for requests already accepted; dropping may be valid for telemetry but unacceptable for payments. The bound should reflect memory budget and acceptable queue delay, not an arbitrary round number.\n\nWalk through a service that receives 1,000 jobs per second while workers complete 800. An unbounded queue grows by 200 jobs every second. If each job uses 50 KiB, memory grows rapidly even though the workers are healthy. A 1,000-item bound exposes overload after a short burst. Then the product must choose what happens to the next job. In an `async` channel, sending to a full bounded queue may `await`; in a synchronous channel it may block, and a nonblocking `try_send` may return an error. Name the actual API.\n\nIn an interview, mention both throughput and latency. A queue can hide overload for a while while making every response slower. Measure queue depth, age of oldest item, reject rate, and worker utilization. Consider fairness so one noisy client cannot fill the queue for everyone. A good design states its overload behavior explicitly and tests it under sustained pressure, not just at a happy-path average rate.\n\nA bounded queue alone does not guarantee fairness. One noisy producer can occupy every slot and starve another tenant. Consider per-client quotas or weighted scheduling when isolation matters, and measure the age of queued work as well as the count. The oldest item often reveals overload earlier than aggregate throughput does.\n\nInterview follow-up: Choose between waiting, rejecting and dropping for telemetry versus financial work. How do you bound bytes when messages have different sizes?",
+    "explanation": "When a producer is faster than a consumer, an unbounded channel converts a throughput problem into a memory problem and then an OOM. Backpressure means the queue has a bound and the producer waits, sheds load, or fails fast when it is full. A bounded async send may wait for capacity; a synchronous bounded send may block, while a nonblocking send can fail immediately.\n\nBackpressure keeps a fast producer from accumulating unlimited unfinished work. A bounded queue sets a maximum number of pending items; when full, the producer can wait, reject, drop according to a policy, or reduce its input rate. Those choices change user-visible behavior. Waiting can propagate pressure upstream; rejecting with a clear retry signal can protect latency for requests already accepted; dropping may be valid for telemetry but unacceptable for payments. The bound should reflect memory budget and acceptable queue delay, not an arbitrary round number.\n\nWalk through a service that receives 1,000 jobs per second while workers complete 800. An unbounded queue grows by 200 jobs every second. If each job uses 50 KiB, memory grows rapidly even though the workers are healthy. A 1,000-item bound exposes overload after a short burst. Then the product must choose what happens to the next job. In an async channel, sending to a full bounded queue may wait; in a synchronous channel it may block, and a nonblocking `try_send` may return an error. Name the actual API.\n\nIn an interview, mention both throughput and latency. A queue can hide overload for a while while making every response slower. Measure queue depth, age of oldest item, reject rate, and worker utilization. Consider fairness so one noisy client cannot fill the queue for everyone. A good design states its overload behavior explicitly and tests it under sustained pressure, not just at a happy-path average rate.\n\nA bounded queue alone does not guarantee fairness. One noisy producer can occupy every slot and starve another tenant. Consider per-client quotas or weighted scheduling when isolation matters, and measure the age of queued work as well as the count. The oldest item often reveals overload earlier than aggregate throughput does.\n\nInterview follow-up: Choose between waiting, rejecting and dropping for telemetry versus financial work. How do you bound bytes when messages have different sizes?",
     "feedback": "The outcome may be increasing delay, allocation failure, shutdown or an OOM kill. Unbounded does not promise one specific failure mechanism.",
     "practiceCode": "// Arrival rate exceeds completion rate for a sustained interval.\n// No rejection, upstream rate limit or queue-size bound is present.",
     "question": "What risk remains when an unbounded queue has a producer that persistently outpaces its consumer?",
@@ -58,7 +58,7 @@
   },
   "illustration": {
     "path": "media/q-backpressure.png",
-    "alt": "An unbounded queue can grow when producers outrun consumers; a bounded queue signals pressure.",
+    "alt": "Lesson map: a Tokio channel bounded at 256 with an awaited send, above the rule that every queue needs a bound and a policy at that bound.",
     "caption": "Tokio channel fragment: supply job and the enclosing async Result context; a receiver and shutdown policy are still required."
   }
 }

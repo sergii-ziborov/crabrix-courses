@@ -1,6 +1,6 @@
 {
   "concept": "Prioritize correctness, API contracts, then style",
-  "contentDigest": "97b707e2fdadb8d40fb0ae0c230629be193544eb6d9ec4d48c558c562d8e1665",
+  "contentDigest": "67dcf5e23f1a332e9e240a710de46573502b3f0c387c9ea83920af911dcbff69",
   "depth": {
     "connections": [
       {
@@ -14,7 +14,7 @@
         "title": "Explain an Incident"
       }
     ],
-    "correction": "The returned borrow can remain tied to the input. Option expresses absence; cloning does not fix the invalid index.",
+    "correction": "`values[0]` still panics on an empty slice, because the clone needs that element first. A clone cannot supply an element that is not there.",
     "misconception": "Clone values[0] before indexing to remove the empty-input failure.",
     "traceSteps": [
       {
@@ -23,7 +23,7 @@
       },
       {
         "title": "Trace the concrete example",
-        "detail": "The example makes the contract visible in code."
+        "detail": "`values[0]` panics on an empty slice, so the signature promises a `&str` the body cannot always deliver."
       },
       {
         "title": "Test the changed constraint",
@@ -45,16 +45,16 @@
       "Mark the function unsafe so indexing no longer checks its bounds."
     ],
     "correctAnswer": 0,
-    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCaption": "`values[0]` panics on an empty slice, so the signature promises a `&str` the body cannot always deliver.",
     "exampleCode": "fn first(values: &[String]) -> &str {\n    values[0].as_str()\n}",
     "explanation": "Start with soundness, data loss, and observable behavior before naming cosmetic issues. Explain impact, point to evidence, and offer a smaller safer change instead of rewriting to personal taste.\n\nA review should help the author ship correct, maintainable code. Begin with user-visible behavior, data integrity, security assumptions, and concurrency or memory safety. Then examine API contracts and tests. Style matters when it obscures meaning or violates team conventions, but a naming preference is less urgent than a lost error result. Point to a concrete line, explain the failure scenario, and suggest a smaller change that addresses it. Separate a blocking issue from a suggestion.\n\nFor Rust code, watch for `unwrap()` on external input, cloned data hiding ownership confusion, a lock held across slow work, and `unsafe` code whose safety comment does not prove its preconditions. Also look for tests that cover only the happy path while a boundary case can break the function. Do not label every `unwrap()` a bug; a proven invariant in a test or startup configuration can justify it. Ask what input makes the line fail.\n\nIn an interview, review one issue at a time. Say what can happen, how likely it is given the inputs, and how you would verify a fix. Offer a test case when possible. If there is a larger refactor, explain whether it is necessary for the current change or can follow later. A good review is evidence and prioritization delivered respectfully, not an opportunity to rewrite another engineer's style.\n\nInterview follow-up: When would Result be a better contract than Option? Add tests for empty input and a Unicode first string.",
     "feedback": "The returned borrow can remain tied to the input. Option expresses absence; cloning does not fix the invalid index.",
     "practiceCode": "fn first(values: &[String]) -> &str {\n    values[0].as_str()\n}",
     "question": "Which API change handles empty input without returning a fabricated value?",
     "rule": "Start with soundness, data loss, and observable behavior before naming cosmetic issues.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "Your finding points at `values[0]`, states the empty-input panic, and offers `Option<&str>` before any style comment.",
     "summary": "Prioritize correctness, API contracts, then style.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Review `first` as if in a pull request: name the input that breaks it, the impact, and the smallest change that fixes it."
   },
   "illustration": {
     "path": "media/q-code-review.png",

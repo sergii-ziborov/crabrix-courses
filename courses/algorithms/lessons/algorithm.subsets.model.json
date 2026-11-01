@@ -14,7 +14,7 @@
     "visibleInput": "[1,2]"
   },
   "concept": "At each item branch on exclude or include, or extend every current subset.",
-  "contentDigest": "681f7782b71bce0c36cced9ffb7c0f61ca132ae6ed73fb924ef0132b6ed687d2",
+  "contentDigest": "d726533ab35db482987c365dfd9101b6916f785342ee778909aa4ed1ebfa76b4",
   "depth": {
     "connections": [
       {
@@ -24,7 +24,7 @@
       }
     ],
     "correction": "Mask 3, with both low bits set. Masks 0,1,2,3 produce [],[1],[2],[1,2]. Join subsets with semicolons and values with commas, yielding ;1;2;1,2. The leading empty field is the empty subset, not missing output.",
-    "misconception": "“Mask 1, which selects only the first value”",
+    "misconception": "“Mask 2, because the input has two values”",
     "traceSteps": [
       {
         "title": "Concrete transition",
@@ -50,7 +50,7 @@
   "writing": {
     "answers": [
       "Mask 3, with both low bits set",
-      "Mask 1, which selects only the first value",
+      "Mask 2, because the input has two values",
       "Mask 0, which selects both values"
     ],
     "correctAnswer": 0,
@@ -60,7 +60,7 @@
     "feedback": "Masks 0,1,2,3 produce [],[1],[2],[1,2]. Join subsets with semicolons and values with commas, yielding ;1;2;1,2. The leading empty field is the empty subset, not missing output.",
     "practiceCode": "fn csv<T: std::fmt::Display>(a: impl IntoIterator<Item = T>) -> String {\n    a.into_iter()\n        .map(|x| x.to_string())\n        .collect::<Vec<_>>()\n        .join(\",\")\n}\nfn semicolon<T: std::fmt::Display>(a: Vec<Vec<T>>) -> String {\n    a.into_iter().map(csv).collect::<Vec<_>>().join(\";\")\n}\nfn subsets_in_mask_order(values: &[i32]) -> Vec<Vec<i32>> {\n    assert!(values.len() < usize::BITS as usize);\n    (0..1_usize << values.len())\n        .map(|mask| {\n            values\n                .iter()\n                .enumerate()\n                .filter_map(|(i, &x)| (mask >> i & 1 == 1).then_some(x))\n                .collect()\n        })\n        .collect()\n}\n\nfn main() {\n    let result = semicolon(subsets_in_mask_order(&[1, 2]));\n    println!(\"{result}\");\n}\n",
     "question": "Which bitmask selects values 1 and 2 from input [1,2]?",
-    "rule": "Mask 3, with both low bits set. State the input preconditions before applying this invariant.",
+    "rule": "At each item branch on exclude or include, or extend every current subset. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n*2^n) time · O(n*2^n) materialized output bound without looking at the code.",
     "summary": "At each item branch on exclude or include, or extend every current subset.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

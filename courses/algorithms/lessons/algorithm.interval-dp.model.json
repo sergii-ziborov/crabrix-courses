@@ -14,7 +14,7 @@
     "visibleInput": "[3,1,5,8]"
   },
   "concept": "Solve increasing interval lengths and choose the last or first action inside each interval.",
-  "contentDigest": "8ac76659a05dbb4aad4d3c9a40b75ccc052a6d0157d1b976d39e60085eb85d35",
+  "contentDigest": "b702adb98aa3cfcf6636b5e12031570bd87b0ec50971f09dcf32f3f3b017c1e7",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "For [3,1,5,8], surrounding sentinel 1 values make boundary products explicit. Choosing a last balloon divides remaining work into two independent subintervals. The optimal accumulated reward is 167; a one-balloon [1] case gives 1.",
     "practiceCode": "fn balloon_coins(values: &[i32]) -> i32 {\n    let mut a = vec![1];\n    a.extend_from_slice(values);\n    a.push(1);\n    let n = a.len();\n    let mut dp = vec![vec![0; n]; n];\n    for width in 2..n {\n        for left in 0..n - width {\n            let right = left + width;\n            for last in left + 1..right {\n                dp[left][right] = dp[left][right]\n                    .max(dp[left][last] + dp[last][right] + a[left] * a[last] * a[right]);\n            }\n        }\n    }\n    dp[0][n - 1]\n}\n\nfn main() {\n    let result = balloon_coins(&[3, 1, 5, 8]).to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Why choose the last balloon burst inside an open interval?",
-    "rule": "Its two surviving boundary neighbors are then known. State the input preconditions before applying this invariant.",
+    "rule": "Solve increasing interval lengths and choose the last or first action inside each interval. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n^3) typical · O(n^2) space bound without looking at the code.",
     "summary": "Solve increasing interval lengths and choose the last or first action inside each interval.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

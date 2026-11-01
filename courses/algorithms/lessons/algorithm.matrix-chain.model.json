@@ -14,7 +14,7 @@
     "visibleInput": "dimensions=[10,30,5,60]"
   },
   "concept": "Try every final split of an interval and combine left cost, right cost, and multiplication cost.",
-  "contentDigest": "4a946e84c0936d96146d76b1d06650f1310b7fd8940863f6422d94116d920894",
+  "contentDigest": "d209a9f75db6512ebf516dbd13fabaac73c2e84d6cfadbc595de941f4be63995",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "For dimensions [10,30,5,60], multiplying the first pair costs 1500, then multiplying its 10×5 result by 5×60 costs 3000, total 4500. The alternative parenthesization costs more; matrix order itself stays fixed.",
     "practiceCode": "fn matrix_chain(dimensions: &[i64]) -> i64 {\n    assert!(dimensions.len() >= 2);\n    let n = dimensions.len() - 1;\n    let mut dp = vec![vec![0; n]; n];\n    for length in 2..=n {\n        for i in 0..=n - length {\n            let j = i + length - 1;\n            dp[i][j] = i64::MAX;\n            for k in i..j {\n                dp[i][j] = dp[i][j].min(\n                    dp[i][k] + dp[k + 1][j] + dimensions[i] * dimensions[k + 1] * dimensions[j + 1],\n                );\n            }\n        }\n    }\n    dp[0][n - 1]\n}\n\nfn main() {\n    let result = matrix_chain(&[10, 30, 5, 60]).to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Why does matrix-chain DP try each split between matrices?",
-    "rule": "Different parenthesizations change intermediate multiplication dimensions. State the input preconditions before applying this invariant.",
+    "rule": "Try every final split of an interval and combine left cost, right cost, and multiplication cost. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n^3) time · O(n^2) space bound without looking at the code.",
     "summary": "Try every final split of an interval and combine left cost, right cost, and multiplication cost.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

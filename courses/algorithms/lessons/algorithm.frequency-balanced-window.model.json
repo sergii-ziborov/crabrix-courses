@@ -14,7 +14,7 @@
     "visibleInput": "AABABBA"
   },
   "concept": "Track the dominant count so replacements needed equal window length minus that count.",
-  "contentDigest": "647f4894888dbdfc5bff3e390e320a15b440ff023e8596623d1255a4c59fda5d",
+  "contentDigest": "3ed4e109d340d97833e1bad5549ed6bacf5a6021c6392681c84b0eb7f0d20362",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "In AABABBA, a length-4 window such as AABA has maximum frequency 3, so one replacement suffices. Longer candidate windows exceed the one-replacement budget. The implementation recomputes the maximum from a fixed 26-letter count array.",
     "practiceCode": "fn replacement_length(text: &str, replacements: usize) -> usize {\n    assert!(text.bytes().all(|c| c.is_ascii_uppercase()));\n    let a = text.as_bytes();\n    let mut counts = [0; 26];\n    let (mut left, mut best) = (0, 0);\n    for right in 0..a.len() {\n        counts[(a[right] - b'A') as usize] += 1;\n        while right + 1 - left - counts.iter().max().unwrap() > replacements {\n            counts[(a[left] - b'A') as usize] -= 1;\n            left += 1;\n        }\n        best = best.max(right + 1 - left);\n    }\n    best\n}\n\nfn main() {\n    let result = replacement_length(\"AABABBA\", 1).to_string();\n    println!(\"{result}\");\n}\n",
     "question": "What quantity counts the replacements needed for one current window?",
-    "rule": "Window length minus its largest character frequency. State the input preconditions before applying this invariant.",
+    "rule": "Track the dominant character count and shrink the window once it needs more replacements than allowed. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(alphabet) space bound without looking at the code.",
     "summary": "Track the dominant count so replacements needed equal window length minus that count.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

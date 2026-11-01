@@ -1,6 +1,6 @@
 {
   "concept": "Make an implementation promise other unsafe code relies on",
-  "contentDigest": "bc24093f850773d4dfd38a985bcf8b659aad31f741a125d9b8a4e9e42c3491d2",
+  "contentDigest": "56ef71712ec48defe9b11736e2825c19a18b41bc84b5867901706afdd423e14e",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Benchmark & Profile"
       }
     ],
-    "correction": "An `unsafe` trait defines a safety contract. An implementor must prove its type preserves that contract for every safe caller; merely writing `unsafe` `impl` does not establish the invariant.",
-    "misconception": "“Traits are unchecked”",
+    "correction": "An `unsafe` trait defines a safety contract. An implementor must prove its type preserves that contract for every safe caller; merely writing `unsafe impl` does not establish the invariant.",
+    "misconception": "“Writing `unsafe impl` proves that the trait's invariant holds.”",
     "traceSteps": [
       {
-        "detail": "Write down what callers may assume, what the compiler cannot prove, and which boundary is responsible for preserving soundness or cost.",
-        "title": "State the invariant"
+        "detail": "The `# Safety` section states the one promise: the all-zero bit pattern must be a valid value of the implementing type.",
+        "title": "Read the contract"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "detail": "`Byte` is `repr(transparent)` over `u8`, and zero is a valid `u8`, so the `SAFETY` comment proves the promise for `Byte`.",
+        "title": "Check the implementor"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "detail": "Nothing calls the trait here. Generic `unsafe` code bounded by `T: ZeroIsValid` could create a zeroed `T` and rely on the implementor's proof.",
+        "title": "Find who relies on it"
       }
     ],
-    "transferChallenge": "Create the smallest counterexample that violates the sample's invariant, then repair the abstraction boundary instead of hiding the symptom. Keep the focus on make an implementation promise other `unsafe` code relies on."
+    "transferChallenge": "Write a generic `fn zeroed<T: ZeroIsValid>() -> T` using `std::mem::zeroed`. Then name a type for which an `unsafe impl` would be false, such as a struct holding `&u8`, and say where undefined behaviour would appear."
   },
   "exerciseKind": "planned",
   "id": "unsafe-traits",
@@ -41,20 +41,20 @@
   "writing": {
     "answers": [
       "Callers rely on its promise",
-      "Traits are unchecked",
-      "It uses an array"
+      "Traits are never checked",
+      "Its struct holds an array"
     ],
     "correctAnswer": 0,
     "exampleCaption": "A narrow contract makes the implementor's proof concrete: zero is a valid `u8` and therefore a valid Byte.",
     "exampleCode": "/// # Safety\n/// The all-zero bit pattern must be a valid Self value.\nunsafe trait ZeroIsValid {}\n\n#[repr(transparent)]\nstruct Byte(u8);\n// SAFETY: every u8 bit pattern is valid, including zero.\nunsafe impl ZeroIsValid for Byte {}",
-    "explanation": "An `unsafe` trait means incorrect implementation can cause undefined behavior in code that trusts it. Document every invariant precisely and keep the `unsafe` `impl` beside evidence that it holds.\n\nAn `unsafe` trait is a promise whose incorrect implementation can invalidate assumptions made by other code. Its documentation must state the invariant precisely: which operations, lifetimes, alignment, or thread interactions are safe, and what every implementor must maintain. The `unsafe` keyword on the `impl` means the implementor has checked that contract; it is not a compiler proof. A generic caller may rely on the trait bound and therefore cannot recheck each concrete implementation.\n\nAvoid vague contracts such as “instances never expose moves” unless the type truly enforces that property. A plain `FixedBuffer` can be moved between bindings, so claiming stable address for it would be unsound. For a learning example, use the standard `Send` contract instead: a type may be transferred to another thread only when doing so cannot cause a data race or invalid access. Examine every field before adding an `unsafe impl`; a non-atomic shared pointer can break the claim. Prefer safe auto traits and existing library abstractions wherever possible. If you must author an `unsafe` trait, write a safety section with concrete counterexamples, place each `impl` beside its proof, and review changes to the type's internals against that proof.\n\nThe teaching trait example has no consumer that relies on the promise, so it illustrates syntax rather than proving a real `unsafe` abstraction. In production, state exactly what `unsafe` generic code may assume from the bound. Then try to construct a counterexample type and see whether the proposed contract rules it out. If the contract cannot be written precisely, the trait is not ready to publish.",
-    "feedback": "Correct: Callers rely on its promise.",
-    "practiceCode": "unsafe trait StableAddress {}\n\nstruct FixedBuffer([u8; 16]);\n// SAFETY: instances never expose moves.\nunsafe impl StableAddress for FixedBuffer {}",
-    "question": "Why must that `Send` `impl` be `unsafe`?",
+    "explanation": "An `unsafe` trait means incorrect implementation can cause undefined behavior in code that trusts it. Document every invariant precisely and keep the `unsafe impl` beside evidence that it holds.\n\nAn `unsafe` trait is a promise whose incorrect implementation can invalidate assumptions made by other code. Its documentation must state the invariant precisely: which operations, lifetimes, alignment, or thread interactions are safe, and what every implementor must maintain. The `unsafe` keyword on the `impl` means the implementor has checked that contract; it is not a compiler proof. A generic caller may rely on the trait bound and therefore cannot recheck each concrete implementation.\n\nAvoid vague contracts such as “instances never expose moves” unless the type truly enforces that property. A plain `FixedBuffer` can be moved between bindings, so claiming stable address for it would be unsound. For a learning example, use a narrow contract instead, as `ZeroIsValid` does: the all-zero bit pattern must be a valid value of the type. The standard `Send` is another precise contract: a type may be transferred to another thread only when doing so cannot cause a data race or invalid access. Examine every field before adding an `unsafe impl`; a non-atomic shared pointer can break that claim. Prefer safe auto traits and existing library abstractions wherever possible. If you must author an `unsafe` trait, write a safety section with concrete counterexamples, place each `impl` beside its proof, and review changes to the type's internals against that proof.\n\nThe teaching trait example has no consumer that relies on the promise, so it illustrates syntax rather than proving a real `unsafe` abstraction. In production, state exactly what `unsafe` generic code may assume from the bound. Then try to construct a counterexample type and see whether the proposed contract rules it out. If the contract cannot be written precisely, the trait is not ready to publish.",
+    "feedback": "Unsafe code may rely on the trait's promise without rechecking it. The keyword marks the implementor's claim, and the compiler accepts it even though this one is false.",
+    "practiceCode": "unsafe trait StableAddress {}\n\nstruct FixedBuffer([u8; 16]);\n// Counterexample: this claim is false, as a FixedBuffer can be moved.\n// SAFETY: instances never expose moves.\nunsafe impl StableAddress for FixedBuffer {}",
+    "question": "Why must that `StableAddress` impl be written `unsafe`?",
     "rule": "An `unsafe` trait means incorrect implementation can cause undefined behavior in code that trusts it.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "You can say why `ZeroIsValid` for `Byte` holds and why `StableAddress` for `FixedBuffer` is unsound.",
     "summary": "Make an implementation promise other `unsafe` code relies on.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Compare the example's proof with this `SAFETY` comment. Move a `FixedBuffer` between two bindings, print its address before and after, and say which claim fails."
   },
   "illustration": {
     "path": "media/unsafe-traits.png",

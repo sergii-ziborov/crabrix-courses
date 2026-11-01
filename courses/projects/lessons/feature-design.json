@@ -1,6 +1,6 @@
 {
   "concept": "Make optional capability additive and explicit",
-  "contentDigest": "f4cb29d77120377cc3e9eb59f5e6119bd5ade18e9a18b7eebae43efd7a5869ef",
+  "contentDigest": "2afae06350a76d33a7b0d71b280674a74dacd5f88e5c75250ba8521f21d7208a",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Lockfile Reproducibility"
       }
     ],
-    "correction": "Cargo features are unified across a dependency graph, so disabling one consumer's feature may not disable it globally.",
-    "misconception": "“Mutual exclusion”",
+    "correction": "Cargo features are unified across a dependency graph, so disabling one consumer's feature may not disable it globally. Another path can still enable it.",
+    "misconception": "“Setting `default-features = false` on my dependency turns those features off everywhere.”",
     "traceSteps": [
       {
-        "detail": "Separate source modules, public API, manifest data, dependency graph, and build evidence before changing any one of them.",
-        "title": "Map the project boundary"
+        "detail": "`#[cfg(feature = \"color\")]` keeps the first `paint` only when the `color` feature is on for this build.",
+        "title": "Read the gate"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "detail": "`#[cfg(not(feature = \"color\"))]` provides the other `paint`, so exactly one definition exists in each build.",
+        "title": "Read the fallback"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "detail": "A call to `paint()` prints `plain` by default and `color` with `--features color`. The choice cannot change after compilation.",
+        "title": "Compare the builds"
       }
     ],
-    "transferChallenge": "Move one responsibility across a module or package boundary without changing behaviour. Predict which imports, tests, or lock data must change. Keep the focus on make optional capability additive and explicit."
+    "transferChallenge": "Add a `fn shade()` gated on a second feature, `shadow`, and list the four combinations with `color`. Predict what each one compiles, then check them with `cargo check --features`."
   },
   "exerciseKind": "planned",
   "id": "feature-design",
@@ -45,16 +45,16 @@
       "Hidden defaults"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCaption": "Each build compiles exactly one `paint`, chosen by whether `color` is on.",
     "exampleCode": "#[cfg(feature = \"color\")]\nfn paint() { println!(\"color\"); }\n\n#[cfg(not(feature = \"color\"))]\nfn paint() { println!(\"plain\"); }",
     "explanation": "Cargo features are unified across a dependency graph, so disabling one consumer's feature may not disable it globally. Prefer additive capabilities and avoid features that make the same API mean incompatible things.\n\nA feature is a named, additive capability a crate can enable at compile time. `#[cfg(feature = \"color\")]` includes code only when that feature is active; another branch can provide behavior without it. A feature is not a runtime switch, so a binary cannot toggle it after compilation. The public API exposed under different feature sets should be understandable and tested in each supported configuration.\n\nCargo unifies feature requests for the same package in a dependency graph. If one dependency path asks for feature A and another asks for feature B, the package may be built with both. That makes mutually exclusive features fragile: downstream users can accidentally activate the combination. Prefer features that add independent capabilities and keep a sensible default. If two backends truly cannot coexist, document and enforce that constraint explicitly, or consider a different design.\n\nCreate a tiny crate with a `color` feature and compile it with and without `--features color`. Then add two dependents that request different features of the same library and inspect the resulting feature graph with `cargo tree -e features`. Test `--no-default-features` if you claim that mode works. Avoid assuming that setting `default-features = false` at one edge globally disables defaults; another path can enable them. Feature design is part of the compatibility contract, not only a way to reduce compile time.\n\nA feature name should describe the capability it adds. Avoid names that merely encode an internal implementation file, because external users will depend on the public meaning over time.",
-    "feedback": "Correct: Additive capability.",
-    "practiceCode": "#[cfg(feature = \"color\")]\nfn paint() { println!(\"color\"); }\n\n#[cfg(not(feature = \"color\"))]\nfn paint() { println!(\"plain\"); }",
+    "feedback": "Additive capabilities only add code, so the union Cargo builds still compiles. Mutually exclusive features break as soon as two dependents enable both.",
+    "practiceCode": "#[cfg(feature = \"backend_a\")]\nfn backend() -> &'static str { \"a\" }\n\n#[cfg(feature = \"backend_b\")]\nfn backend() -> &'static str { \"b\" }\n\nfn main() {\n    println!(\"{}\", backend());\n}",
     "question": "What style makes features compose well?",
     "rule": "Cargo features are unified across a dependency graph, so disabling one consumer's feature may not disable it globally.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "Every feature combination compiles, including both on together, and you can say why Cargo may ask for that union.",
     "summary": "Make optional capability additive and explicit.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Declare both features, build with `--features backend_a,backend_b`, and read the error. Then redesign them as additive capabilities that can be on at once."
   },
   "illustration": {
     "path": "media/feature-design.png",

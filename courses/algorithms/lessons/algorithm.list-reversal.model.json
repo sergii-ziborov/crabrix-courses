@@ -14,7 +14,7 @@
     "visibleInput": "1->2->3->4"
   },
   "concept": "Detach the next link before redirecting the current node toward the reversed prefix.",
-  "contentDigest": "81dbae9c7f0c86c4c5dd2adb2a5f203cd28a12353f90265acf2eab81ead4f131",
+  "contentDigest": "a3d09238858c8ce918f24b48affce239e3f3d78824d1c5dcd3ba2191f1028bf7",
   "depth": {
     "connections": [
       {
@@ -60,7 +60,7 @@
     "feedback": "For 1→2→3→4, detach 1 from 2 before setting 1.next=None. Then detach 2 and link 2→1. Repeating yields 4→3→2→1 using the existing owned nodes rather than a new value vector.",
     "practiceCode": "type Link = Option<Box<ListNode>>;\nstruct ListNode {\n    value: i32,\n    next: Link,\n}\nfn list(values: &[i32]) -> Link {\n    values.iter().rev().fold(None, |next, &value| {\n        Some(Box::new(ListNode { value, next }))\n    })\n}\nfn list_values(head: &Link) -> Vec<i32> {\n    let mut out = Vec::new();\n    let mut p = head.as_deref();\n    while let Some(n) = p {\n        out.push(n.value);\n        p = n.next.as_deref();\n    }\n    out\n}\nfn csv<T: std::fmt::Display>(a: impl IntoIterator<Item = T>) -> String {\n    a.into_iter()\n        .map(|x| x.to_string())\n        .collect::<Vec<_>>()\n        .join(\",\")\n}\nfn reverse(mut head: Link) -> Link {\n    let mut reversed = None;\n    while let Some(mut node) = head {\n        head = node.next.take();\n        node.next = reversed;\n        reversed = Some(node);\n    }\n    reversed\n}\n\nfn main() {\n    let result = csv(list_values(&reverse(list(&[1, 2, 3, 4]))));\n    println!(\"{result}\");\n}\n",
     "question": "Why detach node.next before linking the node to the reversed prefix?",
-    "rule": "The unread suffix must remain reachable. State the input preconditions before applying this invariant.",
+    "rule": "Detach the next link before redirecting the current node toward the reversed prefix. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(1) links bound without looking at the code.",
     "summary": "Detach the next link before redirecting the current node toward the reversed prefix.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

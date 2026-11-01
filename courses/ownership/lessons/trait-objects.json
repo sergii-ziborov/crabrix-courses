@@ -1,6 +1,6 @@
 {
   "concept": "Choose behavior at runtime with dyn Trait",
-  "contentDigest": "0543be4d64bc021d67c6ce1851fefa63c63853a8fb47fe75287042d452349d80",
+  "contentDigest": "cf1016187ef984639d72e896a397e883b44775a3d2a9c9e2a7029c1927d5272b",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Blanket Implementations"
       }
     ],
-    "correction": "A trait object stores a pointer to data and a table of methods.",
-    "misconception": "“The lifetime”",
+    "correction": "`render` is compiled once and does not know the concrete types. At `item.draw()` the program follows the value's method table, so each element runs its own `draw`.",
+    "misconception": "“`dyn Draw` picks the concrete type at compile time, like a generic.”",
     "traceSteps": [
       {
-        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
-        "title": "Map ownership first"
+        "detail": "Each `Box<dyn Draw>` owns one value on the heap and points at its method table. `render` borrows the slice, so the boxes stay with their owner.",
+        "title": "Inspect the element"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "detail": "Implement `Draw` for `Button` and `Label`, then make `let items: Vec<Box<dyn Draw>> = vec![Box::new(Button), Box::new(Label)];`. Predict the output of `render(&items)`, and whether it can run twice.",
         "title": "Predict before checking"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "detail": "Each element runs its own `draw`, in order. The second `render` works because the first only borrowed the slice.",
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &`mut` T. Before compiling, list which bindings remain usable after each call. Keep the focus on choose behavior at runtime with dyn trait."
+    "transferChallenge": "Try a `Button` and a `Label` in one `Vec<T>` passed to a function with `T: Draw`, and read the type mismatch. Then add `fn copy_of(&self) -> Self;` to `Draw` and read why `dyn Draw` is now rejected."
   },
   "exerciseKind": "planned",
   "id": "trait-objects",
@@ -52,9 +52,9 @@
     "practiceCode": "trait Draw { fn draw(&self); }\nfn render(items: &[Box<dyn Draw>]) {\n    for item in items {\n        item.draw();\n    }\n}",
     "question": "What does dyn Trait choose at runtime?",
     "rule": "A trait object stores a pointer to data and a table of methods.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "You can explain why one slice can mix types, and what dynamic dispatch costs.",
     "summary": "Choose behavior at runtime with dyn Trait.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Say what `render` knows about each item, and where the `draw` call is resolved."
   },
   "illustration": {
     "path": "media/trait-objects.png",

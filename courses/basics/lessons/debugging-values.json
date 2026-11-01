@@ -1,6 +1,6 @@
 {
   "concept": "Debug, dbg!, and stderr",
-  "contentDigest": "0552dc18d5a7ca7f5e2360735f9c4b5ff488c1ea35f8b5460bc3ebf7b776bf0b",
+  "contentDigest": "bf05624e1d680b8a755c2791b1d1d19c5138ac87b1fe837869f15f04b0eddd60",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Comments & Docs"
       }
     ],
-    "correction": "`dbg!` returns its argument and writes diagnostic output to stderr.",
-    "misconception": "“`dbg!`(`mut` name)”",
+    "correction": "`mut` is not an expression, so `dbg!(mut name)` does not even parse. The move happens because `dbg!` takes its argument by value; `dbg!(&name)` passes a reference and leaves `name` with its owner.",
+    "misconception": "“`dbg!(mut name)`”",
     "traceSteps": [
       {
-        "detail": "Name each value's type and starting value, then mark the expression that produces the lesson's result.",
-        "title": "Inventory the values"
+        "detail": "`items` is a `Vec<&str>` holding `\"crab\"` and `\"rust\"`. `dbg!(&items)` receives a shared reference, so the `Vec` stays with `items`.",
+        "title": "Read the probe"
       },
       {
-        "detail": "Inspect an intermediate value and keep the program's stdout stable.",
-        "title": "Predict before checking"
+        "detail": "Expect stderr to show the source location, the expression `&items`, and both strings. Expect stdout to hold one line: `2 items`.",
+        "title": "Predict both streams"
       },
       {
-        "detail": "The debug probe appears on stderr and the value remains usable.",
+        "detail": "Run it and read each stream separately. Confirm the probe appears only on stderr and that `println!` still prints `2 items`.",
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change one value, type, or boundary in the sample. Write the exact stdout or diagnostic you expect before asking rustc. Keep the focus on debug, `dbg!`, and stderr."
+    "transferChallenge": "Remove the `&` from `dbg!(&items)` and write the diagnostic you expect from the `println!` line. Then write `let items = dbg!(items);` and predict whether `items.len()` works, given that `dbg!` returns its argument."
   },
   "exerciseKind": "planned",
   "id": "debugging-values",
@@ -42,12 +42,12 @@
     "answers": [
       "dbg!(&name)",
       "dbg!(mut name)",
-      "dbg!(name.clone)"
+      "let copy = dbg!(name)"
     ],
     "correctAnswer": 0,
     "exampleCaption": "Borrowing lets `dbg!` inspect the `Vec` without consuming it.",
     "exampleCode": "let items = vec![\"crab\", \"rust\"];\ndbg!(&items);\nprintln!(\"{} items\", items.len());",
-    "explanation": "The {:?} formatter uses the `Debug` trait. `dbg!` prints the expression, source location, and value to stderr, then returns the value unchanged. Borrow with `dbg!`(&value) when you want to inspect an owned value without moving it. Remove noisy probes or replace them with deliberate logging before shipping.\n\nA useful debug probe answers a specific question. Before running the program, predict the value at a boundary: after parsing, before a branch, or after a collection update. Put `dbg!` there, run the smallest input that exposes the issue, and compare the printed value with the prediction. If the value is already wrong, move the probe earlier; if it is right, move it later. This narrows the search instead of filling the terminal with unrelated output.\n\n`println!` writes to standard output, which users or another program may be reading as the result. `dbg!` writes to standard error and includes the source expression and location, so it is better suited to a temporary inspection. The macro returns the value it receives. For an owned `String` or `Vec`, passing the value can move it into the macro; pass `&value` to inspect without giving it away. `{:?}` requires `Debug`, and a struct can usually obtain that trait with `#[derive(Debug)]`.\n\nTry the lesson's `name` example twice: first observe the move error, then change the probe to `dbg!(&name)` and run it again. Record what appeared on stderr and what remained on stdout. After finding the cause, remove the probe or replace it with intentional diagnostics that have a stable purpose. A good debugging habit includes a final clean run, because experimental output should not become an accidental part of the program's interface.\n\n`Debug` output helps inspect a running program, but it is not automatically an explanation. Print the value immediately before the branch or calculation you distrust, state what you expected, and compare. `{:?}` uses the `Debug` trait and often exposes structure; `{}` uses `Display` when a user-facing representation exists. An added print can change timing, especially around concurrency, so it is evidence rather than a proof that every execution behaves the same way.\n\nChoose one wrong result in a small example. Write a hypothesis before adding a print, then place exactly one observation that could confirm or refute it. Remove or gate temporary diagnostics once the issue is understood. For a persistent behavior, write a test for the input that failed. If the compiler rejects a value because it lacks `Debug`, derive or implement that trait only when exposing its fields is appropriate. This turns debugging into a sequence of questions rather than a flood of logs.",
+    "explanation": "The `{:?}` formatter uses the `Debug` trait. `dbg!` prints the expression, source location, and value to stderr, then returns the value unchanged. Borrow with `dbg!(&value)` when you want to inspect an owned value without moving it. Remove noisy probes or replace them with deliberate logging before shipping.\n\nA useful debug probe answers a specific question. Before running the program, predict the value at a boundary: after parsing, before a branch, or after a collection update. Put `dbg!` there, run the smallest input that exposes the issue, and compare the printed value with the prediction. If the value is already wrong, move the probe earlier; if it is right, move it later. This narrows the search instead of filling the terminal with unrelated output.\n\n`println!` writes to standard output, which users or another program may be reading as the result. `dbg!` writes to standard error and includes the source expression and location, so it is better suited to a temporary inspection. The macro returns the value it receives. For an owned `String` or `Vec`, passing the value can move it into the macro; pass `&value` to inspect without giving it away. `{:?}` requires `Debug`, and a struct can usually obtain that trait with `#[derive(Debug)]`.\n\nTry the lesson's `name` example twice: first observe the move error, then change the probe to `dbg!(&name)` and run it again. Record what appeared on stderr and what remained on stdout. After finding the cause, remove the probe or replace it with intentional diagnostics that have a stable purpose. A good debugging habit includes a final clean run, because experimental output should not become an accidental part of the program's interface.\n\n`Debug` output helps inspect a running program, but it is not automatically an explanation. Print the value immediately before the branch or calculation you distrust, state what you expected, and compare. `{:?}` uses the `Debug` trait and often exposes structure; `{}` uses `Display` when a user-facing representation exists. An added print can change timing, especially around concurrency, so it is evidence rather than a proof that every execution behaves the same way.\n\nChoose one wrong result in a small example. Write a hypothesis before adding a print, then place exactly one observation that could confirm or refute it. Remove or gate temporary diagnostics once the issue is understood. For a persistent behavior, write a test for the input that failed. If the compiler rejects a value because it lacks `Debug`, derive or implement that trait only when exposing its fields is appropriate. This turns debugging into a sequence of questions rather than a flood of logs.",
     "feedback": "Pass a shared reference so the debug probe does not take ownership.",
     "practiceCode": "let name = String::from(\"Ferris\");\ndbg!(name);\nprintln!(\"{name}\");",
     "question": "Which edit keeps name usable?",

@@ -1,15 +1,20 @@
 {
   "concept": "Describe conditions and controls, not one guilty person",
-  "contentDigest": "6a499918cb380fa8bad829ef364deea7f2a43e7c0f778160774e49a35b0eed0c",
+  "contentDigest": "58cdc82579c7d49ca3eba510f2d56863945c8fd3c04975fe74eaa6d2b873a033",
   "depth": {
     "connections": [
       {
         "concept": "Prioritize correctness, API contracts, then style",
         "direction": "previous",
         "title": "Review Rust Code"
+      },
+      {
+        "concept": "Interior mutability without confusing Send and Sync",
+        "direction": "next",
+        "title": "Cell, RefCell and Runtime Borrows"
       }
     ],
-    "correction": "A durable control changes a failure mechanism and has an owner and a verification method. Preserve a blameless account of contributing conditions.",
+    "correction": "A timeline explains what happened but changes nothing in the system. The same overload fills the same queue until admission or monitoring changes.",
     "misconception": "Record the incident timeline but leave admission and monitoring unchanged.",
     "traceSteps": [
       {
@@ -18,7 +23,7 @@
       },
       {
         "title": "Trace the concrete example",
-        "detail": "The example makes the contract visible in code."
+        "detail": "The fields separate the trigger, why it went unseen, and what makes recurrence harder."
       },
       {
         "title": "Test the changed constraint",
@@ -40,20 +45,20 @@
       "Ask operators to remember to restart the service earlier next time."
     ],
     "correctAnswer": 0,
-    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCaption": "The fields separate the trigger, why it went unseen, and what makes recurrence harder.",
     "exampleCode": "struct Incident {\n    trigger: &'static str,\n    detection_gap: &'static str,\n    durable_action: &'static str,\n}",
     "explanation": "A useful postmortem separates trigger, contributing conditions, detection gaps, impact, and durable actions. Prefer controls that make recurrence harder over promises to be more careful.\n\nA postmortem is a tool for learning from an incident, not for assigning blame to one operator. State the timeline in observable events: trigger, detection, mitigation, recovery, and customer impact. Then separate the immediate trigger from conditions that made the incident possible or prolonged it. An expired certificate may trigger an outage, while missing alerts, unclear ownership, and a fragile renewal process are contributing conditions. Treat uncertainty honestly when logs are incomplete.\n\nQuantify impact with the best available evidence: affected users, duration, failed requests, lost or delayed work, and whether data was at risk. Identify what worked during response as well as what failed. For actions, prefer controls that change the system: an automated renewal test, an alert on certificate expiry, a rollback path, or a runbook exercised in a drill. 'Be more careful' is not a measurable control.\n\nIn an interview, describe how each action maps to a failure mode, who owns it, and how completion will be verified. Avoid overloading the list with low-value tasks that no team can finish. Include follow-up monitoring to check whether the control actually works in production. A strong postmortem reduces the chance or impact of recurrence and gives future responders a clearer path, while preserving a truthful record of what happened.\n\nInterview follow-up: What would demonstrate the fix protects users during the next overload rather than merely improving average throughput?",
     "feedback": "A durable control changes a failure mechanism and has an owner and a verification method. Preserve a blameless account of contributing conditions.",
     "practiceCode": "// Trigger: arrival rate exceeded worker throughput.\n// Detection gap: memory and queue age were not monitored.",
     "question": "Which action directly reduces recurrence of an unbounded-queue incident?",
     "rule": "A useful postmortem separates trigger, contributing conditions, detection gaps, impact, and durable actions.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "Your action changes a failure mechanism and names a verification; it does not ask anyone to be more careful.",
     "summary": "Describe conditions and controls, not one guilty person.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Fill in `trigger`, `detection_gap` and `durable_action` for an unbounded-queue incident. Then say who owns the action and how it is verified."
   },
   "illustration": {
     "path": "media/q-postmortem.png",
-    "alt": "Diagram for Explain an Incident: a Rust code example flows to the lesson rule and the key observation.",
-    "caption": "The example makes the contract visible in code."
+    "alt": "Lesson map: an Incident struct with trigger, detection gap and durable action fields, above the rule separating those parts of a postmortem.",
+    "caption": "The fields separate the trigger, why it went unseen, and what makes recurrence harder."
   }
 }

@@ -14,13 +14,13 @@
     "visibleInput": "[[1,0,0],[1,1,0],[0,1,1]]"
   },
   "concept": "Treat cells as graph nodes and traverse only neighbors satisfying the region predicate.",
-  "contentDigest": "b5de3b04ad0c02630bb401de897cc7f7b9778f1344a12a66661bd688cfb7e223",
+  "contentDigest": "d85e6c85de171c0179d383c68d758d4e97f1f791b337006f552558db9a15609f",
   "depth": {
     "connections": [
       {
         "direction": "previous",
         "title": "Challenge: Connected Components",
-        "concept": "Return the number of undirected connected components."
+        "concept": "Parse n and undirected edges; edges= with nothing after it and edges=none both mean no edges. Return the number of connected components, counting isolated vertices."
       },
       {
         "direction": "next",
@@ -65,7 +65,7 @@
     "feedback": "Starting at (1,1) in the sample reaches five connected 1 cells. Diagonal contact alone does not join components: [[1,0],[0,1]] has size 1 from (1,1). The visited set prevents counting a reachable cell twice.",
     "practiceCode": "fn component_size(grid: &[Vec<i32>], start: (usize, usize)) -> usize {\n    let (rows, cols) = (grid.len(), grid[0].len());\n    let target = grid[start.0][start.1];\n    let mut seen = vec![vec![false; cols]; rows];\n    let mut stack = vec![start];\n    let mut size = 0;\n    while let Some((r, c)) = stack.pop() {\n        if seen[r][c] || grid[r][c] != target {\n            continue;\n        }\n        seen[r][c] = true;\n        size += 1;\n        if r > 0 {\n            stack.push((r - 1, c));\n        }\n        if c > 0 {\n            stack.push((r, c - 1));\n        }\n        if r + 1 < rows {\n            stack.push((r + 1, c));\n        }\n        if c + 1 < cols {\n            stack.push((r, c + 1));\n        }\n    }\n    size\n}\n\nfn main() {\n    let result = component_size(&[vec![1, 0, 0], vec![1, 1, 0], vec![0, 1, 1]], (1, 1)).to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Which moves are legal in this component-size exercise?",
-    "rule": "Four orthogonal moves to equal-valued cells. State the input preconditions before applying this invariant.",
+    "rule": "Treat cells as graph nodes and traverse only neighbors satisfying the region predicate. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(rows*cols) time · O(rows*cols) space worst bound without looking at the code.",
     "summary": "Treat cells as graph nodes and traverse only neighbors satisfying the region predicate.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

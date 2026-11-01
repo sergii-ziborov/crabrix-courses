@@ -1,6 +1,6 @@
 {
   "concept": "Expect a future to be dropped at any await point",
-  "contentDigest": "4ad3fd86c62c5ffa409b1fe766bda35435dabb538be4cf3c3a58103e5b564468",
+  "contentDigest": "54b39ac96c23de4fcc87f0c73f7183e018ed254532b79171c2efd655d8f6299b",
   "depth": {
     "connections": [
       {
@@ -14,8 +14,8 @@
         "title": "Blocking in Async Code"
       }
     ],
-    "correction": "Selecting or timing out a future may drop it before completion.",
-    "misconception": "“Only reaching the end of the async body”",
+    "correction": "Selecting or timing out a future may drop it before completion. The code after its suspension point then never runs, and effects already performed stay in place.",
+    "misconception": "“A future always runs to the end of its body once it has started.”",
     "traceSteps": [
       {
         "title": "Construct without running",
@@ -30,7 +30,7 @@
         "detail": "Dropping operation cancels the remaining future. The previous saved effect remains true and acknowledged stays false; dropping a runtime task handle has separate semantics."
       }
     ],
-    "transferChallenge": "Add a second worker or cancellation point. Draw two possible event orders and state the invariant that both orders must preserve. Keep the focus on expect a future to be dropped at any `await` point."
+    "transferChallenge": "Move `saved.set(true)` after the `pending` await and predict both flags after the same poll and drop. Then say what a retry would need to know under each ordering."
   },
   "exerciseKind": "planned",
   "id": "async-cancellation",
@@ -52,9 +52,9 @@
     "practiceCode": "async fn save_then_ack() {\n    save_record().await;\n    // Cancellation here means saved,\n    // but not acknowledged.\n    send_ack().await;\n}",
     "question": "What cancels an ordinary owned future, including one that has not been polled?",
     "rule": "Selecting or timing out a future may drop it before completion.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "You can point to where each flag is set and say why a retry must be idempotent after a drop.",
     "summary": "Expect a future to be dropped at any `await` point.",
-    "task": "Run the complete example and predict saved=true acknowledged=false. Then move drop before the first poll and predict that neither effect occurs. Relate this local demonstration to idempotent external operations."
+    "task": "Run the complete example and predict saved=true acknowledged=false. Then remove the poll line, change `assert!(saved.get())` to `assert!(!saved.get())`, and predict that neither effect occurs. Relate this local demonstration to idempotent external operations."
   },
   "illustration": {
     "path": "media/async-cancellation.png",

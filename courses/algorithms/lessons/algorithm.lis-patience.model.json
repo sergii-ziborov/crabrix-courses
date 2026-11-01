@@ -14,7 +14,7 @@
     "visibleInput": "[10,9,2,5,3,7,101,18]"
   },
   "concept": "Keep the smallest possible tail for an increasing subsequence of every length.",
-  "contentDigest": "7fc1880f12b72955d8531cfa2fb700c6ba88516585b04e307ab816c0730586dc",
+  "contentDigest": "b20dc0f3171e9d4f881ea075f0d9aade04b771aad1b714c64b29986dd6787de2",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "For [10,9,2,5,3,7,101,18], tails evolve through [2,3,7,101] to [2,3,7,18]. Its length is 4. Replacing a tail improves future possibilities without claiming the tail array's complete history is an input subsequence.",
     "practiceCode": "fn lis_length(values: &[i32]) -> usize {\n    let mut tails = Vec::new();\n    for &x in values {\n        let i = tails.partition_point(|&old| old < x);\n        if i == tails.len() {\n            tails.push(x);\n        } else {\n            tails[i] = x;\n        }\n    }\n    tails.len()\n}\n\nfn main() {\n    let result = lis_length(&[10, 9, 2, 5, 3, 7, 101, 18]).to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Why replace the first tail greater than or equal to the new value?",
-    "rule": "It keeps the smallest possible tail for each strict subsequence length. State the input preconditions before applying this invariant.",
+    "rule": "Keep one candidate tail per subsequence length and binary-search where each new value belongs. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n log n) time · O(n) space bound without looking at the code.",
     "summary": "Keep the smallest possible tail for an increasing subsequence of every length.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

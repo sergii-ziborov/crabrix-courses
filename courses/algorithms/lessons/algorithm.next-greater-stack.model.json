@@ -14,7 +14,7 @@
     "visibleInput": "[2,1,2,4,3]"
   },
   "concept": "Keep unresolved indexes in decreasing value order and resolve them when a larger value appears.",
-  "contentDigest": "c282571136780a30da7e6fa6ceafbb3c917764ed142772f514418905d3f8f95a",
+  "contentDigest": "8efa396cb30c5ba759ea589d72d64ef3f2ed75b1ede64b75df3f73729d33c2e5",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "For [2,1,2,4,3], the second 2 resolves index 1 to 2. Value 4 then resolves both earlier unresolved 2s to 4. Indexes of 4 and final 3 remain unresolved and receive -1.",
     "practiceCode": "fn csv<T: std::fmt::Display>(a: impl IntoIterator<Item = T>) -> String {\n    a.into_iter()\n        .map(|x| x.to_string())\n        .collect::<Vec<_>>()\n        .join(\",\")\n}\nfn next_greater(values: &[i32]) -> Vec<i32> {\n    let mut result = vec![-1; values.len()];\n    let mut unresolved = Vec::new();\n    for (i, &x) in values.iter().enumerate() {\n        while unresolved.last().is_some_and(|&j| values[j] < x) {\n            result[unresolved.pop().unwrap()] = x;\n        }\n        unresolved.push(i);\n    }\n    result\n}\n\nfn main() {\n    let result = csv(next_greater(&[2, 1, 2, 4, 3]));\n    println!(\"{result}\");\n}\n",
     "question": "When a larger value arrives, why can popped indexes receive their final next-greater answer?",
-    "rule": "It is the first larger value encountered to their right. State the input preconditions before applying this invariant.",
+    "rule": "Keep unresolved indexes in decreasing value order and resolve them when a larger value appears. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(n) space bound without looking at the code.",
     "summary": "Keep unresolved indexes in decreasing value order and resolve them when a larger value appears.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

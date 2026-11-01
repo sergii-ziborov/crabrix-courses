@@ -1,6 +1,6 @@
 {
   "concept": "String, &str, chars, and bytes",
-  "contentDigest": "0ee491396b5a9493c885b012dbf0c4053ed8330f48d207c84a5b17e8f7740c77",
+  "contentDigest": "d66b651f41a1c530f2fdbb5400f92e128839183771fda7afb3240ecba053d6bd",
   "depth": {
     "connections": [
       {
@@ -14,12 +14,12 @@
         "title": "Pattern Matching"
       }
     ],
-    "correction": "`len()` counts UTF-8 bytes; `chars().count()` counts Unicode scalar values, not grapheme clusters.",
+    "correction": "`word.len()` counts UTF-8 bytes, so `\"naïve\"` gives `6`. Only `word.chars().count()` decodes the text, and it gives the five scalar values.",
     "misconception": "“`word.len()`”",
     "traceSteps": [
       {
-        "detail": "Name each value's type and starting value, then mark the expression that produces the lesson's result.",
-        "title": "Inventory the values"
+        "detail": "`text` is a `&str` holding `café`, and its `é` takes two bytes. `decomposed` is a `&str` holding `e` followed by the combining accent U+0301.",
+        "title": "Name the two strings"
       },
       {
         "detail": "Predict five bytes and four scalars for `café`, then three bytes and two scalars for the decomposed accented letter.",
@@ -30,7 +30,7 @@
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change one value, type, or boundary in the sample. Write the exact stdout or diagnostic you expect before asking rustc. Keep the focus on string, `&str`, chars, and bytes."
+    "transferChallenge": "Add `let cafe = \"cafe\\u{301}\";` beside `text` and predict its `len()`, its `chars().count()`, and `cafe.get(3..5)`. Then explain why the two spellings can look alike and still answer differently."
   },
   "exerciseKind": "planned",
   "id": "strings",
@@ -49,7 +49,7 @@
     "exampleCode": "let text = \"café\";\nlet decomposed = \"e\\u{301}\";\nassert_eq!(text.len(), 5);\nassert_eq!(text.chars().count(), 4);\nassert_eq!(decomposed.len(), 3);\nassert_eq!(decomposed.chars().count(), 2);\nassert_eq!(text.get(3..5), Some(\"é\"));\nassert_eq!(text.get(3..4), None);\nprintln!(\"café: {} bytes, {} scalars\", text.len(), text.chars().count());",
     "explanation": "`String` owns a growable UTF-8 buffer and `&str` borrows one. Rust strings do not support integer indexing such as `s[0]`. Choose `.bytes()` for encoded bytes, `.chars()` for Unicode scalar values, or `.get(range)` for a fallible byte slice. A direct invalid byte-range slice can still panic, so rejecting integer indexing does not eliminate every encoding-related mistake.\n\nUTF-8 stores text as bytes, and a visible character may require more than one byte. In `café`, `len()` is five bytes, while `chars().count()` yields four Unicode scalar values. Neither number necessarily counts what a person sees as a grapheme: a letter plus a combining accent can be two scalar values displayed as one. Rust deliberately makes the unit explicit, so you cannot assume that the fifth byte begins a character.\n\nA `String` owns and can grow its buffer. A `&str` borrows a valid slice of UTF-8 text, whether the source is a string literal or part of a `String`. Slicing by byte ranges is allowed only at character boundaries; a range ending in the middle of a multibyte character fails. Use `.chars()` for scalar-value iteration, `.bytes()` for protocol or encoding work, and `.char_indices()` when you need both a character and its starting byte offset. Avoid repeatedly using `.chars().nth(n)` as if it were constant-time indexing: it walks from the start each time.\n\nTry printing the bytes, characters, and byte offsets of `café` and `naïve`. Predict which offsets jump by more than one. If your UI needs user-perceived character counts or cursor movement, use a Unicode grapheme library and state that requirement explicitly. For many programs, the safest first step is to ask whether the problem is about bytes, scalar values, or displayed clusters before choosing an operation.\n\nIf you must slice text, use a checked operation such as `get(range)` when a range may come from external input. It returns `Option<&str>` instead of panicking at an invalid UTF-8 boundary.\n\n`String` owns growable UTF-8 bytes; `&str` borrows a view of UTF-8 text. A string literal has type `&'static str`, but a function accepting `&str` can also receive a borrowed view of a `String`. This is why read-only parameters commonly use `&str`: callers need not give away ownership. Appending to a `String` may reallocate its storage, so a reference into it cannot remain live while a mutation would invalidate that reference.\n\nTry passing both a string literal and a borrowed `String` to the same read-only function. Then change the function to take `String` and observe the move at the call site. Use `.as_str()` or `&value` when you need a view. For slicing, remember that offsets are UTF-8 byte positions and must fall on valid character boundaries. If your task is to count or split what a human sees as characters, specify whether you mean bytes, Unicode scalar values, or grapheme clusters before writing the algorithm.",
     "feedback": "`chars().count()` decodes Unicode scalar values. `len()` and `bytes().len()` count bytes; neither is a general visible-character count.",
-    "practiceCode": "let word = \"naïve\";\nlet length = word.???;",
+    "practiceCode": "let word = \"naïve\";\nlet length = word.len(); // 6: this counts bytes\nprintln!(\"{length}\");",
     "question": "Which expression counts Unicode scalar values in `word`?",
     "rule": "`len()` counts UTF-8 bytes; `chars().count()` counts Unicode scalar values, not grapheme clusters.",
     "success": "`café` has five UTF-8 bytes and four scalars. `e` plus a combining acute accent has three bytes and two scalars, usually displayed as one grapheme.",
@@ -59,6 +59,6 @@
   "illustration": {
     "path": "media/strings.png",
     "alt": "Five UTF-8 bytes encode the four scalars in café; a decomposed accented letter uses two scalars for one displayed grapheme.",
-    "caption": "`café` has five UTF-8 bytes and four scalars; the decomposed accented letter has three bytes and two scalars."
+    "caption": "café has five UTF-8 bytes and four scalars; the decomposed accented letter has three bytes and two scalars."
   }
 }

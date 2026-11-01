@@ -14,13 +14,13 @@
     "visibleInput": "edges=0->1,1->2,2->0,2->3,3->4,4->3"
   },
   "concept": "Use finish order plus reversed edges, or low links, to collapse mutual reachability.",
-  "contentDigest": "6d6cacc385cd773a4e37d6efaae77f03eacb74efda9efc4c47ade5ed8a062d2a",
+  "contentDigest": "8ba9370a4e7a4d740e626b4896051d9cc9283c31cd1e3db8966485f6e476ba62",
   "depth": {
     "connections": [
       {
         "direction": "previous",
         "title": "Challenge: DFS Topological Sort",
-        "concept": "Return reverse-postorder for ascending neighbors."
+        "concept": "Parse n and directed edges a->b. Run DFS from vertices in ascending order, visit each vertex's neighbors in ascending order, and return the reverse of the finishing order."
       },
       {
         "direction": "next",
@@ -65,7 +65,7 @@
     "feedback": "The sample groups are {0,1,2} and {3,4}: each group is mutually reachable, with a one-way edge between them. Sort members and then groups for the output 0,1,2;3,4. SCC grouping does not imply connectivity in both directions between groups.",
     "practiceCode": "fn csv<T: std::fmt::Display>(a: impl IntoIterator<Item = T>) -> String {\n    a.into_iter()\n        .map(|x| x.to_string())\n        .collect::<Vec<_>>()\n        .join(\",\")\n}\nfn semicolon<T: std::fmt::Display>(a: Vec<Vec<T>>) -> String {\n    a.into_iter().map(csv).collect::<Vec<_>>().join(\";\")\n}\nfn strongly_connected(graph: &[Vec<usize>]) -> Vec<Vec<usize>> {\n    fn finish(v: usize, g: &[Vec<usize>], seen: &mut [bool], order: &mut Vec<usize>) {\n        seen[v] = true;\n        for &u in &g[v] {\n            if !seen[u] {\n                finish(u, g, seen, order);\n            }\n        }\n        order.push(v);\n    }\n    fn collect(v: usize, g: &[Vec<usize>], seen: &mut [bool], group: &mut Vec<usize>) {\n        seen[v] = true;\n        group.push(v);\n        for &u in &g[v] {\n            if !seen[u] {\n                collect(u, g, seen, group);\n            }\n        }\n    }\n    let n = graph.len();\n    let mut reverse = vec![Vec::new(); n];\n    for (v, ns) in graph.iter().enumerate() {\n        for &u in ns {\n            reverse[u].push(v);\n        }\n    }\n    let mut seen = vec![false; n];\n    let mut order = Vec::new();\n    for v in 0..n {\n        if !seen[v] {\n            finish(v, graph, &mut seen, &mut order);\n        }\n    }\n    seen.fill(false);\n    let mut groups = Vec::new();\n    for v in order.into_iter().rev() {\n        if !seen[v] {\n            let mut group = Vec::new();\n            collect(v, &reverse, &mut seen, &mut group);\n            group.sort_unstable();\n            groups.push(group);\n        }\n    }\n    groups.sort();\n    groups\n}\n\nfn main() {\n    let result = semicolon(strongly_connected(&[\n        vec![1],\n        vec![2],\n        vec![0, 3],\n        vec![4],\n        vec![3],\n    ]));\n    println!(\"{result}\");\n}\n",
     "question": "Why does the second Kosaraju pass traverse the reversed graph in decreasing finish order?",
-    "rule": "It isolates maximal mutually reachable vertex groups. State the input preconditions before applying this invariant.",
+    "rule": "Use finish order plus reversed edges, or low links, to collapse mutual reachability. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(V+E) SCC traversal; canonical report sorting adds O(V log V) bound without looking at the code.",
     "summary": "Use finish order plus reversed edges, or low links, to collapse mutual reachability.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

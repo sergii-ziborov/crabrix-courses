@@ -12,7 +12,7 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Sort the base-10 nonnegative integers.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement radix-sort\")\n}\n",
+    "source": "pub fn solve(input: &str) -> String {\n    // Sort the nonnegative integers, each fitting u32, in ascending order with stable least-significant-digit passes. The worked program uses 8-bit digits; any digit base that reaches every digit works.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement radix-sort\")\n}\n",
     "verificationCases": [
       {
         "kind": "visible",
@@ -40,6 +40,16 @@
         "expectedAnswer": "2,3,4,5,6,7,8"
       },
       {
+        "kind": "adversarial",
+        "input": "[1000,999]",
+        "expectedAnswer": "999,1000"
+      },
+      {
+        "kind": "adversarial",
+        "input": "[70000,256,65536,255]",
+        "expectedAnswer": "255,256,65536,70000"
+      },
+      {
         "kind": "normalisation",
         "input": "  \n[170,45,75,90,802,24,2,66]\n  ",
         "expectedAnswer": "2,24,45,66,75,90,170,802"
@@ -50,7 +60,7 @@
         "expectedAnswer": "2,3,4,5,6,7,8"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"[170,45,75,90,802,24,2,66]\",\"2,24,45,66,75,90,170,802\"),\n        (\"[10,1,0]\",\"0,1,10\"),\n        (\"[1,2,3,4,5,6,7]\",\"1,2,3,4,5,6,7\"),\n        (\"[3,3,3,3,3,3,3]\",\"3,3,3,3,3,3,3\"),\n        (\"[8,7,6,5,4,3,2]\",\"2,3,4,5,6,7,8\"),\n        (\"  \\n[170,45,75,90,802,24,2,66]\\n  \",\"2,24,45,66,75,90,170,802\"),\n        (\"\\n[8,7,6,5,4,3,2]\\n\",\"2,3,4,5,6,7,8\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS radix-sort\");\n}\n"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"[170,45,75,90,802,24,2,66]\",\"2,24,45,66,75,90,170,802\"),\n        (\"[10,1,0]\",\"0,1,10\"),\n        (\"[1,2,3,4,5,6,7]\",\"1,2,3,4,5,6,7\"),\n        (\"[3,3,3,3,3,3,3]\",\"3,3,3,3,3,3,3\"),\n        (\"[8,7,6,5,4,3,2]\",\"2,3,4,5,6,7,8\"),\n        (\"[1000,999]\",\"999,1000\"),\n        (\"[70000,256,65536,255]\",\"255,256,65536,70000\"),\n        (\"  \\n[170,45,75,90,802,24,2,66]\\n  \",\"2,24,45,66,75,90,170,802\"),\n        (\"\\n[8,7,6,5,4,3,2]\\n\",\"2,3,4,5,6,7,8\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS radix-sort\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {

@@ -1,6 +1,6 @@
 {
   "concept": "Making misuse impossible to express",
-  "contentDigest": "2cedf3cd9d670ce6b25f99950168c036756801905efa4d86d0980777a783be02",
+  "contentDigest": "8e3757ed8ac051be47f765d31d6213f831b9381a27cd109f2591037e340b7159",
   "depth": {
     "connections": [
       {
@@ -14,7 +14,7 @@
         "title": "Profiling First"
       }
     ],
-    "correction": "#[non_exhaustive] can reserve extension room when applied as part of the original contract. Adding it later can itself break exhaustive downstream code.",
+    "correction": "Adding `#[non_exhaustive]` later is itself a breaking change: downstream exhaustive matches stop compiling until they add a wildcard arm.",
     "misconception": "Applying non_exhaustive later is always a compatible fix for existing callers.",
     "traceSteps": [
       {
@@ -23,7 +23,7 @@
       },
       {
         "title": "Trace the concrete example",
-        "detail": "The compiler now rejects the argument order mistake."
+        "detail": "Swapping any two arguments no longer compiles. Wrapping the wrong id in a type still does."
       },
       {
         "title": "Test the changed constraint",
@@ -45,8 +45,8 @@
       "Applying non_exhaustive later is always a compatible fix for existing callers."
     ],
     "correctAnswer": 1,
-    "exampleCaption": "The compiler now rejects the argument order mistake.",
-    "exampleCode": "struct AccountId(u64);\nstruct Amount(u64);\n\nfn transfer(\n    from: AccountId,\n    to: AccountId,\n    amount: Amount,\n) {}",
+    "exampleCaption": "Swapping any two arguments no longer compiles. Wrapping the wrong id in a type still does.",
+    "exampleCode": "struct Source(u64);\nstruct Destination(u64);\nstruct Amount(u64);\n\nfn transfer(\n    from: Source,\n    to: Destination,\n    amount: Amount,\n) {}",
     "explanation": "Public API evolution includes downstream implementations and exhaustive matches, not just function names. Adding a required trait method or an exhaustive enum variant can break users. non_exhaustive and sealing are design choices with their own compatibility and flexibility costs.\n\nA good API makes common correct use easy and misuse visible. A `UserId` newtype prevents an `OrderId` from being passed accidentally, even if both contain `u64`. A function returning `Result` lets callers decide how to handle expected failure instead of panicking. Ownership in signatures tells callers whether data is borrowed, mutated, or consumed. These design choices are especially important at public crate boundaries because users rely on them longer than internal helpers do.\n\nTypestate can represent a protocol: an unconfigured request exposes `configure`, while only a configured request exposes `send`. That can prevent invalid call order, but too many type states can make errors and documentation unwieldy. Start with a clear constructor and validated data type; add typestate when the ordering rule is stable and misuse is likely. Examples should show a normal path and at least one invalid path.\n\nFor semver, adding a variant to a public exhaustive enum can break a downstream match. Adding a required method to a public trait can break downstream implementations unless a suitable default is provided. Marking an enum `non_exhaustive` or sealing a trait reserves evolution room, with a cost to downstream flexibility. In an interview, describe what your callers can observe, how you would migrate them, and what compile-time failures the change would cause. An API is a long-lived contract, not just a set of function names.\n\nShow the migration path, not only the new signature. A caller-facing example reveals whether the change is truly easy to adopt.\n\nInterview follow-up: Contrast adding a required trait method with adding a defaulted one. Which coherence or name-resolution changes can still affect downstream users?",
     "feedback": "#[non_exhaustive] can reserve extension room when applied as part of the original contract. Adding it later can itself break exhaustive downstream code.",
     "practiceCode": "pub enum Status { Ready, Failed }\n// Another crate matches Status exhaustively.",
@@ -58,7 +58,7 @@
   },
   "illustration": {
     "path": "media/q-api-design.png",
-    "alt": "Diagram for API Design and Semver: a Rust code example flows to the lesson rule and the key observation.",
-    "caption": "The compiler now rejects the argument order mistake."
+    "alt": "Lesson map: a transfer function whose parameters are the distinct types Source, Destination and Amount, above the rule to encode the invariant in the type.",
+    "caption": "Swapping any two arguments no longer compiles. Wrapping the wrong id in a type still does."
   }
 }

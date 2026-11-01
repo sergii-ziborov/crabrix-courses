@@ -1,6 +1,6 @@
 {
   "concept": "Lazy transformations",
-  "contentDigest": "659969f182a3213544c345dcb0a14da3f66097d360084ba1ae3dc3d2c3d69046",
+  "contentDigest": "278bea9f483eba49aa52693ba96b2f30d1d7f12b0e948b3e0bf13ee1eb90b6a2",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Writing an Iterator"
       }
     ],
-    "correction": "Adapters are lazy; a consumer is what makes the work happen.",
-    "misconception": "“Every name has already been uppercased”",
+    "correction": "`map` only builds a lazy adapter. No name is uppercased until a consumer such as `collect`, `sum`, or a `for` loop pulls items through `names`.",
+    "misconception": "“`.map()` runs its closure over every element right away.”",
     "traceSteps": [
       {
-        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
-        "title": "Map ownership first"
+        "detail": "In the example, `filter` and `map` are adapters over `1..=6`, and `collect` is the consumer that fills `squares`.",
+        "title": "Split the chain"
       },
       {
-        "detail": "Transform a range with filter and map, then collect it.",
+        "detail": "Add `.inspect(|v| println!(\"saw {v}\"))` after the range, store the chain without `collect`, print `built`, and then collect. Predict which line prints first and what `squares` holds.",
         "title": "Predict before checking"
       },
       {
-        "detail": "The `Vec` holds only the expected transformed values.",
+        "detail": "`built` prints first, `saw 1` through `saw 6` follow during `collect`, and `squares` is `[4, 16, 36]`.",
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &`mut` T. Before compiling, list which bindings remain usable after each call. Keep the focus on lazy transformations."
+    "transferChallenge": "Consume `names` with `for name in names { println!(\"{name}\"); }` and check that the uppercase text now appears before `done`. Then make `list` a `Vec<String>`, switch to `.into_iter()`, and use `list` afterward to see the move."
   },
   "exerciseKind": "planned",
   "id": "iterators",
@@ -49,12 +49,12 @@
     "exampleCode": "let squares: Vec<u32> = (1..=6)\n    .filter(|v| v % 2 == 0)\n    .map(|v| v * v)\n    .collect();",
     "explanation": "map and filter build a description of the work; nothing runs until a consumer such as collect, sum, or a for loop asks for items. That laziness is why a long chain still makes a single pass over the data instead of one pass per step.\n\nAn iterator is a sequence of values produced on demand. Calling `.filter()` or `.map()` builds another iterator; it does not run the closure over every element immediately. A consumer such as `.collect()`, `.sum()`, or a `for` loop pulls values through the chain. In the example, each requested output asks the filter for the next even input, then squares that value. There is no separate vector of filtered values unless you explicitly collect one.\n\nThis laziness can save allocations and allow early stopping. Add `.take(2)` before collecting and only two matching results are needed. Conversely, if you want to reuse results repeatedly, collecting may be the right choice. Be attentive to item types: `.iter()` yields references, `.iter_mut()` yields mutable references, and `.into_iter()` consumes the collection. A chain that looks visually similar can therefore borrow, mutate, or move its source.\n\nFor practice, insert a temporary `inspect` adapter that prints each value passing a stage. Observe that nothing prints before the consumer runs. Then change the consumer from `collect` to `sum` and predict the answer. Finally, try to use the original collection after `.into_iter()` and after `.iter()`. `Iterator` syntax is most readable when the operations tell a clear story—selection, transformation, then consumption—and when ownership of the source is intentional.\n\nA lazy chain is useful only when a consumer eventually requests values. If you create an iterator and discard it, even a `map` closure with a print statement will never run. Use a loop for side effects when that intent is clearer.",
     "feedback": "map returns a lazy adapter; without a consumer it never runs.",
-    "practiceCode": "let names = list.iter().map(|n| n.to_uppercase());\nprintln!(\"done\");",
+    "practiceCode": "let list = [\"ada\", \"grace\"];\nlet names = list.iter().map(|n| n.to_uppercase());\nprintln!(\"done\");",
     "question": "What work has been done by that point?",
     "rule": "Adapters are lazy; a consumer is what makes the work happen.",
-    "success": "The `Vec` holds only the expected transformed values.",
+    "success": "You can explain why no name is uppercased until a consumer pulls from `names`.",
     "summary": "Iterators compose lazy transformations before consuming results.",
-    "task": "Transform a range with filter and map, then collect it."
+    "task": "Predict what has run by the time `done` prints."
   },
   "illustration": {
     "path": "media/iterators.png",

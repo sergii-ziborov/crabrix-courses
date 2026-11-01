@@ -14,7 +14,7 @@
     "visibleInput": "n=5 edges=(0,2),(1,2),(2,4)"
   },
   "concept": "Store only existing neighbors so traversal cost follows vertices plus edges.",
-  "contentDigest": "0cda1fe5afe7633b175df0fa74ec8623a36b3ec26d928d9f503f8e9bf7c64097",
+  "contentDigest": "37bd1228c1f23e9e259577c5c239d96ce902417b4ddb1c6e424277ecfa6c1aeb",
   "depth": {
     "connections": [
       {
@@ -60,7 +60,7 @@
     "feedback": "Edges (0,2),(1,2),(2,4) contribute 0,1,4 to node 2's list, then its report is sorted. A node with no incident edge has an empty neighbor list. Parallel edges would be separate entries if allowed.",
     "practiceCode": "fn csv<T: std::fmt::Display>(a: impl IntoIterator<Item = T>) -> String {\n    a.into_iter()\n        .map(|x| x.to_string())\n        .collect::<Vec<_>>()\n        .join(\",\")\n}\nfn neighbors(n: usize, edges: &[(usize, usize)], query: usize) -> Vec<usize> {\n    let mut graph = vec![Vec::new(); n];\n    for &(a, b) in edges {\n        graph[a].push(b);\n        graph[b].push(a);\n    }\n    graph[query].sort_unstable();\n    graph[query].clone()\n}\n\nfn main() {\n    let result = csv(neighbors(5, &[(0, 2), (1, 2), (2, 4)], 2));\n    println!(\"{result}\");\n}\n",
     "question": "Why add both directions for each edge in this adjacency-list exercise?",
-    "rule": "The input graph is undirected. State the input preconditions before applying this invariant.",
+    "rule": "Store only existing neighbors so traversal cost follows vertices plus edges. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(V+E) space bound without looking at the code.",
     "summary": "Store only existing neighbors so traversal cost follows vertices plus edges.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

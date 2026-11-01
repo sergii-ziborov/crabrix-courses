@@ -1,6 +1,6 @@
 {
   "concept": "Many crates, one lockfile",
-  "contentDigest": "4a511567f2992dd1888cc9731fe3ca362129ea90bea0c64569c032f4d9257798",
+  "contentDigest": "9915d16cb99808ef49dc3ceb9cc71d6580148d39f907af8551c146eba37502d2",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Box<T>"
       }
     ],
-    "correction": "Workspace members share one lockfile, so versions cannot diverge.",
-    "misconception": "“Nothing, they are independent”",
+    "correction": "Members share one lockfile, not one version: incompatible requirements still resolve to several versions, and `cargo tree` shows them.",
+    "misconception": "“A workspace guarantees one version of every dependency.”",
     "traceSteps": [
       {
-        "detail": "Separate source modules, public API, manifest data, dependency graph, and build evidence before changing any one of them.",
-        "title": "Map the project boundary"
+        "detail": "`[workspace]` lists `core` and `cli` as members, and `resolver = \"3\"` sets the dependency resolver they all use.",
+        "title": "Read the root"
       },
       {
-        "detail": "Describe how you would split a project into a library and a binary.",
-        "title": "Predict before checking"
+        "detail": "`cli/Cargo.toml` names `core` with a `path`. Being a member does not make one crate visible to another; this line does.",
+        "title": "Follow the path"
       },
       {
-        "detail": "The library holds the logic and the binary only wires it up.",
-        "title": "Compare with evidence"
+        "detail": "A workspace build writes one `Cargo.lock` and one `target/` at the root, not one per member.",
+        "title": "Find the shared files"
       }
     ],
-    "transferChallenge": "Move one responsibility across a module or package boundary without changing behaviour. Predict which imports, tests, or lock data must change. Keep the focus on many crates, one lockfile."
+    "transferChallenge": "Give `core` and `cli` different major versions of the same dependency. Predict how many entries `Cargo.lock` holds for it, then confirm with `cargo tree`."
   },
   "exerciseKind": "planned",
   "id": "workspaces",
@@ -46,12 +46,12 @@
     ],
     "correctAnswer": 1,
     "exampleCaption": "One root manifest, many members, one shared lockfile.",
-    "exampleCode": "# Cargo.toml at the workspace root\n[workspace]\nresolver = \"2\"\nmembers = [\"core\", \"cli\"]\n\n# cli/Cargo.toml\n[dependencies]\ncore = { path = \"../core\" }",
+    "exampleCode": "# Cargo.toml at the workspace root\n[workspace]\nresolver = \"3\"\nmembers = [\"core\", \"cli\"]\n\n# cli/Cargo.toml\n[dependencies]\ncore = { path = \"../core\" }",
     "explanation": "Members share a target directory and lockfile, while the resolver may still select multiple versions of a dependency when requirements are incompatible. Splitting a project into a library plus a thin binary is the usual first move, because it makes the library testable on its own.\n\nA Cargo workspace groups packages that are developed together. A root `Cargo.toml` lists members such as `core` and `cli`; the packages share a lockfile and build output directory, and workspace commands can operate across members. A common design puts reusable behavior in a library and keeps the binary thin: the CLI parses arguments, calls library functions, and prints a result. This makes the core easier to test and reuse.\n\nThe example's dependency path from `cli` to `core` is explicit in the CLI manifest. Being in the same workspace does not automatically make every crate visible to every other crate. Nor does it guarantee there is only one version of every external package: incompatible requirements can still resolve to multiple versions. The shared lockfile records the actual graph. Use `cargo tree` when you need to inspect it rather than assuming deduplication.\n\nCreate a workspace with two members, add a public function to the library, and call it from the CLI. Run `cargo test --workspace` to exercise all members. Then add a test that calls the library directly and compare it with a CLI-level test. The workspace boundary is a useful organizational choice when packages have separate purposes or release needs. Splitting every file into a crate would add manifest and versioning overhead without improving the design. Start with a clear library/binary split when that split reflects a real responsibility.\n\nA workspace is also a convenient boundary for coordinated checks: formatting, linting, and tests can cover all members together while each package keeps its own public API and dependencies.",
-    "feedback": "Shared resolution is the point: one version of each dependency across the workspace.",
-    "practiceCode": "[workspace]\nmembers = [\"core\", \"cli\"]",
+    "feedback": "The members resolve together into one `Cargo.lock`, and a shared `target` directory reuses build output. Incompatible requirements can still select two versions of a dependency.",
+    "practiceCode": "[workspace]\nresolver = \"3\"\nmembers = [\"core\", \"cli\"]",
     "question": "What do the members share?",
-    "rule": "Workspace members share one lockfile, so versions cannot diverge.",
+    "rule": "Workspace members share one lockfile, which records every resolved version; incompatible requirements can still select several.",
     "success": "The library holds the logic and the binary only wires it up.",
     "summary": "A workspace builds several crates against one lockfile.",
     "task": "Describe how you would split a project into a library and a binary."

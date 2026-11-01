@@ -1,5 +1,5 @@
 pub fn solve(input: &str) -> String {
-    // Return gcd of 252 and 105.
+    // Parse nonnegative a and b and return their greatest common divisor; gcd(a,0)=a and gcd(0,0)=0.
     // Parse the visible input into the structures your algorithm needs.
     // Whitespace surrounding the complete input is insignificant.
     let _ = input;

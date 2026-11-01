@@ -1,6 +1,6 @@
 {
   "concept": "Distinguish a pinned !Unpin pointee from an Unpin value and its movable pointer wrapper",
-  "contentDigest": "f96d62721b45811914d7d21a23dc93a683e95de5c52a64e9d0f82891c5f81fc6",
+  "contentDigest": "4c56b1edcf267b48131ef24c2872e00df826438a8b2b741e74861f9f573b08b5",
   "depth": {
     "connections": [
       {
@@ -15,7 +15,7 @@
       }
     ],
     "correction": "`Pin` constrains moves of a pointee that relies on pinning. `Unpin` types such as `String` opt out of that restriction; moving the pointer wrapper itself is a separate matter.",
-    "misconception": "“Pin makes String thread safe”",
+    "misconception": "“`Pin` freezes every value it wraps, so nothing can ever be moved out.”",
     "traceSteps": [
       {
         "title": "Identify the pointee",
@@ -52,7 +52,7 @@
     "practiceCode": "use std::pin::Pin;\nfn main() {\n    let mut text = String::from(\"crab\");\n    let pinned = Pin::new(&mut text);\n    let moved = std::mem::take(Pin::into_inner(pinned));\n    println!(\"{moved}\");\n}",
     "question": "Why is moving the String out through Pin safe in this example?",
     "rule": "`Pin` constrains moves of a pointee that relies on pinning. `Unpin` types such as `String` opt out of that restriction; moving the pointer wrapper itself is a separate matter.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "You can say why this safe move works for `String` and why it is unavailable for a `!Unpin` pointee.",
     "summary": "Promise that a value will not move in memory.",
     "task": "Run the safe String example, then explain why the same safe extraction API is unavailable for an address-sensitive !Unpin pointee. Do not use unsafe code to bypass its contract."
   },

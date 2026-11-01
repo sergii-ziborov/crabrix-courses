@@ -14,7 +14,7 @@
     "visibleInput": "[12,3,5,7,4,19,26,1,9]"
   },
   "concept": "Choose a guaranteed-good pivot from medians of small groups before selecting one side.",
-  "contentDigest": "bb3c658975e132a74e6a6ba9e4b100d0d463e50babee48fe28355ecdc385cca7",
+  "contentDigest": "2b4be003383e7da0032457a1d41edfa4d38a9a0fd223e34b10f28db1b9e6d1e1",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "Groups of up to five are sorted locally. Recursively select a median of those group medians, then partition around it. For [12,3,5,7,4,19,26,1,9], the fifth smallest is 7; no full global sort is needed for selection.",
     "practiceCode": "fn deterministic_select(a: &[i32], k: usize) -> i32 {\n    assert!(k < a.len());\n    if a.len() <= 5 {\n        let mut small = a.to_vec();\n        small.sort_unstable();\n        return small[k];\n    }\n    let medians: Vec<_> = a\n        .chunks(5)\n        .map(|group| {\n            let mut g = group.to_vec();\n            g.sort_unstable();\n            g[g.len() / 2]\n        })\n        .collect();\n    let pivot = deterministic_select(&medians, medians.len() / 2);\n    let smaller: Vec<_> = a.iter().copied().filter(|&x| x < pivot).collect();\n    let equal = a.iter().filter(|&&x| x == pivot).count();\n    if k < smaller.len() {\n        deterministic_select(&smaller, k)\n    } else if k < smaller.len() + equal {\n        pivot\n    } else {\n        let greater: Vec<_> = a.iter().copied().filter(|&x| x > pivot).collect();\n        deterministic_select(&greater, k - smaller.len() - equal)\n    }\n}\n\nfn main() {\n    let result = deterministic_select(&[12, 3, 5, 7, 4, 19, 26, 1, 9], 4).to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Why group values by five when choosing a deterministic selection pivot?",
-    "rule": "Median grouping guarantees a constant fraction can be discarded. State the input preconditions before applying this invariant.",
+    "rule": "Choose a guaranteed-good pivot from medians of small groups before selecting one side. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) worst-case time · O(n) or in-place variants bound without looking at the code.",
     "summary": "Choose a guaranteed-good pivot from medians of small groups before selecting one side.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

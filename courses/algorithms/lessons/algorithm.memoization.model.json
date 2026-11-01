@@ -14,7 +14,7 @@
     "visibleInput": "n=12"
   },
   "concept": "Cache a recursive state the first time it is solved so overlapping subproblems run once.",
-  "contentDigest": "d4e3a48623439545e12d9ab1ddd754ada900276e4bb74a712b1c9653a74d203e",
+  "contentDigest": "0d9e10f60b4cd3f47bb5fa48b61b9a0ce2ff3a2804a9ce89d51138c3b2f6a0b6",
   "depth": {
     "connections": [
       {
@@ -60,7 +60,7 @@
     "feedback": "Computing F(12) requests smaller Fibonacci values repeatedly. Once F(10) is stored, later paths reuse it instead of rebuilding its recursion tree. Base cases F(0)=0 and F(1)=1 lead to F(12)=144.",
     "practiceCode": "fn fibonacci(n: usize) -> u64 {\n    fn compute(n: usize, memo: &mut [Option<u64>]) -> u64 {\n        if let Some(answer) = memo[n] {\n            return answer;\n        }\n        let answer = if n < 2 {\n            n as u64\n        } else {\n            compute(n - 1, memo) + compute(n - 2, memo)\n        };\n        memo[n] = Some(answer);\n        answer\n    }\n    assert!(n <= 93);\n    compute(n, &mut vec![None; n + 1])\n}\n\nfn main() {\n    let result = fibonacci(12).to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Why store each computed Fibonacci subproblem in a memo table?",
-    "rule": "Repeated calls can reuse the same result. State the input preconditions before applying this invariant.",
+    "rule": "Cache a recursive state the first time it is solved so overlapping subproblems run once. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(n) memo and recursion depth bound without looking at the code.",
     "summary": "Cache a recursive state the first time it is solved so overlapping subproblems run once.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

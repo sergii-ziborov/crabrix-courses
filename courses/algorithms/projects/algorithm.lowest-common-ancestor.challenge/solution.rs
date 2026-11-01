@@ -1,5 +1,5 @@
 pub fn solve(input: &str) -> String {
-    // Return the lowest common ancestor of values 5 and 1.
+    // Parse a binary tree with unique values containing both 5 and 1; return their lowest common ancestor value.
     // Parse the visible input into the structures your algorithm needs.
     // Whitespace surrounding the complete input is insignificant.
     let _ = input;

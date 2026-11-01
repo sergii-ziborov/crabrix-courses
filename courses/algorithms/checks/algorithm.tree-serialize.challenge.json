@@ -12,7 +12,7 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Parse a compact level-order tree. Serialize preorder using comma separators and # for every missing child.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement tree-serialize\")\n}\n",
+    "source": "pub fn solve(input: &str) -> String {\n    // Given tree=[...], a compact level-order tree where null omits a node, serialize it in preorder using comma separators and # for every missing child. Given data=... instead, deserialize that preorder text and return the tree's inorder values.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement tree-serialize\")\n}\n",
     "verificationCases": [
       {
         "kind": "visible",
@@ -40,6 +40,16 @@
         "expectedAnswer": "1,2,#,#,3,#,#"
       },
       {
+        "kind": "adversarial",
+        "input": "data=1,2,#,#,3,#,#",
+        "expectedAnswer": "2,1,3"
+      },
+      {
+        "kind": "adversarial",
+        "input": "data=4,#,5,#,#",
+        "expectedAnswer": "4,5"
+      },
+      {
         "kind": "normalisation",
         "input": "  \ntree=[1,2,3,null,null,4,5]\n  ",
         "expectedAnswer": "1,2,#,#,3,4,#,#,5,#,#"
@@ -50,7 +60,7 @@
         "expectedAnswer": "1,2,#,#,3,#,#"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"tree=[1,2,3,null,null,4,5]\",\"1,2,#,#,3,4,#,#,5,#,#\"),\n        (\"tree=[1]\",\"1,#,#\"),\n        (\"tree=[1,2]\",\"1,2,#,#,#\"),\n        (\"tree=[4,null,5]\",\"4,#,5,#,#\"),\n        (\"tree=[1,2,3]\",\"1,2,#,#,3,#,#\"),\n        (\"  \\ntree=[1,2,3,null,null,4,5]\\n  \",\"1,2,#,#,3,4,#,#,5,#,#\"),\n        (\"\\ntree=[1,2,3]\\n\",\"1,2,#,#,3,#,#\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS tree-serialize\");\n}\n"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"tree=[1,2,3,null,null,4,5]\",\"1,2,#,#,3,4,#,#,5,#,#\"),\n        (\"tree=[1]\",\"1,#,#\"),\n        (\"tree=[1,2]\",\"1,2,#,#,#\"),\n        (\"tree=[4,null,5]\",\"4,#,5,#,#\"),\n        (\"tree=[1,2,3]\",\"1,2,#,#,3,#,#\"),\n        (\"data=1,2,#,#,3,#,#\",\"2,1,3\"),\n        (\"data=4,#,5,#,#\",\"4,5\"),\n        (\"  \\ntree=[1,2,3,null,null,4,5]\\n  \",\"1,2,#,#,3,4,#,#,5,#,#\"),\n        (\"\\ntree=[1,2,3]\\n\",\"1,2,#,#,3,#,#\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS tree-serialize\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {

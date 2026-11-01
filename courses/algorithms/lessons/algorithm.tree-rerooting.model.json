@@ -14,13 +14,13 @@
     "visibleInput": "n=4 edges=(0,1),(1,2),(1,3)"
   },
   "concept": "Compute child-to-parent contributions, then propagate the outside contribution while changing the root.",
-  "contentDigest": "c60ab0e82e63e0b735b8926429dcf153029878d392924f3170352f99c14e7e96",
+  "contentDigest": "9aa178f6f7c457f30510641a47ef27399384f4c58c5baf0585672fb15fa835d7",
   "depth": {
     "connections": [
       {
         "direction": "previous",
         "title": "Challenge: Tree Diameter",
-        "concept": "Return the diameter measured in edges."
+        "concept": "Parse the compact level-order binary tree, where null omits a node. Return the diameter measured in edges; the longest path need not pass through the root."
       },
       {
         "direction": "next",
@@ -65,7 +65,7 @@
     "feedback": "With edges 0-1,1-2,1-3, root 0 has distance sum 5. Moving into subtree 1 of size 3 changes the sum by 4-6=-2, giving 3. Moving from 1 to leaf 2 gives 5; the full output is [5,3,5,5].",
     "practiceCode": "fn csv<T: std::fmt::Display>(a: impl IntoIterator<Item = T>) -> String {\n    a.into_iter()\n        .map(|x| x.to_string())\n        .collect::<Vec<_>>()\n        .join(\",\")\n}\nfn distance_sums(graph: &[Vec<usize>]) -> Vec<usize> {\n    fn collect(v: usize, parent: usize, g: &[Vec<usize>], size: &mut [usize], down: &mut [usize]) {\n        size[v] = 1;\n        for &u in &g[v] {\n            if u != parent {\n                collect(u, v, g, size, down);\n                size[v] += size[u];\n                down[v] += down[u] + size[u];\n            }\n        }\n    }\n    fn reroot(v: usize, parent: usize, g: &[Vec<usize>], size: &[usize], answer: &mut [usize]) {\n        for &u in &g[v] {\n            if u != parent {\n                answer[u] = answer[v] + g.len() - 2 * size[u];\n                reroot(u, v, g, size, answer);\n            }\n        }\n    }\n    let n = graph.len();\n    if n == 0 {\n        return Vec::new();\n    }\n    let (mut size, mut answer) = (vec![0; n], vec![0; n]);\n    collect(0, n, graph, &mut size, &mut answer);\n    reroot(0, n, graph, &size, &mut answer);\n    answer\n}\n\nfn main() {\n    let result = csv(distance_sums(&[vec![1], vec![0, 2, 3], vec![1], vec![1]]));\n    println!(\"{result}\");\n}\n",
     "question": "Why does moving the root across an edge change the sum by n-2*subtree_size?",
-    "rule": "Distances decrease for the moved-into subtree and increase for all other nodes. State the input preconditions before applying this invariant.",
+    "rule": "Compute child-to-parent contributions, then propagate the outside contribution while changing the root. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(n) space bound without looking at the code.",
     "summary": "Compute child-to-parent contributions, then propagate the outside contribution while changing the root.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

@@ -1,6 +1,6 @@
 {
   "concept": "Relationships between borrows",
-  "contentDigest": "e353380a54857aca5bb5f16563e583f1ae98288f79af5c820a1a79dbd0b7ab46",
+  "contentDigest": "65dad9de2510cc1c3e4f1de5b362d3a1f1a81a406086f2a6004234dc9779ca04",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Closures"
       }
     ],
-    "correction": "A struct holding a reference is bounded by that reference's lifetime.",
-    "misconception": "“A struct field can never hold a `&str`”",
+    "correction": "It works the other way round: `Excerpt<'a>` cannot outlive the text it borrows, and the annotation extends nothing. If the struct must outlive its source, store a `String`.",
+    "misconception": "“`'a` keeps the borrowed text alive for as long as the struct needs it.”",
     "traceSteps": [
       {
-        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
-        "title": "Map ownership first"
+        "detail": "`Excerpt<'a>` owns no text. Its `part` field borrows a `&'a str` from elsewhere, and `part(&self)` hands back that view.",
+        "title": "Find the borrow"
       },
       {
-        "detail": "Store a borrowed slice in a struct and explain the annotation.",
+        "detail": "Build `text` as a `String` in an inner block, store `Excerpt { part: &text }` in a variable declared outside it, and print it after the block. Predict whether that compiles.",
         "title": "Predict before checking"
       },
       {
-        "detail": "The struct cannot outlive the data it points into.",
+        "detail": "It fails with E0597: `text` does not live long enough. Printing inside the block compiles, and so does changing the field to an owned `String`.",
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &`mut` T. Before compiling, list which bindings remain usable after each call. Keep the focus on relationships between borrows."
+    "transferChallenge": "Write `struct Holder<'a> { value: &'a str }` and add a `first_word(&self) -> &str` method. Then replace `&'a str` with `String` and note which annotations and call sites change."
   },
   "exerciseKind": "planned",
   "id": "lifetimes",
@@ -48,17 +48,17 @@
     "exampleCaption": "The struct is tied to the text it borrows.",
     "exampleCode": "struct Excerpt<'a> {\n    part: &'a str,\n}\n\nimpl<'a> Excerpt<'a> {\n    fn part(&self) -> &str {\n        self.part\n    }\n}",
     "explanation": "Elision handles the common shapes, so you write annotations only when the relationship is genuinely ambiguous — typically when several references go in and one comes out. A struct holding a reference needs one too, because the struct cannot outlive what it borrows.\n\nA reference field makes a struct dependent on data owned elsewhere. `Excerpt<'a>` says its `part` cannot be used after the borrowed text becomes invalid. The annotation documents and checks a relationship; it does not allocate, copy, or lengthen the source string. If an `Excerpt` must outlive the source, the model should own a `String` instead of holding `&str`.\n\nIn the example, `part(&self)` returns a view of the existing borrowed text. The method receiver is borrowed, so the caller keeps the `Excerpt`; the result remains tied to the validity of both the struct and the underlying source. Try constructing an excerpt from a string created inside an inner block and moving the excerpt outside. The compiler rejects that use because the owner ends first. Move the use inside the block, or change the struct to own its data. Neither fix requires an invented longer lifetime label.\n\nLifetime elision saves annotations in signatures with an obvious input-output relationship. Explicit names become useful when a returned reference could come from several inputs, or when a type stores references. A name such as `'a` means the linked borrows must satisfy the same validity relationship; it does not mean they were created at the same time or live for exactly the same duration. Draw the scope of each owner, then the interval where the reference is used. The intersection of those intervals is the practical boundary to reason about.",
-    "feedback": "Write struct Holder<'a> { value: &'a str } so the relationship is stated.",
+    "feedback": "Write `struct Holder<'a> { value: &'a str }` so the relationship is stated.",
     "practiceCode": "struct Holder {\n    value: &str,\n}",
     "question": "Why is that struct definition rejected?",
     "rule": "A struct holding a reference is bounded by that reference's lifetime.",
-    "success": "The struct cannot outlive the data it points into.",
+    "success": "You can write the annotated `Holder` and explain why it cannot outlive the data it points into.",
     "summary": "Lifetime annotations connect the borrows in a signature.",
     "task": "Store a borrowed slice in a struct and explain the annotation."
   },
   "illustration": {
     "path": "media/lifetimes.png",
-    "alt": "Two input borrow intervals overlap; a returned borrow is valid only within their shared interval.",
-    "caption": "The returned reference cannot outlive either possible source."
+    "alt": "Diagram for Lifetimes: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "The struct is tied to the text it borrows."
   }
 }

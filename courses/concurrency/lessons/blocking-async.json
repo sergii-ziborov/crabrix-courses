@@ -1,6 +1,6 @@
 {
   "concept": "Keep executor threads available to poll other futures",
-  "contentDigest": "89778af43c2fcf188f29159ebb80c9d284c17048dc34961cfed8762da2159d01",
+  "contentDigest": "73a0ed14110b40215728c26249c512a761496fe7e0fd0b9a7c7c666be0dd992a",
   "depth": {
     "connections": [
       {
@@ -9,23 +9,23 @@
         "title": "Cancellation Safety"
       }
     ],
-    "correction": "A blocking call occupies an executor worker without yielding, so unrelated tasks can stall.",
-    "misconception": "“It moves the future”",
+    "correction": "A blocking call occupies an executor worker without yielding, so unrelated tasks can stall. Marking the function `async` does not change that.",
+    "misconception": "“Putting a blocking call inside an `async fn` makes it non-blocking.”",
     "traceSteps": [
       {
-        "detail": "Name each task or thread, the state it can reach, and every point where work can wait, race, block, or be cancelled.",
-        "title": "Draw the event timeline"
+        "detail": "`handler()` returns a future: its body starts only when an executor polls it, and it runs on that executor's worker.",
+        "title": "Enter the handler"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "detail": "While the timer runs, `async_timer().await` makes `handler`'s poll return `Poll::Pending`, so the worker goes back to polling other tasks.",
+        "title": "Reach the await"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "detail": "The commented-out `std::thread::sleep` would hold the worker for the whole delay, with no `.await` where the task could yield.",
+        "title": "Compare the comment"
       }
     ],
-    "transferChallenge": "Add a second worker or cancellation point. Draw two possible event orders and state the invariant that both orders must preserve. Keep the focus on keep executor threads available to poll other futures."
+    "transferChallenge": "Put a CPU-heavy loop in `handler` where the comment is. Predict whether a second task's timer stalls as it did with `sleep`, then move the loop to the runtime's blocking pool and compare."
   },
   "exerciseKind": "planned",
   "id": "blocking-async",
@@ -35,25 +35,25 @@
   "title": "Blocking in Async Code",
   "writing": {
     "answers": [
-      "It stalls a worker",
+      "It stalls an executor worker",
       "It moves the future",
       "It poisons a lock"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCaption": "`.await` on a timer gives the thread back to the executor; `std::thread::sleep` would not.",
     "exampleCode": "async fn handler() {\n    // Do not sleep the executor thread:\n    // std::thread::sleep(...);\n    async_timer().await;\n}",
     "explanation": "A blocking call occupies an executor worker without yielding, so unrelated tasks can stall. Move CPU-heavy or blocking work to a dedicated pool and `await` its result.\n\nAn executor worker can poll many `async` tasks because each task yields while waiting for nonblocking I/O. A synchronous `sleep`, filesystem call, expensive compression loop, or blocking foreign-library call can occupy that worker instead. Other ready tasks then wait even though they could run. Putting `async` on a function signature does not change a blocking call inside it into cooperative work.\n\nUse the runtime's blocking pool or a dedicated worker thread for truly blocking operations, and pass owned input into it. The offload has overhead, so a tiny calculation may be cheaper to perform directly; measure the latency of other tasks under realistic load. CPU-heavy jobs can saturate even a blocking pool, so consider a bounded queue or a separate compute service when throughput matters. Think about shutdown too: a blocking call may not stop simply because its `async` caller was cancelled.\n\nCreate one task that repeatedly awaits a short timer and logs the delay. Alongside it, run a second task with a long synchronous sleep. Observe the timer stalls when both compete for an executor worker, then move the blocking operation to the runtime's blocking facility and compare. Change the sleep to a CPU loop and watch the same scheduling issue. Keep track of where the result and error travel back to the `async` caller. The goal is predictable responsiveness, not merely making code compile inside an `async` block.",
-    "feedback": "Correct: It stalls a worker.",
-    "practiceCode": "async fn handler() {\n    // Do not sleep the executor thread:\n    // std::thread::sleep(...);\n    async_timer().await;\n}",
+    "feedback": "There is no `.await` in that wait, so the task cannot yield. The worker is held for the full second, and other ready tasks on it wait too.",
+    "practiceCode": "use std::time::Duration;\n\nasync fn handler() {\n    // Holds this executor thread for a full second.\n    std::thread::sleep(Duration::from_secs(1));\n}",
     "question": "Why is a blocking sleep harmful here?",
     "rule": "A blocking call occupies an executor worker without yielding, so unrelated tasks can stall.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "The second task keeps its schedule, and you can say why `sleep` inside an `async fn` delayed it.",
     "summary": "Keep executor threads available to poll other futures.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Rewrite `handler` so the wait yields, using your runtime's async timer. Then run it beside a second task and compare how late that task's timer fires."
   },
   "illustration": {
     "path": "media/blocking-async.png",
     "alt": "Diagram for Blocking in Async Code: a Rust code example flows to the lesson rule and the key observation.",
-    "caption": "The example makes the contract visible in code."
+    "caption": "`.await` on a timer gives the thread back to the executor; `std::thread::sleep` would not."
   }
 }

@@ -14,13 +14,13 @@
     "visibleInput": "weights=[5,9,12,13,16,45]"
   },
   "concept": "Repeatedly merge the two lightest items; the accumulated merge cost is optimal.",
-  "contentDigest": "152afe5082ddba02a4079660fc87569e4c24c399d4e77088393e89b8be7562ac",
+  "contentDigest": "c48fdf5aba1f55e404b6d16b617bff85d74292e747224a25cdb135f57a842732",
   "depth": {
     "connections": [
       {
         "direction": "previous",
         "title": "Challenge: Meeting Rooms Heap",
-        "concept": "Return the minimum rooms required."
+        "concept": "A room freed at time t can host a meeting starting at t. Return the minimum rooms required."
       },
       {
         "direction": "next",
@@ -65,7 +65,7 @@
     "feedback": "Weights 5 and 9 merge to 14, then 12 and 13 merge to 25, then 14 and 16 merge to 30. Continuing with the two minima yields total merge cost 224. A one-item input needs no merge and costs zero.",
     "practiceCode": "fn merge_cost(weights: &[i64]) -> i64 {\n    let mut heap: std::collections::BinaryHeap<_> =\n        weights.iter().map(|&x| std::cmp::Reverse(x)).collect();\n    let mut cost = 0;\n    while heap.len() > 1 {\n        let merged = heap.pop().unwrap().0 + heap.pop().unwrap().0;\n        cost += merged;\n        heap.push(std::cmp::Reverse(merged));\n    }\n    cost\n}\n\nfn main() {\n    let result = merge_cost(&[5, 9, 12, 13, 16, 45]).to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Why merge the two smallest weights at each Huffman step?",
-    "rule": "It minimizes the additional weighted merge cost. State the input preconditions before applying this invariant.",
+    "rule": "Repeatedly merge the two lightest items; the accumulated merge cost is optimal. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n log n) time · O(n) space bound without looking at the code.",
     "summary": "Repeatedly merge the two lightest items; the accumulated merge cost is optimal.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

@@ -1,6 +1,6 @@
 {
   "concept": "Why Rust seeds its hasher",
-  "contentDigest": "a444fe4864a9a117f3a87c49f1d2b6f9fa5de524a0339b282def3b0e912e65fc",
+  "contentDigest": "add2780662adfb20b7830d9f45bec841e492d591874ef5cea037a0fba6e23bb0",
   "depth": {
     "connections": [
       {
@@ -14,7 +14,7 @@
         "title": "Choosing a Test"
       }
     ],
-    "correction": "Consider the specific hasher, threat model and quotas. Default hashing policy is not a permanent promise of one named algorithm.",
+    "correction": "A faster hash only makes each hash cheaper. Lookup cost still depends on collisions, and a predictable hasher can let an attacker create them.",
     "misconception": "Choosing a faster hasher guarantees constant-time lookup for every input.",
     "traceSteps": [
       {
@@ -23,7 +23,7 @@
       },
       {
         "title": "Trace the concrete example",
-        "detail": "The default HashMap builder avoids committing this lesson to one permanent hashing algorithm."
+        "detail": "`entry` counts repeated keys. The seeded default hasher’s algorithm is not an API promise."
       },
       {
         "title": "Test the changed constraint",
@@ -45,7 +45,7 @@
       "Choosing a faster hasher guarantees constant-time lookup for every input."
     ],
     "correctAnswer": 1,
-    "exampleCaption": "The default HashMap builder avoids committing this lesson to one permanent hashing algorithm.",
+    "exampleCaption": "`entry` counts repeated keys. The seeded default hasher’s algorithm is not an API promise.",
     "exampleCode": "use std::collections::HashMap;\nfn main() {\n    let mut counts = HashMap::new();\n    for key in [\"accept\", \"accept\", \"content-type\"] {\n        *counts.entry(key).or_insert(0) += 1;\n    }\n    assert_eq!(counts.get(\"accept\"), Some(&2));\n}",
     "explanation": "Lookup cost depends on collisions, and collisions depend on the hash function. Rust's standard map uses randomized seeding for collision resistance, while the exact hash algorithm is not a stable public guarantee. Swapping in a faster non-cryptographic hasher is correct for internal keys and dangerous for user input.\n\nA hash map maps keys to buckets using a hash function and resolves collisions according to its implementation. Expected lookup can be close to constant time under suitable distribution and load, but a worst-case collision pattern can degrade performance. In Rust, the standard map uses randomized seeding to make attacker-controlled collision selection harder; do not rely on one fixed hash algorithm as a permanent API guarantee. Choosing a custom faster hasher may help trusted internal keys but can weaken resistance to adversarial inputs.\n\nThe choice of key type matters too. A large string costs time to hash and compare. A small integer key is cheaper, but it may not represent the domain meaning as clearly. Hash maps do not promise a stable iteration order; do not serialize their iteration directly when output order matters. Capacity and growth affect allocation and memory overhead. A B-tree can be preferable when ordered traversal or range queries are central.\n\nFor an interview, separate algorithmic expectations from a security claim. State the key distribution, who controls keys, the required lookup rate, and whether order matters. Then explain how you would benchmark a realistic workload and test collision-sensitive behavior. The strong answer does not promise O(1) in every case or say the standard hasher is universally fastest; it connects a hasher choice to the input threat model.\n\nAlso discuss deletion: removing entries can leave internal capacity allocated, so a map that once held a million keys may retain memory after it becomes small. Rebuilding or shrinking can help when memory pressure matters. The API and version determine the exact behavior; measure the live process rather than assuming removal releases every byte.\n\nInterview follow-up: How do entry limits and input-size limits complement collision resistance? Compare trusted integer IDs with public untrusted strings.",
     "feedback": "Consider the specific hasher, threat model and quotas. Default hashing policy is not a permanent promise of one named algorithm.",
@@ -58,7 +58,7 @@
   },
   "illustration": {
     "path": "media/q-hashmap.png",
-    "alt": "Diagram for Hashing and Collisions: the code flows to its exact contract and observed boundary.",
-    "caption": "The default HashMap builder avoids committing this lesson to one permanent hashing algorithm."
+    "alt": "Lesson map: HashMap entry calls counting repeated header names, above the rule that hash choice is a security decision for attacker-controlled keys.",
+    "caption": "entry counts repeated keys. The seeded default hasher’s algorithm is not an API promise."
   }
 }

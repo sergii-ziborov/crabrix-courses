@@ -14,13 +14,13 @@
     "visibleInput": "3 + 4 * 2"
   },
   "concept": "Use an operator stack to emit operations only when precedence and associativity allow.",
-  "contentDigest": "7b747cd93bc17739cf7399452d1a4d3a2c97a40c26941a5364e9ad31b6e54cb6",
+  "contentDigest": "4959f8f2470774294be87430ea05dfe6944e5c59bda49990d056580beaa04276",
   "depth": {
     "connections": [
       {
         "direction": "previous",
         "title": "Challenge: Circular Monotonic Stack",
-        "concept": "Return each value's next greater value in circular order."
+        "concept": "Return each value's next greater value in circular order, or -1 when none exists."
       },
       {
         "direction": "next",
@@ -65,7 +65,7 @@
     "feedback": "For 3 + 4 * 2, the operator stack holds + then *; final popping emits 3 4 2 * +. For 8 / 2 + 3, / is emitted before +. An opening parenthesis is a barrier until its matching close.",
     "practiceCode": "fn to_postfix(expression: &str) -> String {\n    fn precedence(op: &str) -> u8 {\n        match op {\n            \"+\" | \"-\" => 1,\n            \"*\" | \"/\" => 2,\n            _ => 0,\n        }\n    }\n    let (mut out, mut stack) = (Vec::new(), Vec::new());\n    for token in expression.split_whitespace() {\n        if token.parse::<i32>().is_ok() {\n            out.push(token);\n        } else if token == \"(\" {\n            stack.push(token);\n        } else if token == \")\" {\n            while stack.last() != Some(&\"(\") {\n                out.push(stack.pop().expect(\"matching parenthesis\"));\n            }\n            stack.pop();\n        } else {\n            while stack\n                .last()\n                .is_some_and(|&op| op != \"(\" && precedence(op) >= precedence(token))\n            {\n                out.push(stack.pop().unwrap());\n            }\n            stack.push(token);\n        }\n    }\n    out.extend(stack.into_iter().rev());\n    out.join(\" \")\n}\n\nfn main() {\n    let result = to_postfix(\"3 + 4 * 2\").to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Why pop an equal-precedence operator before pushing another left-associative operator?",
-    "rule": "Equal-precedence operations must preserve left-to-right grouping. State the input preconditions before applying this invariant.",
+    "rule": "Use an operator stack to emit operations only when precedence and associativity allow. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(n) space bound without looking at the code.",
     "summary": "Use an operator stack to emit operations only when precedence and associativity allow.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

@@ -14,13 +14,13 @@
     "visibleInput": "[1,2,3,4]"
   },
   "concept": "Combine the product before and after each index without division.",
-  "contentDigest": "4b58d413b3fe84bfcc45c619abc8b7e180e857055eefe6d960f7ea1809270d7a",
+  "contentDigest": "3a6584a3c28148eb8a1bea033c536d9793fd5e614342c584ab866ea0502fa49b",
   "depth": {
     "connections": [
       {
         "direction": "previous",
         "title": "Challenge: Difference Array",
-        "concept": "Apply +3 to indexes 1 through 3 and +2 to 2 through 4; return the final array."
+        "concept": "Parse n and inclusive (l,r,delta) updates on a zero-filled array of length n; delta may be negative. Apply every update and return the final array."
       },
       {
         "direction": "next",
@@ -65,7 +65,7 @@
     "feedback": "The left pass on [1,2,3,4] writes [1,1,2,6]. Multiplying the reverse suffix states gives [24,12,8,6]. For a zero, no division is attempted; arithmetic still requires a type large enough for the products.",
     "practiceCode": "fn csv<T: std::fmt::Display>(a: impl IntoIterator<Item = T>) -> String {\n    a.into_iter()\n        .map(|x| x.to_string())\n        .collect::<Vec<_>>()\n        .join(\",\")\n}\nfn products_except_self(values: &[i64]) -> Vec<i64> {\n    let mut result = vec![1; values.len()];\n    let mut product = 1;\n    for i in 0..values.len() {\n        result[i] = product;\n        product *= values[i];\n    }\n    product = 1;\n    for i in (0..values.len()).rev() {\n        result[i] *= product;\n        product *= values[i];\n    }\n    result\n}\n\nfn main() {\n    let result = csv(products_except_self(&[1, 2, 3, 4]));\n    println!(\"{result}\");\n}\n",
     "question": "Why use prefix and suffix products instead of dividing the total?",
-    "rule": "The method remains valid when an input contains zero. State the input preconditions before applying this invariant.",
+    "rule": "Combine the product before and after each index without division. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(1) output-excluded space bound without looking at the code.",
     "summary": "Combine the product before and after each index without division.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

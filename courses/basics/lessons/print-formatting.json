@@ -1,6 +1,6 @@
 {
   "concept": "Format strings and placeholders",
-  "contentDigest": "f402a578f134e6c78236b375393a76e6712cda064d7c61dd22456ce0b19b5171",
+  "contentDigest": "e7495e4338dbdca2712ef784730aaebd5d460340c8f8018690dfe221a7205557",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Numbers"
       }
     ],
-    "correction": "Every formatting placeholder must have a value known to `println!`.",
+    "correction": "Nothing waits for stdout. `println!` checks its format string while it expands during compilation, so a placeholder with no value stops the build and the program never runs.",
     "misconception": "“Only after the user sees stdout”",
     "traceSteps": [
       {
-        "detail": "Name each value's type and starting value, then mark the expression that produces the lesson's result.",
-        "title": "Inventory the values"
+        "detail": "`{name}` reads `name`, which holds `\"Ferris\"`. `{builds}` and `{builds:>3}` both read `builds`, which holds `4`.",
+        "title": "Match placeholders to bindings"
       },
       {
-        "detail": "Print a name and a build count, then align the number to the right.",
-        "title": "Predict before checking"
+        "detail": "Write both lines before running: `Ferris ran 4 builds`, then two spaces followed by `4`, because `>3` right-aligns the value in a field three characters wide.",
+        "title": "Predict the exact lines"
       },
       {
-        "detail": "stdout contains both values and the compiler reports no missing argument.",
+        "detail": "Run it and compare stdout character by character, including the two leading spaces. Confirm rustc reported no missing argument.",
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change one value, type, or boundary in the sample. Write the exact stdout or diagnostic you expect before asking rustc. Keep the focus on format strings and placeholders."
+    "transferChallenge": "Set `builds` to `1234` and predict the line `{builds:>3}` prints. Then replace `{name}` with `{}` without passing an argument and write the diagnostic you expect before asking rustc."
   },
   "exerciseKind": "planned",
   "id": "print-formatting",
@@ -47,14 +47,14 @@
     "correctAnswer": 1,
     "exampleCaption": "Names can be captured directly inside a checked format string.",
     "exampleCode": "let name = \"Ferris\";\nlet builds = 4;\nprintln!(\"{name} ran {builds} builds\");\nprintln!(\"{builds:>3}\");",
-    "explanation": "`println!` takes a format string and turns values into a line on stdout. In the example, `{name}` and `{builds}` capture bindings with those names. The macro checks the placeholders while compiling, so a misspelled capture or missing positional argument becomes a diagnostic before the program runs. This is safer than assembling a message with a chain of ad hoc string additions, especially when the output becomes a log line or a table someone else must read.\n\nFormatting controls presentation without changing the stored value. In `{builds:>3}`, the colon introduces a format specification: `>` right-aligns the value in a field three characters wide. With `builds = 4`, that line begins with two spaces and then 4. Predict the whitespace rather than relying on how a proportional font looks. Try replacing a named capture with `{}` and pass the value explicitly; then remove the argument and observe how rustc identifies the mismatch. Use formatting to communicate, but keep business decisions outside the format string so the data and its display remain easy to reason about.\n\nA placeholder also asks the value to support the requested formatting trait. Ordinary `{}` output uses `Display`, while `{:?}` is a `Debug` view often useful during inspection. If a custom type has no suitable implementation, rustc reports that requirement rather than inventing a representation. The width in `:>3` is a minimum, not a maximum: a longer number is not truncated. Use that rule to predict both a one-digit and a four-digit count before running.\n\nA format string is a template. Literal characters appear in output exactly as written, while each placeholder is replaced with a formatted value. `{}` consumes a positional argument; `{name}` can capture a named local binding. The compiler checks that placeholders and supplied arguments agree. A second `{}` without a second value is a compile-time mistake, not a blank that Rust fills automatically.\n\nFormatting also changes how a value is represented. `{value}` uses `Display`, which aims at a reader-friendly form; `{value:?}` uses `Debug`, which is often useful while investigating program state. `Some` types implement one but not the other. `println!` appends a newline after formatting; `print!` does not. An escaped brace is written `{{` or `}}` when you want a literal brace in the output. Spaces and punctuation inside the quotes are ordinary data, so write down the expected line character by character before running.\n\nBuild a tiny receipt line from a label and a number. First use positional placeholders, then use captured names. Add a literal pair of braces and compare the result. Next deliberately remove one argument and identify the compiler message before repairing it. For an unexpected output, distinguish three questions: did it compile, did the program run, and did the format string contain exactly the characters you intended? This habit prevents a surprising amount of debugging by guesswork.",
+    "explanation": "`println!` takes a format string and turns values into a line on stdout. In the example, `{name}` and `{builds}` capture bindings with those names. The macro checks the placeholders while compiling, so a misspelled capture or missing positional argument becomes a diagnostic before the program runs. This is safer than assembling a message with a chain of ad hoc string additions, especially when the output becomes a log line or a table someone else must read.\n\nFormatting controls presentation without changing the stored value. In `{builds:>3}`, the colon introduces a format specification: `>` right-aligns the value in a field three characters wide. With `builds = 4`, that line begins with two spaces and then `4`. Predict the whitespace rather than relying on how a proportional font looks. Try replacing a named capture with `{}` and pass the value explicitly; then remove the argument and observe how rustc identifies the mismatch. Use formatting to communicate, but keep business decisions outside the format string so the data and its display remain easy to reason about.\n\nA placeholder also asks the value to support the requested formatting trait. Ordinary `{}` output uses `Display`, while `{:?}` is a `Debug` view often useful during inspection. If a custom type has no suitable implementation, rustc reports that requirement rather than inventing a representation. The width in `:>3` is a minimum, not a maximum: a longer number is not truncated. Use that rule to predict both a one-digit and a four-digit count before running.\n\nA format string is a template. Literal characters appear in output exactly as written, while each placeholder is replaced with a formatted value. `{}` consumes a positional argument; `{name}` can capture a named local binding. The compiler checks that placeholders and supplied arguments agree. A second `{}` without a second value is a compile-time mistake, not a blank that Rust fills automatically.\n\nFormatting also changes how a value is represented. `{value}` uses `Display`, which aims at a reader-friendly form; `{value:?}` uses `Debug`, which is often useful while investigating program state. Some types implement one but not the other. `println!` appends a newline after formatting; `print!` does not. An escaped brace is written `{{` or `}}` when you want a literal brace in the output. Spaces and punctuation inside the quotes are ordinary data, so write down the expected line character by character before running.\n\nBuild a tiny receipt line from a label and a number. First use positional placeholders, then use captured names. Add a literal pair of braces and compare the result. Next deliberately remove one argument and identify the compiler message before repairing it. For an unexpected output, distinguish three questions: did it compile, did the program run, and did the format string contain exactly the characters you intended? This habit prevents a surprising amount of debugging by guesswork.",
     "feedback": "`println!` is a macro, so malformed placeholders become compiler errors.",
     "practiceCode": "let language = \"Rust\";\nprintln!(\"Learning {language}\");",
     "question": "When is the format string checked?",
     "rule": "Every formatting placeholder must have a value known to `println!`.",
     "success": "stdout contains the expected words and alignment; the malformed positional call fails at compile time. You can explain which placeholder consumed each value.",
     "summary": "A format string is a checked template: each placeholder has a value, and the finished line follows the template exactly, including spaces and alignment.",
-    "task": "Print a name and build count on one line, then right-align the count to width three on the next. Record the exact spaces you expect. Switch one capture to {} and deliberately omit its argument once."
+    "task": "Print a name and build count on one line, then right-align the count to width three on the next. Record the exact spaces you expect. Switch one capture to `{}` and deliberately omit its argument once."
   },
   "illustration": {
     "path": "media/print-formatting.png",

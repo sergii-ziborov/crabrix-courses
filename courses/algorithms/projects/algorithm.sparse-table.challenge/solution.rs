@@ -1,5 +1,5 @@
 pub fn solve(input: &str) -> String {
-    // Return minimums for ranges [0,3], [2,5], and [4,6].
+    // Return minima for inclusive ranges [0,3], [2,5], [4,6], in that order; input contains at least seven integers.
     // Parse the visible input into the structures your algorithm needs.
     // Whitespace surrounding the complete input is insignificant.
     let _ = input;

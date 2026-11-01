@@ -1,6 +1,6 @@
 {
   "concept": "Making a type behave like a reference",
-  "contentDigest": "e1ffc0f1398f1dac12c5a95168237280953579cd0c3e3651fa84c987837cf980",
+  "contentDigest": "75e4efb845929bdaf19106f04143b39735a98b224de237b541faa8ad24c172bd",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Reference Cycles"
       }
     ],
-    "correction": "Deref coercion applies repeatedly until the types line up.",
-    "misconception": "“Only when you call drop() on it explicitly”",
+    "correction": "`Drop` runs automatically when the owner leaves scope. `std::mem::drop` only ends that scope sooner.",
+    "misconception": "“Cleanup runs only if you call `drop` on a value yourself.”",
     "traceSteps": [
       {
-        "detail": "Separate source modules, public API, manifest data, dependency graph, and build evidence before changing any one of them.",
-        "title": "Map the project boundary"
+        "detail": "`Deref` for `MyBox<T>` sets `Target = T`, and `deref` returns `&self.0`, a reference to the wrapped value.",
+        "title": "Read the impl"
       },
       {
-        "detail": "Implement Deref for a wrapper and pass it where the inner type is expected.",
-        "title": "Predict before checking"
+        "detail": "`greet(&boxed)` passes `&MyBox<String>`. The compiler applies `MyBox`'s `deref` to get `&String`, then `String`'s to get `&str`.",
+        "title": "Follow the coercion"
       },
       {
-        "detail": "The call compiles without an explicit conversion.",
-        "title": "Compare with evidence"
+        "detail": "No conversion appears at the call site, and the function prints `hello ada`. Coercion stops as soon as the types line up.",
+        "title": "See the call"
       }
     ],
-    "transferChallenge": "Move one responsibility across a module or package boundary without changing behaviour. Predict which imports, tests, or lock data must change. Keep the focus on making a type behave like a reference."
+    "transferChallenge": "Add a `Drop` impl to `MyBox<T>` that prints a line, then create a second `MyBox` in an inner block. Predict the order of `hello` and each drop line before running it."
   },
   "exerciseKind": "planned",
   "id": "deref-drop",
@@ -49,7 +49,7 @@
     "exampleCode": "use std::ops::Deref;\n\nstruct MyBox<T>(T);\n\nimpl<T> Deref for MyBox<T> {\n    type Target = T;\n    fn deref(&self) -> &T { &self.0 }\n}\n\nfn greet(name: &str) { println!(\"hello {name}\"); }\n\nlet boxed = MyBox(String::from(\"ada\"));\ngreet(&boxed); // &MyBox<String> -> &String -> &str",
     "explanation": "Implementing Deref lets the compiler insert conversions automatically, which is why `&String` works where `&str` is expected. Drop lets a type run code when it goes out of scope, and the two together are how smart pointers feel built in — a `Box` behaves like the value it holds and cleans up on its own.\n\n`Deref` tells Rust how a pointer-like wrapper exposes a reference to its target. In the example, `MyBox<T>` can return `&T` from its inner field, so code can read the wrapped value through familiar syntax. Deref coercion can adapt `&String` to `&str` through the type's implementations. This convenience should be predictable: implementing `Deref` for a type that is not really pointer-like can make method resolution and ownership harder to understand.\n\n`Drop` describes cleanup when an owner leaves scope. A wrapper around a file or other resource can release it in `drop`, and the caller does not need to remember an explicit cleanup line on every path. You cannot normally call a value's `drop` method directly; `std::mem::drop(value)` consumes it and triggers cleanup early. A moved wrapper is dropped by its new owner, not again at the old binding.\n\nBuild a small wrapper, implement `Deref`, and call a method from the inner type through it. Then add a `Drop` implementation that logs when cleanup happens. Place one wrapper in an inner block and predict the log order. Keep the wrapper's behavior unsurprising: `Deref` for transparent access, `Drop` for resource cleanup. If the wrapper needs complex policy or fallible access, explicit methods often communicate more clearly than pretending it is the target value.\n\nRemember that `Drop::drop` receives `&mut self`, so it can inspect and release fields but cannot move arbitrary fields out as if the object were still complete. The compiler still drops fields after the method returns. Avoid panicking in destructors, especially during unwinding, and keep cleanup as reliable as possible.\n\nTest the exact point where each wrapper leaves scope.",
     "feedback": "Drop runs at the end of the value's scope; `std::mem::drop` just ends it sooner.",
-    "practiceCode": "impl Drop for Guard {\n    fn drop(&mut self) { println!(\"released\"); }\n}",
+    "practiceCode": "struct Guard;\n\nimpl Drop for Guard {\n    fn drop(&mut self) { println!(\"released\"); }\n}\n\nfn main() {\n    let _guard = Guard;\n    println!(\"working\");\n}",
     "question": "When does that Drop message print?",
     "rule": "Deref coercion applies repeatedly until the types line up.",
     "success": "The call compiles without an explicit conversion.",

@@ -12,7 +12,7 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return word-ladder length changing one letter at a time.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement bidirectional-bfs\")\n}\n",
+    "source": "pub fn solve(input: &str) -> String {\n    // Return the number of words in the shortest ladder from start to goal, counting both ends and changing one letter at a time. Every word after start must be in the list, including goal. Return 0 when goal is absent from the list or no ladder exists.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement bidirectional-bfs\")\n}\n",
     "verificationCases": [
       {
         "kind": "visible",
@@ -40,6 +40,16 @@
         "expectedAnswer": "4"
       },
       {
+        "kind": "adversarial",
+        "input": "hit -> cog via [hot,dot,dog]",
+        "expectedAnswer": "0"
+      },
+      {
+        "kind": "adversarial",
+        "input": "hit -> cog via [hot,dot,lot,dog]",
+        "expectedAnswer": "0"
+      },
+      {
         "kind": "normalisation",
         "input": "  \nhit -> cog via [hot,dot,dog,lot,log,cog]\n  ",
         "expectedAnswer": "5"
@@ -50,7 +60,7 @@
         "expectedAnswer": "4"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"hit -> cog via [hot,dot,dog,lot,log,cog]\",\"5\"),\n        (\"hit -> hot via [hot]\",\"2\"),\n        (\"cat -> dog via [cot,cog,dog]\",\"4\"),\n        (\"hit -> cog via [hot,dot]\",\"0\"),\n        (\"aaa -> bbb via [aab,abb,bbb]\",\"4\"),\n        (\"  \\nhit -> cog via [hot,dot,dog,lot,log,cog]\\n  \",\"5\"),\n        (\"\\naaa -> bbb via [aab,abb,bbb]\\n\",\"4\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS bidirectional-bfs\");\n}\n"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"hit -> cog via [hot,dot,dog,lot,log,cog]\",\"5\"),\n        (\"hit -> hot via [hot]\",\"2\"),\n        (\"cat -> dog via [cot,cog,dog]\",\"4\"),\n        (\"hit -> cog via [hot,dot]\",\"0\"),\n        (\"aaa -> bbb via [aab,abb,bbb]\",\"4\"),\n        (\"hit -> cog via [hot,dot,dog]\",\"0\"),\n        (\"hit -> cog via [hot,dot,lot,dog]\",\"0\"),\n        (\"  \\nhit -> cog via [hot,dot,dog,lot,log,cog]\\n  \",\"5\"),\n        (\"\\naaa -> bbb via [aab,abb,bbb]\\n\",\"4\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS bidirectional-bfs\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {

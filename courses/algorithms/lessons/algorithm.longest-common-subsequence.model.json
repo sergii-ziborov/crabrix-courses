@@ -14,7 +14,7 @@
     "visibleInput": "abcde and ace"
   },
   "concept": "Match equal symbols diagonally; otherwise discard one suffix boundary and keep the better result.",
-  "contentDigest": "66b48294a45708baa5c307fa49a88790950e2958936c1d2c7229783ae3ce66d5",
+  "contentDigest": "198e087fae00669ccff57a4df407aab6245cb0073a2fe2d8cf71f82d8b890d85",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "For abcde and ace, matching a,c,e extends diagonal states to length 3. Letters b and d can be skipped. At mismatches, take the better result from removing one side's final character, rather than resetting length to zero.",
     "practiceCode": "fn lcs(a: &str, b: &str) -> usize {\n    assert!(a.is_ascii() && b.is_ascii());\n    let mut dp = vec![vec![0; b.len() + 1]; a.len() + 1];\n    for (i, x) in a.bytes().enumerate() {\n        for (j, y) in b.bytes().enumerate() {\n            dp[i + 1][j + 1] = if x == y {\n                dp[i][j] + 1\n            } else {\n                dp[i][j + 1].max(dp[i + 1][j])\n            };\n        }\n    }\n    dp[a.len()][b.len()]\n}\n\nfn main() {\n    let result = lcs(\"abcde\", \"ace\").to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Why may mismatching LCS characters discard either final character?",
-    "rule": "A common subsequence may skip characters without requiring adjacency. State the input preconditions before applying this invariant.",
+    "rule": "Match equal symbols diagonally; otherwise discard one suffix boundary and keep the better result. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n*m) time · O(n*m) table in this example bound without looking at the code.",
     "summary": "Match equal symbols diagonally; otherwise discard one suffix boundary and keep the better result.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

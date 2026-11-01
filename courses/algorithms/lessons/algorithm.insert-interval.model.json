@@ -14,13 +14,13 @@
     "visibleInput": "[(1,2),(3,5),(6,7),(8,10),(12,16)]"
   },
   "concept": "Copy intervals before, merge every overlap, then copy intervals after.",
-  "contentDigest": "fdb177ccd13ad0f8f5c405bbdd9dff5fd34f8beef495107fa5229af77ccff6c5",
+  "contentDigest": "c118866dde6571a2bddc83ab759a2716ea0d091f98bfaf8dcda0e6c3cbe1b143",
   "depth": {
     "connections": [
       {
         "direction": "previous",
         "title": "Challenge: Merge Intervals",
-        "concept": "Return merged closed intervals."
+        "concept": "The closed intervals may arrive unsorted. Return them merged in ascending order; touching endpoints merge."
       },
       {
         "direction": "next",
@@ -65,7 +65,7 @@
     "feedback": "Insert [4,8] into [(1,2),(3,5),(6,7),(8,10),(12,16)]. Emit [1,2], merge the overlapping middle region to [3,10], then append [12,16]. Closed endpoint 8 belongs to the overlap.",
     "practiceCode": "fn inserted_interval(intervals: &[(i32, i32)], mut new: (i32, i32)) -> Vec<(i32, i32)> {\n    let mut out = Vec::new();\n    let mut i = 0;\n    while i < intervals.len() && intervals[i].1 < new.0 {\n        out.push(intervals[i]);\n        i += 1;\n    }\n    while i < intervals.len() && intervals[i].0 <= new.1 {\n        new.0 = new.0.min(intervals[i].0);\n        new.1 = new.1.max(intervals[i].1);\n        i += 1;\n    }\n    out.push(new);\n    out.extend_from_slice(&intervals[i..]);\n    out\n}\n\nfn main() {\n    let result = inserted_interval(&[(1, 2), (3, 5), (6, 7), (8, 10), (12, 16)], (4, 8))\n        .iter()\n        .map(|(a, b)| format!(\"{a}-{b}\"))\n        .collect::<Vec<_>>()\n        .join(\",\");\n    println!(\"{result}\");\n}\n",
     "question": "Why can interval insertion be linear when the existing list is sorted and disjoint?",
-    "rule": "Prefix, overlap region and suffix can each be scanned once. State the input preconditions before applying this invariant.",
+    "rule": "Copy intervals before, merge every overlap, then copy intervals after. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(n) output bound without looking at the code.",
     "summary": "Copy intervals before, merge every overlap, then copy intervals after.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

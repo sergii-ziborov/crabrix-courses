@@ -14,7 +14,7 @@
     "visibleInput": "[7,2,3,0,5,10,3,12,18]"
   },
   "concept": "Precompute answers for power-of-two blocks and combine two blocks for idempotent queries.",
-  "contentDigest": "bcdb5f3f8bf09e9d304d21e77ae43c10340a1bc2d001d7ad102f5169fe4cff26",
+  "contentDigest": "8d1836a3b14da441581891e27578e945e3018d3a28bc21b2a6dd683916daef7a",
   "depth": {
     "connections": [
       {
@@ -60,7 +60,7 @@
     "feedback": "On [7,2,3,0,5,10,3,12,18], ranges [0,3],[2,5],[4,6] return 0,0,3. Choose k=floor(log2(length)) and combine blocks beginning at left and ending at right. A sum table would need another strategy because overlap would be counted twice.",
     "practiceCode": "fn csv<T: std::fmt::Display>(a: impl IntoIterator<Item = T>) -> String {\n    a.into_iter()\n        .map(|x| x.to_string())\n        .collect::<Vec<_>>()\n        .join(\",\")\n}\nfn sparse_minima(values: &[i32], queries: &[(usize, usize)]) -> Vec<i32> {\n    assert!(!values.is_empty());\n    let n = values.len();\n    let mut levels = vec![values.to_vec()];\n    let mut width = 2;\n    while width <= n {\n        let previous = levels.last().unwrap();\n        let half = width / 2;\n        levels.push(\n            (0..=n - width)\n                .map(|i| previous[i].min(previous[i + half]))\n                .collect(),\n        );\n        width *= 2;\n    }\n    queries\n        .iter()\n        .map(|&(left, right)| {\n            let length = right - left + 1;\n            let level = length.ilog2() as usize;\n            let width = 1 << level;\n            levels[level][left].min(levels[level][right + 1 - width])\n        })\n        .collect()\n}\n\nfn main() {\n    let result = csv(sparse_minima(\n        &[7, 2, 3, 0, 5, 10, 3, 12, 18],\n        &[(0, 3), (2, 5), (4, 6)],\n    ));\n    println!(\"{result}\");\n}\n",
     "question": "Why can a range-minimum sparse table combine two overlapping power-of-two blocks?",
-    "rule": "Minimum is idempotent, so overlap does not double-count a contribution. State the input preconditions before applying this invariant.",
+    "rule": "Precompute answers for power-of-two blocks and combine two blocks for idempotent queries. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n log n) build · O(1) query · O(n log n) space bound without looking at the code.",
     "summary": "Precompute answers for power-of-two blocks and combine two blocks for idempotent queries.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

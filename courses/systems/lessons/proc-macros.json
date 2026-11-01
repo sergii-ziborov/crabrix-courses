@@ -1,6 +1,6 @@
 {
   "concept": "Derive, attribute, and function macros",
-  "contentDigest": "48ae567dfc3cdd9719ccb9b683e448da85ea03f15e987f6552dded79206654d6",
+  "contentDigest": "9849db798d24ce44dc4c137efd4f90950141c0556809c428b39c5cfcb4887463",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "cfg & Features"
       }
     ],
-    "correction": "Proc macros execute at compile time, so they need a host-native build.",
-    "misconception": "“Only the serde crate as a normal dependency”",
+    "correction": "Proc macros execute at compile time, so they need a host-native build. `#[derive(Serialize)]` runs serde_derive as a program while your crate compiles.",
+    "misconception": "“A derive is just a library item, so it needs nothing beyond a normal dependency.”",
     "traceSteps": [
       {
-        "detail": "Write down what callers may assume, what the compiler cannot prove, and which boundary is responsible for preserving soundness or cost.",
-        "title": "State the invariant"
+        "detail": "`proc-macro = true` under `[lib]` tells Cargo to build this crate as a compiler plugin for the host, not the target.",
+        "title": "Mark the crate"
       },
       {
-        "detail": "Explain why a proc macro cannot run inside Crabrix.",
-        "title": "Predict before checking"
+        "detail": "`derive_hello` takes the `TokenStream` of the item marked `#[derive(Hello)]`, and whatever it returns is added after that item.",
+        "title": "Receive the tokens"
       },
       {
-        "detail": "You can name the host-compilation requirement as the reason.",
-        "title": "Compare with evidence"
+        "detail": "This sample returns an empty `TokenStream`, so the derive compiles and adds no `impl`. A real macro parses the input and generates one.",
+        "title": "Read the output"
       }
     ],
-    "transferChallenge": "Create the smallest counterexample that violates the sample's invariant, then repair the abstraction boundary instead of hiding the symptom. Keep the focus on derive, attribute, and function macros."
+    "transferChallenge": "Make `derive_hello` return `\"impl Hello for Config {}\".parse().unwrap()`, then put the derive on a second struct. Predict the compiler error and say what the macro must read from its input."
   },
   "exerciseKind": "planned",
   "id": "proc-macros",
@@ -49,7 +49,7 @@
     "exampleCode": "# my-derive/Cargo.toml\n[lib]\nproc-macro = true\n\n// my-derive/src/lib.rs\nuse proc_macro::TokenStream;\n\n#[proc_macro_derive(Hello)]\npub fn derive_hello(\n    input: TokenStream,\n) -> TokenStream {\n    // parse input, generate an impl, return it\n    TokenStream::new()\n}",
     "explanation": "It receives a TokenStream and returns one, running as a real program during compilation — which is why it lives in its own crate compiled for the host machine. That host requirement is why a constrained device-local toolchain may not support arbitrary procedural macro crates; cross-compilation normally runs the macro on the build host.\n\nA procedural macro is a Rust program that runs while another crate is being compiled. The compiler gives it tokens; it parses them, generates new tokens, and returns them to the caller's compilation. Derive, attribute, and function-like procedural macros differ in invocation shape, but all need a host-executable macro crate. The expansion is then checked as ordinary Rust code. This makes proc macros powerful for repetitive APIs and also makes their diagnostics, build time, and dependency chain part of the developer experience.\n\nThe host/target distinction matters for cross-compilation. A laptop may run the macro while producing code for a phone or WASM target. On-device compilation can support proc macros only if it can build or run compatible host artifacts and satisfy the required loading model; do not assume every constrained compiler can. Keep generated code independent of hidden target runtime state. In the example, the `Hello` derive should parse the input type, reject unsupported forms with a useful span, and emit an `impl` using stable paths. Try a trivial derive on a struct and then on an enum; make the unsupported form produce a clear compile error. Prefer a normal trait implementation when the implementation is short and explicit. Use generation when it removes repeated, mechanical code without hiding important behavior.\n\nGenerated code can fail to compile even when the macro itself runs successfully. Test the emitted implementation in a consumer crate and inspect the compiler errors there. A macro panic is poor feedback; report a structured compile error at the input span when possible. Avoid depending on the caller having a particular `use` statement unless the API explicitly documents it.",
     "feedback": "serde_derive is a program the compiler runs, not just a library it links.",
-    "practiceCode": "#[derive(Serialize)]\nstruct Config { port: u16 }",
+    "practiceCode": "use serde::Serialize;\n\n#[derive(Serialize)]\nstruct Config { port: u16 }",
     "question": "What does that derive need at build time?",
     "rule": "Proc macros execute at compile time, so they need a host-native build.",
     "success": "You can name the host-compilation requirement as the reason.",

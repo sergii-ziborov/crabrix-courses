@@ -14,13 +14,13 @@
     "visibleInput": "[4,1,9,7,3,8]"
   },
   "concept": "Keep a heap of only k winners and evict its smallest whenever it grows.",
-  "contentDigest": "4a8bea29c44e5a66f94a12b981eb0fb8772d2ee78d8ee79085e778bd7f1f78c8",
+  "contentDigest": "516a0608e26812b672a2b97c9d77f0c54d702f0eaee23c11d5a955a03efb06c9",
   "depth": {
     "connections": [
       {
         "direction": "previous",
         "title": "Challenge: Binary Heap",
-        "concept": "Insert 7, 2, 9, 4 into a min-heap and return pop order."
+        "concept": "Insert the values into a min-heap and return pop order."
       },
       {
         "direction": "next",
@@ -65,7 +65,7 @@
     "feedback": "With k=3, the heap retains the best three values seen so far. Reading [4,1,9,7,3,8] ultimately retains 7,8,9. Sorting just those retained values produces the required descending report 9,8,7.",
     "practiceCode": "fn csv<T: std::fmt::Display>(a: impl IntoIterator<Item = T>) -> String {\n    a.into_iter()\n        .map(|x| x.to_string())\n        .collect::<Vec<_>>()\n        .join(\",\")\n}\nfn top_k(values: &[i32], k: usize) -> Vec<i32> {\n    let mut heap = std::collections::BinaryHeap::new();\n    for &x in values {\n        heap.push(std::cmp::Reverse(x));\n        if heap.len() > k {\n            heap.pop();\n        }\n    }\n    let mut out: Vec<_> = heap.into_iter().map(|std::cmp::Reverse(x)| x).collect();\n    out.sort_unstable_by(|a, b| b.cmp(a));\n    out\n}\n\nfn main() {\n    let result = csv(top_k(&[4, 1, 9, 7, 3, 8], 3));\n    println!(\"{result}\");\n}\n",
     "question": "Why retain a min-heap containing only k large candidates?",
-    "rule": "Its smallest retained value is the one to discard when a larger candidate arrives. State the input preconditions before applying this invariant.",
+    "rule": "Keep a heap of only k winners and evict its smallest whenever it grows. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n log k) time · O(k) space bound without looking at the code.",
     "summary": "Keep a heap of only k winners and evict its smallest whenever it grows.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

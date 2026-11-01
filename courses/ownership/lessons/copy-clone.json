@@ -1,6 +1,6 @@
 {
   "concept": "When a value duplicates instead of moving",
-  "contentDigest": "c464702883adea7f0397cc97c287c9af077dc7161dc46b24c7632b2ca32a8159",
+  "contentDigest": "c5569c587416816d51ca8ccbda8f6cb0ce4f013c02ff7669a3d76ef35a25a059",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Drop & Scope"
       }
     ],
-    "correction": "If a type owns a heap allocation it is not Copy, and duplication must be written down.",
-    "misconception": "“Add `mut` to name”",
+    "correction": "`i32` is `Copy`, so `let b = a` leaves both usable. `String` owns a heap buffer and is not `Copy`, so `let alias = name` moves it; `name.clone()` is how you ask for a second buffer.",
+    "misconception": "“Assignment copies a `String` the same way it copies an `i32`.”",
     "traceSteps": [
       {
-        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
-        "title": "Map ownership first"
+        "detail": "In the example, `a` is an `i32` and `s` is a `String`. `let b = a;` copies the bits, while `let t = s.clone();` allocates a second buffer on purpose.",
+        "title": "Sort the types"
       },
       {
-        "detail": "Predict which bindings stay usable after an assignment.",
+        "detail": "The practice code writes `let alias = name;` with no `.clone()`. Predict whether `println!(\"{name}\");` compiles.",
         "title": "Predict before checking"
       },
       {
-        "detail": "You can name why one type copies and the other does not.",
+        "detail": "Compile it: E0382 reports that `name` moved into `alias`. Change the line to `let alias = name.clone();` and `ada` prints.",
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &`mut` T. Before compiling, list which bindings remain usable after each call. Keep the focus on when a value duplicates instead of moving."
+    "transferChallenge": "Derive `Clone` and `Copy` on a struct with two `u32` fields and assign it twice. Then add a `String` field and read the error that rejects the `Copy` derive."
   },
   "exerciseKind": "planned",
   "id": "copy-clone",
@@ -45,16 +45,16 @@
       "Wrap it in a Box"
     ],
     "correctAnswer": 1,
-    "exampleCaption": "The integer copies; the `String` would have moved without .`clone()`.",
+    "exampleCaption": "The integer copies; the `String` would have moved without `.clone()`.",
     "exampleCode": "let a = 5;          // i32 is Copy\nlet b = a;\nprintln!(\"{a} {b}\"); // both still usable\n\nlet s = String::from(\"crab\");\nlet t = s.clone();  // explicit deep copy\nprintln!(\"{s} {t}\");",
-    "explanation": "Types that are cheap and have no destructor can be Copy, so assigning them leaves the original usable. Everything that owns a heap allocation is not Copy, and duplicating it means calling .`clone()` explicitly — the cost is visible in the source rather than hidden in an assignment.\n\n`Copy` means a value can be duplicated by copying its bits, with no visible method call. Primitive integers and many small plain-data structs qualify. A type with a destructor cannot be `Copy`, because two implicit copies would both try to perform cleanup. `String` owns a heap allocation and therefore moves on ordinary assignment. `Clone` is different: it is an explicit operation, and its cost depends on the type. Cloning a `String` duplicates its bytes into a new buffer.\n\nIn the sample, `a` and `b` are separate integers after `let b = a`, so both print. The string expression uses `s.clone()` to create `t`; after that, both own their own text. If you change the line to `let t = s`, only `t` remains usable. The output may look identical when you do clone, but the memory and performance behavior are not. That is why Rust makes the expensive path visible.\n\nDo not add `.clone()` automatically whenever the compiler reports a move. Ask whether the next operation only needs `&T`, whether ownership can be transferred to the right place, or whether two independent values are genuinely required. Try deriving `Copy` for a struct containing only `u32` fields, then add a `String` field and read the new error. This reveals the trait requirement through a concrete type. Use cloning when independent ownership is part of the design, and borrowing when the other code only needs temporary access.\n\nAn `Arc<T>` clone illustrates another nuance: it usually increments a reference count rather than duplicating all the data inside. The method name means an explicit duplicate of the value’s ownership handle, not necessarily a deep copy of every reachable byte.",
+    "explanation": "Types that are cheap and have no destructor can be Copy, so assigning them leaves the original usable. Everything that owns a heap allocation is not Copy, and duplicating it means calling `.clone()` explicitly — the cost is visible in the source rather than hidden in an assignment.\n\n`Copy` means a value can be duplicated by copying its bits, with no visible method call. Primitive integers and many small plain-data structs qualify. A type with a destructor cannot be `Copy`, because two implicit copies would both try to perform cleanup. `String` owns a heap allocation and therefore moves on ordinary assignment. `Clone` is different: it is an explicit operation, and its cost depends on the type. Cloning a `String` duplicates its bytes into a new buffer.\n\nIn the sample, `a` and `b` are separate integers after `let b = a`, so both print. The string expression uses `s.clone()` to create `t`; after that, both own their own text. If you change the line to `let t = s`, only `t` remains usable. The output may look identical when you do clone, but the memory and performance behavior are not. That is why Rust makes the expensive path visible.\n\nDo not add `.clone()` automatically whenever the compiler reports a move. Ask whether the next operation only needs `&T`, whether ownership can be transferred to the right place, or whether two independent values are genuinely required. Try deriving `Copy` for a struct containing only `u32` fields, then add a `String` field and read the new error. This reveals the trait requirement through a concrete type. Use cloning when independent ownership is part of the design, and borrowing when the other code only needs temporary access.\n\nAn `Arc<T>` clone illustrates another nuance: it usually increments a reference count rather than duplicating all the data inside. The method name means an explicit duplicate of the value’s ownership handle, not necessarily a deep copy of every reachable byte.",
     "feedback": "Cloning creates a second owned `String`, so the original binding stays valid.",
     "practiceCode": "let name = String::from(\"ada\");\nlet alias = name;\nprintln!(\"{name}\");",
     "question": "How do you make that compile without changing the println?",
     "rule": "If a type owns a heap allocation it is not Copy, and duplication must be written down.",
-    "success": "You can name why one type copies and the other does not.",
+    "success": "You can say why `String` moves instead of copying, and how `.clone()` keeps both bindings usable.",
     "summary": "Copy duplicates implicitly; Clone duplicates only when you ask.",
-    "task": "Predict which bindings stay usable after an assignment."
+    "task": "Predict whether `name` stays usable after `let alias = name`."
   },
   "illustration": {
     "path": "media/copy-clone.png",

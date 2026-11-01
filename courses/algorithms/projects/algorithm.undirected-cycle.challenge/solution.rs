@@ -1,5 +1,5 @@
 pub fn solve(input: &str) -> String {
-    // Return true when the undirected graph contains a cycle.
+    // Edges are undirected, and vertices run from 0 to the largest endpoint; the graph may be disconnected and has no self-loops or parallel edges. Return whether it contains a cycle.
     // Parse the visible input into the structures your algorithm needs.
     // Whitespace surrounding the complete input is insignificant.
     let _ = input;

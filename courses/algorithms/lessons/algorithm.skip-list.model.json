@@ -14,13 +14,13 @@
     "visibleInput": "[3,6,7,9,12,19,17,26,21,25]"
   },
   "concept": "Promote nodes randomly into sparse express lanes and descend when the next jump overshoots.",
-  "contentDigest": "a8ac0d2f5f98a798158099d27c4a0fc5616e5568a878a81bc08229b0be2e2a0f",
+  "contentDigest": "a8e4d45a8a871675d94d9f3cbc2417c07168f3891ea3661b29f852ac7a5e6341",
   "depth": {
     "connections": [
       {
         "direction": "previous",
         "title": "Challenge: Randomized Treap",
-        "concept": "Apply the insert/delete operations and return keys requested by inorder."
+        "concept": "Apply the space-separated insertN and deleteN tokens, then return the keys ascending at inorder. Keys form a set: inserting a present key and deleting an absent key change nothing."
       },
       {
         "direction": "next",
@@ -65,7 +65,7 @@
     "feedback": "Inserting [3,6,7,9,12,19,17,26,21,25] builds a sorted bottom chain with promoted shortcuts. Search 19 moves right while the next key is smaller, then descends. The final equality check finds 19; a missing key cannot be inferred from a nearby shortcut alone.",
     "practiceCode": "struct SkipNode {\n    key: i32,\n    next: Vec<Option<usize>>,\n}\nfn skip_contains(values: &[i32], target: i32) -> bool {\n    const LEVELS: usize = 32;\n    let mut nodes = vec![SkipNode {\n        key: i32::MIN,\n        next: vec![None; LEVELS],\n    }];\n    let mut random = 0xC0FFEE_u64;\n    for &key in values {\n        let mut update = [0; LEVELS];\n        let mut v = 0;\n        for level in (0..LEVELS).rev() {\n            while let Some(u) = nodes[v].next[level] {\n                if nodes[u].key >= key {\n                    break;\n                }\n                v = u;\n            }\n            update[level] = v;\n        }\n        if nodes[v].next[0].is_some_and(|u| nodes[u].key == key) {\n            continue;\n        }\n        let mut height = 1;\n        while height < LEVELS {\n            random ^= random << 13;\n            random ^= random >> 7;\n            random ^= random << 17;\n            if random & 1 == 0 {\n                break;\n            }\n            height += 1;\n        }\n        let index = nodes.len();\n        let next = (0..height)\n            .map(|level| nodes[update[level]].next[level])\n            .collect();\n        nodes.push(SkipNode { key, next });\n        for level in 0..height {\n            nodes[update[level]].next[level] = Some(index);\n        }\n    }\n    let mut v = 0;\n    for level in (0..LEVELS).rev() {\n        while let Some(u) = nodes[v].next[level] {\n            if nodes[u].key >= target {\n                break;\n            }\n            v = u;\n        }\n    }\n    nodes[v].next[0].is_some_and(|u| nodes[u].key == target)\n}\n\nfn main() {\n    let result = skip_contains(&[3, 6, 7, 9, 12, 19, 17, 26, 21, 25], 19).to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Why descend a level after horizontal search can no longer advance?",
-    "rule": "Lower levels refine the search within the remaining key interval. State the input preconditions before applying this invariant.",
+    "rule": "Promote nodes randomly into sparse express lanes and descend when the next jump overshoots. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(log n) expected search/update · O(n) space bound without looking at the code.",
     "summary": "Promote nodes randomly into sparse express lanes and descend when the next jump overshoots.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

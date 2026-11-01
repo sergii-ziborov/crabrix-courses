@@ -1,5 +1,5 @@
 pub fn solve(input: &str) -> String {
-    // Return one-based indexes of the pair summing to 17.
+    // For sorted values, return one-based indexes of any two distinct positions summing to 17. Return -1,-1 if no pair exists.
     // Parse the visible input into the structures your algorithm needs.
     // Whitespace surrounding the complete input is insignificant.
     let _ = input;

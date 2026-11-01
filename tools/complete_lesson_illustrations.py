@@ -105,7 +105,7 @@ def draw_code(draw: ImageDraw.ImageDraw, value: str) -> None:
             continue
         visible = line
         cursor = x
-        for token in re.findall(r'"(?:\\.|[^"\\])*"|\b(?:fn|let|mut|if|else|for|while|match|return|use|impl|pub|struct|enum|trait|async|await|move|true|false|Some|None|Ok|Err)\b|\b\d+\b|[^\w"\d]+|\w+', visible):
+        for token in re.findall(r'"(?:\\.|[^"\\])*"|\b(?:fn|let|mut|if|else|for|while|match|return|use|impl|pub|struct|enum|trait|async|await|move|true|false|Some|None|Ok|Err)\b|\b\d+\b|[^\w"\d]+|\w+|"', visible):
             color = WHITE
             if token.startswith('"'):
                 color = MINT

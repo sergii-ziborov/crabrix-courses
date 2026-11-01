@@ -1,6 +1,6 @@
 {
   "concept": "Update one shared value without a lock",
-  "contentDigest": "af059d8c4e5b5323a4eaee1206f308949fb9683f67ea508dde4bae8be3e6d1a7",
+  "contentDigest": "3657074b837f735ceb6904b51c5a1b92911a67ef1dcde5a4b3fab86326638673",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Deadlock Avoidance"
       }
     ],
-    "correction": "Atomic operations are indivisible but still need an ordering that describes cross-thread visibility.",
-    "misconception": "“Integer size”",
+    "correction": "An atomic operation is indivisible only for that one value. Its ordering states what else another thread may see, so publishing data takes a `Release` store and an `Acquire` load.",
+    "misconception": "“An atomic operation makes every nearby memory access safe to read from another thread.”",
     "traceSteps": [
       {
-        "detail": "Name each task or thread, the state it can reach, and every point where work can wait, race, block, or be cancelled.",
-        "title": "Draw the event timeline"
+        "detail": "`AtomicUsize::new(0)` needs no `mut`: updates go through a shared reference, which is what lets threads share it.",
+        "title": "Create the atomic"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "detail": "`fetch_add(1, Ordering::Relaxed)` reads, adds, and writes as one step, and returns the previous value, 0 here.",
+        "title": "Apply fetch_add"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "detail": "`Relaxed` keeps this single update atomic but orders no other memory, so it cannot publish data to another thread.",
+        "title": "Check the ordering"
       }
     ],
-    "transferChallenge": "Add a second worker or cancellation point. Draw two possible event orders and state the invariant that both orders must preserve. Keep the focus on update one shared value without a lock."
+    "transferChallenge": "Spawn four scoped threads that each add 1,000 to `count`, first with `fetch_add` and then with separate `load` and `store`. Predict each total and explain any lost updates."
   },
   "exerciseKind": "planned",
   "id": "atomics-basics",
@@ -40,25 +40,25 @@
   "title": "Atomic State",
   "writing": {
     "answers": [
-      "Visibility constraints",
-      "Integer size",
-      "Thread count"
+      "What other memory effects become visible",
+      "The size of the integer",
+      "How many threads may run"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCaption": "`fetch_add` updates the count as one indivisible step; `Relaxed` orders no other memory.",
     "exampleCode": "use std::sync::atomic::{\n    AtomicUsize, Ordering,\n};\nlet count = AtomicUsize::new(0);\ncount.fetch_add(1, Ordering::Relaxed);",
     "explanation": "Atomic operations are indivisible but still need an ordering that describes cross-thread visibility. Use the weakest ordering justified by a written synchronization argument, not by habit.\n\nAn atomic value supports operations that are indivisible with respect to competing threads. `fetch_add` on `AtomicUsize`, for example, prevents two workers from losing an increment by reading and writing the same stale count. This makes atomics a good fit for simple counters, flags, and some carefully designed state machines. It does not turn a sequence of several atomic operations into one transaction. If two fields must change together, a mutex may express the invariant more clearly.\n\nMemory ordering answers a second question: when another thread sees an atomic change, which ordinary memory writes are guaranteed visible too? `Relaxed` is enough for a count whose only requirement is an accurate final total after workers join. A flag that publishes prepared data generally needs a release store and an acquire load, or another synchronization design. `SeqCst` gives a stronger global ordering model, but choosing it blindly does not fix a flawed state machine.\n\nStart with several threads incrementing a shared atomic counter and compare `fetch_add` with a failed idea built from separate `load` and `store` calls. Then draw a producer that fills a buffer and sets a ready flag; explain why the consumer must not read the buffer before it observes readiness through an appropriate synchronization operation. Keep `unsafe` shared-memory examples out of an introductory exercise. State the invariant first, pick the weakest ordering you can justify only after understanding it, and prefer a mutex if the proof is hard to explain.",
-    "feedback": "Correct: Visibility constraints.",
-    "practiceCode": "use std::sync::atomic::{\n    AtomicUsize, Ordering,\n};\nlet count = AtomicUsize::new(0);\ncount.fetch_add(1, Ordering::Relaxed);",
+    "feedback": "An ordering says which other memory effects become visible with an atomic change. Here, the `Acquire` load that sees `true` is also guaranteed to see the store of 42.",
+    "practiceCode": "use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};\nuse std::thread;\n\nlet data = AtomicUsize::new(0);\nlet ready = AtomicBool::new(false);\nthread::scope(|scope| {\n    scope.spawn(|| {\n        data.store(42, Ordering::Relaxed);\n        ready.store(true, Ordering::Release);\n    });\n    scope.spawn(|| {\n        while !ready.load(Ordering::Acquire) {\n            std::hint::spin_loop();\n        }\n        println!(\"{}\", data.load(Ordering::Relaxed));\n    });\n});",
     "question": "What does an atomic ordering describe?",
     "rule": "Atomic operations are indivisible but still need an ordering that describes cross-thread visibility.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "You can say why `Relaxed` is enough for a count and why this ready flag needs more.",
     "summary": "Update one shared value without a lock.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Predict what the second thread prints, and name the `Release` store and the `Acquire` load that make the answer certain."
   },
   "illustration": {
     "path": "media/atomics-basics.png",
     "alt": "Diagram for Atomic State: a Rust code example flows to the lesson rule and the key observation.",
-    "caption": "The example makes the contract visible in code."
+    "caption": "`fetch_add` updates the count as one indivisible step; `Relaxed` orders no other memory."
   }
 }

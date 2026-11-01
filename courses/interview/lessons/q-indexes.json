@@ -1,6 +1,6 @@
 {
   "concept": "Composite index selectivity, planner choices, skip scans and write cost",
-  "contentDigest": "de962f643d7872eb7af20fd61ac1e60e1415a2794b8d148adf95e35f8850dbc7",
+  "contentDigest": "37950ca9fc73ea4daaa8107a45df59e8f5570b1e00b86e58ff9dc16596413c13",
   "depth": {
     "connections": [
       {
@@ -14,7 +14,7 @@
         "title": "CAP in Practice"
       }
     ],
-    "correction": "Leading columns often improve selectivity, but eligibility, skip-scan possibilities and the cheapest plan are different questions.",
+    "correction": "A matching column only makes an index a candidate. The planner compares estimated costs and may choose another scan, and an index-only scan also needs every selected column in the index.",
     "misconception": "The existence of any matching column forces a full index-only scan.",
     "traceSteps": [
       {
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Inspect EXPLAIN with representative data. An absent leading-column filter does not universally prohibit an index scan.",
     "exampleCode": "-- PostgreSQL SQL; the events table already exists.\nCREATE INDEX events_tenant_kind_at ON events (tenant_id, kind, at);\nEXPLAIN SELECT tenant_id, kind, at\nFROM events\nWHERE kind = 'click' AND at > TIMESTAMP '2026-10-01';",
-    "explanation": "A selective B-tree index can reduce work by narrowing the scanned range. Leading-column predicates are often especially useful, but they are not a universal eligibility rule: PostgreSQL can use later-column constraints and skip scans when its planner estimates that they are worthwhile. Every maintained index also adds storage and write work; measure those costs rather than declaring a table slow from its index count alone.\n\nAn index is another data structure maintained alongside table rows so some queries can avoid examining every row. A B-tree-family index commonly supports equality, range scans, and ordered traversal. For a composite index on `(account_id, created_at)`, queries restricted by account can often use the leading part, and a query for one account ordered by time can benefit from the second part. A query only on `created_at` may not use the index efficiently, though optimizers and specialized access paths vary by database.\n\nIndexes cost storage and write work. Each insert or update that changes an indexed field may need to modify the index. An index on a low-selectivity column can be less useful than it looks, and a query planner may choose a scan for a small table. Do not add an index solely because a WHERE clause exists. Inspect the actual query plan and measure it with representative row counts and distributions.\n\nFor an interview, start from a concrete query and data shape. Explain which predicate narrows the search, whether the requested columns are covered, and whether an ordered scan avoids a separate sort. Then state the cost to writes and memory. Test after adding the index: plans can change as statistics and data grow. The leftmost-prefix heuristic is useful, but a real planner makes the final decision.\n\nA covering index may avoid fetching full table rows when it contains every value a query needs. That can be faster for a frequent narrow query but makes the index larger and more expensive to maintain. Discuss cardinality and selectivity with real data: an index useful on a huge selective table may do little on a tiny table.\n\nInterview follow-up: How do row count, visibility, table access and write overhead affect the decision to add another index?",
+    "explanation": "A selective B-tree index can reduce work by narrowing the scanned range. Leading-column predicates are often especially useful, but they are not a universal eligibility rule: PostgreSQL can use later-column constraints and, since version 18, skip scans when its planner estimates that they are worthwhile. Every maintained index also adds storage and write work; measure those costs rather than declaring a table slow from its index count alone.\n\nAn index is another data structure maintained alongside table rows so some queries can avoid examining every row. A B-tree-family index commonly supports equality, range scans, and ordered traversal. For a composite index on `(account_id, created_at)`, queries restricted by account can often use the leading part, and a query for one account ordered by time can benefit from the second part. A query only on `created_at` may not use the index efficiently, though optimizers and specialized access paths vary by database.\n\nIndexes cost storage and write work. Each insert or update that changes an indexed field may need to modify the index. An index on a low-selectivity column can be less useful than it looks, and a query planner may choose a scan for a small table. Do not add an index solely because a WHERE clause exists. Inspect the actual query plan and measure it with representative row counts and distributions.\n\nFor an interview, start from a concrete query and data shape. Explain which predicate narrows the search, whether the requested columns are covered, and whether an ordered scan avoids a separate sort. Then state the cost to writes and memory. Test after adding the index: plans can change as statistics and data grow. The leftmost-prefix heuristic is useful, but a real planner makes the final decision.\n\nA covering index may avoid fetching full table rows when it contains every value a query needs. That can be faster for a frequent narrow query but makes the index larger and more expensive to maintain. Discuss cardinality and selectivity with real data: an index useful on a huge selective table may do little on a tiny table.\n\nInterview follow-up: How do row count, visibility, table access and write overhead affect the decision to add another index?",
     "feedback": "Leading columns often improve selectivity, but eligibility, skip-scan possibilities and the cheapest plan are different questions.",
     "practiceCode": "-- Index: (tenant_id, kind, at).\nEXPLAIN SELECT * FROM events WHERE tenant_id = 42 AND kind = 'click';\nEXPLAIN SELECT * FROM events WHERE kind = 'click';",
     "question": "Why should these two PostgreSQL queries be compared with EXPLAIN and representative data?",
@@ -59,6 +59,6 @@
   "illustration": {
     "path": "media/q-indexes.png",
     "alt": "A B-tree index can locate selective rows but adds maintenance to writes.",
-    "caption": "Indexes trade read speed for storage and write work."
+    "caption": "Indexes trade storage and write work for read speed."
   }
 }

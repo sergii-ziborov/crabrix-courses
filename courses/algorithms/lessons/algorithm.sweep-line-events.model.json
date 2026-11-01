@@ -14,7 +14,7 @@
     "visibleInput": "[(1,4),(2,5),(4,6)]"
   },
   "concept": "Sort starts and ends as signed events and integrate active state across coordinates.",
-  "contentDigest": "0cf8bffafbacc43c0cec651b5caad6e4b1bab5c099ad86287de240bb3ab873b3",
+  "contentDigest": "6f9197b6cd1d5326b30cd648d3d1f81e87ffa283149b56e6529f8f7714e93bbb",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "For [(1,4),(2,5),(4,6)], load becomes 1 at 1, 2 at 2, then drops before the new start at 4. Peak load stays 2. This convention deliberately differs from inclusive Imos intervals, which remove at R+1.",
     "practiceCode": "fn maximum_sessions(intervals: &[(i32, i32)]) -> i32 {\n    let mut events = Vec::new();\n    for &(start, end) in intervals {\n        assert!(start < end);\n        events.push((start, 1));\n        events.push((end, -1));\n    }\n    events.sort_unstable(); // -1 precedes +1: half-open intervals\n    let (mut active, mut peak) = (0, 0);\n    for (_, delta) in events {\n        active += delta;\n        peak = peak.max(active);\n    }\n    peak\n}\n\nfn main() {\n    let result = maximum_sessions(&[(1, 4), (2, 5), (4, 6)]).to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Why process end events before start events at the same time?",
-    "rule": "Sessions use half-open intervals and an ending slot is reusable immediately. State the input preconditions before applying this invariant.",
+    "rule": "Sort starts and ends as signed events and integrate active state across coordinates. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n log n) time · O(n) events bound without looking at the code.",
     "summary": "Sort starts and ends as signed events and integrate active state across coordinates.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

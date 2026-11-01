@@ -14,7 +14,7 @@
     "visibleInput": "matrix=[[0,10,15,20],[10,0,35,25],[15,35,0,30],[20,25,30,0]]"
   },
   "concept": "Encode the chosen subset in bits and transition by adding one unused item.",
-  "contentDigest": "38aca33032257e390907fdbfbf607c8126d9893b379809da10ad5a630425b069",
+  "contentDigest": "943c4daec9d353612243c67b279000a8701bc0b64b6a46466a6270d8ef0319ef",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "In the four-city sample, a minimum closed tour costs 80. State (mask,last) records the cheapest route starting at 0, visiting exactly mask and ending at last. Add the edge back to 0 only after all vertices have been visited.",
     "practiceCode": "fn travelling_salesman(cost: &[Vec<i32>]) -> i32 {\n    let n = cost.len();\n    assert!(n > 0 && n <= 16);\n    let states = 1 << n;\n    let infinity = i32::MAX / 4;\n    let mut dp = vec![vec![infinity; n]; states];\n    dp[1][0] = 0;\n    for mask in 1..states {\n        for last in 0..n {\n            if dp[mask][last] == infinity {\n                continue;\n            }\n            for next in 0..n {\n                if mask >> next & 1 == 0 {\n                    let new = mask | 1 << next;\n                    dp[new][next] = dp[new][next].min(dp[mask][last] + cost[last][next]);\n                }\n            }\n        }\n    }\n    (0..n)\n        .map(|last| dp[states - 1][last] + cost[last][0])\n        .min()\n        .unwrap()\n}\n\nfn main() {\n    let result = travelling_salesman(&[\n        vec![0, 10, 15, 20],\n        vec![10, 0, 35, 25],\n        vec![15, 35, 0, 30],\n        vec![20, 25, 30, 0],\n    ])\n    .to_string();\n    println!(\"{result}\");\n}\n",
     "question": "What information identifies a travelling-salesman DP state?",
-    "rule": "The visited vertex subset and current final vertex. State the input preconditions before applying this invariant.",
+    "rule": "Encode the chosen subset in bits and transition by adding one unused item. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(2^n * n^2) typical · O(2^n*n) space bound without looking at the code.",
     "summary": "Encode the chosen subset in bits and transition by adding one unused item.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

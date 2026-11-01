@@ -1,6 +1,6 @@
 {
   "concept": "Infer shared, mutable, or moved captures",
-  "contentDigest": "2cc4f8a5f7f2092c4bea75c4432a14ee551fe5088fba1a4d66c497ba2b23ac22",
+  "contentDigest": "130f5fccc3045be4dcfce4176efc4759b85ed1a7c668981eaded4e31b00db0f6",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Phantom Types"
       }
     ],
-    "correction": "A closure borrows, mutably borrows, or moves each captured value according to its body.",
-    "misconception": "“Return type”",
+    "correction": "`move` only decides who owns `name`. `announce` prints by borrowing its capture, so it can be called repeatedly; adding `drop(name)` to the body is what makes it `FnOnce`.",
+    "misconception": "“`move` makes a closure `FnOnce`, so `announce` can run only once.”",
     "traceSteps": [
       {
-        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
-        "title": "Map ownership first"
+        "detail": "`move` transfers `name` into `announce`, so the closure owns the `String`. The body only borrows that capture to print it.",
+        "title": "Separate capture from call"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "detail": "Call `announce()` twice and predict whether it compiles. Predict again with `drop(name);` added to the body, and for `println!(\"{name}\");` after the closure.",
         "title": "Predict before checking"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "detail": "Two calls compile as written. With `drop(name);` the second call gets E0382. Printing `name` after the closure gets E0382 either way, because `move` took it.",
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &`mut` T. Before compiling, list which bindings remain usable after each call. Keep the focus on infer shared, mutable, or moved captures."
+    "transferChallenge": "Write three closures: one reads a counter, one increments it, and one drops a `String`. Bind each with `let`, pass it to functions bounded by `Fn`, `FnMut`, and `FnOnce`, and read the errors."
   },
   "exerciseKind": "planned",
   "id": "closure-capture-modes",
@@ -52,9 +52,9 @@
     "practiceCode": "let name = String::from(\"Ferris\");\nlet announce = move || {\n    println!(\"{name}\");\n};\nannounce();",
     "question": "What does move change about the captures?",
     "rule": "A closure borrows, mutably borrows, or moves each captured value according to its body.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "You can explain why `move` alone does not make a closure `FnOnce`.",
     "summary": "Infer shared, mutable, or moved captures.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Say who owns `name` after `move`, and how many times `announce` can be called."
   },
   "illustration": {
     "path": "media/closure-capture-modes.png",

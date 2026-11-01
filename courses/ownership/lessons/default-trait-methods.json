@@ -1,6 +1,6 @@
 {
   "concept": "Share behavior while allowing an override",
-  "contentDigest": "115b65fc2553a7631e1a678227fdf5625e254f8eacf11d57e29d7ec5533973b0",
+  "contentDigest": "573993cc6a30174c5bb9d8eb5c92a00ca60e8eef25f9a1a56149e64cdd6a6909",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Generic Lifetimes"
       }
     ],
-    "correction": "A trait may provide a method body that implementations inherit.",
-    "misconception": "“summary”",
+    "correction": "Only methods with no body are required. An `impl` must provide `title`, while `summary` is inherited from its default body and can still be overridden.",
+    "misconception": "“A type must write every method a trait declares, including `summary`.”",
     "traceSteps": [
       {
-        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
-        "title": "Map ownership first"
+        "detail": "`title` ends in a semicolon, so each `impl` must write it. `summary` has a body, which calls `self.title()`, so it is inherited.",
+        "title": "Sort the methods"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "detail": "Implement only `title` for a `Post` whose title is `Crabs`, and predict what `post.summary()` returns. Then predict what an empty `impl Summary for Post {}` does.",
         "title": "Predict before checking"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "detail": "`summary()` returns `Title: Crabs`. The empty `impl` gets E0046 for the missing `title`, with no complaint about `summary`.",
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &`mut` T. Before compiling, list which bindings remain usable after each call. Keep the focus on share behavior while allowing an override."
+    "transferChallenge": "Add a second struct that overrides `summary` and call both through `fn show(item: &impl Summary)`. Then add a method with no body to the trait and count the `impl` blocks the compiler makes you update."
   },
   "exerciseKind": "planned",
   "id": "default-trait-methods",
@@ -52,9 +52,9 @@
     "practiceCode": "trait Summary {\n    fn title(&self) -> &str;\n    fn summary(&self) -> String {\n        format!(\"Title: {}\", self.title())\n    }\n}",
     "question": "Which method must an `impl` provide?",
     "rule": "A trait may provide a method body that implementations inherit.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "You can write a minimal `impl`, and explain what `summary()` returns for it.",
     "summary": "Share behavior while allowing an override.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Say which method of `Summary` an `impl` must write, and which it inherits."
   },
   "illustration": {
     "path": "media/default-trait-methods.png",

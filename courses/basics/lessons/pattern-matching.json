@@ -1,6 +1,6 @@
 {
   "concept": "Destructuring, guards, and bindings",
-  "contentDigest": "5e105d7ee220708dced3ae5b9d6d5c6eef9d879d632be7d31b6a26a8a9f62972",
+  "contentDigest": "79276d721c9f4bc7aaab67be5e646e1b245fd2987b6fe53ca142608f2eceb573",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Derive Macros"
       }
     ],
-    "correction": "A guard narrows an arm; the compiler still demands the set be exhaustive.",
+    "correction": "The pattern still comes first: `Some(n)` has to fit and bind `n` before `if n % 2 == 0` is checked. A guard narrows that arm and leaves its pattern in place.",
     "misconception": "“It replaces the pattern that precedes it”",
     "traceSteps": [
       {
-        "detail": "Name each value's type and starting value, then mark the expression that produces the lesson's result.",
-        "title": "Inventory the values"
+        "detail": "`point` is the tuple `(3, -7)`, so `x` would bind `3` and `y` would bind `-7`. The arms are tried from top to bottom.",
+        "title": "Read the value"
       },
       {
-        "detail": "Match a tuple with a guard and a multi-pattern arm.",
-        "title": "Predict before checking"
+        "detail": "`(0, 0)` and the axis arm do not fit, because neither coordinate is `0`. `(x, y) if y < 0` fits and its guard holds, so expect `below: 3,-7`.",
+        "title": "Walk the arms"
       },
       {
-        "detail": "Every input is covered without a catch-all hiding a real case.",
+        "detail": "Run it and compare stdout. Then remove the final `(x, y)` arm and confirm rustc reports non-exhaustive patterns, because a guard does not count as coverage.",
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change one value, type, or boundary in the sample. Write the exact stdout or diagnostic you expect before asking rustc. Keep the focus on destructuring, guards, and bindings."
+    "transferChallenge": "Change `point` to `(0, -7)` and predict which arm runs. Then move the guarded arm above the axis arm and predict again. Write both printed lines before running."
   },
   "exerciseKind": "planned",
   "id": "pattern-matching",
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "One arm can test, bind, and destructure at the same time.",
     "exampleCode": "let point = (3, -7);\n\nmatch point {\n    (0, 0) => println!(\"origin\"),\n    (x, 0) | (0, x) => println!(\"axis at {x}\"),\n    (x, y) if y < 0 => println!(\"below: {x},{y}\"),\n    (x, y) => println!(\"somewhere: {x},{y}\"),\n}",
-    "explanation": "Patterns work in match, if `let`, while `let`, function parameters, and plain `let`. Guards add a condition, @ binds a value while testing it, and | matches several shapes at once. The compiler checks exhaustiveness, so a pattern set that misses a case is an error rather than a surprise at runtime.\n\nA pattern describes the shape of a value and may bind its parts. In the tuple example, `(0, 0)` recognizes one exact point, `(x, 0) | (0, x)` recognizes either axis, and `(x, y) if y < 0` adds a guard. Arms run top to bottom: the first matching arm wins. That order matters because a broad arm placed early can make a later, more specific arm unreachable. Read a match as a decision table, then test one input per row and one input at a boundary.\n\nPatterns also appear outside `match`. `let (width, height) = size;` destructures a tuple directly when the shape always fits. `if let Some(value) = maybe_value` handles a single interesting enum case and lets the rest continue. `while let Some(item) = stack.pop()` repeats until the pattern no longer fits. Use a full `match` when every case deserves an explicit policy or when you want the compiler to point out a newly added variant.\n\nA guard is checked after the pattern binds names. It narrows an arm, but it does not generally count as covering every possible value of that shape. In the practice example, an even `Some(n)` goes to the guarded arm, an odd one to the next `Some(n)` arm, and `None` to its own arm. Remove the second `Some` arm and observe the exhaustiveness error. That exercise shows why patterns are more than compact syntax: they make the cases you have and have not considered visible.\n\nUse a small table of example inputs when a pattern has alternatives and guards. That makes overlap visible: an axis point that also satisfies a negative-coordinate guard reaches the earlier axis arm. Reorder only when the intended priority is clear.\n\nA pattern describes the shape of a value while optionally giving names to its parts. In `match`, each arm pairs a pattern with behavior. Matching an enum makes its active variant explicit; matching a tuple can bind two positions at once. A wildcard `_` discards a value you do not need. Use it deliberately, because it can also hide a newly added enum variant that deserves handling.\n\nRead one pattern aloud: 'If this is `Some(value)`, bind the contained value and run this arm.' Then trace the alternative `None` arm. Add a guard only when the variant alone is insufficient, and check whether another arm still covers the remaining values. Try destructuring a struct with two fields and rename one local binding to avoid confusion with the field name. Patterns are a way to state what must be true before a branch runs; the compiler checks the coverage while you decide the behavior.",
+    "explanation": "Patterns work in `match`, `if let`, `while let`, function parameters, and plain `let`. Guards add a condition, `@` binds a value while testing it, and `|` matches several shapes at once. The compiler checks exhaustiveness, so a pattern set that misses a case is an error rather than a surprise at runtime.\n\nA pattern describes the shape of a value and may bind its parts. In the tuple example, `(0, 0)` recognizes one exact point, `(x, 0) | (0, x)` recognizes either axis, and `(x, y) if y < 0` adds a guard. Arms run top to bottom: the first matching arm wins. That order matters because a broad arm placed early can make a later, more specific arm unreachable. Read a `match` as a decision table, then test one input per row and one input at a boundary.\n\nPatterns also appear outside `match`. `let (width, height) = size;` destructures a tuple directly when the shape always fits. `if let Some(value) = maybe_value` handles a single interesting enum case and lets the rest continue. `while let Some(item) = stack.pop()` repeats until the pattern no longer fits. Use a full `match` when every case deserves an explicit policy or when you want the compiler to point out a newly added variant.\n\nA guard is checked after the pattern binds names. It narrows an arm, but it does not generally count as covering every possible value of that shape. In the practice example, an even `Some(n)` goes to the guarded arm, an odd one to the next `Some(n)` arm, and `None` to its own arm. Remove the second `Some` arm and observe the exhaustiveness error. That exercise shows why patterns are more than compact syntax: they make the cases you have and have not considered visible.\n\nUse a small table of example inputs when a pattern has alternatives and guards. That makes overlap visible: an axis point that also satisfies a negative-coordinate guard reaches the earlier axis arm. Reorder only when the intended priority is clear.\n\nA pattern describes the shape of a value while optionally giving names to its parts. In `match`, each arm pairs a pattern with behavior. Matching an enum makes its active variant explicit; matching a tuple can bind two positions at once. A wildcard `_` discards a value you do not need. Use it deliberately, because it can also hide a newly added enum variant that deserves handling.\n\nRead one pattern aloud: 'If this is `Some(value)`, bind the contained value and run this arm.' Then trace the alternative `None` arm. Add a guard only when the variant alone is insufficient, and check whether another arm still covers the remaining values. Try destructuring a struct with two fields and rename one local binding to avoid confusion with the field name. Patterns are a way to state what must be true before a branch runs; the compiler checks the coverage while you decide the behavior.",
     "feedback": "A guard is an extra condition; exhaustiveness is still checked across the arms.",
     "practiceCode": "let value = Some(4);\nmatch value {\n    Some(n) if n % 2 == 0 => println!(\"even {n}\"),\n    Some(n) => println!(\"odd {n}\"),\n    None => println!(\"none\"),\n}",
     "question": "What does the `if n % 2 == 0` part do?",

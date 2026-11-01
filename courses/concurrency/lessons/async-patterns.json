@@ -1,6 +1,6 @@
 {
   "concept": "join, select, and cancellation",
-  "contentDigest": "337011e9f038fa198e97cf810ebe2268c03089b807303544b1e335fc8a4df876",
+  "contentDigest": "9052b3fd6924c3f430e7b79ce6d661062acc095a4ba00e209588e213b568addd",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Scoped Threads"
       }
     ],
-    "correction": "Dropping a future cancels it at its last `await` point.",
-    "misconception": "“Nothing — two awaits already overlap by default”",
+    "correction": "Each `.await` finishes before the next line starts, so the waits add up. `join!` polls both futures together, so the total is the slower of the two.",
+    "misconception": "“Two `.await` lines one after the other already overlap.”",
     "traceSteps": [
       {
-        "detail": "Name each task or thread, the state it can reach, and every point where work can wait, race, block, or be cancelled.",
-        "title": "Draw the event timeline"
+        "detail": "`load_user()` and `load_orders()` only build futures here; `join!` receives both before either body runs.",
+        "title": "Build both futures"
       },
       {
-        "detail": "Run two independent awaits concurrently rather than in sequence.",
-        "title": "Predict before checking"
+        "detail": "`join!` polls both inside this one task, so while one is waiting the other can still advance, with no extra thread.",
+        "title": "Poll together"
       },
       {
-        "detail": "Total time is the slower of the two, not their sum.",
-        "title": "Compare with evidence"
+        "detail": "`join!` completes only when both finish, then returns `(user, orders)`, so the line reads `ada has 3 orders`.",
+        "title": "Collect the tuple"
       }
     ],
-    "transferChallenge": "Add a second worker or cancellation point. Draw two possible event orders and state the invariant that both orders must preserve. Keep the focus on join, select, and cancellation."
+    "transferChallenge": "Give each function a sleep of a different length and time it with sequential `.await` and with `join!`. Then race them with `select!` and write down what runs for the future that loses."
   },
   "exerciseKind": "planned",
   "id": "async-patterns",
@@ -47,11 +47,11 @@
     "correctAnswer": 1,
     "exampleCaption": "join overlaps the waits instead of adding them up.",
     "exampleCode": "use tokio::join;\n\nasync fn load_user() -> &'static str { \"ada\" }\nasync fn load_orders() -> usize { 3 }\n\nasync fn run() {\n    let (user, orders) =\n        join!(load_user(), load_orders());\n    println!(\"{user} has {orders} orders\");\n}",
-    "explanation": "join runs futures at the same time and waits for all of them; select takes whichever finishes first. Dropping a future cancels it at its last `await` point, which is a real advantage over threads — but it means anything that must not be interrupted needs to be written with that in mind.\n\n`join!` polls several futures concurrently and waits for all of them; it does not imply they run on separate threads. `select!` waits for one branch to become ready and then proceeds with that branch. The other in-progress branch futures may be dropped when the selection expression ends, depending on how they are owned. Dropping a future is cancellation: code after its last completed `await` point does not run. External effects already performed are not automatically rolled back.\n\nIn the example, loading a user and loading orders are independent, so `join!` can overlap their waits. If one result is enough, `select!` might reduce latency, but the losing operation must be safe to stop or resume. A database write followed by an acknowledgement is a dangerous candidate if cancellation can occur between them. Place durable state changes and retries behind an idempotent operation or an explicit transaction where appropriate.\n\nTry timing two independent sleeps with sequential awaits and then with `join!`. Predict the total duration. Next, use `select!` between a timer and a slow operation, and record which cleanup code runs when the slow future loses. Do not assume `async` cancellation works like killing an OS thread; it occurs when an owned future is dropped, usually at a suspension boundary. Choose the combinator from the result you need and the cancellation guarantees of each branch.\n\nWhen using a timeout wrapper, inspect whether it owns the inner future or only borrows it. That determines whether the timed-out operation is dropped or can continue elsewhere. In either case, record which effects are safe to repeat. If independent operations can fail separately, also decide whether `join!` should wait for every outcome or stop early through a different combinator.",
+    "explanation": "join runs futures at the same time and waits for all of them; select takes whichever finishes first. Dropping a future cancels it wherever it is suspended, or before it starts, which is a real advantage over threads — but it means anything that must not be interrupted needs to be written with that in mind.\n\n`join!` polls several futures concurrently and waits for all of them; it does not imply they run on separate threads. `select!` waits for one branch to become ready and then proceeds with that branch. The other in-progress branch futures may be dropped when the selection expression ends, depending on how they are owned. Dropping a future is cancellation: code after its last completed `await` point does not run. External effects already performed are not automatically rolled back.\n\nIn the example, loading a user and loading orders are independent, so `join!` can overlap their waits. If one result is enough, `select!` might reduce latency, but the losing operation must be safe to stop or resume. A database write followed by an acknowledgement is a dangerous candidate if cancellation can occur between them. Place durable state changes and retries behind an idempotent operation or an explicit transaction where appropriate.\n\nTry timing two independent sleeps with sequential awaits and then with `join!`. Predict the total duration. Next, use `select!` between a timer and a slow operation, and record which cleanup code runs when the slow future loses. Do not assume `async` cancellation works like killing an OS thread; it occurs when an owned future is dropped, usually at a suspension boundary. Choose the combinator from the result you need and the cancellation guarantees of each branch.\n\nWhen using a timeout wrapper, inspect whether it owns the inner future or only borrows it. That determines whether the timed-out operation is dropped or can continue elsewhere. In either case, record which effects are safe to repeat. If independent operations can fail separately, also decide whether `join!` should wait for every outcome or stop early through a different combinator.",
     "feedback": "Sequential awaits serialise work that could have overlapped.",
     "practiceCode": "let a = load_user().await;\nlet b = load_orders().await;",
     "question": "What is wrong with that if the two are independent?",
-    "rule": "Dropping a future cancels it at its last `await` point.",
+    "rule": "Dropping a future cancels it wherever it is suspended, or before it starts.",
     "success": "Total time is the slower of the two, not their sum.",
     "summary": "Concurrency inside one task comes from combinators, not threads.",
     "task": "Run two independent awaits concurrently rather than in sequence."

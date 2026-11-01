@@ -1,6 +1,6 @@
 {
   "concept": "Tune optimization without changing source behavior",
-  "contentDigest": "ba1d6cfc3167f34301a573c36d54b22a229252c4bbd9b3ae70051fe94584b1ce",
+  "contentDigest": "3a995302622a558ca3b87877f9e64ae46e98c2ff7ac7b3e2811e63abf36c25e9",
   "depth": {
     "connections": [
       {
@@ -9,23 +9,23 @@
         "title": "Executable Documentation"
       }
     ],
-    "correction": "Cargo profiles configure optimization, debug information, panic strategy, and more.",
-    "misconception": "“The longest option list”",
+    "correction": "Cargo profiles configure optimization, debug information, panic strategy, and more, and each setting trades something away. Measure the real workload before keeping a change.",
+    "misconception": "“More optimization settings always make the program better.”",
     "traceSteps": [
       {
-        "detail": "Separate source modules, public API, manifest data, dependency graph, and build evidence before changing any one of them.",
-        "title": "Map the project boundary"
+        "detail": "`opt-level = 3` asks for full optimization, usually at the price of slower builds.",
+        "title": "Read the level"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "detail": "`lto = \"thin\"` adds link-time optimization across crates, which adds work at build time.",
+        "title": "Read the link step"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "detail": "`debug = 1` keeps limited debug information for diagnosing crashes. All three settings apply to `--release` builds, not to `cargo build`.",
+        "title": "Read the symbols"
       }
     ],
-    "transferChallenge": "Move one responsibility across a module or package boundary without changing behaviour. Predict which imports, tests, or lock data must change. Keep the focus on tune optimization without changing source behavior."
+    "transferChallenge": "Add `panic = \"abort\"` and measure the binary size again. Predict what happens to a `catch_unwind` call in this build, then decide whether the saving justifies that change."
   },
   "exerciseKind": "planned",
   "id": "release-profiles",
@@ -40,20 +40,20 @@
       "Debug defaults"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCaption": "A candidate release profile: full optimization, thin LTO, and limited debug information.",
     "exampleCode": "[profile.release]\nopt-level = 3\nlto = \"thin\"\ndebug = 1",
-    "explanation": "Cargo profiles configure optimization, debug information, panic strategy, and more. Measure the real workload before trading compile time, binary size, or debuggability for speed.\n\nA Cargo profile controls how a target is compiled. The default development profile favors fast builds and useful diagnostics; the release profile typically enables stronger optimization. Settings such as `opt-level`, `lto`, debug information, and panic behavior change compile time, runtime speed, binary size, or the quality of stack traces. There is no one best combination for every workload.\n\nThe sample enables optimization and thin link-time optimization while retaining some debug information. That is a reasonable candidate to measure, not a universal prescription. Compare debug and release builds on a representative task. If a binary is latency-sensitive, measure latency; if it must fit a size limit, measure bytes; if production crashes need investigation, keep enough symbols to diagnose them. A microbenchmark on an empty loop may say little about a real application doing I/O and allocation.\n\nUse `cargo build --release` to create the optimized artifact, and keep tests running in the configurations you support. `Some` bugs only appear under different optimization or feature combinations, even though safe Rust prevents many memory errors. Record the baseline before changing a profile, change one setting, and compare the same workload. If the result is within noise, prefer the simpler configuration. Release settings should be driven by evidence and operational needs, not by copying every available optimization flag into the manifest.",
-    "feedback": "Correct: Measurements.",
-    "practiceCode": "[profile.release]\nopt-level = 3\nlto = \"thin\"\ndebug = 1",
+    "explanation": "Cargo profiles configure optimization, debug information, panic strategy, and more. Measure the real workload before trading compile time, binary size, or debuggability for speed.\n\nA Cargo profile controls how a target is compiled. The default development profile favors fast builds and useful diagnostics; the release profile typically enables stronger optimization. Settings such as `opt-level`, `lto`, debug information, and panic behavior change compile time, runtime speed, binary size, or the quality of stack traces. There is no one best combination for every workload.\n\nThe sample enables optimization and thin link-time optimization while retaining some debug information. That is a reasonable candidate to measure, not a universal prescription. Compare debug and release builds on a representative task. If a binary is latency-sensitive, measure latency; if it must fit a size limit, measure bytes; if production crashes need investigation, keep enough symbols to diagnose them. A microbenchmark on an empty loop may say little about a real application doing I/O and allocation.\n\nUse `cargo build --release` to create the optimized artifact, and keep tests running in the configurations you support. Some bugs only appear under different optimization or feature combinations, even though safe Rust prevents many memory errors. Record the baseline before changing a profile, change one setting, and compare the same workload. If the result is within noise, prefer the simpler configuration. Release settings should be driven by evidence and operational needs, not by copying every available optimization flag into the manifest.",
+    "feedback": "Profile settings trade compile time, binary size, and debuggability against speed, so measurements of your own workload decide which to keep.",
+    "practiceCode": "[profile.release]\nopt-level = \"s\"\nlto = \"thin\"\ndebug = 1",
     "question": "What should guide profile changes?",
     "rule": "Cargo profiles configure optimization, debug information, panic strategy, and more.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "You can report before and after numbers for that one change and justify keeping or rejecting it.",
     "summary": "Tune optimization without changing source behavior.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "This profile changes one setting from the example, `opt-level`. Build both with `cargo build --release`, then record binary size and the time of one real workload."
   },
   "illustration": {
     "path": "media/release-profiles.png",
     "alt": "Diagram for Release Profiles: a Rust code example flows to the lesson rule and the key observation.",
-    "caption": "The example makes the contract visible in code."
+    "caption": "A candidate release profile: full optimization, thin LTO, and limited debug information."
   }
 }

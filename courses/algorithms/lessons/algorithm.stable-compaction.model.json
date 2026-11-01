@@ -14,7 +14,7 @@
     "visibleInput": "[0, 4, 0, 2, 7, 0]"
   },
   "concept": "Write kept elements forward so their relative order survives removal.",
-  "contentDigest": "3d0f0c6f646734478ed51ceafdc36e59b41c8bcb482d84b80dd603f39c1ea0b6",
+  "contentDigest": "51fc9b74bdc31082ee476dc700be7c140bfd03ccf5d60e34e78c285e441496c8",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "In [0,4,0,2,7,0], reading 4 writes slot 0 and advances write to 1. Reading 2 writes slot 1; reading 7 writes slot 2. Truncating at write=3 leaves [4,2,7] in the original relative order.",
     "practiceCode": "fn csv<T: std::fmt::Display>(a: impl IntoIterator<Item = T>) -> String {\n    a.into_iter()\n        .map(|x| x.to_string())\n        .collect::<Vec<_>>()\n        .join(\",\")\n}\nfn compact_nonzero(values: &mut Vec<i32>) {\n    let mut write = 0;\n    for read in 0..values.len() {\n        if values[read] != 0 {\n            values[write] = values[read];\n            write += 1;\n        }\n    }\n    values.truncate(write);\n}\n\nfn main() {\n    let result = {\n        let mut values = vec![0, 4, 0, 2, 7, 0];\n        compact_nonzero(&mut values);\n        csv(values)\n    };\n    println!(\"{result}\");\n}\n",
     "question": "What does write mark during stable zero removal?",
-    "rule": "The end of the already retained prefix. State the input preconditions before applying this invariant.",
+    "rule": "Write kept elements forward so their relative order survives removal. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(1) extra space bound without looking at the code.",
     "summary": "Write kept elements forward so their relative order survives removal.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

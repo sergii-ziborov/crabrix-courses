@@ -1,5 +1,5 @@
 pub fn solve(input: &str) -> String {
-    // Return the first index whose value is at least 4.
+    // Return the first index whose value is at least 4, or the array length when every value is below 4.
     // Parse the visible input into the structures your algorithm needs.
     // Whitespace surrounding the complete input is insignificant.
     let _ = input;

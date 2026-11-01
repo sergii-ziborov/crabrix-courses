@@ -1,5 +1,5 @@
 pub fn solve(input: &str) -> String {
-    // Return the number of ways to climb five steps using moves of one or two.
+    // Parse n and return the number of ordered ways to climb n steps using moves of one or two. There is one empty route when n=0.
     // Parse the visible input into the structures your algorithm needs.
     // Whitespace surrounding the complete input is insignificant.
     let _ = input;

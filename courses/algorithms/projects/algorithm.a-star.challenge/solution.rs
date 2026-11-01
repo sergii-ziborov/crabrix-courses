@@ -1,5 +1,5 @@
 pub fn solve(input: &str) -> String {
-    // On a 4x4 empty grid, return shortest moves from (0,0) to (3,2) using Manhattan heuristic.
+    // On a 4x4 grid, coordinates are row,col and optional walls=(r,c),... lists cells that cannot be entered. Return the fewest four-neighbor moves from start to goal using A* with the Manhattan heuristic, or -1 when walls block every route.
     // Parse the visible input into the structures your algorithm needs.
     // Whitespace surrounding the complete input is insignificant.
     let _ = input;

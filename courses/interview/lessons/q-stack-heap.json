@@ -1,6 +1,6 @@
 {
   "concept": "Where values live and what a move copies",
-  "contentDigest": "1bb1f40f6015cff250d3dfcb1a9b14f14fd9cdaacf63421dce7bf5200a819f4c",
+  "contentDigest": "9a1a0dc38b35481838523c7f1232c11f11de849cb148167a5f40882d4ebf1ce4",
   "depth": {
     "connections": [
       {
@@ -14,12 +14,12 @@
         "title": "Virtual Memory"
       }
     ],
-    "correction": "Vec has pointer, length and capacity metadata, but its field layout/order and emitted move instructions are not fixed here. The handle need not be physically on a stack; optimization may eliminate a move.",
+    "correction": "A move leaves the buffer where it is, as the `as_ptr` assertion shows. Only `clone` allocates a new buffer and duplicates the elements.",
     "misconception": "Each element is copied into a newly allocated destination buffer.",
     "traceSteps": [
       {
         "title": "Identify the contract",
-        "detail": "Where a value lives explains most of what Rust makes you write."
+        "detail": "Ownership and storage location are separate questions; draw the handle and the allocation."
       },
       {
         "title": "Trace the concrete example",
@@ -53,12 +53,12 @@
     "question": "What does moving this Vec guarantee about its elements and allocation?",
     "rule": "A move transfers ownership; handle placement and optimized instructions are not language guarantees.",
     "success": "You can explain why moving a `String` is cheap but cloning it is not.",
-    "summary": "Where a value lives explains most of what Rust makes you write.",
-    "task": "Say where each part of a `Vec`<`String`> lives and what a move copies."
+    "summary": "Ownership and storage location are separate questions; draw the handle and the allocation.",
+    "task": "Say where each part of a `Vec<String>` lives and what a move copies."
   },
   "illustration": {
     "path": "media/q-stack-heap.png",
-    "alt": "Diagram for Stack and Heap: the code flows to its exact contract and observed boundary.",
+    "alt": "Lesson map: a Vec moved to a new binding with its as_ptr address unchanged, above the rule that a move transfers ownership.",
     "caption": "The owned allocation is retained across this move; this does not measure emitted machine instructions."
   }
 }

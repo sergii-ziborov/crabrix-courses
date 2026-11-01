@@ -1,6 +1,6 @@
 {
   "concept": "Expected, found, spans, and help",
-  "contentDigest": "531f527202a880edd1881f73f4ddabeecf4bf44ebbefc542b2890dbea1eff128",
+  "contentDigest": "c6926b19ca70423ead7a91c60e14456045b708ac5aad7063373d633e830a143a",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Compound Types"
       }
     ],
-    "correction": "Repair the first causal error before chasing its downstream messages.",
+    "correction": "A final warning is often unrelated, and later messages can be side effects of the first error. Start at the first error's primary span and its expected and found types.",
     "misconception": "“The final warning in the file”",
     "traceSteps": [
       {
-        "detail": "Name each value's type and starting value, then mark the expression that produces the lesson's result.",
-        "title": "Inventory the values"
+        "detail": "In `let count: u32 = \"four\";` the annotation `u32` sets the expectation. The primary span marks `\"four\"`, the value that does not fit.",
+        "title": "Find the primary span"
       },
       {
-        "detail": "Identify the primary span, expected type, and found type before editing.",
-        "title": "Predict before checking"
+        "detail": "Before editing, predict the pair: expected `u32`, found `&str`. Decide whether `count` should be the number `4` or text you parse, because those are different programs.",
+        "title": "Read expected and found"
       },
       {
-        "detail": "Your explanation names the mismatch and the smallest intentional fix.",
+        "detail": "Run rustc and compare its E0308 message with your prediction. Apply one fix, rebuild, and confirm the `println!` line now prints `4`.",
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change one value, type, or boundary in the sample. Write the exact stdout or diagnostic you expect before asking rustc. Keep the focus on expected, found, spans, and help."
+    "transferChallenge": "Change `\"four\"` to `4.0` and write the expected and found types you predict before asking rustc. Then change it to `4` and predict what `println!` prints."
   },
   "exerciseKind": "planned",
   "id": "compiler-feedback",
@@ -45,20 +45,20 @@
       "Any suggested cast, applied automatically"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "The annotation creates an expected type rustc can compare.",
+    "exampleCaption": "The annotation sets the expected `u32`; the primary span marks the found `&str`.",
     "exampleCode": "fn main() {\n    let count: u32 = \"four\";\n    println!(\"{count}\");\n}",
-    "explanation": "When rustc rejects a program, begin at the highlighted source span. The message usually names what type was expected and what expression was actually found. In the example, count is annotated `u32`, while \"four\" is text; the compiler cannot turn that word into an unsigned integer by guessing. The primary span points to the conflicting value. Nearby labels and notes explain how the expectation was established, and a help message may suggest an operation. Treat suggestions as evidence, not commands: first decide what the program should mean.\n\nIf the count should be four, replace the text with the numeric literal 4. If the user really supplies text, parsing is a separate, fallible step that returns a `Result` and needs error handling. Those are different programs. Fix the earliest causal mismatch and compile again before chasing a long list of later messages; one root error can make downstream expressions appear broken. The diagram shows a different type mismatch but the same reading order: locate the span, compare types, choose a conversion only if it preserves intent, then recheck the build.\n\nCompiler messages often include a code such as E0308 and a help suggestion. The code is useful for looking up the rule, while the span tells you where this particular program violates it. A suggestion to parse text may compile only after you handle the possibility of invalid input; adding unwrap just to silence a diagnostic changes the failure mode to a runtime panic. Prefer a fix you can explain in terms of the data the program actually has.\n\nA compiler error is evidence about a particular source version. First confirm that the file you edited is the one being built. Then read the primary error message and its highlighted span before looking at follow-up notes. 'Expected' and 'found' describe a disagreement the compiler can point to, but the best fix may be earlier than the underlined token. One missing delimiter can produce many later diagnostics; repair the first meaningful error and rebuild before chasing the rest.\n\nDo not treat a compiler suggestion as an instruction to apply mechanically. Ask what your program is meant to do. If Rust suggests borrowing instead of moving a value, decide whether the function truly needs ownership or only temporary access. If it suggests a conversion, decide what should happen when the input is out of range. Compiler feedback is strongest when combined with a prediction about the intended data flow.\n\nCreate three controlled errors: a misspelled variable, a wrong argument type, and a missing brace. For each, record the first error category, the line and column, and the smallest intentional edit that repairs the program. Rebuild after each fix. Compare the failed build with a successful run: diagnostics describe why a new program was not produced, while stdout comes from a program that did run. That distinction keeps the learning loop precise even when the interface shows compiler messages and output near one another.",
+    "explanation": "When rustc rejects a program, begin at the highlighted source span. The message usually names what type was expected and what expression was actually found. In the example, `count` is annotated `u32`, while `\"four\"` is text; the compiler cannot turn that word into an unsigned integer by guessing. The primary span points to the conflicting value. Nearby labels and notes explain how the expectation was established, and a help message may suggest an operation. Treat suggestions as evidence, not commands: first decide what the program should mean.\n\nIf `count` should be four, replace the text with the numeric literal `4`. If the user really supplies text, parsing is a separate, fallible step that returns a `Result` and needs error handling. Those are different programs. Fix the earliest causal mismatch and compile again before chasing a long list of later messages; one root error can make downstream expressions appear broken. Keep the same reading order for any type mismatch: locate the span, compare types, choose a conversion only if it preserves intent, then recheck the build.\n\nCompiler messages often include a code such as E0308 and a help suggestion. The code is useful for looking up the rule, while the span tells you where this particular program violates it. A suggestion to parse text may compile only after you handle the possibility of invalid input; adding `unwrap` just to silence a diagnostic changes the failure mode to a runtime panic. Prefer a fix you can explain in terms of the data the program actually has.\n\nA compiler error is evidence about a particular source version. First confirm that the file you edited is the one being built. Then read the primary error message and its highlighted span before looking at follow-up notes. 'Expected' and 'found' describe a disagreement the compiler can point to, but the best fix may be earlier than the underlined token. One missing delimiter can produce many later diagnostics; repair the first meaningful error and rebuild before chasing the rest.\n\nDo not treat a compiler suggestion as an instruction to apply mechanically. Ask what your program is meant to do. If Rust suggests borrowing instead of moving a value, decide whether the function truly needs ownership or only temporary access. If it suggests a conversion, decide what should happen when the input is out of range. Compiler feedback is strongest when combined with a prediction about the intended data flow.\n\nCreate three controlled errors: a misspelled variable, a wrong argument type, and a missing brace. For each, record the first error category, the line and column, and the smallest intentional edit that repairs the program. Rebuild after each fix. Compare the failed build with a successful run: diagnostics describe why a new program was not produced, while stdout comes from a program that did run. That distinction keeps the learning loop precise even when the interface shows compiler messages and output near one another.",
     "feedback": "The primary span anchors the message to the expression that established the conflict.",
     "practiceCode": "let enabled: bool = 1;",
     "question": "Which part of the diagnostic is the best starting point?",
     "rule": "Repair the first causal error before chasing its downstream messages.",
     "success": "You can explain the mismatch in one sentence and show that the chosen change matches the program’s meaning, not merely that the compiler message disappeared.",
     "summary": "A compiler diagnostic is a map back to the source: find its primary span, compare expected with found, and make one intentional fix before reading follow-up errors.",
-    "task": "Read the highlighted span, expected `u32`, and found text before editing. Decide whether count should be a number or parsed user input; implement the smallest fix for that intent and recompile."
+    "task": "Read the highlighted span, expected `bool`, and found integer before editing. Decide whether `enabled` should be a fixed `true` or `false`, or the result of a comparison; implement the smallest fix for that intent and recompile."
   },
   "illustration": {
     "path": "media/compiler-feedback.png",
-    "alt": "A highlighted source span shows a String expected where an integer was found, followed by a type-correct conversion.",
-    "caption": "Read the highlighted span and the expected and found types before deciding how to fix a compiler error."
+    "alt": "Diagram for Reading rustc: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "The annotation sets the expected u32; the primary span marks the found &str."
   }
 }

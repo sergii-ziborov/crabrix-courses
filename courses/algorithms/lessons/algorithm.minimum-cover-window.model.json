@@ -14,7 +14,7 @@
     "visibleInput": "ADOBECODEBANC"
   },
   "concept": "Expand until all required multiplicities are covered, then shrink while coverage remains.",
-  "contentDigest": "5799ea796e8978a59e401785617ce86baea0104db9824fea8d6c3738df7e2554",
+  "contentDigest": "3f16664f084287f9c5986928b474c58a19cc817950ca105b28bee43f33525d66",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "In ADOBECODEBANC, an early valid cover contains unnecessary symbols and can shrink. The final BANC contains A, B and C in length 4. A valid cover may contain extra symbols; remove them only while all required counts remain satisfied.",
     "practiceCode": "fn minimum_cover<'a>(text: &'a str, required: &str) -> &'a str {\n    assert!(text.is_ascii() && required.is_ascii());\n    if required.is_empty() {\n        return \"\";\n    }\n    let mut need = [0_i32; 256];\n    for c in required.bytes() {\n        need[c as usize] += 1;\n    }\n    let (mut missing, mut left) = (required.len(), 0);\n    let mut best = (0, usize::MAX);\n    for (right, c) in text.bytes().enumerate() {\n        if need[c as usize] > 0 {\n            missing -= 1;\n        }\n        need[c as usize] -= 1;\n        while missing == 0 {\n            if right + 1 - left < best.1 {\n                best = (left, right + 1 - left);\n            }\n            let old = text.as_bytes()[left] as usize;\n            need[old] += 1;\n            left += 1;\n            if need[old] > 0 {\n                missing += 1;\n            }\n        }\n    }\n    if best.1 == usize::MAX {\n        \"\"\n    } else {\n        &text[best.0..best.0 + best.1]\n    }\n}\n\nfn main() {\n    let result = minimum_cover(\"ADOBECODEBANC\", \"ABC\").to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Why track required multiplicities rather than only distinct required letters?",
-    "rule": "Repeated required symbols must each be covered. State the input preconditions before applying this invariant.",
+    "rule": "Expand until all required multiplicities are covered, then shrink while coverage remains. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(alphabet) space bound without looking at the code.",
     "summary": "Expand until all required multiplicities are covered, then shrink while coverage remains.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

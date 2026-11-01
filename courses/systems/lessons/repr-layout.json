@@ -1,6 +1,6 @@
 {
   "concept": "Make a data layout contract explicit at a boundary",
-  "contentDigest": "69f5d0a98b7b266ba4c732a08a8fb470383044ab9ea5d75388b265fa96a52abe",
+  "contentDigest": "eb04125aeb0d8db193e97da36e5bddddf727698c4c1cdb261b99e3036021e464",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Unsafe Traits"
       }
     ],
-    "correction": "Rust's default layout may change for optimization and is not an FFI contract.",
-    "misconception": "“To allocate on heap”",
+    "correction": "Rust's default layout may change for optimization and is not an FFI contract. Write `#[repr(C)]` when field order and padding must match the other side.",
+    "misconception": "“Rust stores struct fields in the order you write them, so `#[repr(C)]` changes nothing.”",
     "traceSteps": [
       {
-        "detail": "Write down what callers may assume, what the compiler cannot prove, and which boundary is responsible for preserving soundness or cost.",
-        "title": "State the invariant"
+        "detail": "`repr(C)` keeps declaration order, so the `u16` named `kind` sits at offset 0.",
+        "title": "Place kind"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "detail": "A `u32` usually aligns to 4 bytes, so two padding bytes follow `kind` and `length` starts at offset 4.",
+        "title": "Align length"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "detail": "The struct takes its largest field alignment, giving size 8 and alignment 4 on typical targets. Confirm with `size_of` and `align_of`.",
+        "title": "Check the total"
       }
     ],
-    "transferChallenge": "Create the smallest counterexample that violates the sample's invariant, then repair the abstraction boundary instead of hiding the symptom. Keep the focus on make a data layout contract explicit at a boundary."
+    "transferChallenge": "Swap the two fields, predict the offsets and `size_of`, then try `#[repr(C, packed)]` on the original order. Say why taking `&header.length` from the packed form is rejected."
   },
   "exerciseKind": "planned",
   "id": "repr-layout",
@@ -40,25 +40,25 @@
   "title": "Representation & Layout",
   "writing": {
     "answers": [
-      "To define layout",
-      "To allocate on heap",
-      "To add Copy"
+      "To define its layout",
+      "To allocate it on the heap",
+      "To make it Copy"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCaption": "`repr(C)` keeps `kind` first and aligns `length` to its own boundary, with padding between them.",
     "exampleCode": "#[repr(C)]\nstruct Header {\n    kind: u16,\n    length: u32,\n}",
-    "explanation": "Rust's default layout may change for optimization and is not an FFI contract. repr(C) gives C-compatible field ordering while fixed integer types make sizes explicit.\n\nRust's default struct representation is chosen for Rust code, not as an external wire or ABI contract. `#[repr(C)]` requests C-compatible field ordering and layout rules for the target, including padding between fields. It does not make a struct packed, remove padding, or guarantee the same total size on every architecture. Fixed-width fields such as `u16` and `u32` make individual sizes explicit, but alignment and endianness still matter when bytes cross a file or network boundary.\n\nFor the example `Header`, draw offsets for `kind` and `length` under a typical C layout and locate any padding before the `u32`. Then compare the result with a C declaration built for the same target. Use `size_of` and `align_of` as checks, not as the only specification. Do not serialize a `repr(C)` struct by copying its raw bytes into a protocol: padding can be uninitialized, and a different machine may use another byte order. Define a wire format with explicit field widths and endianness instead. Reserve `repr(C)` for genuine language or ABI interoperability where both sides agree on ownership and representation.\n\nFor unions, bitfields, and packed data, the boundary becomes more complicated than a simple struct. A packed field may be unaligned, so taking an ordinary reference to it can be invalid. Read or write such representations through the appropriate unaligned operations when required. Most application data should use a deliberate parser rather than treating external bytes as an in-memory Rust struct.",
-    "feedback": "Correct: To define layout.",
-    "practiceCode": "#[repr(C)]\nstruct Header {\n    kind: u16,\n    length: u32,\n}",
-    "question": "Why does an FFI struct need repr(C)?",
+    "explanation": "Rust's default layout may change for optimization and is not an FFI contract. `repr(C)` gives C-compatible field ordering while fixed integer types make sizes explicit.\n\nRust's default struct representation is chosen for Rust code, not as an external wire or ABI contract. `#[repr(C)]` requests C-compatible field ordering and layout rules for the target, including padding between fields. It does not make a struct packed, remove padding, or guarantee the same total size on every architecture. Fixed-width fields such as `u16` and `u32` make individual sizes explicit, but alignment and endianness still matter when bytes cross a file or network boundary.\n\nFor the example `Header`, draw offsets for `kind` and `length` under a typical C layout and locate any padding before the `u32`. Then compare the result with a C declaration built for the same target. Use `size_of` and `align_of` as checks, not as the only specification. Do not serialize a `repr(C)` struct by copying its raw bytes into a protocol: padding can be uninitialized, and a different machine may use another byte order. Define a wire format with explicit field widths and endianness instead. Reserve `repr(C)` for genuine language or ABI interoperability where both sides agree on ownership and representation.\n\nFor unions, bitfields, and packed data, the boundary becomes more complicated than a simple struct. A packed field may be unaligned, so taking an ordinary reference to it can be invalid. Read or write such representations through the appropriate unaligned operations when required. Most application data should use a deliberate parser rather than treating external bytes as an in-memory Rust struct.",
+    "feedback": "`repr(C)` fixes field order and padding, so on a typical target `length` sits at offset 4, after two padding bytes.",
+    "practiceCode": "use std::mem::{align_of, offset_of, size_of};\n\n#[repr(C)]\nstruct Header {\n    kind: u16,\n    length: u32,\n}\n\nfn main() {\n    println!(\"{}\", offset_of!(Header, length));\n    println!(\"{} {}\", size_of::<Header>(), align_of::<Header>());\n}",
+    "question": "Why does an FFI struct need `repr(C)`?",
     "rule": "Rust's default layout may change for optimization and is not an FFI contract.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "You can locate the two padding bytes and say why the default layout is not an FFI contract.",
     "summary": "Make a data layout contract explicit at a boundary.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Predict both printed lines before running this. Then remove `#[repr(C)]` and say which of those numbers you may still rely on."
   },
   "illustration": {
     "path": "media/repr-layout.png",
     "alt": "Diagram for Representation & Layout: a Rust code example flows to the lesson rule and the key observation.",
-    "caption": "The example makes the contract visible in code."
+    "caption": "`repr(C)` keeps `kind` first and aligns `length` to its own boundary, with padding between them."
   }
 }

@@ -14,13 +14,13 @@
     "visibleInput": "n=3"
   },
   "concept": "Add an open symbol while available and a close only when it cannot exceed opens used.",
-  "contentDigest": "04b3814add671f20a0fe805dececb71cb01a1f315f083267a6f66254a42b2545",
+  "contentDigest": "61351506423aaebab6e1d15de21c202bc6e61b04343a24c3eda0734d099022f3",
   "depth": {
     "connections": [
       {
         "direction": "previous",
         "title": "Challenge: Combination Sum",
-        "concept": "Return unique nondecreasing combinations summing to 7."
+        "concept": "Return the unique nondecreasing combinations summing to 7, commas within a combination and semicolons between them, in ascending lexicographic order. A candidate may repeat within a combination. Return an empty string when none exists."
       },
       {
         "direction": "next",
@@ -65,7 +65,7 @@
     "feedback": "For n=3, append '(' first whenever openings remain. Only close an unmatched opening. The five valid strings are emitted in lexicographic order; n=0 has one valid empty construction, not a failed search.",
     "practiceCode": "fn parentheses(n: usize) -> Vec<String> {\n    fn visit(n: usize, open: usize, closed: usize, text: &mut String, out: &mut Vec<String>) {\n        if closed == n {\n            out.push(text.clone());\n            return;\n        }\n        if open < n {\n            text.push('(');\n            visit(n, open + 1, closed, text, out);\n            text.pop();\n        }\n        if closed < open {\n            text.push(')');\n            visit(n, open, closed + 1, text, out);\n            text.pop();\n        }\n    }\n    let mut out = Vec::new();\n    visit(n, 0, 0, &mut String::new(), &mut out);\n    out\n}\n\nfn main() {\n    let result = parentheses(3).join(\";\");\n    println!(\"{result}\");\n}\n",
     "question": "Why may a closing parenthesis be appended only when closed is less than open?",
-    "rule": "No prefix may contain more closes than opens. State the input preconditions before applying this invariant.",
+    "rule": "Add an open symbol while available and a close only when it cannot exceed opens used. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(Catalan(n)*n) time · O(n) depth bound without looking at the code.",
     "summary": "Add an open symbol while available and a close only when it cannot exceed opens used.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

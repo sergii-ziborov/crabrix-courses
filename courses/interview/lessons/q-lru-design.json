@@ -1,6 +1,6 @@
 {
   "concept": "Combine lookup speed with recency updates",
-  "contentDigest": "b023a8e94ebb5eec37ab4824c77fdacef7bb200fc93850fcb450afdf0fa2ac45",
+  "contentDigest": "5156035e28629b3bb8b468ea0bae72df527117d4b9c4c1230909d2afa16f97a9",
   "depth": {
     "connections": [
       {
@@ -14,7 +14,7 @@
         "title": "Design a Parser"
       }
     ],
-    "correction": "A standard VecDeque prototype can illustrate policy with O(n) scans. A production O(1)-update design also needs valid stable node IDs, edge handling and a capacity contract.",
+    "correction": "A `HashMap` records no recency order, and its iteration order is unspecified. An LRU needs a separate structure that tracks use, such as a linked list.",
     "misconception": "A HashMap alone stores a permanent total order of most-recent use.",
     "traceSteps": [
       {
@@ -23,7 +23,7 @@
       },
       {
         "title": "Trace the concrete example",
-        "detail": "The example makes the contract visible in code."
+        "detail": "The sketch names two jobs: the map finds a node and the order tracks recency. Neither alone gives O(1) eviction."
       },
       {
         "title": "Test the changed constraint",
@@ -52,13 +52,13 @@
     "practiceCode": "// Design sketch: map K -> node ID, plus a doubly linked recency list.\n// get/put moves one existing node; eviction removes the tail.",
     "question": "Which invariant supports O(1) expected lookup and recency updates in a full LRU design?",
     "rule": "Explain why a hash map alone cannot evict the least recent key in O(1).",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "You name B as the eviction and explain how the map and the recency list stay in step.",
     "summary": "Combine lookup speed with recency updates.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Trace a capacity-two cache through put A, put B, get A, put C. Name the evicted entry and each structure that changes."
   },
   "illustration": {
     "path": "media/q-lru-design.png",
-    "alt": "Diagram for Design an LRU Cache: a Rust code example flows to the lesson rule and the key observation.",
+    "alt": "Lesson map: an Lru struct sketch with a capacity and comments for its map and recency order, above the rule that a hash map alone cannot evict in O(1).",
     "caption": "Design sketch, not a complete O(1) cache implementation; map lookup and stable list nodes must maintain one recency invariant."
   }
 }

@@ -1,6 +1,6 @@
 {
   "concept": "One temporary writer with exclusive access",
-  "contentDigest": "2385256e943e980a844d299a4d18f804c5e46d4fd7d00cf0389cd8ea795270b5",
+  "contentDigest": "3320073be1391967a4434125cf24ae1104ec4409bf1f357a7c940ce4f31e89a0",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Reborrowing"
       }
     ],
-    "correction": "An &`mut` reference permits mutation without transferring ownership.",
-    "misconception": "“Shared read access”",
+    "correction": "It only lends exclusive access for the call. `score` stays the owner, which is why the last `println!` can read it; other access is rejected only while the mutable borrow is still in use.",
+    "misconception": "“`&mut score` moves `score` into `add_one`.”",
     "traceSteps": [
       {
-        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
-        "title": "Map ownership first"
+        "detail": "`score` is declared `mut`, `&mut score` lends it to `add_one`, and `*value += 1` writes through that reference until the call returns.",
+        "title": "Mark the writer"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
+        "detail": "Predict what the last `println!` shows. Then store `let edit = &mut score;` and predict whether `println!(\"{score}\");` compiles before `*edit += 1;`.",
         "title": "Predict before checking"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
+        "detail": "`7` prints. The early print gets E0502 while `edit` is still used later; move it after `*edit += 1;` and the program is valid.",
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &`mut` T. Before compiling, list which bindings remain usable after each call. Keep the focus on one temporary writer with exclusive access."
+    "transferChallenge": "Add `fn reset(value: &mut i32)` and call it after `add_one`. Then hold `let first = &mut score;` and `let second = &mut score;`, use `first` last, and read E0499."
   },
   "exerciseKind": "planned",
   "id": "mutable-borrows",
@@ -47,14 +47,14 @@
     "correctAnswer": 1,
     "exampleCaption": "The example makes the contract visible in code.",
     "exampleCode": "fn add_one(value: &mut i32) {\n    *value += 1;\n}\nlet mut score = 6;\nadd_one(&mut score);\nprintln!(\"{score}\");",
-    "explanation": "An &`mut` reference permits mutation without transferring ownership. Exclusivity lasts through its final use, preventing another reader or writer from observing a half-finished update.\n\nAn `&mut T` gives one caller exclusive temporary access to a value. The owner still exists, but it cannot read or write through another path while the mutable borrow is active. This is more than a rule about syntax: it prevents a reader from seeing a partially updated structure and prevents two writers from racing to change the same state. After the last use of the borrow, the owner can be used again.\n\nIn `add_one`, the star in `*value += 1` follows the mutable reference to the integer it points at. `score` must be declared `mut` so it can be borrowed mutably. The call lends access; it does not move `score` into the function. The final print shows the updated owned value. Try storing `let edit = &mut score;`, then attempt to print `score` before `edit` is last used. The compiler flags the overlapping access. Move the print after that last use and the program becomes valid.\n\nThe same pattern applies to methods on vectors and structs. A mutable borrow lets a helper change an object in place without returning a replacement object. Keep the exclusive region short and meaningful. If a large function needs many unrelated mutable borrows, split it into operations with clear boundaries. This can make borrow errors easier to diagnose and can reveal which fields should be separate. Reach for interior mutability only when ordinary exclusive borrowing cannot express the actual access pattern.",
+    "explanation": "An `&mut` reference permits mutation without transferring ownership. Exclusivity lasts through its final use, preventing another reader or writer from observing a half-finished update.\n\nAn `&mut T` gives one caller exclusive temporary access to a value. The owner still exists, but it cannot read or write through another path while the mutable borrow is active. This is more than a rule about syntax: it prevents a reader from seeing a partially updated structure and prevents two writers from racing to change the same state. After the last use of the borrow, the owner can be used again.\n\nIn `add_one`, the star in `*value += 1` follows the mutable reference to the integer it points at. `score` must be declared `mut` so it can be borrowed mutably. The call lends access; it does not move `score` into the function. The final print shows the updated owned value. Try storing `let edit = &mut score;`, then attempt to print `score` before `edit` is last used. The compiler flags the overlapping access. Move the print after that last use and the program becomes valid.\n\nThe same pattern applies to methods on vectors and structs. A mutable borrow lets a helper change an object in place without returning a replacement object. Keep the exclusive region short and meaningful. If a large function needs many unrelated mutable borrows, split it into operations with clear boundaries. This can make borrow errors easier to diagnose and can reveal which fields should be separate. Reach for interior mutability only when ordinary exclusive borrowing cannot express the actual access pattern.",
     "feedback": "Correct: Exclusive write access.",
     "practiceCode": "fn add_one(value: &mut i32) {\n    *value += 1;\n}\nlet mut score = 6;\nadd_one(&mut score);\nprintln!(\"{score}\");",
-    "question": "What does &`mut` grant temporarily?",
-    "rule": "An &`mut` reference permits mutation without transferring ownership.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "question": "What does `&mut` grant temporarily?",
+    "rule": "An `&mut` reference permits mutation without transferring ownership.",
+    "success": "You can say why `score` can be read again on the last line, and what it holds.",
     "summary": "One temporary writer with exclusive access.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Trace where `&mut score` begins and ends, and what it lets `add_one` do."
   },
   "illustration": {
     "path": "media/mutable-borrows.png",

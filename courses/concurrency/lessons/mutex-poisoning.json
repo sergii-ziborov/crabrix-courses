@@ -1,6 +1,6 @@
 {
   "concept": "Notice a panic that may leave state inconsistent",
-  "contentDigest": "e0b9e0b007dae6ac6d3f9ae4e87bd7cd0d47d789f890f7831c544f304b6998d2",
+  "contentDigest": "556148db02213982e9d396e7ad40983f182142d5e7ef521f1a50a9674f25ce74",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Atomic State"
       }
     ],
-    "correction": "A standard `Mutex` becomes poisoned when a holder panics.",
-    "misconception": "“The lock is slow”",
+    "correction": "Poisoning only reports that a holder panicked. The value is still reachable through `into_inner`, so your code decides whether its invariant survived.",
+    "misconception": "“A poisoned `Mutex` means the data is corrupted and can no longer be read.”",
     "traceSteps": [
       {
-        "detail": "Name each task or thread, the state it can reach, and every point where work can wait, race, block, or be cancelled.",
-        "title": "Draw the event timeline"
+        "detail": "`value.lock()` returns a `Result`. No thread has panicked in this example, so it is `Ok(guard)` and the first arm prints 7.",
+        "title": "Try the lock"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "detail": "`Err(poisoned)` holds a `PoisonError`, and it is reached only if a thread panicked while holding the guard.",
+        "title": "Read the other arm"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "detail": "`poisoned.into_inner()` hands back the guard, which gives the data but no proof that its invariant survived.",
+        "title": "Decide on recovery"
       }
     ],
-    "transferChallenge": "Add a second worker or cancellation point. Draw two possible event orders and state the invariant that both orders must preserve. Keep the focus on notice a panic that may leave state inconsistent."
+    "transferChallenge": "Model a two-field ledger under one `Mutex`, panic between the two updates, and write the check that decides whether the next reader may trust it."
   },
   "exerciseKind": "planned",
   "id": "mutex-poisoning",
@@ -40,21 +40,21 @@
   "title": "Mutex Poisoning",
   "writing": {
     "answers": [
-      "A holder panicked",
+      "A thread panicked while holding the lock",
       "The lock is slow",
       "The value moved"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCaption": "`lock` returns `Err` after a holder panicked, and `into_inner` still gives access to the guard.",
     "exampleCode": "use std::sync::Mutex;\nlet value = Mutex::new(7);\nmatch value.lock() {\n    Ok(guard) => println!(\"{guard}\"),\n    Err(poisoned) => {\n        println!(\"{}\", *poisoned.into_inner());\n    }\n}",
     "explanation": "A standard `Mutex` becomes poisoned when a holder panics. Recovery is possible, but code must decide whether the protected invariant is still trustworthy instead of blindly ignoring the signal.\n\nA standard-library `Mutex` becomes poisoned if a thread panics while holding its guard. A subsequent `lock()` returns a `PoisonError` rather than silently claiming the protected state is sound. The bytes are still there, and the error can give access to the guard, but the application must decide whether its invariant survived. Poisoning is a warning about a possible inconsistency, not proof that the data is corrupt.\n\nImagine a bank ledger with two fields updated under one lock. If a panic occurs after subtracting from one field but before adding to the other, a future reader must not pretend the transfer completed. Recover only after checking or rebuilding the invariant. A cache whose entries are independently replaceable might be safe to clear and rebuild. A process-wide critical invariant may justify failing the operation instead. The right choice comes from the meaning of the state, not from a universal `unwrap()` habit.\n\nWrite a test in which a worker acquires a mutex and deliberately panics. Join that worker, then inspect the result of the next `lock()`. Separate the panic returned by `join()` from the poison returned by `lock()`: they are two observable events. Add a recovery branch that validates the stored data before clearing poison or continuing. Avoid putting fallible, unrelated work inside a critical section so the chance of leaving a half-updated invariant is smaller. Different mutex implementations have different poison semantics, so verify the actual API you use.",
-    "feedback": "Correct: A holder panicked.",
-    "practiceCode": "use std::sync::Mutex;\nlet value = Mutex::new(7);\nmatch value.lock() {\n    Ok(guard) => println!(\"{guard}\"),\n    Err(poisoned) => {\n        println!(\"{}\", *poisoned.into_inner());\n    }\n}",
+    "feedback": "`lock` returns `Err` because a thread panicked while holding the guard. The value is still there, but its invariant may be incomplete.",
+    "practiceCode": "use std::sync::{Arc, Mutex};\nuse std::thread;\n\nlet value = Arc::new(Mutex::new(7));\nlet shared = Arc::clone(&value);\nlet result = thread::spawn(move || {\n    let _guard = shared.lock().unwrap();\n    panic!(\"worker failed\");\n}).join();\nprintln!(\"{}\", result.is_err());\nprintln!(\"{}\", value.lock().is_err());",
     "question": "What does poisoning report?",
     "rule": "A standard `Mutex` becomes poisoned when a holder panics.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "You can separate the panic returned by `join` from the poison returned by `lock`, and say when recovery is justified.",
     "summary": "Notice a panic that may leave state inconsistent.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Predict both printed lines. Then replace the last `is_err()` with a `match` that recovers the value through `into_inner` and checks it before trusting it."
   },
   "illustration": {
     "path": "media/mutex-poisoning.png",

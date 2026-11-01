@@ -14,13 +14,13 @@
     "visibleInput": "text=leetcode dict=[leet,code]"
   },
   "concept": "Mark a prefix reachable when an earlier reachable prefix is followed by a dictionary word.",
-  "contentDigest": "7d655116d7229634a9d5e2717fbbb254f50d7a5728a6f0ed28e43ad0ebaa29ab",
+  "contentDigest": "7c32392946f8acb31c900b638f6f611a6a23af1992f8e51db3ff5004f50c7638",
   "depth": {
     "connections": [
       {
         "direction": "previous",
         "title": "Challenge: Coin Change Minimum",
-        "concept": "Return the fewest coins needed for amount 11."
+        "concept": "Return the fewest coins needed for amount 11, or -1 when that amount is unreachable."
       },
       {
         "direction": "next",
@@ -65,7 +65,7 @@
     "feedback": "For leetcode and [leet,code], possible[4] becomes true after leet, then possible[8] becomes true using code. For apple and [app], the first three bytes are reachable but the final suffix is not, so the answer is false.",
     "practiceCode": "fn word_break(text: &str, words: &[&str]) -> bool {\n    assert!(text.is_ascii());\n    let mut possible = vec![false; text.len() + 1];\n    possible[0] = true;\n    for end in 1..=text.len() {\n        possible[end] = words.iter().any(|word| {\n            word.len() <= end && possible[end - word.len()] && &text[end - word.len()..end] == *word\n        });\n    }\n    possible[text.len()]\n}\n\nfn main() {\n    let result = word_break(\"leetcode\", &[\"leet\", \"code\"]).to_string();\n    println!(\"{result}\");\n}\n",
     "question": "What does possible[end] assert in word segmentation?",
-    "rule": "The complete prefix text[0..end] can be formed from dictionary words. State the input preconditions before applying this invariant.",
+    "rule": "Mark a prefix reachable when an earlier reachable prefix is followed by a dictionary word. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n * dictionary characters) direct suffix comparisons · O(n) state bound without looking at the code.",
     "summary": "Mark a prefix reachable when an earlier reachable prefix is followed by a dictionary word.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

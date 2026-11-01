@@ -14,7 +14,7 @@
     "visibleInput": "226"
   },
   "concept": "Count valid one-symbol and two-symbol predecessors while rejecting leading zero states.",
-  "contentDigest": "8e68fe1f8bf6d43503225a85a8910b8c6cdbe6ad763f2941f052c2740191a535",
+  "contentDigest": "7cc52173f36915ed6a1bd898908674c0b08388141ef756707a24282289d5689c",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "String 226 splits as 2-2-6,22-6,2-26, giving 3. String 06 begins with an invalid zero and gives 0. String 10 is valid only as the two-digit code 10, so it has one decoding.",
     "practiceCode": "fn decodings(text: &str) -> u64 {\n    assert!(text.bytes().all(|c| c.is_ascii_digit()));\n    let a = text.as_bytes();\n    let (mut before, mut current) = (1, 1);\n    for i in 0..a.len() {\n        let mut next = if a[i] != b'0' { current } else { 0 };\n        if i > 0 && (a[i - 1] == b'1' || a[i - 1] == b'2' && a[i] <= b'6') {\n            next += before;\n        }\n        before = current;\n        current = next;\n    }\n    current\n}\n\nfn main() {\n    let result = decodings(\"226\").to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Why can a zero digit not form a one-digit decoding?",
-    "rule": "Valid letter codes are 1 through 26. State the input preconditions before applying this invariant.",
+    "rule": "Count valid one-symbol and two-symbol predecessors while rejecting leading zero states. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(1) space bound without looking at the code.",
     "summary": "Count valid one-symbol and two-symbol predecessors while rejecting leading zero states.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

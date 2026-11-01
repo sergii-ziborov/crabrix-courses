@@ -1,6 +1,6 @@
 {
   "concept": "Build the same resolved graph again",
-  "contentDigest": "ea5247c72aaeef7f05747e531584adb4813b77439993174f2cc9bfd2d13b8231",
+  "contentDigest": "19d8dec0eea2d1c419c907b7b9ffd61a405db8625a80be89ab0047f25b317076",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Integration Tests"
       }
     ],
-    "correction": "Cargo.",
-    "misconception": "“Only the root name”",
+    "correction": "`Cargo.lock` records the exact chosen graph, including transitive packages, while `Cargo.toml` only describes allowed versions.",
+    "misconception": "“`Cargo.lock` pins only the dependencies named in `Cargo.toml`.”",
     "traceSteps": [
       {
-        "detail": "Separate source modules, public API, manifest data, dependency graph, and build evidence before changing any one of them.",
-        "title": "Map the project boundary"
+        "detail": "`name` and `version` record one resolved package: `smallvec` at exactly 1.13.2.",
+        "title": "Find the package"
       },
       {
-        "detail": "Trace the example, name the guarantee, and identify where it ends.",
-        "title": "Predict before checking"
+        "detail": "`checksum` holds the hash Cargo verifies against the downloaded package. It is shortened to `...` here.",
+        "title": "Find the checksum"
       },
       {
-        "detail": "You can apply the rule to a new snippet and defend the tradeoff.",
-        "title": "Compare with evidence"
+        "detail": "`Cargo.toml` might only ask for `\"1\"`, yet ordinary builds keep using 1.13.2 until an update changes this entry.",
+        "title": "Compare the manifest"
       }
     ],
-    "transferChallenge": "Move one responsibility across a module or package boundary without changing behaviour. Predict which imports, tests, or lock data must change. Keep the focus on build the same resolved graph again."
+    "transferChallenge": "Run `cargo update -p smallvec` in a disposable copy and read the lockfile diff. State what changed and what did not, then say why consumers of a library would not see this entry."
   },
   "exerciseKind": "planned",
   "id": "lockfile-reproducibility",
@@ -40,25 +40,25 @@
   "title": "Lockfile Reproducibility",
   "writing": {
     "answers": [
-      "The exact graph",
-      "Only the root name",
+      "The exact resolved graph",
+      "Only the root package name",
       "The Rust edition"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "The example makes the contract visible in code.",
+    "exampleCaption": "Each registry `[[package]]` entry records one exact name, version, and checksum.",
     "exampleCode": "[[package]]\nname = \"smallvec\"\nversion = \"1.13.2\"\nchecksum = \"...\"",
-    "explanation": "`Cargo.toml` describes allowed versions while Cargo.lock records the exact chosen graph. Applications normally commit the lockfile so a later build does not silently select newer compatible releases.\n\n`Cargo.toml` says which versions are acceptable; `Cargo.lock` records which exact package versions the resolver selected. If a manifest permits several compatible releases, the lockfile keeps subsequent ordinary builds on the same chosen graph until an update changes it. This helps a team reproduce a bug and compare results without silently pulling a newer dependency on every checkout.\n\nAn application normally commits its lockfile. A library crate may also commit one for its own development and tests, but downstream consumers resolve dependencies using their own lockfiles. The lockfile is therefore not a universal promise that every consumer uses the library author's exact dependency graph. If you are publishing a binary or deploying a service, review lockfile changes along with source changes, because a dependency update can alter behavior even when your own code is unchanged.\n\nTry `cargo update -p package_name` in a disposable branch and inspect the lockfile diff. Run tests and, where relevant, a release build. To check whether a clean machine can reproduce the selected graph without modifying the lockfile, use `cargo build --locked`. Be aware that a lockfile pins versions, not the entire operating environment or external native libraries. Reproducibility improves when toolchain, build flags, and platform assumptions are recorded too.",
-    "feedback": "Correct: The exact graph.",
-    "practiceCode": "[[package]]\nname = \"smallvec\"\nversion = \"1.13.2\"\nchecksum = \"...\"",
+    "explanation": "`Cargo.toml` describes allowed versions while `Cargo.lock` records the exact chosen graph. Applications normally commit the lockfile so a later build does not silently select newer compatible releases.\n\n`Cargo.toml` says which versions are acceptable; `Cargo.lock` records which exact package versions the resolver selected. If a manifest permits several compatible releases, the lockfile keeps subsequent ordinary builds on the same chosen graph until an update changes it. This helps a team reproduce a bug and compare results without silently pulling a newer dependency on every checkout.\n\nAn application normally commits its lockfile. A library crate may also commit one for its own development and tests, but downstream consumers resolve dependencies using their own lockfiles. The lockfile is therefore not a universal promise that every consumer uses the library author's exact dependency graph. If you are publishing a binary or deploying a service, review lockfile changes along with source changes, because a dependency update can alter behavior even when your own code is unchanged.\n\nTry `cargo update -p package_name` in a disposable branch and inspect the lockfile diff. Run tests and, where relevant, a release build. To check whether a clean machine can reproduce the selected graph without modifying the lockfile, use `cargo build --locked`. Be aware that a lockfile pins versions, not the entire operating environment or external native libraries. Reproducibility improves when toolchain, build flags, and platform assumptions are recorded too.",
+    "feedback": "`Cargo.lock` records the exact version of every package the resolver selected, not just the root.",
+    "practiceCode": "# Cargo.toml\n[dependencies]\nsmallvec = \"=1.13.1\"\n\n# Cargo.lock, from an earlier build\n[[package]]\nname = \"smallvec\"\nversion = \"1.13.2\"",
     "question": "What does Cargo.lock pin?",
-    "rule": "Cargo.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "rule": "`Cargo.toml` describes allowed versions while `Cargo.lock` records the exact chosen graph.",
+    "success": "You can say why `--locked` refused to change the lockfile and which line a plain build rewrites.",
     "summary": "Build the same resolved graph again.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "The requirement was just changed to `=1.13.1`, and `Cargo.lock` still says 1.13.2. Predict what `cargo build --locked` does, then what plain `cargo build` does to the lockfile."
   },
   "illustration": {
     "path": "media/lockfile-reproducibility.png",
     "alt": "Diagram for Lockfile Reproducibility: a Rust code example flows to the lesson rule and the key observation.",
-    "caption": "The example makes the contract visible in code."
+    "caption": "Each registry `[[package]]` entry records one exact name, version, and checksum."
   }
 }

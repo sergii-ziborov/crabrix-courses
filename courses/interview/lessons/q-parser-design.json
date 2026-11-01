@@ -1,6 +1,6 @@
 {
   "concept": "Separate tokenization, grammar, and diagnostics",
-  "contentDigest": "fbdb4b629bd3cc58d942ac98fe49783c0ba8347c47837f150717d65baac832b7",
+  "contentDigest": "a4383d001005caad6cc5761adb8c0609f6ad8fff41e090a4107102b620a6edcf",
   "depth": {
     "connections": [
       {
@@ -14,7 +14,7 @@
         "title": "Debugging Out Loud"
       }
     ],
-    "correction": "Spans are coordinates, not ownership or proof of validity. Keep the correct source/version and use checked slicing at trust boundaries.",
+    "correction": "Only some offsets are boundaries. In `café`, byte 4 falls inside the two-byte `é`, so `get(3..4)` returns `None`.",
     "misconception": "Every byte offset is automatically a valid Unicode scalar boundary.",
     "traceSteps": [
       {
@@ -23,7 +23,7 @@
       },
       {
         "title": "Trace the concrete example",
-        "detail": "The example makes the contract visible in code."
+        "detail": "Bytes 3 to 5 are exactly `é`, so `get` returns it. A range that splits those two bytes returns `None`."
       },
       {
         "title": "Test the changed constraint",
@@ -52,13 +52,13 @@
     "practiceCode": "struct Span { start: usize, end: usize }\nfn main() {\n    let source = \"café\";\n    let span = Span { start: 3, end: 5 };\n    assert_eq!(source.get(span.start..span.end), Some(\"é\"));\n}",
     "question": "What must a byte span into a UTF-8 source preserve before it becomes a &str slice?",
     "rule": "A strong answer defines input ownership, source spans, recovery strategy, and whether the parser returns a tree or events.",
-    "success": "You can apply the rule to a new snippet and defend the tradeoff.",
+    "success": "You state the UTF-8 boundary check and explain why a `Span` owns nothing.",
     "summary": "Separate tokenization, grammar, and diagnostics.",
-    "task": "Trace the example, name the guarantee, and identify where it ends."
+    "task": "Trace `Span { start: 3, end: 5 }` over `café`, then say which ranges `get` rejects and who must keep the source alive."
   },
   "illustration": {
     "path": "media/q-parser-design.png",
-    "alt": "Diagram for Design a Parser: the code flows to its exact contract and observed boundary.",
+    "alt": "Lesson map: a byte Span selecting é from café with a checked get, above the rule on input ownership, spans, recovery and output shape.",
     "caption": "Spans are coordinates, not ownership or proof of validity. Keep the correct source/version and use checked slicing at trust boundaries."
   }
 }

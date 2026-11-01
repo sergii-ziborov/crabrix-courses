@@ -1,6 +1,6 @@
 {
   "concept": "Why references stay valid",
-  "contentDigest": "4691be640e8a211be52804cf007d8c427ab90488c85a8501aad6e22ad5f003b9",
+  "contentDigest": "2c2780e02402b6949fa1bb8842fda8e8a6086d708105e9219dd5036d67b9a018",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Generics"
       }
     ],
-    "correction": "A lifetime annotation relates borrows; it never extends one.",
-    "misconception": "“A `&str` return always needs an annotation”",
+    "correction": "`'a` only says the result is tied to both inputs, and it extends nothing. `pick` needs that statement because with two inputs the compiler cannot tell which one the result borrows from.",
+    "misconception": "“Writing `'a` makes the borrowed strings live longer.”",
     "traceSteps": [
       {
-        "detail": "For every binding, mark its owner, whether access is shared or mutable, and the line where that access ends.",
-        "title": "Map ownership first"
+        "detail": "`longest` puts `'a` on `left`, `right`, and the return type, so the result counts as borrowing from both inputs.",
+        "title": "Link the references"
       },
       {
-        "detail": "Describe which input borrow a returned reference may depend on.",
+        "detail": "Call `longest` with one `String` from an outer scope and one from an inner block. Predict whether the result can be printed inside that block, and after it.",
         "title": "Predict before checking"
       },
       {
-        "detail": "No returned reference can outlive the data it points into.",
+        "detail": "Compile both uses: inside the block is accepted, and after the block E0597 says the inner string does not live long enough.",
         "title": "Compare with evidence"
       }
     ],
-    "transferChallenge": "Change exactly one boundary in the sample — value, &T, or &`mut` T. Before compiling, list which bindings remain usable after each call. Keep the focus on why references stay valid."
+    "transferChallenge": "Annotate `pick` the way `longest` is annotated. Then make its body always return `a`, drop `'a` from `b`, and check that the result can now outlive the string passed as `b`."
   },
   "exerciseKind": "planned",
   "id": "lifetimes-intro",
@@ -52,7 +52,7 @@
     "practiceCode": "fn pick(a: &str, b: &str) -> &str {\n    if a.len() > b.len() { a } else { b }\n}",
     "question": "Why does that need an annotation?",
     "rule": "A lifetime annotation relates borrows; it never extends one.",
-    "success": "No returned reference can outlive the data it points into.",
+    "success": "You can explain why `pick` needs one lifetime name on both inputs and the result.",
     "summary": "Lifetimes describe relationships between references, not timers.",
     "task": "Describe which input borrow a returned reference may depend on."
   },

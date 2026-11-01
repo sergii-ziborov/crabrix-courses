@@ -14,7 +14,7 @@
     "visibleInput": "[3, 1, 5, 2]"
   },
   "concept": "Precompute information from right to left for queries about everything after a position.",
-  "contentDigest": "71a8b1953c43846503abe66401e72569598cc1289a99a9e122ab15ce12a4c995",
+  "contentDigest": "8b46908f124edd59e4b4325d8b93c33389c4279f17f2c68cac6fe0661164ac59",
   "depth": {
     "connections": [
       {
@@ -29,7 +29,7 @@
       }
     ],
     "correction": "The next suffix maximum is already available. For [3,1,5,2], initialize the carried maximum to the smallest representable value. Reading rightward state in reverse yields 2,5,5,5; writing each at its original index produces [5,5,5,2].",
-    "misconception": "“Right-to-left iteration sorts the input”",
+    "misconception": "“Each position's suffix maximum depends only on values before it”",
     "traceSteps": [
       {
         "title": "Concrete transition",
@@ -55,7 +55,7 @@
   "writing": {
     "answers": [
       "The next suffix maximum is already available",
-      "Right-to-left iteration sorts the input",
+      "Each position's suffix maximum depends only on values before it",
       "A maximum can only be computed recursively"
     ],
     "correctAnswer": 0,
@@ -65,7 +65,7 @@
     "feedback": "For [3,1,5,2], initialize the carried maximum to the smallest representable value. Reading rightward state in reverse yields 2,5,5,5; writing each at its original index produces [5,5,5,2].",
     "practiceCode": "fn csv<T: std::fmt::Display>(a: impl IntoIterator<Item = T>) -> String {\n    a.into_iter()\n        .map(|x| x.to_string())\n        .collect::<Vec<_>>()\n        .join(\",\")\n}\nfn suffix_maxima(values: &[i32]) -> Vec<i32> {\n    let mut result = vec![0; values.len()];\n    let mut high = i32::MIN;\n    for i in (0..values.len()).rev() {\n        high = high.max(values[i]);\n        result[i] = high;\n    }\n    result\n}\n\nfn main() {\n    let result = csv(suffix_maxima(&[3, 1, 5, 2]));\n    println!(\"{result}\");\n}\n",
     "question": "Why is a suffix maximum computed from right to left?",
-    "rule": "The next suffix maximum is already available. State the input preconditions before applying this invariant.",
+    "rule": "Precompute information from right to left for queries about everything after a position. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) build · O(1) query · O(n) space bound without looking at the code.",
     "summary": "Precompute information from right to left for queries about everything after a position.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

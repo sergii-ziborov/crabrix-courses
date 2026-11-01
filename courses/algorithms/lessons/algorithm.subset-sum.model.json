@@ -14,7 +14,7 @@
     "visibleInput": "[2,3,7,8,10]"
   },
   "concept": "Track reachable totals and update backward so every item is used at most once.",
-  "contentDigest": "c0e0cb528be7eac190aa9ea70c027fa2ab1a949ca045f9e96c8ecacf34f19a9d",
+  "contentDigest": "a25876f59c113e816799511d59ff663bbf6c9b485f4347bb9cb7947f00a698c3",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "For [2,3,7,8,10] and target 11, selecting 3 and 8 is sufficient. When processing value 3, descending sums may use states from earlier items but not a newly created state that already used this same 3.",
     "practiceCode": "fn subset_sum(values: &[usize], target: usize) -> bool {\n    let mut reachable = vec![false; target + 1];\n    reachable[0] = true;\n    for &x in values {\n        for sum in (x..=target).rev() {\n            reachable[sum] |= reachable[sum - x];\n        }\n    }\n    reachable[target]\n}\n\nfn main() {\n    let result = subset_sum(&[2, 3, 7, 8, 10], 11).to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Why scan reachable sums downward for each subset-sum item?",
-    "rule": "It prevents taking the current item multiple times. State the input preconditions before applying this invariant.",
+    "rule": "Track reachable totals and update backward so every item is used at most once. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n*target) time · O(target) space bound without looking at the code.",
     "summary": "Track reachable totals and update backward so every item is used at most once.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

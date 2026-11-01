@@ -14,13 +14,13 @@
     "visibleInput": "1->2->4 and 1->3->4"
   },
   "concept": "Always detach the smaller head and append it to the merged tail.",
-  "contentDigest": "436269c12cc3586d7ff5e517f770cd8d31b3b54acd0ad7ee0cb7a85d9d3b6eee",
+  "contentDigest": "6bd4668cb10508211f646204b7756d4494053f96e6d9e6526faf1eb1f239d17f",
   "depth": {
     "connections": [
       {
         "direction": "previous",
         "title": "Challenge: Linked Cycle Detection",
-        "concept": "Return true when the tail links back to node index 1."
+        "concept": "Parse values plus one link form: tail->k (the last node links to zero-based node k), tail->none, or next=[...] (each node's next index or none). Starting from node 0, return whether following links ever repeats a node. An empty list has no cycle. Compare node indexes, not values."
       },
       {
         "direction": "next",
@@ -65,7 +65,7 @@
     "feedback": "Compare 1 and 1, take the left node, then take the right 1 before 2. Continuing produces 1,1,2,3,4,4. Only links change; leftover nodes can be attached as a complete remaining suffix.",
     "practiceCode": "type Link = Option<Box<ListNode>>;\nstruct ListNode {\n    value: i32,\n    next: Link,\n}\nfn list(values: &[i32]) -> Link {\n    values.iter().rev().fold(None, |next, &value| {\n        Some(Box::new(ListNode { value, next }))\n    })\n}\nfn list_values(head: &Link) -> Vec<i32> {\n    let mut out = Vec::new();\n    let mut p = head.as_deref();\n    while let Some(n) = p {\n        out.push(n.value);\n        p = n.next.as_deref();\n    }\n    out\n}\nfn csv<T: std::fmt::Display>(a: impl IntoIterator<Item = T>) -> String {\n    a.into_iter()\n        .map(|x| x.to_string())\n        .collect::<Vec<_>>()\n        .join(\",\")\n}\nfn merge_lists(mut a: Link, mut b: Link) -> Link {\n    let mut out = None;\n    let mut tail = &mut out;\n    while a.is_some() && b.is_some() {\n        let chosen = if a.as_ref().unwrap().value <= b.as_ref().unwrap().value {\n            &mut a\n        } else {\n            &mut b\n        };\n        let mut node = chosen.take().unwrap();\n        *chosen = node.next.take();\n        *tail = Some(node);\n        tail = &mut tail.as_mut().unwrap().next;\n    }\n    *tail = if a.is_some() { a } else { b };\n    out\n}\n\nfn main() {\n    let result = csv(list_values(&merge_lists(\n        list(&[1, 2, 4]),\n        list(&[1, 3, 4]),\n    )));\n    println!(\"{result}\");\n}\n",
     "question": "How does merging owned lists preserve nodes without cloning them?",
-    "rule": "Detach the smaller head and append that node to the output tail. State the input preconditions before applying this invariant.",
+    "rule": "Merge by moving ownership of existing nodes, one per comparison, until one list runs out. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n+m) time · O(1) links bound without looking at the code.",
     "summary": "Always detach the smaller head and append it to the merged tail.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

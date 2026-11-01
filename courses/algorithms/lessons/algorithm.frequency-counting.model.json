@@ -14,13 +14,13 @@
     "visibleInput": "[4, 2, 4, 3, 2, 4]"
   },
   "concept": "Turn repeated observations into counts keyed by the observed value.",
-  "contentDigest": "441c3c18d53572a88024e017e490b24bc8b78c6012338c66d2b05c219911b179",
+  "contentDigest": "7cc3216a42631dd783a1f6d9ad59e60b8965b2c8a65fa604932c0aa5f62b40bc",
   "depth": {
     "connections": [
       {
         "direction": "previous",
         "title": "Challenge: Min/Max Tracking",
-        "concept": "Return max - min for the sensor readings."
+        "concept": "Return max - min for the sensor readings. Readings are 32-bit signed integers, so the difference can need 64 bits."
       },
       {
         "direction": "next",
@@ -65,7 +65,7 @@
     "feedback": "The six readings produce counts 4→3, 2→2, 3→1. The candidate 4 wins by count. On [3,2,3,2], counts tie at 2 and the smaller value 2 wins regardless of map iteration order.",
     "practiceCode": "fn mode(values: &[i32]) -> i32 {\n    let mut counts = std::collections::HashMap::new();\n    for &x in values {\n        *counts.entry(x).or_insert(0) += 1;\n    }\n    *counts\n        .iter()\n        .min_by_key(|&(x, count)| (-*count, *x))\n        .unwrap()\n        .0\n}\n\nfn main() {\n    let result = mode(&[4, 2, 4, 3, 2, 4]).to_string();\n    println!(\"{result}\");\n}\n",
     "question": "How does the mode implementation make frequency ties deterministic?",
-    "rule": "Compare descending count, then ascending value. State the input preconditions before applying this invariant.",
+    "rule": "Turn repeated observations into counts keyed by the observed value. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) expected time · O(k) space bound without looking at the code.",
     "summary": "Turn repeated observations into counts keyed by the observed value.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

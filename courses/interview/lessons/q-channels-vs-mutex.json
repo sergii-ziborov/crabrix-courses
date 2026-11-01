@@ -1,6 +1,6 @@
 {
   "concept": "Moving ownership or sharing it",
-  "contentDigest": "88215f9b2b67e9c34859cd4f1403b1ebd411a03ce947592c0290419ee6d0c79e",
+  "contentDigest": "022631f7cf6e8764acc551a7503ce0a1435211a0851120ca6021c46ab8f79353",
   "depth": {
     "connections": [
       {
@@ -14,7 +14,7 @@
         "title": "Async vs Threads"
       }
     ],
-    "correction": "A channel models transfer, but does not eliminate capacity, shutdown or ordering design. A shared-state API can also be appropriate for a different access pattern.",
+    "correction": "A `Mutex` around a `Vec` supplies only exclusive access. The `Vec` still grows without a limit, and waking a waiting worker needs something more, such as a `Condvar` or a bounded channel.",
     "misconception": "A mutex-protected Vec automatically supplies capacity limits and wakeups.",
     "traceSteps": [
       {
@@ -47,7 +47,7 @@
     "correctAnswer": 1,
     "exampleCaption": "Desktop std channel fragment: provide compute and a surrounding function; OS-thread support is target-dependent.",
     "exampleCode": "let (tx, rx) = std::sync::mpsc::channel();\nstd::thread::spawn(move || {\n    tx.send(compute()).unwrap();\n});\nlet value = rx.recv().unwrap();",
-    "explanation": "A channel moves ownership between threads, so there is nothing left to lock and the flow of data is visible in the code. A mutex keeps one copy that several threads mutate in place, which is better when the state is genuinely shared and read far more often than written. Choosing by shape rather than by habit is the answer being looked for.\n\nA channel and a mutex organize ownership in different ways. With a channel, producers send owned messages to a receiver that handles them. This works well when one task can own the state and commands describe the changes. A mutex lets multiple tasks access one shared object, with exclusive access while a guard is held. This works well when callers need immediate coordinated reads or updates to a shared invariant. Neither is universally faster or simpler; the workload and failure path decide.\n\nConsider an order book. A single owner task receiving add and cancel commands can serialize updates without exposing internal mutable state. If many workers only read an immutable configuration and rarely replace it, a read-oriented sharing strategy may be clearer than funneling every read through messages. A mutex around a small counter is straightforward, though an atomic may fit that narrow operation. Name the invariant before choosing the primitive.\n\nMention backpressure and shutdown in an interview answer. An unbounded channel can grow without limit if producers outpace the receiver. A bounded channel makes senders wait or fail when capacity fills. A receiving loop ends only after all sender handles are gone; an accidentally retained clone can keep it waiting. A mutex guard should not be held while doing slow I/O or calling unknown code. Show the interviewer how each design makes a particular failure visible, then explain the tradeoff in latency, ordering, and complexity.\n\nWhen a result is required from the owner task, include a reply channel or request identifier. That extra protocol cost can make a simple mutex more attractive for a tiny local operation. Conversely, a channel may make shutdown and audit logging cleaner because all state changes pass through one place.\n\nInterview follow-up: Explain why per-producer order does not necessarily define a meaningful global order for simultaneous requests.",
+    "explanation": "A channel moves ownership between threads, so there is nothing left to lock and the flow of data is visible in the code. A mutex keeps one copy that several threads access in turn, which fits when the state is genuinely shared and each update must see it whole. It also serializes readers, so read-mostly state may suit an `RwLock` or a swapped `Arc` better. Choosing by shape rather than by habit is the answer being looked for.\n\nA channel and a mutex organize ownership in different ways. With a channel, producers send owned messages to a receiver that handles them. This works well when one task can own the state and commands describe the changes. A mutex lets multiple tasks access one shared object, with exclusive access while a guard is held. This works well when callers need immediate coordinated reads or updates to a shared invariant. Neither is universally faster or simpler; the workload and failure path decide.\n\nConsider an order book. A single owner task receiving add and cancel commands can serialize updates without exposing internal mutable state. If many workers only read an immutable configuration and rarely replace it, a read-oriented sharing strategy may be clearer than funneling every read through messages. A mutex around a small counter is straightforward, though an atomic may fit that narrow operation. Name the invariant before choosing the primitive.\n\nMention backpressure and shutdown in an interview answer. An unbounded channel can grow without limit if producers outpace the receiver. A bounded channel makes senders wait or fail when capacity fills. A receiving loop ends only after all sender handles are gone; an accidentally retained clone can keep it waiting. A mutex guard should not be held while doing slow I/O or calling unknown code. Show the interviewer how each design makes a particular failure visible, then explain the tradeoff in latency, ordering, and complexity.\n\nWhen a result is required from the owner task, include a reply channel or request identifier. That extra protocol cost can make a simple mutex more attractive for a tiny local operation. Conversely, a channel may make shutdown and audit logging cleaner because all state changes pass through one place.\n\nInterview follow-up: Explain why per-producer order does not necessarily define a meaningful global order for simultaneous requests.",
     "feedback": "A channel models transfer, but does not eliminate capacity, shutdown or ordering design. A shared-state API can also be appropriate for a different access pattern.",
     "practiceCode": "// Several producers submit jobs to one worker.\n// The worker processes each accepted message.\n// The input rate can exceed the worker rate.",
     "question": "What extra contract is needed for a multi-producer work queue?",
@@ -58,7 +58,7 @@
   },
   "illustration": {
     "path": "media/q-channels-vs-mutex.png",
-    "alt": "Channels transfer messages while mutexes coordinate access to shared state.",
+    "alt": "Lesson map: a spawned thread sending a computed value over an mpsc channel to a receiver, above the rule that channels move ownership and a mutex shares it.",
     "caption": "Desktop std channel fragment: provide compute and a surrounding function; OS-thread support is target-dependent."
   }
 }

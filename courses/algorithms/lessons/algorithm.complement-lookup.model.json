@@ -14,13 +14,13 @@
     "visibleInput": "[6, 4, 9, 7] target=13"
   },
   "concept": "For each number, ask whether target - number has already appeared.",
-  "contentDigest": "84af8977d4bbedc0e12b885e9761966af78a0b810e2fdf3fb5ab0ca3b45ee901",
+  "contentDigest": "4ef1bbb4210d2e1443428f69f4929db01698d2fce05dbf158fcbdd88767bd7b8",
   "depth": {
     "connections": [
       {
         "direction": "previous",
         "title": "Challenge: Hash Frequency Map",
-        "concept": "Return true when the two lowercase words have identical character counts."
+        "concept": "Return whether the two lowercase words have identical character counts."
       },
       {
         "direction": "next",
@@ -29,7 +29,7 @@
       }
     ],
     "correction": "The same element must not be reused as both operands. In [6,4,9,7] with target 13, 6 and 4 enter the map first. At index 2, complement 4 is present, yielding (1,2). Pair (0,3) is also valid and the verifier accepts it; [5,5] needs two distinct indexes.",
-    "misconception": "“Insertion would sort the map”",
+    "misconception": "“Inserting first would only make the lookup slower”",
     "traceSteps": [
       {
         "title": "Concrete transition",
@@ -55,7 +55,7 @@
   "writing": {
     "answers": [
       "The same element must not be reused as both operands",
-      "Insertion would sort the map",
+      "Inserting first would only make the lookup slower",
       "Negative numbers cannot be stored after lookup"
     ],
     "correctAnswer": 0,
@@ -65,7 +65,7 @@
     "feedback": "In [6,4,9,7] with target 13, 6 and 4 enter the map first. At index 2, complement 4 is present, yielding (1,2). Pair (0,3) is also valid and the verifier accepts it; [5,5] needs two distinct indexes.",
     "practiceCode": "fn two_sum(values: &[i32], target: i32) -> Option<(usize, usize)> {\n    let mut seen = std::collections::HashMap::new();\n    for (j, &x) in values.iter().enumerate() {\n        if let Some(&i) = seen.get(&(target - x)) {\n            return Some((i, j));\n        }\n        seen.entry(x).or_insert(j);\n    }\n    None\n}\n\nfn main() {\n    let result = two_sum(&[6, 4, 9, 7], 13).map_or(\"-1,-1\".into(), |(i, j)| format!(\"{i},{j}\"));\n    println!(\"{result}\");\n}\n",
     "question": "Why check for the complement before inserting the current index?",
-    "rule": "The same element must not be reused as both operands. State the input preconditions before applying this invariant.",
+    "rule": "For each number, ask whether target - number has already appeared. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) expected time · O(n) space bound without looking at the code.",
     "summary": "For each number, ask whether target - number has already appeared.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

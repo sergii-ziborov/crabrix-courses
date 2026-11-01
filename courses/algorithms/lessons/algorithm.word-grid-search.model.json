@@ -14,7 +14,7 @@
     "visibleInput": "grid=ABCE,SFCS,ADEE word=ABCCED"
   },
   "concept": "Walk matching neighbors while temporarily marking the current cell unavailable in this path.",
-  "contentDigest": "aa5f6afabbdffacf6ced340de0aa0e807903d08e4fb29c6b305cdc484d77c3ac",
+  "contentDigest": "8e7d4599e03d145de31d6e82ca26ca73a9d5770e7baa4652f1b1cbaac187628f",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "In the sample grid, ABCCED follows adjacent cells without reusing one. In grid AA with word AAA, there are only two cells, so the answer is false despite matching letters. Backtracking restores visited state after each attempted path.",
     "practiceCode": "fn word_exists(grid: &[Vec<u8>], word: &[u8]) -> bool {\n    fn search(\n        g: &[Vec<u8>],\n        w: &[u8],\n        r: usize,\n        c: usize,\n        i: usize,\n        seen: &mut [Vec<bool>],\n    ) -> bool {\n        if seen[r][c] || g[r][c] != w[i] {\n            return false;\n        }\n        if i + 1 == w.len() {\n            return true;\n        }\n        seen[r][c] = true;\n        let mut found = false;\n        for (dr, dc) in [(-1, 0), (1, 0), (0, -1), (0, 1)] {\n            let (a, b) = (r as isize + dr, c as isize + dc);\n            if a >= 0\n                && b >= 0\n                && a < g.len() as isize\n                && b < g[0].len() as isize\n                && search(g, w, a as usize, b as usize, i + 1, seen)\n            {\n                found = true;\n                break;\n            }\n        }\n        seen[r][c] = false;\n        found\n    }\n    if word.is_empty() {\n        return true;\n    }\n    if grid.is_empty() {\n        return false;\n    }\n    let mut seen = vec![vec![false; grid[0].len()]; grid.len()];\n    (0..grid.len()).any(|r| (0..grid[r].len()).any(|c| search(grid, word, r, c, 0, &mut seen)))\n}\n\nfn main() {\n    let result = word_exists(\n        &[\n            \"ABCE\".as_bytes().to_vec(),\n            \"SFCS\".as_bytes().to_vec(),\n            \"ADEE\".as_bytes().to_vec(),\n        ],\n        \"ABCCED\".as_bytes(),\n    )\n    .to_string();\n    println!(\"{result}\");\n}\n",
     "question": "Why clear a cell's visited flag after returning from a word-search branch?",
-    "rule": "A sibling path may legally reuse that cell. State the input preconditions before applying this invariant.",
+    "rule": "Walk matching neighbors while temporarily marking the current cell unavailable in this path. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(rows*cols*4^L) worst · O(L) depth bound without looking at the code.",
     "summary": "Walk matching neighbors while temporarily marking the current cell unavailable in this path.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

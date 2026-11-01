@@ -1,6 +1,6 @@
 {
   "concept": "Allocation, iterators, and measuring",
-  "contentDigest": "456eab76eeea4a382a933f4f0017d57e181ea1f4e65ec3ef8dcdff13e4faba2d",
+  "contentDigest": "9661bf99756b5a064eb9c581b848ca7f3096b0781fbf11e67e7950756d07e8fe",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "Rust Idioms"
       }
     ],
-    "correction": "Measure a release build; debug numbers say nothing about optimized code.",
-    "misconception": "“Return a reference to the first name”",
+    "correction": "Reading through `&[String]` needs no clone, because `map` builds new `String`s anyway. Measure a release build to see what the removed work actually cost.",
+    "misconception": "“`items.clone()` is needed before reading the strings in a shared `Vec`.”",
     "traceSteps": [
       {
-        "detail": "Write down what callers may assume, what the compiler cannot prove, and which boundary is responsible for preserving soundness or cost.",
-        "title": "State the invariant"
+        "detail": "`Vec::with_capacity(1_000)` allocates room for 1,000 elements before the loop, while `values` is still empty.",
+        "title": "Reserve first"
       },
       {
-        "detail": "Find one clone or one allocation in a loop and remove it.",
-        "title": "Predict before checking"
+        "detail": "All 1,000 pushes fit in that capacity, so none reallocates. Without the reservation, the buffer would regrow geometrically several times.",
+        "title": "Push without growing"
       },
       {
-        "detail": "Behaviour is unchanged and the allocation count drops.",
-        "title": "Compare with evidence"
+        "detail": "`total` takes `&[usize]`, so it sums the values with no copy and the caller keeps `values`.",
+        "title": "Borrow to read"
       }
     ],
-    "transferChallenge": "Create the smallest counterexample that violates the sample's invariant, then repair the abstraction boundary instead of hiding the symptom. Keep the focus on allocation, iterators, and measuring."
+    "transferChallenge": "Print `values.capacity()` after each push, with and without `with_capacity`, and count the changes. Then time both in a release build and say whether the difference matters here."
   },
   "exerciseKind": "planned",
   "id": "performance",
@@ -45,7 +45,7 @@
       "Use a HashMap"
     ],
     "correctAnswer": 0,
-    "exampleCaption": "One allocation instead of a resize on nearly every push.",
+    "exampleCaption": "One allocation up front instead of a handful of geometric regrowths.",
     "exampleCode": "let mut values = Vec::with_capacity(1_000);\nfor index in 0..1_000 {\n    values.push(index * 2);\n}\n\n// Borrow instead of cloning to read.\nfn total(values: &[usize]) -> usize {\n    values.iter().sum()\n}",
     "explanation": "`Iterator` chains compile to roughly the same code as a hand-written loop, so readability is rarely the cost. What does cost is allocating in a hot loop, cloning to satisfy the borrow checker, and choosing the wrong container. Reserve capacity when the size is known, borrow instead of cloning, and measure in release — a debug build is not evidence.\n\nPerformance work begins with a workload and a measurement. A release build is essential because debug checks and missing optimizations can dominate a microbenchmark. Use realistic input sizes and record latency distributions or throughput, not one attractive timing. Profile before changing code: time may be in parsing, allocation, I/O, locking, or an algorithmic choice far from the line that looks complicated. An iterator chain is often optimized well, but verify hot paths rather than treating any syntax as inherently free or expensive.\n\nIn the example, `Vec::with_capacity(1_000)` avoids repeated growth when the final size is known. It does not avoid initializing each pushed element. Borrowing a slice in `total` avoids cloning the vector just to read it. Next, compare a linear search with a `HashMap` lookup for your actual access pattern; the map's build cost and memory overhead can outweigh faster repeated lookups for a tiny input. Change one variable at a time, rerun under similar conditions, and keep a correctness test alongside the benchmark. State the tradeoff: perhaps more memory buys lower tail latency, or an extra allocation simplifies a cold path. Optimize the measured bottleneck and stop when the improvement is no longer meaningful to the product.\n\nBeware of a fast path that worsens the slowest cases. Reserving capacity may reduce allocations but increase peak memory if most inputs are tiny. A hash map may speed lookup while making iteration order unsuitable for a UI. State the workload distribution and the user-visible metric before choosing the optimization. Keep the simpler version if the measured gain is negligible.",
     "feedback": "The clone is never needed: map already produces new Strings.",
@@ -59,6 +59,6 @@
   "illustration": {
     "path": "media/performance.png",
     "alt": "Diagram for Performance: a Rust code example flows to the lesson rule and the key observation.",
-    "caption": "One allocation instead of a resize on nearly every push."
+    "caption": "One allocation up front instead of a handful of geometric regrowths."
   }
 }

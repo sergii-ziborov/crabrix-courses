@@ -14,7 +14,7 @@
     "visibleInput": "[100,80,60,70,60,75,85]"
   },
   "concept": "Pop smaller candidates so unresolved values remain in decreasing order.",
-  "contentDigest": "00d2a1931b1f487d2abdf5bf1f8d237e94ec0fa70149f4b7ae963530e4ac7c90",
+  "contentDigest": "f73c264769b9604b5105e421ce2994f766560a6c286f0c9b2876a57ea68a9951",
   "depth": {
     "connections": [
       {
@@ -65,7 +65,7 @@
     "feedback": "At price 75, the block ending at 60 contributes 1 and the block ending at 70 contributes 2, so today's span is 4. At 85, the absorbed block plus earlier 80 gives span 6. Every span includes today.",
     "practiceCode": "fn csv<T: std::fmt::Display>(a: impl IntoIterator<Item = T>) -> String {\n    a.into_iter()\n        .map(|x| x.to_string())\n        .collect::<Vec<_>>()\n        .join(\",\")\n}\nfn stock_spans(prices: &[i32]) -> Vec<usize> {\n    let mut stack: Vec<(i32, usize)> = Vec::new();\n    let mut result = Vec::new();\n    for &price in prices {\n        let mut span = 1; // include today\n        while stack.last().is_some_and(|&(p, _)| p <= price) {\n            span += stack.pop().unwrap().1;\n        }\n        stack.push((price, span));\n        result.push(span);\n    }\n    result\n}\n\nfn main() {\n    let result = csv(stock_spans(&[100, 80, 60, 70, 60, 75, 85]));\n    println!(\"{result}\");\n}\n",
     "question": "Why merge the stored span of a popped price into today's span?",
-    "rule": "That entire consecutive block is also no greater than today's price. State the input preconditions before applying this invariant.",
+    "rule": "Pop smaller candidates so unresolved values remain in decreasing order. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(n) space bound without looking at the code.",
     "summary": "Pop smaller candidates so unresolved values remain in decreasing order.",
     "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."

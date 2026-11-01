@@ -1,5 +1,5 @@
 pub fn solve(input: &str) -> String {
-    // Return true after ignoring non-alphanumeric ASCII and case.
+    // Ignore non-alphanumeric ASCII and case; return whether the text is a palindrome.
     // Parse the visible input into the structures your algorithm needs.
     // Whitespace surrounding the complete input is insignificant.
     let _ = input;

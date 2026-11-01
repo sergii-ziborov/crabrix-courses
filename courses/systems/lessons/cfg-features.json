@@ -1,6 +1,6 @@
 {
   "concept": "Compiling different code per target",
-  "contentDigest": "6165133838b5bf52f3d7f84b70979d123b5e300d7cd2b016d84ec1602d22fd74",
+  "contentDigest": "2b15c8ee7c8e8f1c9041a0146615f68cf985baa42019ce429e4117031e692950",
   "depth": {
     "connections": [
       {
@@ -14,23 +14,23 @@
         "title": "unsafe Rust"
       }
     ],
-    "correction": "`#[cfg(...)]` excludes selected code before name and type checking, but source syntax still has to parse. Disabling default features on one dependency edge does not prohibit another edge from enabling them.",
-    "misconception": "“Disable the dependency completely”",
+    "correction": "`default-features = false` only omits the default request on this edge. Another dependency edge can still enable them, because Cargo unifies feature requests rather than prohibiting any.",
+    "misconception": "“`default-features = false` turns that dependency's default features off for the whole build.”",
     "traceSteps": [
       {
-        "detail": "Write down what callers may assume, what the compiler cannot prove, and which boundary is responsible for preserving soundness or cost.",
-        "title": "State the invariant"
+        "detail": "`target_os = \"wasi\"` is false on a native build, so the first `platform` is removed and only the `not(...)` version remains.",
+        "title": "Select a platform"
       },
       {
-        "detail": "Gate a function on a target predicate and on a feature.",
-        "title": "Predict before checking"
+        "detail": "`extra` and its `println!` carry `feature = \"extras\"`. Without that feature both are absent, so `extra` is not unused; it does not exist.",
+        "title": "Check the feature"
       },
       {
-        "detail": "The other branch is absent from the build, not merely unused.",
-        "title": "Compare with evidence"
+        "detail": "A plain native build prints `native`. With `--features extras` it also prints `7`, from a different set of compiled items.",
+        "title": "Compare the builds"
       }
     ],
-    "transferChallenge": "Create the smallest counterexample that violates the sample's invariant, then repair the abstraction boundary instead of hiding the symptom. Keep the focus on compiling different code per target."
+    "transferChallenge": "Remove `#[cfg(feature = \"extras\")]` from the `println!` in `main`. Predict which build fails, the plain one or `--features extras`, then check both."
   },
   "exerciseKind": "planned",
   "id": "cfg-features",
@@ -47,10 +47,10 @@
     "correctAnswer": 1,
     "exampleCaption": "Matching cfg predicates select the platform implementation; enabling extras adds a second print. Every branch retains valid Rust syntax.",
     "exampleCode": "#[cfg(target_os = \"wasi\")]\nfn platform() -> &'static str { \"wasi\" }\n#[cfg(not(target_os = \"wasi\"))]\nfn platform() -> &'static str { \"native\" }\n\n#[cfg(feature = \"extras\")]\nfn extra() -> u32 { 7 }\n\nfn main() {\n    println!(\"{}\", platform());\n    #[cfg(feature = \"extras\")]\n    println!(\"{}\", extra());\n}",
-    "explanation": "`#[cfg(...)]` removes selected code before name and type checking, so platform-specific names need not resolve on other targets. Its source must still have valid Rust syntax. Cargo features are the same mechanism driven from the manifest, which is how one crate serves both a no_std embedded user and a full desktop one.\n\nConditional compilation decides which items exist in a particular build. A `#[cfg(target_os = \"wasi\")]` function is present only for matching targets; the opposite branch is present elsewhere. Cargo features are named inputs to this selection, often supplied by downstream users. Because a disabled branch is not part of the resulting item set, its behavior is not a runtime toggle and it must be checked in a build where it is enabled. Test the supported feature combinations rather than assuming the default build covers them.\n\nFeatures in a dependency graph are generally additive: if two dependents enable different features of the same package, Cargo can compile that package with their union. Design features so enabling an extra capability does not silently remove another. For mutually exclusive choices, use explicit compile errors or separate types/configuration instead of pretending feature flags are exclusive switches. A `no_std` library might gate an allocation-backed helper behind a feature, but its core API must still compile without it. Run `cargo check --no-default-features` and a feature-enabled build for that design. Document what each feature changes, which target constraints it carries, and whether it affects public API. If callers need to choose at runtime, use a value or trait object instead of `cfg`.\n\nRemember that code behind a disabled cfg may go untested for months. Put each supported target or feature combination into a build matrix that you can run locally or in release preparation. If a feature changes public types, document the resulting API surface for downstream crates. Do not use mutually exclusive features as a substitute for a real runtime configuration choice.",
+    "explanation": "`#[cfg(...)]` removes selected code before name and type checking, so platform-specific names need not resolve on other targets. Its source must still have valid Rust syntax. Cargo features are the same mechanism driven from the manifest, which is how one crate serves both a `no_std` embedded user and a full desktop one.\n\nConditional compilation decides which items exist in a particular build. A `#[cfg(target_os = \"wasi\")]` function is present only for matching targets; the opposite branch is present elsewhere. Cargo features are named inputs to this selection, often supplied by downstream users. Because a disabled branch is not part of the resulting item set, its behavior is not a runtime toggle and it must be checked in a build where it is enabled. Test the supported feature combinations rather than assuming the default build covers them.\n\nFeatures in a dependency graph are generally additive: if two dependents enable different features of the same package, Cargo can compile that package with their union. Design features so enabling an extra capability does not silently remove another. For mutually exclusive choices, use explicit compile errors or separate types/configuration instead of pretending feature flags are exclusive switches. A `no_std` library might gate an allocation-backed helper behind a feature, but its core API must still compile without it. Run `cargo check --no-default-features` and a feature-enabled build for that design. Document what each feature changes, which target constraints it carries, and whether it affects public API. If callers need to choose at runtime, use a value or trait object instead of `cfg`.\n\nRemember that code behind a disabled cfg may go untested for months. Put each supported target or feature combination into a build matrix that you can run locally or in release preparation. If a feature changes public types, document the resulting API surface for downstream crates. Do not use mutually exclusive features as a substitute for a real runtime configuration choice.",
     "feedback": "Feature requests are unified for a package where Cargo resolves them together. This declaration omits defaults; it is not a graph-wide prohibition of std or of another named feature.",
-    "practiceCode": "[features]\ndefault = [\"std\"]\nstd = []",
-    "question": "What does default-features = false request on this dependency declaration?",
+    "practiceCode": "[features]\ndefault = [\"std\"]\nstd = []\n\n[dependencies]\nmemchr = { version = \"2\", default-features = false }",
+    "question": "What does default-features = false request on that memchr declaration?",
     "rule": "`#[cfg(...)]` excludes selected code before name and type checking, but source syntax still has to parse. Disabling default features on one dependency edge does not prohibit another edge from enabling them.",
     "success": "The other branch is absent from the build, not merely unused.",
     "summary": "cfg decides which code is compiled at all.",

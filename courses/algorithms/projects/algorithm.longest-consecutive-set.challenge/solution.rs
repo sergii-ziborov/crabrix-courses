@@ -1,5 +1,5 @@
 pub fn solve(input: &str) -> String {
-    // Return the length of the longest consecutive integer run.
+    // Return the length of the longest run of consecutive integer values; duplicates count once.
     // Parse the visible input into the structures your algorithm needs.
     // Whitespace surrounding the complete input is insignificant.
     let _ = input;

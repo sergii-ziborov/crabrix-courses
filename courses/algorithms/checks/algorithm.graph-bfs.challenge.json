@@ -12,7 +12,7 @@
       "input: &str",
       "-> String"
     ],
-    "source": "pub fn solve(input: &str) -> String {\n    // Return distance in edges from node 0 to every node.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement graph-bfs\")\n}\n",
+    "source": "pub fn solve(input: &str) -> String {\n    // Parse n and undirected edges. Return the distance in edges from node 0 to every node in vertex order, or -1 for an unreachable node.\n    // Trim surrounding whitespace; implement parsing and the algorithm.\n    let _ = input;\n    todo!(\"implement graph-bfs\")\n}\n",
     "verificationCases": [
       {
         "kind": "visible",
@@ -40,6 +40,16 @@
         "expectedAnswer": "0,-1,-1,-1,-1"
       },
       {
+        "kind": "adversarial",
+        "input": "n=3 edges=(0,1),(1,2),(0,2)",
+        "expectedAnswer": "0,1,1"
+      },
+      {
+        "kind": "adversarial",
+        "input": "n=3 edges=(1,0),(0,2)",
+        "expectedAnswer": "0,1,1"
+      },
+      {
         "kind": "normalisation",
         "input": "  \nn=5 edges=(0,1),(0,2),(1,3),(2,4)\n  ",
         "expectedAnswer": "0,1,1,2,2"
@@ -50,7 +60,7 @@
         "expectedAnswer": "0,-1,-1,-1,-1"
       }
     ],
-    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"n=5 edges=(0,1),(0,2),(1,3),(2,4)\",\"0,1,1,2,2\"),\n        (\"n=4 edges=(0,1)\",\"0,1,-1,-1\"),\n        (\"n=4 edges=(0,1),(1,2),(2,3)\",\"0,1,2,3\"),\n        (\"n=4 edges=(0,1),(0,2),(0,3)\",\"0,1,1,1\"),\n        (\"n=5 edges=(1,2),(3,4)\",\"0,-1,-1,-1,-1\"),\n        (\"  \\nn=5 edges=(0,1),(0,2),(1,3),(2,4)\\n  \",\"0,1,1,2,2\"),\n        (\"\\nn=5 edges=(1,2),(3,4)\\n\",\"0,-1,-1,-1,-1\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS graph-bfs\");\n}\n"
+    "verificationSource": "mod solution;\n\nfn valid(_input: &str, actual: &str, expected: &str) -> bool { actual == expected }\n\nfn main() {\n    let cases = [\n        (\"n=5 edges=(0,1),(0,2),(1,3),(2,4)\",\"0,1,1,2,2\"),\n        (\"n=4 edges=(0,1)\",\"0,1,-1,-1\"),\n        (\"n=4 edges=(0,1),(1,2),(2,3)\",\"0,1,2,3\"),\n        (\"n=4 edges=(0,1),(0,2),(0,3)\",\"0,1,1,1\"),\n        (\"n=5 edges=(1,2),(3,4)\",\"0,-1,-1,-1,-1\"),\n        (\"n=3 edges=(0,1),(1,2),(0,2)\",\"0,1,1\"),\n        (\"n=3 edges=(1,0),(0,2)\",\"0,1,1\"),\n        (\"  \\nn=5 edges=(0,1),(0,2),(1,3),(2,4)\\n  \",\"0,1,1,2,2\"),\n        (\"\\nn=5 edges=(1,2),(3,4)\\n\",\"0,-1,-1,-1,-1\")\n    ];\n    for (i,(input,expected)) in cases.iter().enumerate() {\n        let actual = solution::solve(input);\n        if !valid(input,&actual,expected) { eprintln!(\"PRIVATE CASE {} FAILED\",i+1); std::process::exit(1); }\n    }\n    println!(\"PASS graph-bfs\");\n}\n"
   },
   "evidence": {
     "expectedOutput": {
