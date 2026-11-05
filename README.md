@@ -36,10 +36,20 @@ has 117 more adversarial cases that reject 94 known wrong solutions, and 14 corr
 programs. Lesson IDs, order and answer indices are unchanged. See the
 [changelog](CHANGELOG.md) and [record](editorial/academy_20261101/README.md).
 
+## Practical paths — 5 November 2026
+
+The current Academy has **56 units and 771 lessons/steps: 171 Rust + 600 Atlas**.
+Seventeen new lessons cover files/data, API boundaries, async operations, reliability,
+and WASM/WASI. Thirty-one compiler labs use separate typed verification harnesses;
+four ecosystem readings explicitly declare a desktop Cargo profile. Existing lesson
+identities, questions, and progress are preserved.
+[Release](https://github.com/sergii-ziborov/crabrix-courses/releases/tag/practical-paths-2026-11-05)
+· [Reproduce the checks and see their limits](editorial/practice_20261105/README.md).
+
 ## Interview Prep — 29 October 2026
 
 Interview 1.1.0 has 52 topics, including 12 new focused Rust/async/API questions.
-The current Academy has **56 units and 771 lessons/steps: 171 Rust + 600 Atlas**.
+That revision brought the Academy to 51 units and 754 lessons/steps.
 All 40 existing question identities and answer positions survive the corrections.
 New worked examples run without external dependencies; contextual SQL/network/API
 sketches are labelled. [Review and exact test scope](editorial/interview_20261029/README.md).
