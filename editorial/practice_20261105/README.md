@@ -74,3 +74,13 @@ The path and import labs explicitly model only part of the real host boundary.
 - [Rust wasm32-wasip1](https://doc.rust-lang.org/rustc/platform-support/wasm32-wasip1.html)
 
 No copied prose or precompiled execution payload is added to the lesson packs.
+
+## Filesystem verification patch
+
+Projects 1.0.9 independently removes any stale test file, calls the learner, and
+reads the resulting file from the private harness for every case. It also requires
+an error when the destination is a directory. A solution that merely returns the
+input text is the regression mutant and is rejected. Verification receipts now bind
+the exact reference, starter, harness and mutant through a contract SHA-256.
+The 771 web readings remain byte-equivalent as structured content; only app-private
+grading data and its pack/version digests change. Published 1.0.8 assets are retained.

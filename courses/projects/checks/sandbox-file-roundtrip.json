@@ -4,21 +4,21 @@
     "patternID": "sandbox-file-roundtrip",
     "projectName": "sandbox-file-roundtrip-lab",
     "source": "pub fn save_report(path: &std::path::Path, text: &str) -> std::io::Result<String> {\n    todo!(\"implement the contract\")\n}\n",
-    "verificationSource": "mod solution;\n\nfn main() {\n    assert_eq!(solution::save_report(std::path::Path::new(if cfg!(target_arch = \"wasm32\") { \"/sandbox/crabrix-report.txt\" } else { \"crabrix-report.txt\" }), \"crab: 3\\n\").unwrap(), \"crab: 3\\n\", \"case 1\");\n    assert_eq!(solution::save_report(std::path::Path::new(if cfg!(target_arch = \"wasm32\") { \"/sandbox/crabrix-report.txt\" } else { \"crabrix-report.txt\" }), \"\").unwrap(), \"\", \"case 2\");\n    assert_eq!(solution::save_report(std::path::Path::new(if cfg!(target_arch = \"wasm32\") { \"/sandbox/crabrix-report.txt\" } else { \"crabrix-report.txt\" }), \"Rust 🦀\\nnext\").unwrap(), \"Rust 🦀\\nnext\", \"case 3\");\n\n    println!(\"PASS sandbox-file-roundtrip\");\n}\n",
+    "verificationSource": "mod solution;\nfn roundtrip(text: &str) -> String {\n    let path = std::path::Path::new(if cfg!(target_arch = \"wasm32\") { \"/sandbox/crabrix-report.txt\" } else { \"crabrix-report.txt\" });\n    match std::fs::remove_file(path) {\n        Ok(()) => {},\n        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {},\n        Err(error) => panic!(\"cleanup failed: {error}\"),\n    }\n    let actual = solution::save_report(path, text).unwrap();\n    // Observe the effect independently; returning the input is not sufficient.\n    assert_eq!(std::fs::read_to_string(path).unwrap(), text);\n    actual\n}\nfn main() {\n    assert_eq!(roundtrip(\"crab: 3\\n\"), \"crab: 3\\n\", \"case 1\");\n    assert_eq!(roundtrip(\"\"), \"\", \"case 2\");\n    assert_eq!(roundtrip(\"Rust 🦀\\nnext\"), \"Rust 🦀\\nnext\", \"case 3\");\n    let directory = std::path::Path::new(if cfg!(target_arch = \"wasm32\") { \"/sandbox\" } else { \".\" });\n    assert!(solution::save_report(directory, \"must fail\").is_err());\n    println!(\"PASS sandbox-file-roundtrip\");\n}\n",
     "verificationCases": [
       {
         "kind": "visible",
-        "input": "solution::save_report(std::path::Path::new(if cfg!(target_arch = \"wasm32\") { \"/sandbox/crabrix-report.txt\" } else { \"crabrix-report.txt\" }), \"crab: 3\\n\").unwrap()",
+        "input": "roundtrip(\"crab: 3\\n\")",
         "expectedAnswer": "\"crab: 3\\n\""
       },
       {
         "kind": "boundary",
-        "input": "solution::save_report(std::path::Path::new(if cfg!(target_arch = \"wasm32\") { \"/sandbox/crabrix-report.txt\" } else { \"crabrix-report.txt\" }), \"\").unwrap()",
+        "input": "roundtrip(\"\")",
         "expectedAnswer": "\"\""
       },
       {
         "kind": "semantic",
-        "input": "solution::save_report(std::path::Path::new(if cfg!(target_arch = \"wasm32\") { \"/sandbox/crabrix-report.txt\" } else { \"crabrix-report.txt\" }), \"Rust 🦀\\nnext\").unwrap()",
+        "input": "roundtrip(\"Rust 🦀\\nnext\")",
         "expectedAnswer": "\"Rust 🦀\\nnext\""
       }
     ],

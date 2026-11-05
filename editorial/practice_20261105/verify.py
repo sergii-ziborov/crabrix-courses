@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Execute reference, wrong-result, unchanged, and forged-verdict submissions."""
 import json
+import hashlib
 import subprocess
 import tempfile
 from pathlib import Path
@@ -36,7 +37,8 @@ def main():
             prefix = item["source"].split(item["signature"])[0]
             wrong = prefix + item["signature"] + " { " + item["mutant"] + " }\n"
             forged = prefix + item["signature"] + ' { println!("' + public + '"); std::process::exit(0); }\n'
-            record = {"id": item["id"], "reference": run(item["source"], harness, folder),
+            contract = {key: item[key] for key in ["source", "starter", "harness", "mutant"]}
+            record = {"id": item["id"], "contractSHA256": hashlib.sha256(json.dumps(contract, sort_keys=True).encode()).hexdigest(), "reference": run(item["source"], harness, folder),
                       "unchanged": run(item["starter"], harness, folder),
                       "wrong": run(wrong, harness, folder), "forgedVerdict": run(forged, harness, folder)}
             results.append(record)

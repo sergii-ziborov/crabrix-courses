@@ -1,4 +1,5 @@
 import json
+import hashlib
 import unittest
 from pathlib import Path
 
@@ -31,6 +32,8 @@ class PracticalPathTests(unittest.TestCase):
             self.assertNotIn("fn main", starter)
             self.assertGreaterEqual(len(check["verificationCases"]), 3)
             result = evidence[ref["id"]]
+            contract = {key: ref[key] for key in ["source", "starter", "harness", "mutant"]}
+            self.assertEqual(result["contractSHA256"], hashlib.sha256(json.dumps(contract, sort_keys=True).encode()).hexdigest())
             self.assertTrue(result["reference"]["passed"], ref["id"])
             for kind in ["unchanged", "wrong", "forgedVerdict"]:
                 self.assertTrue(result[kind]["compiled"], ref["id"])

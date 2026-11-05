@@ -63,8 +63,22 @@ def add_routes(unit, lesson, lab):
     p='std::path::Path::new(if cfg!(target_arch = "wasm32") { "/sandbox/crabrix-report.txt" } else { "crabrix-report.txt" })'
     lab("projects", "sandbox-file-roundtrip", "pub fn save_report(path: &std::path::Path, text: &str) -> std::io::Result<String>",
         '    std::fs::write(path, text)?;\n    std::fs::read_to_string(path)',
-        [(f'solution::save_report({p}, "crab: 3\\n").unwrap()', '"crab: 3\\n"'), (f'solution::save_report({p}, "").unwrap()', '""'), (f'solution::save_report({p}, "Rust 🦀\\nnext").unwrap()', '"Rust 🦀\\nnext"')],
-        "Use fs::write and fs::read_to_string, propagating errors. Return the exact saved text; do not append to an existing file.", mutant='Ok(String::new())')
+        [('roundtrip("crab: 3\\n")', '"crab: 3\\n"'), ('roundtrip("")', '""'), ('roundtrip("Rust 🦀\\nnext")', '"Rust 🦀\\nnext"')],
+        "Use fs::write and fs::read_to_string, propagating errors. Return the exact saved text; do not append to an existing file.", mutant='Ok(text.to_owned())',
+        preamble='''fn roundtrip(text: &str) -> String {
+    let path = PATH;
+    match std::fs::remove_file(path) {
+        Ok(()) => {},
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {},
+        Err(error) => panic!("cleanup failed: {error}"),
+    }
+    let actual = solution::save_report(path, text).unwrap();
+    // Observe the effect independently; returning the input is not sufficient.
+    assert_eq!(std::fs::read_to_string(path).unwrap(), text);
+    actual
+}'''.replace('PATH', p),
+        extra='''    let directory = std::path::Path::new(if cfg!(target_arch = "wasm32") { "/sandbox" } else { "." });
+    assert!(solution::save_report(directory, "must fail").is_err());''')
 
     lesson("projects", "files-data", "validated-records", "Validate Data Records", "A bounded text format with precise errors",
         "Specify a small input format before implementing its parser.",

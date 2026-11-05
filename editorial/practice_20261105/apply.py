@@ -201,7 +201,7 @@ async fn compute() -> u32 { 42 }'''
                     other = read(COURSES / cid / "lessons" / (ids[neighbor] + ".json"))
                     item["depth"]["connections"].append({"direction": direction, "title": other["title"], "concept": other["concept"]})
             save(p, item)
-    versions = {"basics": "1.0.8", "ownership": "1.0.8", "projects": "1.0.8",
+    versions = {"basics": "1.0.8", "ownership": "1.0.8", "projects": "1.0.9",
                 "concurrency": "1.0.7", "systems": "1.0.8"}
     for cid, version in versions.items():
         p = COURSES / cid / "course.json"; c = read(p)
