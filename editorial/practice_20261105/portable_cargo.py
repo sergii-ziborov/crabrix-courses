@@ -29,6 +29,7 @@ def apply():
         paragraphs.append(profile)
         writing['explanation'] = '\n\n'.join(paragraphs)
         item['depth']['transferChallenge'] = item['depth']['transferChallenge'].replace('a desktop timer or host support', 'timer or host support outside this rt/sync profile')
+        writing['task'] = writing['task'].replace('On desktop Cargo,', 'In Crabrix or the web Playground,')
         writing['task'] += ' Open the supplied local Cargo project, prepare packages, then Run or Debug it. Change inputs and examine the assertions. Answer the lesson question separately.' if 'Open the supplied local Cargo project' not in writing['task'] else ''
         path.write_text(json.dumps(item, ensure_ascii=False, indent=2)+'\n')
         folder = ROOT/'courses'/course/'projects'/lid
