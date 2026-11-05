@@ -219,6 +219,8 @@ async fn compute() -> u32 { 42 }'''
             if item["id"] != "async-runtime":
                 item["writing"]["practiceCode"] = item["writing"]["exampleCode"]
             save(p, item)
+    from portable_cargo import apply as apply_portable_cargo
+    apply_portable_cargo()
     save(BASE / "lab-references.json", LABS)
     print(f"Authored {len(LABS)} verified lab contracts")
 

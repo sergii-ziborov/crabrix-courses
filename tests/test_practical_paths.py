@@ -46,5 +46,8 @@ class PracticalPathTests(unittest.TestCase):
         for lid in ["serde-roundtrip-validation", "joinset-task-ownership", "semaphore-backpressure", "graceful-shutdown-protocol"]:
             course = "projects" if lid.startswith("serde") else "concurrency"
             lesson = json.loads((ROOT / "courses" / course / "lessons" / (lid + ".json")).read_text())
-            self.assertEqual(lesson["exerciseKind"], "planned")
-            self.assertIn("Desktop Cargo profile", lesson["writing"]["explanation"])
+            self.assertEqual(lesson["exerciseKind"], "runnable")
+            self.assertIn("Local Cargo profile", lesson["writing"]["explanation"])
+            project = ROOT / "courses" / course / "projects" / lid
+            self.assertTrue((project / "Cargo.lock").is_file())
+            self.assertEqual((project / "src/main.rs").read_text(), lesson["writing"]["exampleCode"])

@@ -17,7 +17,7 @@ def main():
         folder = Path(temp)
         (folder / "src/bin").mkdir(parents=True)
         (folder / "src/main.rs").write_text("fn main() {}")
-        (folder / "Cargo.toml").write_text('[package]\nname="crabrix-reading-check"\nversion="0.1.0"\nedition="2024"\n[dependencies]\nserde={version="=1.0.228",features=["derive"]}\nserde_json="=1.0.154"\ntokio={version="=1.54.1",default-features=false,features=["rt","sync"]}\n')
+        (folder / "Cargo.toml").write_text('[package]\nname="crabrix-reading-check"\nversion="0.1.0"\nedition="2024"\n[dependencies]\nserde="=1.0.229"\nserde_json="=1.0.151"\ntokio={version="=1.54.1",default-features=false,features=["rt","sync"]}\n')
         subprocess.run(["cargo", "generate-lockfile", "--offline"], cwd=folder, check=True)
         for course, units in UNITS.items():
             for uid in units:
