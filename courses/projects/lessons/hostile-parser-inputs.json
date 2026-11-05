@@ -1,0 +1,64 @@
+{
+  "id": "hostile-parser-inputs",
+  "parentID": "reliability-labs",
+  "order": 1,
+  "title": "Adversarial Parser Tests",
+  "concept": "Reject malformed data without panic or silent truncation",
+  "minutes": 16,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Start with a grammar, then make a test table for the ways input can violate it.",
+    "rule": "No panic is necessary for an expected invalid input, but success must still mean the whole record was accepted.",
+    "explanation": "A parser that never panics can still be wrong if it silently ignores a suffix, rounds an overflowing value, or accepts a missing field. Write down the accepted grammar before writing adversarial cases. This lesson's grammar is exactly two trimmed unsigned decimal byte values separated by one colon. Both values must fit u8. A third field, an empty field, a sign, or nondecimal text is invalid.\n\nOrganize tests by failure class instead of adding random strings without a hypothesis. Test a missing delimiter, repeated delimiters, a negative value, a leading plus, overflow, whitespace-only fields, Unicode digits, and the two valid numeric boundaries. Rust's numeric parser may accept syntax you did not intend, so enforce the grammar's ASCII-digit rule before parsing. Return None for this small API; a richer user-facing parser should expose a precise error type.\n\nAvoid `filter_map` on fallible fields: it can turn a three-field record with one bad field into two apparently good values. Do not index a collected vector until its length has been checked. Check complete consumption so a valid prefix cannot conceal trailing junk. These ideas transfer directly to command input, imported project metadata, and network messages.\n\nLocal compiler profile: standard library only. The lab uses deterministic hostile cases. Desktop cargo-fuzz is a separate toolchain that can explore byte inputs and save crashes; it does not belong to the browser or iOS run profile merely because the parser itself is portable. A useful fuzz target asserts domain properties after successful parsing and never treats rejection of arbitrary bytes as a bug.",
+    "exampleCode": "fn decimal_byte(text: &str) -> Option<u8> {\n    let text = text.trim();\n    if text.is_empty()\n        || !text.bytes().all(|b| b.is_ascii_digit())\n    {\n        return None;\n    }\n    text.parse().ok()\n}\nfn main() {\n    assert_eq!(decimal_byte(\"255\"), Some(255));\n    assert_eq!(decimal_byte(\"256\"), None);\n    assert_eq!(decimal_byte(\"+1\"), None);\n}\n",
+    "exampleCaption": "Reject malformed data without panic or silent truncation",
+    "practiceCode": "fn decimal_byte(text: &str) -> Option<u8> {\n    let text = text.trim();\n    if text.is_empty()\n        || !text.bytes().all(|b| b.is_ascii_digit())\n    {\n        return None;\n    }\n    text.parse().ok()\n}\nfn main() {\n    assert_eq!(decimal_byte(\"255\"), Some(255));\n    assert_eq!(decimal_byte(\"256\"), None);\n    assert_eq!(decimal_byte(\"+1\"), None);\n}\n",
+    "task": "Parse exactly two trimmed ASCII-decimal u8 fields separated by one colon. Reject signs, empty fields, extra fields, non-ASCII digits, and overflow. Return None on invalid input. Open the compiler lab and complete the supplied function in solution.rs. The reading question above is a separate exercise.",
+    "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
+    "question": "Why test a leading plus sign separately from a negative number?",
+    "answers": [
+      "The declared grammar may forbid syntax that a numeric parser accepts",
+      "Plus signs always overflow u8",
+      "It makes the parser multithreaded"
+    ],
+    "correctAnswer": 0,
+    "feedback": "The application's grammar can be narrower than parse::<u8>(). Test the declared syntax as well as the numeric range."
+  },
+  "depth": {
+    "misconception": "Anything accepted by parse::<u8>() belongs to my format.",
+    "correction": "Primitive parsing is a building block; the full record grammar remains your responsibility.",
+    "traceSteps": [
+      {
+        "title": "Partition",
+        "detail": "List valid boundaries and independent invalid-input classes."
+      },
+      {
+        "title": "Validate",
+        "detail": "Check field count and ASCII decimal syntax before conversion."
+      },
+      {
+        "title": "Reject",
+        "detail": "Return a failure rather than panicking or accepting a valid prefix."
+      }
+    ],
+    "transferChallenge": "Write a desktop fuzz target that feeds arbitrary bytes through UTF-8 validation and then checks the successful parse contract.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Test Properties, Not Just Examples",
+        "concept": "An independent oracle and bounded generated cases"
+      },
+      {
+        "direction": "next",
+        "title": "Keep a Unicode Regression",
+        "concept": "A minimal failure that survives a refactor"
+      }
+    ]
+  },
+  "illustration": {
+    "path": "media/hostile-parser-inputs.png",
+    "alt": "Diagram for Adversarial Parser Tests: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "Reject malformed data without panic or silent truncation"
+  },
+  "contentDigest": "ce317b8f38ff731faca98d40cc0ac9b7e02238e3181c54e9257c8c635a1f1104"
+}

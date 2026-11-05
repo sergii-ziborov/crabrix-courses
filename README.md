@@ -39,7 +39,7 @@ programs. Lesson IDs, order and answer indices are unchanged. See the
 ## Interview Prep — 29 October 2026
 
 Interview 1.1.0 has 52 topics, including 12 new focused Rust/async/API questions.
-The current Academy has **51 units and 754 lessons/steps: 154 Rust + 600 Atlas**.
+The current Academy has **56 units and 771 lessons/steps: 171 Rust + 600 Atlas**.
 All 40 existing question identities and answer positions survive the corrections.
 New worked examples run without external dependencies; contextual SQL/network/API
 sketches are labelled. [Review and exact test scope](editorial/interview_20261029/README.md).

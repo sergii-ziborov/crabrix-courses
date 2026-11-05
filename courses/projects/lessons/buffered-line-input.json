@@ -1,0 +1,59 @@
+{
+  "id": "buffered-line-input",
+  "parentID": "files-data",
+  "order": 0,
+  "title": "Buffered Line Input",
+  "concept": "BufRead, Cursor, and fallible iteration",
+  "minutes": 16,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Separate a streaming parser from the place its bytes come from.",
+    "rule": "A reader can fail between records; handle both I/O and parse errors.",
+    "explanation": "A file is a source of bytes, not a ready-made collection of valid records. Give the parser a generic `R: BufRead` input so the same function can accept a buffered file, locked stdin, or an in-memory `Cursor`. This separates the data transformation from permissions, paths, and device-specific I/O. It also makes the parser easy to exercise without creating a real file.\n\nThe `lines()` iterator yields `io::Result<String>` values. First handle the read result, then decide what a line means. For this small report, trim whitespace, skip blank lines, and parse every other line as `i64`. A malformed nonblank line is an error, not a zero and not a reason to silently discard the record. Include the one-based physical line number in that error, even when earlier lines were blank.\n\nUse `checked_add` when the accepted numeric domain can overflow the accumulator. Returning a clear error preserves the contract instead of making behavior depend on a debug or release overflow setting. Streaming avoids retaining every record, but one unusually long line can still allocate a large string. A production parser needs a separate record-size limit; buffering alone is not a memory quota.\n\nLocal compiler profile: standard library only. The lab uses `Cursor` and needs no filesystem permission, package download, network request, or backend execution. Once the parser is correct, a desktop adapter can pass `BufReader::new(File::open(path)?)`. In Crabrix, an adapter must use files granted to its sandbox. Keep the transformation independently testable before adding that adapter.",
+    "exampleCode": "use std::io::{BufRead, Cursor};\nfn main() {\n    let input = Cursor::new(\"12\\n\\n8\\n\");\n    for line in input.lines() {\n        println!(\"{}\", line.unwrap());\n    }\n}\n",
+    "exampleCaption": "BufRead, Cursor, and fallible iteration",
+    "practiceCode": "use std::io::{BufRead, Cursor};\nfn main() {\n    let input = Cursor::new(\"12\\n\\n8\\n\");\n    for line in input.lines() {\n        println!(\"{}\", line.unwrap());\n    }\n}\n",
+    "task": "Implement total(reader): skip blank lines, sum trimmed i64 records with checked_add, return line N for the first malformed physical line, overflow for arithmetic overflow, and read failed for an I/O failure. Open the compiler lab and complete the supplied function in solution.rs. The reading question above is a separate exercise.",
+    "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
+    "question": "Why can filter_map(Result::ok) silently corrupt this report?",
+    "answers": [
+      "It turns every successful line into bytes",
+      "It drops read failures instead of reporting incomplete input",
+      "It forces all numbers to zero"
+    ],
+    "correctAnswer": 1,
+    "feedback": "Dropping errors can produce a believable total from only part of the input. Propagate read failures and identify malformed records."
+  },
+  "depth": {
+    "misconception": "A buffered reader has already validated every record.",
+    "correction": "Buffering changes how bytes are read; parsing and error policy are separate.",
+    "traceSteps": [
+      {
+        "title": "Read",
+        "detail": "Unwrap each fallible line before parsing its contents."
+      },
+      {
+        "title": "Validate",
+        "detail": "Track the physical line number and reject invalid integers."
+      },
+      {
+        "title": "Accumulate",
+        "detail": "Add with overflow detection and return one result."
+      }
+    ],
+    "transferChallenge": "Replace Cursor with a deliberately failing Read implementation. Confirm the report returns an error rather than a partial total.",
+    "connections": [
+      {
+        "direction": "next",
+        "title": "Paths & Boundaries",
+        "concept": "Path, PathBuf, and lexical validation"
+      }
+    ]
+  },
+  "illustration": {
+    "path": "media/buffered-line-input.png",
+    "alt": "Diagram for Buffered Line Input: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "BufRead, Cursor, and fallible iteration"
+  },
+  "contentDigest": "a1ba4b7ab43e9d0cf96144c94afb5c679226fa030b257df77ae1f24b8d7e3ac1"
+}

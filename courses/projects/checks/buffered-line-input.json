@@ -1,0 +1,56 @@
+{
+  "challenge": {
+    "lessonID": "buffered-line-input",
+    "patternID": "buffered-line-input",
+    "projectName": "buffered-line-input-lab",
+    "source": "pub fn total<R: std::io::BufRead>(reader: R) -> Result<i64, String> {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationSource": "mod solution;\nstruct Broken;\nimpl std::io::Read for Broken {\n    fn read(&mut self, _: &mut [u8]) -> std::io::Result<usize> { Err(std::io::Error::other(\"broken\")) }\n}\nfn main() {\n    assert_eq!(solution::total(std::io::Cursor::new(\"12\\n\\n8\\n\")), Ok(20), \"case 1\");\n    assert_eq!(solution::total(std::io::Cursor::new(\"\")), Ok(0), \"case 2\");\n    assert_eq!(solution::total(std::io::Cursor::new(\"\\nnope\")), Err(\"line 2\".to_owned()), \"case 3\");\n    assert_eq!(solution::total(std::io::Cursor::new(\"9223372036854775807\\n1\")), Err(\"overflow\".to_owned()), \"case 4\");\n    assert_eq!(solution::total(std::io::Cursor::new(\"-4\\r\\n 2 \")), Ok(-2), \"case 5\");\n    assert_eq!(solution::total(std::io::BufReader::new(Broken)), Err(\"read failed\".to_owned()));\n    println!(\"PASS buffered-line-input\");\n}\n",
+    "verificationCases": [
+      {
+        "kind": "visible",
+        "input": "solution::total(std::io::Cursor::new(\"12\\n\\n8\\n\"))",
+        "expectedAnswer": "Ok(20)"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::total(std::io::Cursor::new(\"\"))",
+        "expectedAnswer": "Ok(0)"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::total(std::io::Cursor::new(\"\\nnope\"))",
+        "expectedAnswer": "Err(\"line 2\".to_owned())"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::total(std::io::Cursor::new(\"9223372036854775807\\n1\"))",
+        "expectedAnswer": "Err(\"overflow\".to_owned())"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::total(std::io::Cursor::new(\"-4\\r\\n 2 \"))",
+        "expectedAnswer": "Ok(-2)"
+      }
+    ],
+    "expectedOutput": "PASS buffered-line-input\n",
+    "requiredSourceFragments": [
+      "pub fn total"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  },
+  "evidence": {
+    "kind": "algorithmChallenge",
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS buffered-line-input\n"
+    },
+    "requiredSourceFragments": [
+      "pub fn total"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  }
+}

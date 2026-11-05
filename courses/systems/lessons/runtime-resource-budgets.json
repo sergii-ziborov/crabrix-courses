@@ -1,0 +1,59 @@
+{
+  "id": "runtime-resource-budgets",
+  "parentID": "wasm-wasi",
+  "order": 2,
+  "title": "Budget a Local Runtime",
+  "concept": "Independent CPU, memory, output, and storage limits",
+  "minutes": 16,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Local execution still needs independent limits for the resources a guest can consume.",
+    "rule": "A timeout does not replace memory, output, or filesystem quotas.",
+    "explanation": "A local playground executes untrusted source on the user's own device, so a useful sandbox must bound more than filesystem access. A program can loop forever, allocate aggressively, print without end, or fill its writable directory. Each consumes a different resource. A wall-clock deadline alone may detect a slow run only after memory or output has already exhausted the host.\n\nDefine budgets at the layer that owns the resource. An interpreter may provide fuel or interruption for instruction execution; the host can cap captured output and writable bytes; the embedding can limit memory pages and concurrent runs. Cancellation should release the owned run and its resources, while the UI reports a quota stop distinctly from a successful program exit or an ordinary Rust diagnostic.\n\nThe compiler lab is a small model of output accounting. Starting from a known usage, accept the next chunk only if checked addition stays within an inclusive limit. Refuse overflow and an already-invalid starting state. An empty chunk at the exact limit is valid. This function does not enforce the actual runtime's limits; it teaches why checking after an unbounded allocation is too late.\n\nLocal compiler profile: standard library only. In a shared Playground, code and selection changes may be interactive while execution remains local and explicit. Another participant's Run should update shared output metadata rather than start your device's compiler. A production safety review must test those event boundaries separately from this arithmetic model, including disconnection, repeated messages, and a local cancel during remote edits.",
+    "exampleCode": "fn reserve(\n    used: usize,\n    next: usize,\n    limit: usize,\n) -> Option<usize> {\n    let total = used.checked_add(next)?;\n    (total <= limit).then_some(total)\n}\nfn main() {\n    assert_eq!(reserve(8, 2, 10), Some(10));\n    assert_eq!(reserve(8, 3, 10), None);\n}\n",
+    "exampleCaption": "Independent CPU, memory, output, and storage limits",
+    "practiceCode": "fn reserve(\n    used: usize,\n    next: usize,\n    limit: usize,\n) -> Option<usize> {\n    let total = used.checked_add(next)?;\n    (total <= limit).then_some(total)\n}\nfn main() {\n    assert_eq!(reserve(8, 2, 10), Some(10));\n    assert_eq!(reserve(8, 3, 10), None);\n}\n",
+    "task": "Return updated usage only when checked addition succeeds and the inclusive limit is respected. Reject an invalid starting usage as well as overflow. Open the compiler lab and complete the supplied function in solution.rs. The reading question above is a separate exercise.",
+    "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
+    "question": "Which statement about a local execution timeout is correct?",
+    "answers": [
+      "It makes all allocations safe before it fires",
+      "It automatically limits printed output to one line",
+      "It is one limit and does not replace separate resource quotas"
+    ],
+    "correctAnswer": 2,
+    "feedback": "CPU time, memory, output, storage, and concurrency need limits at their own boundaries."
+  },
+  "depth": {
+    "misconception": "A program is harmless to local resources because it never runs on the backend.",
+    "correction": "Local execution avoids backend computation but still consumes the device's resources.",
+    "traceSteps": [
+      {
+        "title": "Measure",
+        "detail": "Identify the independently consumed resource."
+      },
+      {
+        "title": "Reserve",
+        "detail": "Check an inclusive limit before accepting another chunk."
+      },
+      {
+        "title": "Stop",
+        "detail": "Report quota termination and release the local run."
+      }
+    ],
+    "transferChallenge": "Design a test matrix distinguishing a Rust panic, compilation error, user cancel, CPU budget, output cap, and writable-storage cap.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Linear Memory Boundaries",
+        "concept": "Checked offsets, lengths, and borrowed slices"
+      }
+    ]
+  },
+  "illustration": {
+    "path": "media/runtime-resource-budgets.png",
+    "alt": "Diagram for Budget a Local Runtime: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "Independent CPU, memory, output, and storage limits"
+  },
+  "contentDigest": "5197ca040d1dabf836845cd6d02c7f189250768f70c8477b6ffcd24d7b58cd53"
+}

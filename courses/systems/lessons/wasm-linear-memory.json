@@ -1,0 +1,64 @@
+{
+  "id": "wasm-linear-memory",
+  "parentID": "wasm-wasi",
+  "order": 1,
+  "title": "Linear Memory Boundaries",
+  "concept": "Checked offsets, lengths, and borrowed slices",
+  "minutes": 16,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "A guest pointer is an offset into guest memory, not a host pointer you can blindly dereference.",
+    "rule": "Check offset plus length without overflow before making a borrowed view.",
+    "explanation": "A host function receiving a guest pointer and length must interpret them relative to that module's current linear memory. First validate the requested range, then borrow only the verified bytes. An offset is not a native pointer, and a numerically small address does not establish permission. A length can overflow when added to the offset even if each input separately fits its integer type.\n\nThe lab models this boundary with a Rust byte slice and usize offsets. Use checked_add for the end offset and slice::get for the bounds check. Return None for overflow or an out-of-range end. An empty range at memory.len is valid, while an empty range beginning after memory.len is invalid. This precise convention avoids special-case pointer arithmetic that accidentally accepts an invalid start.\n\nDecoding text is a second check. A valid byte range can contain invalid UTF-8, so use from_utf8 if the interface requires text. Do not reinterpret arbitrary guest bytes as a Rust struct whose alignment, layout, or validity requirements may not hold. Copy or decode a documented wire representation instead.\n\nLocal compiler profile: standard library only. The model uses no unsafe code and does not implement a runtime memory manager. In a real embedding, memory growth and reentrant calls may invalidate a cached host view, so follow the runtime's borrowing rules and reacquire the view at the appropriate boundary. Tests of this pure function do not establish that a separate native runtime binding follows those rules.",
+    "exampleCode": "fn window(\n    memory: &[u8],\n    offset: usize,\n    len: usize,\n) -> Option<&[u8]> {\n    let end = offset.checked_add(len)?;\n    memory.get(offset..end)\n}\nfn main() {\n    assert_eq!(\n        window(b\"crab\", 1, 2),\n        Some(&b\"ra\"[..])\n    );\n    assert_eq!(\n        window(b\"crab\", usize::MAX, 2),\n        None\n    );\n}\n",
+    "exampleCaption": "Checked offsets, lengths, and borrowed slices",
+    "practiceCode": "fn window(\n    memory: &[u8],\n    offset: usize,\n    len: usize,\n) -> Option<&[u8]> {\n    let end = offset.checked_add(len)?;\n    memory.get(offset..end)\n}\nfn main() {\n    assert_eq!(\n        window(b\"crab\", 1, 2),\n        Some(&b\"ra\"[..])\n    );\n    assert_eq!(\n        window(b\"crab\", usize::MAX, 2),\n        None\n    );\n}\n",
+    "task": "Borrow the requested byte range or return None. Check addition overflow. A zero-length range at the end is valid; a start past the end is not. Open the compiler lab and complete the supplied function in solution.rs. The reading question above is a separate exercise.",
+    "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
+    "question": "Is an in-bounds byte slice necessarily valid UTF-8?",
+    "answers": [
+      "No; text decoding requires another validation step",
+      "Yes, because all memory is UTF-8",
+      "Only if its length is even"
+    ],
+    "correctAnswer": 0,
+    "feedback": "Range validity and text validity are separate contracts. Validate the range, then decode if text is required."
+  },
+  "depth": {
+    "misconception": "Checking the start offset alone makes the entire range safe.",
+    "correction": "The sum can overflow and the end can exceed memory even when the start is valid.",
+    "traceSteps": [
+      {
+        "title": "Add",
+        "detail": "Compute the end with checked arithmetic."
+      },
+      {
+        "title": "Borrow",
+        "detail": "Use get to check the complete range."
+      },
+      {
+        "title": "Decode",
+        "detail": "Validate UTF-8 or another wire format separately."
+      }
+    ],
+    "transferChallenge": "Explain why a host view obtained before a reentrant guest call may need to be reacquired afterward.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "WASM Is Not the Browser API",
+        "concept": "Targets, host imports, and local execution"
+      },
+      {
+        "direction": "next",
+        "title": "Budget a Local Runtime",
+        "concept": "Independent CPU, memory, output, and storage limits"
+      }
+    ]
+  },
+  "illustration": {
+    "path": "media/wasm-linear-memory.png",
+    "alt": "Diagram for Linear Memory Boundaries: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "Checked offsets, lengths, and borrowed slices"
+  },
+  "contentDigest": "7fffaea2924ee6d0bc84ad87bfa0022e8b0dd262027e944740e557157983dd71"
+}

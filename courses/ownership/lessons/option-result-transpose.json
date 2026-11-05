@@ -1,0 +1,64 @@
+{
+  "id": "option-result-transpose",
+  "parentID": "api-boundaries",
+  "order": 1,
+  "title": "Compose Optional Fallible Input",
+  "concept": "map, transpose, and explicit defaults",
+  "minutes": 16,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Keep missing configuration distinct from a configuration that is present but invalid.",
+    "rule": "Apply defaults to absence, not to every failure.",
+    "explanation": "An optional configuration value can have three outcomes: no value was supplied, a valid value was supplied, or an invalid value was supplied. `Result<Option<T>, E>` preserves those outcomes. Converting an error into None with `ok()` loses the distinction, and adding `unwrap_or` too early can make a typo look like a deliberate default.\n\nMap a parser over `Option<&str>` and the intermediate type becomes `Option<Result<T, E>>`. `transpose()` changes that nesting into `Result<Option<T>, E>`. It does not run the parser for None, hide an error, or pick a default. A match expression can implement the same behavior and may be easier while learning; combinators are useful when they keep the boundary readable.\n\nThe exercise accepts an optional nonzero u16 port. None stays Ok(None). Some text is trimmed, parsed, and validated using the same policy as the previous lesson. Some empty text is an invalid supplied value, not absence. That distinction matters for environment variables, web forms, and configuration merging, where an explicit invalid override should not silently fall back to an older value.\n\nLocal compiler profile: standard library only. Verify absent input, valid text, blank text, zero, and overflow separately. After the conversion succeeds, the application can deliberately choose `port.unwrap_or(default_port)`. Keep that policy outside the parser so another caller can require a value instead. Error-preserving composition is more important than making a chain of adapters as short as possible.",
+    "exampleCode": "fn main() {\n    let input = Some(\"42\");\n    let parsed: Result<Option<u16>, _> =\n        input.map(str::parse::<u16>).transpose();\n    assert_eq!(parsed, Ok(Some(42)));\n    let absent: Option<&str> = None;\n    assert_eq!(\n        absent.map(str::parse::<u16>).transpose(),\n        Ok(None)\n    );\n}\n",
+    "exampleCaption": "map, transpose, and explicit defaults",
+    "practiceCode": "fn main() {\n    let input = Some(\"42\");\n    let parsed: Result<Option<u16>, _> =\n        input.map(str::parse::<u16>).transpose();\n    assert_eq!(parsed, Ok(Some(42)));\n    let absent: Option<&str> = None;\n    assert_eq!(\n        absent.map(str::parse::<u16>).transpose(),\n        Ok(None)\n    );\n}\n",
+    "task": "Preserve None as Ok(None). For supplied text use the preceding port policy: zero is a zero error, bad syntax/overflow is invalid, and nonzero u16 becomes Ok(Some(n)). Open the compiler lab and complete the supplied function in solution.rs. The reading question above is a separate exercise.",
+    "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
+    "question": "What is the type after transposing Option<Result<u16, E>>?",
+    "answers": [
+      "Result<Option<u16>, E>",
+      "Option<u16>, with every error removed",
+      "Result<u16, Option<E>>"
+    ],
+    "correctAnswer": 0,
+    "feedback": "Transpose preserves absence and errors while moving Result to the outside."
+  },
+  "depth": {
+    "misconception": "An invalid supplied value should always become the default.",
+    "correction": "A default is a policy for absence; invalid input often needs to be reported.",
+    "traceSteps": [
+      {
+        "title": "Absent",
+        "detail": "None does not invoke the parser."
+      },
+      {
+        "title": "Present",
+        "detail": "Some text invokes the same checked parser as required input."
+      },
+      {
+        "title": "Compose",
+        "detail": "Transpose preserves the error and lets the caller choose a default later."
+      }
+    ],
+    "transferChallenge": "Implement the same function with match and with map/transpose; compare behavior on blank text and absent input.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "FromStr & Domain Values",
+        "concept": "A validated constructor behind a parsing trait"
+      },
+      {
+        "direction": "next",
+        "title": "Flexible Borrowed Inputs",
+        "concept": "AsRef without unnecessary ownership"
+      }
+    ]
+  },
+  "illustration": {
+    "path": "media/option-result-transpose.png",
+    "alt": "Diagram for Compose Optional Fallible Input: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "map, transpose, and explicit defaults"
+  },
+  "contentDigest": "c70d8424bb50a3ffd006c15b73ef54c0f5020833ebfe2588a19ec4bdcfa9d877"
+}

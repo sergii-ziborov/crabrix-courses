@@ -1,0 +1,59 @@
+{
+  "id": "serde-roundtrip-validation",
+  "parentID": "files-data",
+  "order": 4,
+  "title": "Serde: Decode, Validate, Encode",
+  "concept": "Serialization is not domain validation",
+  "minutes": 20,
+  "exerciseKind": "planned",
+  "writing": {
+    "summary": "Turn JSON into a transport type, validate it, and only then create a domain value.",
+    "rule": "Deserialization checks the transport shape; your domain invariants still need an explicit boundary.",
+    "explanation": "JSON describes data exchange, while your application model describes valid state. Deserialize into a small transport structure, then convert it into a domain value whose constructor enforces the rules. A syntactically valid JSON object can still contain a blank display name, a negative quantity, or a count larger than the application supports. Do not spread those checks across every consumer.\n\nDesktop Cargo profile: this example needs `serde` with its `derive` feature and `serde_json`. The derive implementation is a procedural macro; it is not supplied by the standard library. Put `serde = { version = \"1\", features = [\"derive\"] }` and `serde_json = \"1\"` in dependencies, retain Cargo.lock, and run the example with Cargo. In Crabrix, check the prepared package and procedural-macro compatibility report before expecting the same project to build. This reading deliberately does not mark that external toolchain path as a standard-library compiler lab.\n\nChoose an evolution policy. By default, unknown struct fields are ignored; `deny_unknown_fields` rejects them. Neither choice is universally safer: rejecting surprises is useful for a tightly controlled command, while forward-compatible clients may need to tolerate new fields. Document the decision, and use an explicit format version when a later change would reinterpret an existing field.\n\nCompare decoded meaning in a round-trip test rather than relying on object-key order or pretty-print whitespace. Avoid printing full input documents into error logs when they may contain private data. Limit input size before decoding untrusted text, and distinguish a parse error from a domain validation error. The lab in the previous lesson stays dependency-free; this lesson shows how to replace its intentionally restricted transport format with an established serialization library.",
+    "exampleCode": "use serde::{Deserialize, Serialize};\n#[derive(\n    Debug, PartialEq, Serialize, Deserialize,\n)]\n#[serde(deny_unknown_fields)]\nstruct Record {\n    name: String,\n    count: u32,\n}\nfn main() -> Result<(), Box<dyn std::error::Error>>\n{\n    let row: Record = serde_json::from_str(\n        r#\"{\"name\":\"crab\",\"count\":3}\"#,\n    )?;\n    if row.name.trim().is_empty() {\n        return Err(\"blank name\".into());\n    }\n    let encoded = serde_json::to_string(&row)?;\n    assert_eq!(\n        serde_json::from_str::<Record>(&encoded)?,\n        row\n    );\n    Ok(())\n}\n",
+    "exampleCaption": "Serialization is not domain validation",
+    "practiceCode": "use serde::{Deserialize, Serialize};\n#[derive(\n    Debug, PartialEq, Serialize, Deserialize,\n)]\n#[serde(deny_unknown_fields)]\nstruct Record {\n    name: String,\n    count: u32,\n}\nfn main() -> Result<(), Box<dyn std::error::Error>>\n{\n    let row: Record = serde_json::from_str(\n        r#\"{\"name\":\"crab\",\"count\":3}\"#,\n    )?;\n    if row.name.trim().is_empty() {\n        return Err(\"blank name\".into());\n    }\n    let encoded = serde_json::to_string(&row)?;\n    assert_eq!(\n        serde_json::from_str::<Record>(&encoded)?,\n        row\n    );\n    Ok(())\n}\n",
+    "task": "On desktop Cargo, run the example with the two declared dependencies. Add a domain constructor, then test blank names, missing fields, unknown fields, and an out-of-range count.",
+    "success": "A String is structurally valid even when empty. Validate domain invariants after decoding.",
+    "question": "Does deriving Deserialize guarantee that name is nonblank?",
+    "answers": [
+      "Yes, all String fields are nonblank",
+      "No, the application must validate that invariant",
+      "Only if JSON keys are sorted"
+    ],
+    "correctAnswer": 1,
+    "feedback": "A String is structurally valid even when empty. Validate domain invariants after decoding."
+  },
+  "depth": {
+    "misconception": "Valid JSON is already a valid business record.",
+    "correction": "The format and type checker do not know application-specific constraints.",
+    "traceSteps": [
+      {
+        "title": "Decode",
+        "detail": "Turn JSON into a transport structure and preserve a useful error."
+      },
+      {
+        "title": "Validate",
+        "detail": "Construct domain state only after checking its invariants."
+      },
+      {
+        "title": "Encode",
+        "detail": "Round-trip meaning and document the schema's evolution policy."
+      }
+    ],
+    "transferChallenge": "Design a versioned settings format that accepts an older document without silently changing the meaning of a stored field.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Validate Data Records",
+        "concept": "A bounded text format with precise errors"
+      }
+    ]
+  },
+  "illustration": {
+    "path": "media/serde-roundtrip-validation.png",
+    "alt": "Diagram for Serde: Decode, Validate, Encode: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "Serialization is not domain validation"
+  },
+  "contentDigest": "e066dd8ed39760950f46288e6b4877d1ec6a0cc922413508d649b3f4363149d7"
+}

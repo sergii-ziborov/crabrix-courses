@@ -1,0 +1,46 @@
+{
+  "challenge": {
+    "lessonID": "sandbox-file-roundtrip",
+    "patternID": "sandbox-file-roundtrip",
+    "projectName": "sandbox-file-roundtrip-lab",
+    "source": "pub fn save_report(path: &std::path::Path, text: &str) -> std::io::Result<String> {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationSource": "mod solution;\n\nfn main() {\n    assert_eq!(solution::save_report(std::path::Path::new(if cfg!(target_arch = \"wasm32\") { \"/sandbox/crabrix-report.txt\" } else { \"crabrix-report.txt\" }), \"crab: 3\\n\").unwrap(), \"crab: 3\\n\", \"case 1\");\n    assert_eq!(solution::save_report(std::path::Path::new(if cfg!(target_arch = \"wasm32\") { \"/sandbox/crabrix-report.txt\" } else { \"crabrix-report.txt\" }), \"\").unwrap(), \"\", \"case 2\");\n    assert_eq!(solution::save_report(std::path::Path::new(if cfg!(target_arch = \"wasm32\") { \"/sandbox/crabrix-report.txt\" } else { \"crabrix-report.txt\" }), \"Rust 🦀\\nnext\").unwrap(), \"Rust 🦀\\nnext\", \"case 3\");\n\n    println!(\"PASS sandbox-file-roundtrip\");\n}\n",
+    "verificationCases": [
+      {
+        "kind": "visible",
+        "input": "solution::save_report(std::path::Path::new(if cfg!(target_arch = \"wasm32\") { \"/sandbox/crabrix-report.txt\" } else { \"crabrix-report.txt\" }), \"crab: 3\\n\").unwrap()",
+        "expectedAnswer": "\"crab: 3\\n\""
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::save_report(std::path::Path::new(if cfg!(target_arch = \"wasm32\") { \"/sandbox/crabrix-report.txt\" } else { \"crabrix-report.txt\" }), \"\").unwrap()",
+        "expectedAnswer": "\"\""
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::save_report(std::path::Path::new(if cfg!(target_arch = \"wasm32\") { \"/sandbox/crabrix-report.txt\" } else { \"crabrix-report.txt\" }), \"Rust 🦀\\nnext\").unwrap()",
+        "expectedAnswer": "\"Rust 🦀\\nnext\""
+      }
+    ],
+    "expectedOutput": "PASS sandbox-file-roundtrip\n",
+    "requiredSourceFragments": [
+      "pub fn save_report"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  },
+  "evidence": {
+    "kind": "algorithmChallenge",
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS sandbox-file-roundtrip\n"
+    },
+    "requiredSourceFragments": [
+      "pub fn save_report"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  }
+}

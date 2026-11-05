@@ -1,0 +1,56 @@
+{
+  "challenge": {
+    "lessonID": "wasm-host-boundaries",
+    "patternID": "wasm-host-boundaries",
+    "projectName": "wasm-host-boundaries-lab",
+    "source": "pub fn permitted(imports: &[&str], allowed: &[&str]) -> bool {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationSource": "mod solution;\n\nfn main() {\n    assert_eq!(solution::permitted(&[\"fd_write\"], &[\"fd_write\"]), true, \"case 1\");\n    assert_eq!(solution::permitted(&[], &[]), true, \"case 2\");\n    assert_eq!(solution::permitted(&[\"path_open\"], &[\"fd_write\"]), false, \"case 3\");\n    assert_eq!(solution::permitted(&[\"fd_write_extra\"], &[\"fd_write\"]), false, \"case 4\");\n    assert_eq!(solution::permitted(&[\"fd_write\", \"path_open\"], &[\"fd_write\"]), false, \"case 5\");\n\n    println!(\"PASS wasm-host-boundaries\");\n}\n",
+    "verificationCases": [
+      {
+        "kind": "visible",
+        "input": "solution::permitted(&[\"fd_write\"], &[\"fd_write\"])",
+        "expectedAnswer": "true"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::permitted(&[], &[])",
+        "expectedAnswer": "true"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::permitted(&[\"path_open\"], &[\"fd_write\"])",
+        "expectedAnswer": "false"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::permitted(&[\"fd_write_extra\"], &[\"fd_write\"])",
+        "expectedAnswer": "false"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::permitted(&[\"fd_write\", \"path_open\"], &[\"fd_write\"])",
+        "expectedAnswer": "false"
+      }
+    ],
+    "expectedOutput": "PASS wasm-host-boundaries\n",
+    "requiredSourceFragments": [
+      "pub fn permitted"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  },
+  "evidence": {
+    "kind": "algorithmChallenge",
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS wasm-host-boundaries\n"
+    },
+    "requiredSourceFragments": [
+      "pub fn permitted"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  }
+}

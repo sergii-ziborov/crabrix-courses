@@ -1,0 +1,59 @@
+{
+  "id": "fromstr-domain-values",
+  "parentID": "api-boundaries",
+  "order": 0,
+  "title": "FromStr & Domain Values",
+  "concept": "A validated constructor behind a parsing trait",
+  "minutes": 16,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Convert raw text into a value that cannot represent an invalid port.",
+    "rule": "A conversion is useful when its output establishes an invariant, not just a new spelling.",
+    "explanation": "A network port number fits in a u16, but this application's user-selectable port must also be nonzero. A private field and a checked constructor prevent callers from manufacturing an invalid value through ordinary safe code. `FromStr` then makes the text boundary idiomatic: callers write `text.parse::<Port>()` and handle the declared error. The conversion is fallible because not every string belongs to the domain.\n\nKeep syntax and domain failures distinct when the caller can act on that difference. In the lab, malformed text and numeric overflow produce `invalid`; the valid integer zero produces `zero`. The parser trims surrounding whitespace, but it does not invent a default when the input is absent. Decide separately whether a command-line flag, a configuration file, or a form field is allowed to omit the value.\n\nA `From<T>` implementation promises an infallible conversion, so do not implement it by panicking for an ordinary invalid input. Use `TryFrom` for a fallible typed conversion and `FromStr` for parsing borrowed text. These traits can delegate to the same checked constructor, avoiding divergent rules between your JSON adapter and your command-line adapter. A constructor should not secretly open a socket merely because it validates a port number.\n\nLocal compiler profile: standard library only. The typed lab checks zero, whitespace, the largest valid u16, negative text, and overflow. The reading demonstrates the trait implementation; the lab focuses on the checked parsing boundary so its observable contract is straightforward. As an extension, wrap the result in a private-field Port and make every public creation path use the same invariant.",
+    "exampleCode": "use std::str::FromStr;\n#[derive(Debug, PartialEq)]\nstruct Port(u16);\nimpl FromStr for Port {\n    type Err = &'static str;\n    fn from_str(\n        text: &str,\n    ) -> Result<Self, Self::Err> {\n        let n = text\n            .trim()\n            .parse::<u16>()\n            .map_err(|_| \"invalid\")?;\n        if n == 0 {\n            Err(\"zero\")\n        } else {\n            Ok(Port(n))\n        }\n    }\n}\nfn main() {\n    assert_eq!(\" 8080 \".parse(), Ok(Port(8080)));\n}\n",
+    "exampleCaption": "A validated constructor behind a parsing trait",
+    "practiceCode": "use std::str::FromStr;\n#[derive(Debug, PartialEq)]\nstruct Port(u16);\nimpl FromStr for Port {\n    type Err = &'static str;\n    fn from_str(\n        text: &str,\n    ) -> Result<Self, Self::Err> {\n        let n = text\n            .trim()\n            .parse::<u16>()\n            .map_err(|_| \"invalid\")?;\n        if n == 0 {\n            Err(\"zero\")\n        } else {\n            Ok(Port(n))\n        }\n    }\n}\nfn main() {\n    assert_eq!(\" 8080 \".parse(), Ok(Port(8080)));\n}\n",
+    "task": "Trim and parse a u16 port. Return zero for the zero-domain error and invalid for malformed or overflowing text; otherwise return the nonzero value. Open the compiler lab and complete the supplied function in solution.rs. The reading question above is a separate exercise.",
+    "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
+    "question": "Which trait fits a typed conversion that may reject a value?",
+    "answers": [
+      "From, with a panic on invalid values",
+      "Copy, because parsing copies bytes",
+      "TryFrom, with an error result"
+    ],
+    "correctAnswer": 2,
+    "feedback": "TryFrom communicates a fallible conversion in its type. FromStr is the corresponding idiom for parsing text."
+  },
+  "depth": {
+    "misconception": "A conversion trait should silently choose a default on bad input.",
+    "correction": "A fallible boundary returns enough information for the caller to choose a policy.",
+    "traceSteps": [
+      {
+        "title": "Parse",
+        "detail": "Trim and parse u16 without discarding errors."
+      },
+      {
+        "title": "Validate",
+        "detail": "Reject zero as a separate domain violation."
+      },
+      {
+        "title": "Encapsulate",
+        "detail": "Prevent unchecked construction of the domain value."
+      }
+    ],
+    "transferChallenge": "Implement TryFrom<u16> for Port and have FromStr delegate to it. Verify that both paths reject zero.",
+    "connections": [
+      {
+        "direction": "next",
+        "title": "Compose Optional Fallible Input",
+        "concept": "map, transpose, and explicit defaults"
+      }
+    ]
+  },
+  "illustration": {
+    "path": "media/fromstr-domain-values.png",
+    "alt": "Diagram for FromStr & Domain Values: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "A validated constructor behind a parsing trait"
+  },
+  "contentDigest": "b86c96b0af3df7f47eb2190fc2d0460463fce9bd4d377ac95e380a6bb9279eaa"
+}

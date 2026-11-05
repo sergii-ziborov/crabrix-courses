@@ -1,0 +1,64 @@
+{
+  "id": "sandbox-file-roundtrip",
+  "parentID": "files-data",
+  "order": 2,
+  "title": "Save & Read a Text File",
+  "concept": "Fallible filesystem effects in a granted directory",
+  "minutes": 16,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Make the file effect explicit, return errors, and verify the bytes that came back.",
+    "rule": "A successful write is not a promise of crash-safe durability.",
+    "explanation": "A small report can keep parsing pure and put file access in a narrow adapter. Accept a borrowed `Path`, write UTF-8 text, read it back, and return `io::Result<String>`. The question mark propagates the real I/O error to the caller. An unreadable destination, missing parent directory, or invalid UTF-8 on a later read is not equivalent to an empty report.\n\nLocal compiler profile: standard library with Crabrix's writable `/sandbox` directory. That is a guest path granted by the runtime, not arbitrary access to the iPhone's Files library. The verification harness chooses a sandbox path on wasm32 and a temporary working-directory path for the desktop test. It checks empty text, multiline text, Unicode, and replacement of an existing file. The lesson does not request network or account access.\n\n`fs::write` creates or truncates the target. That is appropriate for this exercise's replace-the-report contract, but it can destroy an older report before a new write finishes. A crash-safe save strategy typically writes a sibling temporary file, flushes and syncs as required, then replaces the destination. Atomic rename and durability details depend on the host filesystem; do not advertise a portable power-loss guarantee from a single write call.\n\nRound-trip equality proves the observed contents for this run. It does not prove every possible failure mode or make concurrent writers safe. If two participants edit a shared Playground, coordinate document updates before asking either participant to save a local copy. A remote output event must never silently trigger the filesystem effect on another device. Keep execution and saving explicit actions owned by the local user.",
+    "exampleCode": "use std::{fs, io};\nfn main() -> io::Result<()> {\n    // Crabrix guest path; choose a local path for desktop Cargo.\n    fs::write(\"/sandbox/report.txt\", \"crab: 3\\n\")?;\n    let text =\n        fs::read_to_string(\"/sandbox/report.txt\")?;\n    assert_eq!(text, \"crab: 3\\n\");\n    Ok(())\n}\n",
+    "exampleCaption": "Fallible filesystem effects in a granted directory",
+    "practiceCode": "use std::{fs, io};\nfn main() -> io::Result<()> {\n    // Crabrix guest path; choose a local path for desktop Cargo.\n    fs::write(\"/sandbox/report.txt\", \"crab: 3\\n\")?;\n    let text =\n        fs::read_to_string(\"/sandbox/report.txt\")?;\n    assert_eq!(text, \"crab: 3\\n\");\n    Ok(())\n}\n",
+    "task": "Use fs::write and fs::read_to_string, propagating errors. Return the exact saved text; do not append to an existing file. Open the compiler lab and complete the supplied function in solution.rs. The reading question above is a separate exercise.",
+    "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
+    "question": "What does fs::write do to an existing target?",
+    "answers": [
+      "It appends automatically",
+      "It creates or truncates the file",
+      "It guarantees a power-loss-safe transaction"
+    ],
+    "correctAnswer": 1,
+    "feedback": "The target is created or truncated. Crash-safe replacement and durability are separate design requirements."
+  },
+  "depth": {
+    "misconception": "Writing a file automatically makes the save transactional.",
+    "correction": "Creation/truncation, atomic replacement, and durable persistence are distinct guarantees.",
+    "traceSteps": [
+      {
+        "title": "Choose authority",
+        "detail": "Use only a destination granted by the local runtime."
+      },
+      {
+        "title": "Perform effect",
+        "detail": "Propagate write and read errors with question marks."
+      },
+      {
+        "title": "Verify",
+        "detail": "Compare exact text, including empty input and Unicode."
+      }
+    ],
+    "transferChallenge": "Design a temporary-file replacement sequence for desktop Cargo and list what could fail at each step.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Paths & Boundaries",
+        "concept": "Path, PathBuf, and lexical validation"
+      },
+      {
+        "direction": "next",
+        "title": "Validate Data Records",
+        "concept": "A bounded text format with precise errors"
+      }
+    ]
+  },
+  "illustration": {
+    "path": "media/sandbox-file-roundtrip.png",
+    "alt": "Diagram for Save & Read a Text File: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "Fallible filesystem effects in a granted directory"
+  },
+  "contentDigest": "5f56aa1e80a7ff3c48789151c6c019b326d022fdc7eabbaff22882780ddf9427"
+}

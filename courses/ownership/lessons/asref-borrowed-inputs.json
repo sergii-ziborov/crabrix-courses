@@ -1,0 +1,59 @@
+{
+  "id": "asref-borrowed-inputs",
+  "parentID": "api-boundaries",
+  "order": 2,
+  "title": "Flexible Borrowed Inputs",
+  "concept": "AsRef without unnecessary ownership",
+  "minutes": 16,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Accept several string-like types when the operation only needs a borrowed view.",
+    "rule": "Ask for ownership only when the operation needs to keep or consume the value.",
+    "explanation": "A function that only inspects text does not need a String allocation from every caller. A borrowed `&str` is often the simplest signature. `AsRef<str>` is useful when an API intentionally accepts several owned or borrowed string-like types and immediately obtains a string slice from them. It is a cheap reference conversion, not a general parsing or validation mechanism.\n\nThe example accepts a generic input, calls `as_ref()`, trims surrounding whitespace, and returns the number of Unicode scalar values. It never stores a reference after the call returns. Taking T by value still moves an owned String passed directly; callers that want to keep it can pass a reference. Generic syntax does not repeal ownership rules.\n\nChoose the narrowest useful contract. A public function taking `&str` is easy to read and accepts `&String` through coercion. An `AsRef<Path>` parameter can be convenient for a file adapter, but path conversion does not grant filesystem permission. Similarly, `AsRef<str>` does not prove a string is a valid URL, port, or record. Keep the validated domain constructor from the earlier lesson as a separate operation.\n\nLocal compiler profile: standard library only. The lab calls the same function with a string literal, a String, and a borrowed String. It includes accented text and an emoji so byte length cannot accidentally pass as character count. Rust chars are Unicode scalar values; they are not the same as user-perceived grapheme clusters, so describe the result precisely rather than calling it a universal display width.",
+    "exampleCode": "fn scalar_count(text: impl AsRef<str>) -> usize {\n    text.as_ref().trim().chars().count()\n}\nfn main() {\n    let owned = String::from(\" É🦀 \");\n    assert_eq!(scalar_count(&owned), 2);\n    assert_eq!(owned, \" É🦀 \");\n}\n",
+    "exampleCaption": "AsRef without unnecessary ownership",
+    "practiceCode": "fn scalar_count(text: impl AsRef<str>) -> usize {\n    text.as_ref().trim().chars().count()\n}\nfn main() {\n    let owned = String::from(\" É🦀 \");\n    assert_eq!(scalar_count(&owned), 2);\n    assert_eq!(owned, \" É🦀 \");\n}\n",
+    "task": "Trim surrounding whitespace and count Unicode scalar values for any AsRef<str> input. This is not byte length or grapheme count. Open the compiler lab and complete the supplied function in solution.rs. The reading question above is a separate exercise.",
+    "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
+    "question": "If an owned String is passed by value to fn f<T: AsRef<str>>(value: T), is the original still available?",
+    "answers": [
+      "Always, because AsRef implies Copy",
+      "No, unless it was borrowed or cloned before the call",
+      "Only when the text is ASCII"
+    ],
+    "correctAnswer": 1,
+    "feedback": "AsRef supplies a borrowed view inside the function. Passing the owned argument by value still moves it."
+  },
+  "depth": {
+    "misconception": "AsRef means arguments can never be moved.",
+    "correction": "The conversion is borrowed, but the parameter's ownership mode still matters.",
+    "traceSteps": [
+      {
+        "title": "Accept",
+        "detail": "Choose a borrowed slice or a justified generic input."
+      },
+      {
+        "title": "View",
+        "detail": "Call as_ref only for the lifetime of the operation."
+      },
+      {
+        "title": "Specify",
+        "detail": "Count scalar values, not bytes or grapheme clusters."
+      }
+    ],
+    "transferChallenge": "Compare a &str API and an impl AsRef<str> API at three call sites. Keep the simpler public contract unless flexibility has a concrete benefit.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Compose Optional Fallible Input",
+        "concept": "map, transpose, and explicit defaults"
+      }
+    ]
+  },
+  "illustration": {
+    "path": "media/asref-borrowed-inputs.png",
+    "alt": "Diagram for Flexible Borrowed Inputs: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "AsRef without unnecessary ownership"
+  },
+  "contentDigest": "cc8d8d17f999c3b209f3b52f9211d39271d52ce244cd87d530e2768708532d0e"
+}

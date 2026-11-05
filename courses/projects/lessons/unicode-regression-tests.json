@@ -1,0 +1,59 @@
+{
+  "id": "unicode-regression-tests",
+  "parentID": "reliability-labs",
+  "order": 2,
+  "title": "Keep a Unicode Regression",
+  "concept": "A minimal failure that survives a refactor",
+  "minutes": 16,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Turn a real boundary failure into a small, named case that protects future changes.",
+    "rule": "Define the unit before testing a text limit: bytes, scalar values, and grapheme clusters differ.",
+    "explanation": "Suppose a preview function once sliced text at a byte offset and panicked on an accented character. Replacing it with a character iterator fixes that specific bug, but keep a regression that would fail under the old implementation. A test named after the behavior, such as truncates_at_scalar_boundary, is more useful than one named after an unrelated ticket number.\n\nThe contract here is to keep at most n Unicode scalar values and add no ellipsis. Return all text when it is shorter than n, and an empty string when n is zero. This is not a display-column limit or a grapheme-cluster limit. An e followed by a combining accent consists of two scalar values; stopping after one may produce a visually surprising but contractually valid result. A user-interface preview may need a grapheme-aware library instead.\n\nA strong regression set contains the smallest original failure, zero, an empty input, an oversized limit, and a neighboring ASCII case. Add a property that the result is a prefix at a valid UTF-8 boundary and contains at most the requested number of scalar values. Avoid assuming that String::len counts characters; it counts bytes.\n\nLocal compiler profile: standard library only. The lab compiles the changed function and checks the regression cases independently. Before changing the contract to add an ellipsis, decide whether the ellipsis counts toward the limit and whether existing callers depend on exact output. Good tests document that contract; they should not freeze every internal implementation choice or discourage a clearer iterator-based solution.",
+    "exampleCode": "fn prefix(text: &str, n: usize) -> String {\n    text.chars().take(n).collect()\n}\nfn main() {\n    assert_eq!(prefix(\"É🦀rust\", 2), \"É🦀\");\n    assert_eq!(prefix(\"abc\", 0), \"\");\n}\n",
+    "exampleCaption": "A minimal failure that survives a refactor",
+    "practiceCode": "fn prefix(text: &str, n: usize) -> String {\n    text.chars().take(n).collect()\n}\nfn main() {\n    assert_eq!(prefix(\"É🦀rust\", 2), \"É🦀\");\n    assert_eq!(prefix(\"abc\", 0), \"\");\n}\n",
+    "task": "Return at most n Unicode scalar values from the start, with no ellipsis. Never slice at an unchecked byte offset. Open the compiler lab and complete the supplied function in solution.rs. The reading question above is a separate exercise.",
+    "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
+    "question": "How many Unicode scalar values are in e followed by a combining accent?",
+    "answers": [
+      "One in every representation",
+      "Two, although they may render as one grapheme",
+      "The UTF-8 byte length is always the scalar count"
+    ],
+    "correctAnswer": 1,
+    "feedback": "A scalar value and a grapheme are different units. State and test the intended unit explicitly."
+  },
+  "depth": {
+    "misconception": "chars().count() always measures visible character width.",
+    "correction": "Scalar values can combine into a grapheme and have different display widths.",
+    "traceSteps": [
+      {
+        "title": "Reproduce",
+        "detail": "Keep the smallest input that broke byte slicing."
+      },
+      {
+        "title": "Specify",
+        "detail": "Define zero, short input, and the Unicode unit."
+      },
+      {
+        "title": "Protect",
+        "detail": "Retain the regression while allowing the implementation to change."
+      }
+    ],
+    "transferChallenge": "Design a grapheme-aware version for desktop Cargo. Explain how its output differs for combining accents and emoji sequences.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Adversarial Parser Tests",
+        "concept": "Reject malformed data without panic or silent truncation"
+      }
+    ]
+  },
+  "illustration": {
+    "path": "media/unicode-regression-tests.png",
+    "alt": "Diagram for Keep a Unicode Regression: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "A minimal failure that survives a refactor"
+  },
+  "contentDigest": "847f9193ac05179fe784a66f4c6482fb564a1034622471be3de2ca29ff1ad842"
+}

@@ -1,0 +1,64 @@
+{
+  "id": "semaphore-backpressure",
+  "parentID": "async-operations",
+  "order": 1,
+  "title": "Bound Work Before Spawning",
+  "concept": "Semaphore permits and bounded queues",
+  "minutes": 20,
+  "exerciseKind": "planned",
+  "writing": {
+    "summary": "Put the limit before the expensive resource allocation, not after an unbounded queue has formed.",
+    "rule": "A concurrency limit and a queue-size limit protect different resources.",
+    "explanation": "A semaphore grants a finite number of permits. Holding a permit across the protected operation bounds the number of simultaneous operations. The important design question is where that permit is acquired. Spawning a million tasks that each wait for a permit still allocates a million waiting tasks; the semaphore has limited active work but has not bounded queued memory.\n\nAcquire an owned permit before spawning each job when the producer should wait for capacity. Move the permit into the task and let it drop when that task finishes. This is backpressure: a fast producer cannot keep advancing independently of the consumer capacity. For a long-lived producer/consumer system, use a bounded channel as well, and decide whether a full queue waits, rejects, or drops according to the product's contract.\n\nThe example has six small jobs and two permits. It drains the JoinSet after submission and checks that every job completed. Because the runtime is current-thread, waiting for a permit yields so earlier jobs can run. Real I/O can overlap, but CPU-bound work does not become parallel here. A permit must cover the resource usage you intend to limit; releasing it before the expensive operation defeats that limit.\n\nDesktop Cargo profile: use `tokio = { version = \"1\", default-features = false, features = [\"rt\", \"sync\"] }`. These examples build a current-thread runtime explicitly and need no Tokio procedural macros, sockets, timers, signals, or multi-thread scheduler. A current-thread executor can run concurrent futures but does not provide CPU parallelism. In Crabrix, consult the prepared Cargo compatibility report before running the project; this reading is not a promise that every Tokio feature works in a WASI guest.\n\nTest the policy using observable counters and an explicit barrier or yield, not timing guesses. Assert that the active count never exceeds the permit count and that every acquired permit is eventually returned after error paths. Do not use a zero-permit semaphore as a normal concurrency setting unless some other component will intentionally release capacity.",
+    "exampleCode": "use std::sync::Arc;\nuse tokio::{\n    runtime::Builder, sync::Semaphore,\n    task::JoinSet,\n};\nfn main() {\n    Builder::new_current_thread()\n        .build()\n        .unwrap()\n        .block_on(async {\n            let limit = Arc::new(Semaphore::new(2));\n            let mut tasks = JoinSet::new();\n            for n in 0..6 {\n                let permit = limit\n                    .clone()\n                    .acquire_owned()\n                    .await\n                    .unwrap();\n                tasks.spawn(async move {\n                    let _permit = permit;\n                    tokio::task::yield_now().await;\n                    n * 2\n                });\n            }\n            let mut results = Vec::new();\n            while let Some(value) =\n                tasks.join_next().await\n            {\n                results.push(value.unwrap());\n            }\n            results.sort_unstable();\n            assert_eq!(\n                results,\n                [0, 2, 4, 6, 8, 10]\n            );\n            assert_eq!(\n                limit.available_permits(),\n                2\n            );\n        });\n}\n",
+    "exampleCaption": "Semaphore permits and bounded queues",
+    "practiceCode": "use std::sync::Arc;\nuse tokio::{\n    runtime::Builder, sync::Semaphore,\n    task::JoinSet,\n};\nfn main() {\n    Builder::new_current_thread()\n        .build()\n        .unwrap()\n        .block_on(async {\n            let limit = Arc::new(Semaphore::new(2));\n            let mut tasks = JoinSet::new();\n            for n in 0..6 {\n                let permit = limit\n                    .clone()\n                    .acquire_owned()\n                    .await\n                    .unwrap();\n                tasks.spawn(async move {\n                    let _permit = permit;\n                    tokio::task::yield_now().await;\n                    n * 2\n                });\n            }\n            let mut results = Vec::new();\n            while let Some(value) =\n                tasks.join_next().await\n            {\n                results.push(value.unwrap());\n            }\n            results.sort_unstable();\n            assert_eq!(\n                results,\n                [0, 2, 4, 6, 8, 10]\n            );\n            assert_eq!(\n                limit.available_permits(),\n                2\n            );\n        });\n}\n",
+    "task": "Run the declared desktop Cargo example. Instrument active work and verify a peak no greater than two without relying on sleeps.",
+    "success": "Bound production before spawning or use a bounded queue; limiting active work alone does not limit waiting tasks.",
+    "question": "Does acquiring a permit inside each of a million already-spawned tasks bound queued-task memory?",
+    "answers": [
+      "No; active work is bounded, but all those waiting tasks still exist",
+      "Yes; waiting tasks consume no memory",
+      "Only when the jobs return integers"
+    ],
+    "correctAnswer": 0,
+    "feedback": "Bound production before spawning or use a bounded queue; limiting active work alone does not limit waiting tasks."
+  },
+  "depth": {
+    "misconception": "A semaphore automatically bounds every allocation in a pipeline.",
+    "correction": "Capacity must be applied at the relevant allocation boundary and combined with a queue policy.",
+    "traceSteps": [
+      {
+        "title": "Reserve",
+        "detail": "Await capacity before creating another task."
+      },
+      {
+        "title": "Hold",
+        "detail": "Move the owned permit into the protected operation."
+      },
+      {
+        "title": "Release",
+        "detail": "Let RAII return capacity on success and ordinary error paths."
+      }
+    ],
+    "transferChallenge": "Add a bounded channel between input and workers, then specify what the UI should do when the channel is full.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Own Tasks with JoinSet",
+        "concept": "Completion order, errors, and task lifetime"
+      },
+      {
+        "direction": "next",
+        "title": "A Graceful Shutdown Protocol",
+        "concept": "Stop admission, signal, and wait"
+      }
+    ]
+  },
+  "illustration": {
+    "path": "media/semaphore-backpressure.png",
+    "alt": "Diagram for Bound Work Before Spawning: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "Semaphore permits and bounded queues"
+  },
+  "contentDigest": "48d7a2e167d30ea73a9c95e68345f7dc3f48f3077da200429e72eaa2f7186de2"
+}

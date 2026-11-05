@@ -1,0 +1,59 @@
+{
+  "id": "properties-and-oracles",
+  "parentID": "reliability-labs",
+  "order": 0,
+  "title": "Test Properties, Not Just Examples",
+  "concept": "An independent oracle and bounded generated cases",
+  "minutes": 16,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "A normalization function should satisfy laws on many inputs, not only one expected output.",
+    "rule": "Use an independent oracle; repeating the implementation in the assertion repeats its bugs.",
+    "explanation": "A few examples help explain a function, while properties describe behavior across a family of inputs. For a canonical set of integer IDs, the output must be sorted, contain no duplicates, preserve membership, and be idempotent. None of those laws alone is enough: a function returning an empty vector is sorted and idempotent but discards every ID.\n\nCompare against an independent model such as BTreeSet rather than copying the same sort-and-deduplicate sequence into the test. Generate bounded combinations from a small domain, including negative values and repeated IDs. Small exhaustive spaces are often excellent at finding boundary mistakes, are deterministic, and require no external dependency. They still establish evidence only for the inputs tested, not a proof for every vector length.\n\nThe compiler lab's private harness checks concrete outputs and generated membership behavior. A learner cannot make it pass merely by editing an assertion in the starter. The code under test remains editable; the verdict is produced by a separate harness after calls finish. Treat this as feedback about the exercise contract, not a hostile-code containment guarantee: arbitrary source remains inside the ordinary bounded local runtime.\n\nLocal compiler profile: standard library only. On desktop Cargo, property-testing crates such as proptest can generate larger spaces and shrink a failing input into a small counterexample. Preserve the smallest failure as a named regression test even after the generator finds it. Do not call a deterministic loop a fuzzing campaign or claim complete correctness because a finite test suite passed.",
+    "exampleCode": "fn canonical(mut ids: Vec<i32>) -> Vec<i32> {\n    ids.sort_unstable();\n    ids.dedup();\n    ids\n}\nfn main() {\n    let once = canonical(vec![3, 1, 3]);\n    assert_eq!(once, [1, 3]);\n    assert_eq!(canonical(once.clone()), once);\n}\n",
+    "exampleCaption": "An independent oracle and bounded generated cases",
+    "practiceCode": "fn canonical(mut ids: Vec<i32>) -> Vec<i32> {\n    ids.sort_unstable();\n    ids.dedup();\n    ids\n}\nfn main() {\n    let once = canonical(vec![3, 1, 3]);\n    assert_eq!(once, [1, 3]);\n    assert_eq!(canonical(once.clone()), once);\n}\n",
+    "task": "Return all distinct input IDs in ascending order. Preserve negative values and integer extremes; empty input stays empty. Open the compiler lab and complete the supplied function in solution.rs. The reading question above is a separate exercise.",
+    "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
+    "question": "Which property rules out a function that always returns an empty vector?",
+    "answers": [
+      "Idempotence alone",
+      "Sorted output alone",
+      "Preserving input membership"
+    ],
+    "correctAnswer": 2,
+    "feedback": "Membership preservation catches lost data. Combine it with ordering and uniqueness rather than trusting a single weak property."
+  },
+  "depth": {
+    "misconception": "A single algebraic property proves the whole implementation.",
+    "correction": "Several incorrect functions satisfy one convenient property; use a complete contract and independent model.",
+    "traceSteps": [
+      {
+        "title": "State laws",
+        "detail": "Specify order, uniqueness, membership, and idempotence."
+      },
+      {
+        "title": "Generate",
+        "detail": "Enumerate a bounded input space reproducibly."
+      },
+      {
+        "title": "Compare",
+        "detail": "Use a different data structure as the oracle."
+      }
+    ],
+    "transferChallenge": "Write a desktop proptest version and keep one shrunk failure as a deterministic regression test.",
+    "connections": [
+      {
+        "direction": "next",
+        "title": "Adversarial Parser Tests",
+        "concept": "Reject malformed data without panic or silent truncation"
+      }
+    ]
+  },
+  "illustration": {
+    "path": "media/properties-and-oracles.png",
+    "alt": "Diagram for Test Properties, Not Just Examples: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "An independent oracle and bounded generated cases"
+  },
+  "contentDigest": "208bf92865f4064aa51044bbc3081d7aaea75fdb0d7921260cbb273d5138805f"
+}

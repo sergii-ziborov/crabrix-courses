@@ -1,0 +1,64 @@
+{
+  "id": "paths-and-boundaries",
+  "parentID": "files-data",
+  "order": 1,
+  "title": "Paths & Boundaries",
+  "concept": "Path, PathBuf, and lexical validation",
+  "minutes": 16,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Treat a path as structured input and keep lexical checks distinct from filesystem authority.",
+    "rule": "Joining a path is not permission checking, and lexical validation does not resolve symlinks.",
+    "explanation": "Use `Path` for a borrowed path and `PathBuf` for an owned path that can be extended. Concatenating strings can mishandle separators and makes it difficult to see which input controls the destination. `root.join(name)` expresses the relationship, but it does not guarantee that the result stays beneath root. In particular, an absolute name can replace the beginning, and parent components can walk upward.\n\nFor the lab, accept only a nonempty sequence of normal relative components. Reject an absolute path, any parent component, and a path containing only current-directory components. Joining the accepted components gives a useful lexical rule for an imported project name. Spaces and Unicode are legitimate filename content; do not reject them merely because a shell command would need quoting. No shell command is involved in this operation.\n\nThis is deliberately not a complete security boundary for a hostile filesystem. A symlink inside root may point elsewhere, and checking a canonical path before opening it can race with a later replacement. Real authority comes from the host's granted directory handles and platform-specific safe open operations. A WebAssembly guest should not gain access to a user's home directory just because a path string looks harmless.\n\nLocal compiler profile: standard library only. The exercise manipulates paths without touching disk. The following file lesson demonstrates a granted sandbox destination. Keep these layers separate: parse a requested relative path, apply the host's access policy, and handle the actual open result. This separation is useful when importing archives or moving project files as well as when writing a command-line report.",
+    "exampleCode": "use std::path::Path;\nfn main() {\n    let path =\n        Path::new(\"reports\").join(\"daily.txt\");\n    assert_eq!(\n        path.file_name().unwrap(),\n        \"daily.txt\"\n    );\n}\n",
+    "exampleCaption": "Path, PathBuf, and lexical validation",
+    "practiceCode": "use std::path::Path;\nfn main() {\n    let path =\n        Path::new(\"reports\").join(\"daily.txt\");\n    assert_eq!(\n        path.file_name().unwrap(),\n        \"daily.txt\"\n    );\n}\n",
+    "task": "Accept normal relative components and optional dot components, reject parent/root/prefix components and an empty effective name, then join the trusted root. This is lexical validation, not a symlink security boundary. Open the compiler lab and complete the supplied function in solution.rs. The reading question above is a separate exercise.",
+    "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
+    "question": "Does rejecting .. components prevent escape through a symlink?",
+    "answers": [
+      "Yes, every filesystem must interpret it lexically",
+      "Yes, when the name ends in .txt",
+      "No; symlink resolution and authority require separate protection"
+    ],
+    "correctAnswer": 2,
+    "feedback": "The lexical rule rejects obvious traversal but does not establish authority over a changing filesystem."
+  },
+  "depth": {
+    "misconception": "A root.join call always stays inside root.",
+    "correction": "An absolute argument or parent traversal changes the destination; symlinks add another layer.",
+    "traceSteps": [
+      {
+        "title": "Inspect",
+        "detail": "Split the requested path into components."
+      },
+      {
+        "title": "Reject",
+        "detail": "Refuse roots, prefixes, parents, and an empty effective name."
+      },
+      {
+        "title": "Join",
+        "detail": "Append accepted normal components; leave permissions to the host."
+      }
+    ],
+    "transferChallenge": "Explain which additional host guarantees are needed before using this validator to extract an untrusted archive.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Buffered Line Input",
+        "concept": "BufRead, Cursor, and fallible iteration"
+      },
+      {
+        "direction": "next",
+        "title": "Save & Read a Text File",
+        "concept": "Fallible filesystem effects in a granted directory"
+      }
+    ]
+  },
+  "illustration": {
+    "path": "media/paths-and-boundaries.png",
+    "alt": "Diagram for Paths & Boundaries: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "Path, PathBuf, and lexical validation"
+  },
+  "contentDigest": "a120e1d6f50cec9d60f860c93aa2f6daa1cd34a5bba4638f6e4c9eab02faaf2d"
+}

@@ -1,0 +1,64 @@
+{
+  "id": "validated-records",
+  "parentID": "files-data",
+  "order": 3,
+  "title": "Validate Data Records",
+  "concept": "A bounded text format with precise errors",
+  "minutes": 16,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Specify a small input format before implementing its parser.",
+    "rule": "Malformed records must not disappear from a successful report.",
+    "explanation": "The report format in this exercise is intentionally smaller than CSV: one nonblank record per line, exactly two comma-separated fields, a nonempty trimmed name, and an unsigned count. Quoting and escaped commas are unsupported and must be rejected. Calling a split-on-comma parser a complete CSV parser would be misleading; real CSV permits quoted delimiters, embedded newlines, and escaped quote characters.\n\nParse the entire record before changing the report total. Validate the number of fields, trim both fields, check that the name is nonempty, and parse the count as `u32`. Report a typed or clearly documented error instead of substituting zero. At an application boundary, attach a one-based line number while preserving enough information to explain whether the structure or the number was invalid.\n\nThe compiler lab focuses on one record so its contract stays small. A later adapter can reuse the buffered-line reader, skip blank lines, and call this parser. A successful parse returns owned data that can outlive the input buffer. If ownership costs become significant, consider a borrowed intermediate representation, but measure before introducing lifetimes into every public API.\n\nLocal compiler profile: standard library only. Tests cover whitespace, zero, extra fields, missing fields, a negative count, overflow, and unsupported quotes. These cases are examples of a broader rule: input validation is a part of the data model, not a cosmetic step at the end. Before extending this format, decide whether an established CSV crate is a better fit than adding another exception to a home-grown grammar.",
+    "exampleCode": "fn main() {\n    let fields: Vec<_> = \"crab, 3\"\n        .split(',')\n        .map(str::trim)\n        .collect();\n    assert_eq!(fields, [\"crab\", \"3\"]);\n    // Validate field count, name, and count before accepting a record.\n}\n",
+    "exampleCaption": "A bounded text format with precise errors",
+    "practiceCode": "fn main() {\n    let fields: Vec<_> = \"crab, 3\"\n        .split(',')\n        .map(str::trim)\n        .collect();\n    assert_eq!(fields, [\"crab\", \"3\"]);\n    // Validate field count, name, and count before accepting a record.\n}\n",
+    "task": "Return a trimmed owned name and u32 count from exactly two comma-separated fields. Reject quotes, empty names, extra/missing fields, invalid counts and overflow with Err(invalid). This is not a general CSV parser. Open the compiler lab and complete the supplied function in solution.rs. The reading question above is a separate exercise.",
+    "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
+    "question": "Why is split(',') insufficient for general CSV?",
+    "answers": [
+      "CSV can contain delimiters inside quoted fields",
+      "CSV never contains commas",
+      "Rust strings cannot contain newlines"
+    ],
+    "correctAnswer": 0,
+    "feedback": "Quoted fields change the grammar. Use a CSV parser for the general format; keep this exercise's restrictions explicit."
+  },
+  "depth": {
+    "misconception": "Every comma-delimited file can be safely parsed with split.",
+    "correction": "A simplified grammar is useful only when its accepted and rejected inputs are explicit.",
+    "traceSteps": [
+      {
+        "title": "Shape",
+        "detail": "Require exactly two fields and refuse quote characters."
+      },
+      {
+        "title": "Domain",
+        "detail": "Require a name and a valid unsigned count."
+      },
+      {
+        "title": "Own",
+        "detail": "Return an owned name so the record can outlive its input buffer."
+      }
+    ],
+    "transferChallenge": "Add line-number context in a streaming adapter without turning errors into skipped records.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Save & Read a Text File",
+        "concept": "Fallible filesystem effects in a granted directory"
+      },
+      {
+        "direction": "next",
+        "title": "Serde: Decode, Validate, Encode",
+        "concept": "Serialization is not domain validation"
+      }
+    ]
+  },
+  "illustration": {
+    "path": "media/validated-records.png",
+    "alt": "Diagram for Validate Data Records: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "A bounded text format with precise errors"
+  },
+  "contentDigest": "b43d365614867c6e5ee2031c9a8177e8dc950076d3ce48d5f7d73b416a2162e9"
+}

@@ -1,0 +1,59 @@
+{
+  "id": "wasm-host-boundaries",
+  "parentID": "wasm-wasi",
+  "order": 0,
+  "title": "WASM Is Not the Browser API",
+  "concept": "Targets, host imports, and local execution",
+  "minutes": 16,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "A WebAssembly module runs with the imports its host supplies, not with every capability of the computer.",
+    "rule": "Compilation target and host imports determine what a module can do.",
+    "explanation": "Rust is the source language; WebAssembly is an execution format; WASI is a family of host interfaces. They are separate layers. A module targeting wasm32-unknown-unknown does not automatically get a filesystem, sockets, or the browser DOM. A wasm32-wasip1 program expects the corresponding WASI imports, which a browser does not provide merely by supporting WebAssembly.\n\nCrabrix supplies a local runtime and its supported host interfaces. In the browser, a worker and runtime adapter can compile or execute locally while the website serves toolchain assets. Downloading a compiler is network activity, but it is different from sending source to a backend compiler. Shared documents can use a relay without granting another participant the right to execute source on your device.\n\nA browser DOM integration needs a JavaScript boundary or another deliberate adapter. A guest filesystem is likewise a host-provided view; its paths are not unrestricted paths on the phone. If a library assumes operating-system processes, native threads, or unsupported networking imports, having Rust source alone does not make it compatible with this target.\n\nLocal compiler profile for this lesson's small exercise: standard-library text inspection only. The exercise classifies import names according to an explicitly supplied allowlist; it does not inspect a real module or implement a security policy. Real runtime validation must parse the binary, check actual imports and limits, and preserve the host's sandbox. Keep educational models distinct from the enforcement used by a production engine.",
+    "exampleCode": "fn main() {\n    let declared = [\"fd_write\", \"path_open\"];\n    let allowed = [\"fd_write\"];\n    assert!(\n        declared\n            .iter()\n            .any(|name| !allowed.contains(name))\n    );\n}\n",
+    "exampleCaption": "Targets, host imports, and local execution",
+    "practiceCode": "fn main() {\n    let declared = [\"fd_write\", \"path_open\"];\n    let allowed = [\"fd_write\"];\n    assert!(\n        declared\n            .iter()\n            .any(|name| !allowed.contains(name))\n    );\n}\n",
+    "task": "For this educational model, return true exactly when every import name occurs verbatim in allowed. Empty imports pass. Do not use prefix matching. This function is not a real WASM verifier. Open the compiler lab and complete the supplied function in solution.rs. The reading question above is a separate exercise.",
+    "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
+    "question": "Does browser WebAssembly support automatically supply WASI filesystem imports?",
+    "answers": [
+      "Yes, including the user's entire disk",
+      "No; the embedding host must supply the expected imports",
+      "Only when the source was Rust"
+    ],
+    "correctAnswer": 1,
+    "feedback": "The host supplies imports and authority. WebAssembly support alone does not supply a WASI environment."
+  },
+  "depth": {
+    "misconception": "A Rust wasm file can call every browser and operating-system API.",
+    "correction": "The chosen target and embedding determine the available interfaces.",
+    "traceSteps": [
+      {
+        "title": "Target",
+        "detail": "Identify the module's required ABI and imports."
+      },
+      {
+        "title": "Host",
+        "detail": "Check which interfaces and directory grants the runtime supplies."
+      },
+      {
+        "title": "Execute",
+        "detail": "Run locally only after the local user initiates execution."
+      }
+    ],
+    "transferChallenge": "Explain why serving a compiler asset, relaying an encrypted document, and executing user source are three separate operations.",
+    "connections": [
+      {
+        "direction": "next",
+        "title": "Linear Memory Boundaries",
+        "concept": "Checked offsets, lengths, and borrowed slices"
+      }
+    ]
+  },
+  "illustration": {
+    "path": "media/wasm-host-boundaries.png",
+    "alt": "Diagram for WASM Is Not the Browser API: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "Targets, host imports, and local execution"
+  },
+  "contentDigest": "fb90f9b5ee721accbd6ff3e1ef934c900097fcd0efd6b3e2a405e8c87b2dc89a"
+}
