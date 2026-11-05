@@ -47,7 +47,7 @@ def lab(course, lesson, signature, solution, cases, task, setup="", mutant=None,
     path = COURSES / course / "lessons" / (lesson + ".json")
     item = read(path)
     item["exerciseKind"] = "runnable"
-    item["writing"]["task"] = task + " Open the compiler lab and complete the supplied function in solution.rs. The reading question above is a separate exercise."
+    item["writing"]["task"] = task + " In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise."
     item["writing"]["success"] = "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab."
     save(path, item)
     save(COURSES / course / "checks" / (lesson + ".json"), check)
