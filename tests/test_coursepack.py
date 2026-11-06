@@ -41,8 +41,20 @@ class CoursePackTests(unittest.TestCase):
     def test_migration_parity_reports_only_authored_constellation_revision(self):
         with tempfile.TemporaryDirectory() as temporary:
             report = Path(temporary) / "parity.json"
+            packages = Path(temporary) / "migration-packs"
+            packages.mkdir()
+            baseline = json.loads((ROOT / "migration/baseline-inventory.json").read_text())
+            # dist also retains immutable later editorial releases. This test
+            # qualifies the migration snapshot, not whichever version sorts
+            # last by filename. Never waive later authored changes as parity.
+            for course in baseline["courses"]:
+                version = "1.0.2" if course["id"] == "projects" else course["contentVersion"]
+                archive = ROOT / "dist" / f"{course['id']}-{version}.zip"
+                __import__("os").link(archive, packages / archive.name)
+            gallery = ROOT / "dist/examples-1.0.4.zip"
+            __import__("os").link(gallery, packages / gallery.name)
             self.command("parity", "--legacy", "migration/baseline-inventory.json",
-                         "--packages", "dist", "--out", report, ok=False)
+                         "--packages", packages, "--out", report, ok=False)
             result = json.loads(report.read_text())
             # Keep the original migration baseline immutable. The requested new
             # renderer must be visible as a source change, never silently waived.
