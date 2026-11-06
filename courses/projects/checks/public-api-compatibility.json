@@ -1,0 +1,69 @@
+{
+  "challenge": {
+    "lessonID": "public-api-compatibility",
+    "patternID": "public-api-compatibility",
+    "projectName": "public-api-compatibility-lab",
+    "source": "pub struct RetryPolicy { attempts: u8, delay_ms: u32 }\nimpl RetryPolicy {\n    pub fn new(attempts: u8) -> Option<Self> { todo!(\"implement the contract\") }\n    pub fn attempts(&self) -> u8 { todo!(\"implement the contract\") }\n    pub fn delay_ms(&self) -> u32 { todo!(\"implement the contract\") }\n    pub fn with_delay(self, delay_ms: u32) -> Self { todo!(\"implement the contract\") }\n}\n",
+    "verificationSource": "mod solution;\nfn main() {\n    assert_eq!(solution::RetryPolicy::new(0).is_none(), true, \"case 1\");\n    assert_eq!(solution::RetryPolicy::new(1).unwrap().attempts(), 1, \"case 2\");\n    assert_eq!(solution::RetryPolicy::new(255).unwrap().attempts(), 255, \"case 3\");\n    assert_eq!(solution::RetryPolicy::new(2).unwrap().delay_ms(), 0, \"case 4\");\n    assert_eq!(solution::RetryPolicy::new(2).unwrap().with_delay(u32::MAX).delay_ms(), u32::MAX, \"case 5\");\n    assert_eq!(solution::RetryPolicy::new(2).unwrap().with_delay(50).attempts(), 2, \"case 6\");\n    println!(\"PASS public-api-compatibility\");\n}\n",
+    "verificationCases": [
+      {
+        "kind": "visible",
+        "input": "solution::RetryPolicy::new(0).is_none()",
+        "expectedAnswer": "true"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::RetryPolicy::new(1).unwrap().attempts()",
+        "expectedAnswer": "1"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::RetryPolicy::new(255).unwrap().attempts()",
+        "expectedAnswer": "255"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::RetryPolicy::new(2).unwrap().delay_ms()",
+        "expectedAnswer": "0"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::RetryPolicy::new(2).unwrap().with_delay(u32::MAX).delay_ms()",
+        "expectedAnswer": "u32::MAX"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::RetryPolicy::new(2).unwrap().with_delay(50).attempts()",
+        "expectedAnswer": "2"
+      }
+    ],
+    "expectedOutput": "PASS public-api-compatibility\n",
+    "requiredSourceFragments": [
+      "pub struct RetryPolicy",
+      "pub fn new",
+      "pub fn attempts",
+      "pub fn delay_ms",
+      "pub fn with_delay"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  },
+  "evidence": {
+    "kind": "algorithmChallenge",
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS public-api-compatibility\n"
+    },
+    "requiredSourceFragments": [
+      "pub struct RetryPolicy",
+      "pub fn new",
+      "pub fn attempts",
+      "pub fn delay_ms",
+      "pub fn with_delay"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  }
+}

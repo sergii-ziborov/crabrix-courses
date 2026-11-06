@@ -1,0 +1,74 @@
+{
+  "id": "msrv-verification",
+  "title": "MSRV Is a Tested Promise",
+  "concept": "A manifest declaration needs evidence from the minimum supported compiler",
+  "minutes": 22,
+  "parentID": "library-contracts",
+  "order": 1,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "A manifest declaration needs evidence from the minimum supported compiler.",
+    "rule": "Test the actual minimum compiler and supported profiles; metadata alone is not evidence.",
+    "explanation": "The minimum supported Rust version, or MSRV, is a support promise about the compiler and Cargo environment your package accepts. A `rust-version = \"1.78\"` declaration tells Cargo the stated minimum; it does not translate newer syntax or standard-library APIs into older equivalents. A current compiler can compile code that the minimum cannot. A release needs a minimum-version job as well as the ordinary current-version job.\n\nUse a concrete failure. `Option::is_none_or` was stabilized in Rust 1.82. An implementation using that method can pass on a newer compiler while failing on 1.78, even if the manifest still says 1.78. The reading's `match` expresses the same optional-limit rule without that method: no configured value is permitted, zero is rejected, and a positive value must not exceed the ceiling. Check the boundary where the value equals the ceiling, and the case where the ceiling itself is zero.\n\nA useful support record includes the declared compiler, edition, feature sets, targets, dependency resolution and tests performed. This unit's small fixtures use edition 2021 and a dependency-free lockfile understood by both tested toolchains. That keeps a standard-library API failure separate from an unrelated manifest or lockfile-format failure. In a real package, newer Cargo syntax, edition support, build scripts and procedural macros may raise the effective requirement before your own library source is compiled.\n\nRun the actual supported toolchain, for example `cargo +1.78 check --locked` and `cargo +1.78 test --locked`, in an environment that has it installed. Repeat the relevant jobs on the current toolchain and under your documented optional features. A library consumer resolves with its own dependency graph and lockfile, so the author's development lockfile is not evidence for every downstream graph. Review compatible dependency updates and retain a representative consumer fixture. Resolver preferences that consider `rust-version` help select packages, but do not prove the resulting source compiles or that every requested combination has a compatible candidate.\n\nChoose and publish an MSRV-change policy. State when an increase can occur, how it is announced and whether an older release line receives fixes. Different projects choose different policies; do not invent a universal requirement that every MSRV increase must use the same SemVer bump. Cargo's guidance treats these changes as a compatibility concern and recommends documenting the chosen policy. A CI support matrix should express what you actually promise, not the largest list of versions that looks impressive.\n\nLocal compiler lab: implement `permits` and satisfy the independent boundary harness. This validates behavior on the compiler installed in Crabrix. Crabrix uses one pinned toolchain, so that result is not an emulated run of Rust 1.78. The accompanying release fixture is tested separately with the real installed old and current compilers, including the deliberately too-new method. Preserve that distinction when reporting compatibility. Neither check needs backend execution.",
+    "exampleCode": "fn permits(value: Option<u16>, ceiling: u16) -> bool {\n    match value {\n        None => true,\n        Some(n) => n > 0 && n <= ceiling,\n    }\n}\nfn main() {\n    assert!(permits(None, 0));\n    assert!(permits(Some(7), 7));\n    assert!(!permits(Some(0), 7));\n    assert!(!permits(Some(8), 7));\n    println!(\"same contract on old and current Rust\");\n}\n",
+    "exampleCaption": "A match-based implementation preserves the optional-limit contract on both tested compiler versions.",
+    "practiceCode": "pub fn permits(value: Option<u16>, ceiling: u16) -> bool {\n    todo!(\"implement the contract\")\n}\n",
+    "task": "Implement permits(value, ceiling): None is allowed, even with a zero ceiling; Some(n) is allowed exactly when 0 < n <= ceiling. Keep the signature and handle the u16 boundaries. The local grader tests behavior on the installed compiler; use the separate two-toolchain fixture to establish MSRV. Open the compiler lab and edit solution.rs. The reading question is independent.",
+    "success": "The changed implementation passes the separate normal and boundary harness. MSRV and the full Cargo feature matrix have their own explicit checks.",
+    "question": "A package declares Rust 1.78 and its only CI job passes on a current compiler. What has that job established?",
+    "answers": [
+      "The declaration guarantees compatibility with Rust 1.78",
+      "The tested graph builds on that current compiler; Rust 1.78 remains untested",
+      "All optional features and downstream graphs satisfy Rust 1.78"
+    ],
+    "correctAnswer": 1,
+    "feedback": "The declaration is metadata and a support promise. Running the actual minimum toolchain, plus the promised configurations, supplies evidence for the minimum."
+  },
+  "depth": {
+    "misconception": "Setting rust-version makes the current compiler reject every API newer than the declared minimum.",
+    "correction": "The current compiler can accept newer APIs. Check the actual minimum compiler and the supported build configuration.",
+    "traceSteps": [
+      {
+        "title": "State the promise",
+        "detail": "Record Rust 1.78, edition 2021 and the dependency/feature profile."
+      },
+      {
+        "title": "Keep behavior fixed",
+        "detail": "Test absent, zero, equal-to-limit and over-limit values."
+      },
+      {
+        "title": "Use both compilers",
+        "detail": "The newer method is rejected on 1.78 while the match-based version passes on both."
+      }
+    ],
+    "transferChallenge": "Add the real minimum-version job to a disposable library CI matrix. Introduce one newer library API deliberately, then verify which job catches it.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Evolving a Public API",
+        "concept": "Compile the unchanged consumer before calling an API change compatible"
+      },
+      {
+        "direction": "next",
+        "title": "The Downstream Feature Matrix",
+        "concept": "Optional capability must preserve the old consumer across the supported feature sets"
+      }
+    ]
+  },
+  "illustration": {
+    "path": "media/msrv-verification.png",
+    "alt": "Diagram for MSRV Is a Tested Promise: the worked Rust example, its compatibility contract and the observed consumer result.",
+    "caption": "A match-based implementation preserves the optional-limit contract on both tested compiler versions."
+  },
+  "resources": [
+    {
+      "title": "Compatibility fixtures and reproducible checks",
+      "url": "https://github.com/sergii-ziborov/crabrix-courses/tree/library-contracts-2026-11-06/editorial/library_contracts_20261106"
+    },
+    {
+      "title": "Cargo: Rust version support",
+      "url": "https://doc.rust-lang.org/cargo/reference/rust-version.html"
+    }
+  ],
+  "contentDigest": "6012abeef57452ed9fae2d19f2f718d19f3e16537c475a78edc91fb60efed5e9"
+}

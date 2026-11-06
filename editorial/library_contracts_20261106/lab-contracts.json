@@ -1,0 +1,26 @@
+[
+  {
+    "id": "public-api-compatibility",
+    "reference": "pub struct RetryPolicy { attempts: u8, delay_ms: u32 }\nimpl RetryPolicy {\n    pub fn new(attempts: u8) -> Option<Self> { if attempts == 0 { None } else { Some(Self { attempts, delay_ms: 0 }) } }\n    pub fn attempts(&self) -> u8 { self.attempts }\n    pub fn delay_ms(&self) -> u32 { self.delay_ms }\n    pub fn with_delay(mut self, delay_ms: u32) -> Self { self.delay_ms = delay_ms; self }\n}\n",
+    "starter": "pub struct RetryPolicy { attempts: u8, delay_ms: u32 }\nimpl RetryPolicy {\n    pub fn new(attempts: u8) -> Option<Self> { todo!(\"implement the contract\") }\n    pub fn attempts(&self) -> u8 { todo!(\"implement the contract\") }\n    pub fn delay_ms(&self) -> u32 { todo!(\"implement the contract\") }\n    pub fn with_delay(self, delay_ms: u32) -> Self { todo!(\"implement the contract\") }\n}\n",
+    "mutant": "pub struct RetryPolicy { attempts: u8, delay_ms: u32 }\nimpl RetryPolicy {\n    pub fn new(attempts: u8) -> Option<Self> { if attempts == 0 { None } else { Some(Self { attempts, delay_ms: 0 }) } }\n    pub fn attempts(&self) -> u8 { 3 }\n    pub fn delay_ms(&self) -> u32 { self.delay_ms }\n    pub fn with_delay(mut self, delay_ms: u32) -> Self { self.delay_ms = delay_ms; self }\n}\n",
+    "harness": "mod solution;\nfn main() {\n    assert_eq!(solution::RetryPolicy::new(0).is_none(), true, \"case 1\");\n    assert_eq!(solution::RetryPolicy::new(1).unwrap().attempts(), 1, \"case 2\");\n    assert_eq!(solution::RetryPolicy::new(255).unwrap().attempts(), 255, \"case 3\");\n    assert_eq!(solution::RetryPolicy::new(2).unwrap().delay_ms(), 0, \"case 4\");\n    assert_eq!(solution::RetryPolicy::new(2).unwrap().with_delay(u32::MAX).delay_ms(), u32::MAX, \"case 5\");\n    assert_eq!(solution::RetryPolicy::new(2).unwrap().with_delay(50).attempts(), 2, \"case 6\");\n    println!(\"PASS public-api-compatibility\");\n}\n",
+    "expectedOutput": "PASS public-api-compatibility\n"
+  },
+  {
+    "id": "msrv-verification",
+    "reference": "pub fn permits(value: Option<u16>, ceiling: u16) -> bool { match value { None => true, Some(n) => n > 0 && n <= ceiling } }\n",
+    "starter": "pub fn permits(value: Option<u16>, ceiling: u16) -> bool {\n    todo!(\"implement the contract\")\n}\n",
+    "mutant": "pub fn permits(value: Option<u16>, ceiling: u16) -> bool { value.unwrap_or(0) <= ceiling }\n",
+    "harness": "mod solution;\nfn main() {\n    assert_eq!(solution::permits(None, 0), true, \"case 1\");\n    assert_eq!(solution::permits(Some(0), 10), false, \"case 2\");\n    assert_eq!(solution::permits(Some(7), 7), true, \"case 3\");\n    assert_eq!(solution::permits(Some(8), 7), false, \"case 4\");\n    assert_eq!(solution::permits(Some(1), 0), false, \"case 5\");\n    assert_eq!(solution::permits(Some(u16::MAX), u16::MAX), true, \"case 6\");\n    println!(\"PASS msrv-verification\");\n}\n",
+    "expectedOutput": "PASS msrv-verification\n"
+  },
+  {
+    "id": "feature-compatibility-matrix",
+    "reference": "pub fn label(id: u16) -> String { format!(\"core={id}\") }\n",
+    "starter": "pub fn label(id: u16) -> String {\n    todo!(\"implement the contract\")\n}\n",
+    "mutant": "pub fn label(id: u16) -> String { format!(\"core={id:04}\") }\n",
+    "harness": "mod solution;\nfn main() {\n    assert_eq!(solution::label(0), \"core=0\".to_owned(), \"case 1\");\n    assert_eq!(solution::label(7), \"core=7\".to_owned(), \"case 2\");\n    assert_eq!(solution::label(42), \"core=42\".to_owned(), \"case 3\");\n    assert_eq!(solution::label(u16::MAX), \"core=65535\".to_owned(), \"case 4\");\n    println!(\"PASS feature-compatibility-matrix\");\n}\n",
+    "expectedOutput": "PASS feature-compatibility-matrix\n"
+  }
+]

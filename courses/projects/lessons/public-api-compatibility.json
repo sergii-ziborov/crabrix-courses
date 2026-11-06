@@ -1,0 +1,69 @@
+{
+  "id": "public-api-compatibility",
+  "title": "Evolving a Public API",
+  "concept": "Compile the unchanged consumer before calling an API change compatible",
+  "minutes": 24,
+  "parentID": "library-contracts",
+  "order": 0,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Compile the unchanged consumer before calling an API change compatible.",
+    "rule": "Keep the original caller's signatures and promised behavior across supported releases.",
+    "explanation": "A library release is used by code you do not own. Start the review with one unchanged downstream consumer: the original call to `Policy::new(3).unwrap().attempts()` must still compile and return three. A green library test suite is useful but can miss a break if those tests were edited together with the API. Compile the same consumer against both library versions instead of fixing it until it passes.\n\nIn the example, `attempts` and `delay_ms` are private. Callers construct `Policy` through `new`, so adding the private delay field does not require them to update a struct literal. The existing constructor keeps its parameter, return type and zero-attempt validation. `with_delay` is a new builder that retains the attempt count; omitting it still selects zero delay. This is a deliberately small compatible evolution of this consumer contract, not a proof that every private representation change is harmless.\n\nAn entirely public struct is a different contract. Adding a required field breaks a downstream literal that listed all the previous fields. Adding an enum variant can break an exhaustive downstream match. A `#[non_exhaustive]` design can reserve evolution space when chosen before callers depend on exhaustive construction or matching; adding that restriction later may itself break callers. For a public trait, remember that consumers may implement it as well as call it: a new required method affects those implementations.\n\nSource compatibility is one part of the review. Changing an error condition, normalization rule, panic behavior or ordering can break an application that still compiles. Generic bounds, auto traits such as `Send`, lifetimes and documented layout or FFI promises can also matter. The private-field builder does not grant permission to change these properties silently. Write the behavior you promise, then choose a versioning and migration policy that matches it. Cargo's SemVer guidance describes conventions and caveats; a version number does not establish that an arbitrary change is safe.\n\nKeep a downstream fixture outside the library's own module tests. Pin the consumer source bytes, compile it with the candidate library, run its observable assertions, and retain a deliberately incompatible candidate that the fixture rejects. A changed constructor arity should fail compilation; a constructor that quietly changes the attempt count should compile but fail the consumer assertion. These two failures demonstrate different checks. A finite fixture covers its consumers and inputs, not every possible external program.\n\nLocal compiler lab: implement the constructor, getters and builder in `solution.rs` without changing their public signatures. The separate harness calls the API with normal and boundary values and checks that the builder preserves the original attempt count. It does not accept an edited assertion or a printed success string as the implementation. The standard-library example and lab need no server or external crate. Full release CI should additionally test the supported targets, feature sets and compiler versions.",
+    "exampleCode": "mod retry {\n    pub struct Policy { attempts: u8, delay_ms: u32 }\n    impl Policy {\n        pub fn new(attempts: u8) -> Option<Self> {\n            if attempts == 0 { return None; }\n            Some(Self { attempts, delay_ms: 0 })\n        }\n        pub fn attempts(&self) -> u8 { self.attempts }\n        pub fn with_delay(mut self, delay_ms: u32) -> Self {\n            self.delay_ms = delay_ms;\n            self\n        }\n        pub fn delay_ms(&self) -> u32 { self.delay_ms }\n    }\n}\nfn existing_consumer() -> u8 {\n    retry::Policy::new(3).unwrap().attempts()\n}\nfn main() {\n    assert_eq!(existing_consumer(), 3);\n    let policy = retry::Policy::new(2).unwrap().with_delay(50);\n    assert_eq!((policy.attempts(), policy.delay_ms()), (2, 50));\n    println!(\"old consumer=3; new delay=50\");\n}\n",
+    "exampleCaption": "The original constructor and getter still work; the builder adds delay without changing the old caller.",
+    "practiceCode": "pub struct RetryPolicy { attempts: u8, delay_ms: u32 }\nimpl RetryPolicy {\n    pub fn new(attempts: u8) -> Option<Self> { todo!(\"implement the contract\") }\n    pub fn attempts(&self) -> u8 { todo!(\"implement the contract\") }\n    pub fn delay_ms(&self) -> u32 { todo!(\"implement the contract\") }\n    pub fn with_delay(self, delay_ms: u32) -> Self { todo!(\"implement the contract\") }\n}\n",
+    "task": "Implement RetryPolicy::new, attempts, delay_ms and the consuming with_delay builder. Reject zero attempts; preserve every positive u8 attempt count. The constructor sets zero delay, and the builder changes only delay, including u32::MAX. Keep the supplied public signatures. Open the compiler lab and edit solution.rs. The reading question is independent.",
+    "success": "The changed implementation passes the separate normal and boundary harness. MSRV and the full Cargo feature matrix have their own explicit checks.",
+    "question": "A library adds a required public field to a previously constructible public struct. Which unchanged downstream code can stop compiling?",
+    "answers": [
+      "A struct literal listing only the old fields",
+      "Every call to an unchanged getter necessarily fails",
+      "Only code using an experimental compiler is affected"
+    ],
+    "correctAnswer": 0,
+    "feedback": "The old literal has no value for the new required field. Constructor-based examples are a different API shape; an unchanged getter alone does not require a downstream literal."
+  },
+  "depth": {
+    "misconception": "Private fields make every later library change SemVer-compatible.",
+    "correction": "Private representation can evolve more easily, but behavior, auto traits, lifetimes and explicit layout promises still need review.",
+    "traceSteps": [
+      {
+        "title": "Retain a caller",
+        "detail": "Keep the original constructor and getter call in a separate consumer."
+      },
+      {
+        "title": "Evolve deliberately",
+        "detail": "Add a defaulted private field and a builder while preserving validation."
+      },
+      {
+        "title": "Reject a regression",
+        "detail": "Change constructor arity or returned attempts and observe compilation or behavior failure."
+      }
+    ],
+    "transferChallenge": "Audit a public enum and trait in a library you maintain. Identify an exhaustive match and an external implementation that a candidate change would affect.",
+    "connections": [
+      {
+        "direction": "next",
+        "title": "MSRV Is a Tested Promise",
+        "concept": "A manifest declaration needs evidence from the minimum supported compiler"
+      }
+    ]
+  },
+  "illustration": {
+    "path": "media/public-api-compatibility.png",
+    "alt": "Diagram for Evolving a Public API: the worked Rust example, its compatibility contract and the observed consumer result.",
+    "caption": "The original constructor and getter still work; the builder adds delay without changing the old caller."
+  },
+  "resources": [
+    {
+      "title": "Compatibility fixtures and reproducible checks",
+      "url": "https://github.com/sergii-ziborov/crabrix-courses/tree/library-contracts-2026-11-06/editorial/library_contracts_20261106"
+    },
+    {
+      "title": "Cargo: SemVer compatibility",
+      "url": "https://doc.rust-lang.org/cargo/reference/semver.html"
+    }
+  ],
+  "contentDigest": "a3a493ecefafa2ce2fe5f612f15bb33ed6aed90b82f3237e1e1f1370096274c2"
+}

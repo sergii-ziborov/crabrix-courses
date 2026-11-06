@@ -1,0 +1,127 @@
+"""Author a data-only Library Contracts unit; retain every earlier identity."""
+import json,sys
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[2]
+COURSE=ROOT/'courses/projects'; HERE=Path(__file__).resolve().parent
+sys.path.insert(0,str(ROOT/'tools'))
+from complete_lesson_illustrations import render_rust
+
+def save(path,value):
+ path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps(value,ensure_ascii=False,indent=2)+'\n')
+def paragraphs(*values):return '\n\n'.join(values)
+API='''mod retry {
+    pub struct Policy { attempts: u8, delay_ms: u32 }
+    impl Policy {
+        pub fn new(attempts: u8) -> Option<Self> {
+            if attempts == 0 { return None; }
+            Some(Self { attempts, delay_ms: 0 })
+        }
+        pub fn attempts(&self) -> u8 { self.attempts }
+        pub fn with_delay(mut self, delay_ms: u32) -> Self {
+            self.delay_ms = delay_ms;
+            self
+        }
+        pub fn delay_ms(&self) -> u32 { self.delay_ms }
+    }
+}
+fn existing_consumer() -> u8 {
+    retry::Policy::new(3).unwrap().attempts()
+}
+fn main() {
+    assert_eq!(existing_consumer(), 3);
+    let policy = retry::Policy::new(2).unwrap().with_delay(50);
+    assert_eq!((policy.attempts(), policy.delay_ms()), (2, 50));
+    println!("old consumer=3; new delay=50");
+}
+'''
+MSRV='''fn permits(value: Option<u16>, ceiling: u16) -> bool {
+    match value {
+        None => true,
+        Some(n) => n > 0 && n <= ceiling,
+    }
+}
+fn main() {
+    assert!(permits(None, 0));
+    assert!(permits(Some(7), 7));
+    assert!(!permits(Some(0), 7));
+    assert!(!permits(Some(8), 7));
+    println!("same contract on old and current Rust");
+}
+'''
+FEATURES='''mod api {
+    pub fn label(id: u16) -> String { format!("core={id}") }
+    #[cfg(feature = "details")]
+    pub fn details(id: u16) -> String {
+        format!("{}; details", label(id))
+    }
+    #[cfg(feature = "trace")]
+    pub fn trace(id: u16) -> String {
+        format!("trace: {}", label(id))
+    }
+}
+fn existing_consumer() -> String { api::label(7) }
+fn main() {
+    assert_eq!(existing_consumer(), "core=7");
+    #[cfg(feature = "details")]
+    assert_eq!(api::details(7), "core=7; details");
+    #[cfg(feature = "trace")]
+    assert_eq!(api::trace(7), "trace: core=7");
+    println!("{}", existing_consumer());
+}
+'''
+lessons=[dict(id='public-api-compatibility',title='Evolving a Public API',concept='Compile the unchanged consumer before calling an API change compatible',minutes=24,example=API,caption='The original constructor and getter still work; the builder adds delay without changing the old caller.',rule='Keep the original caller\'s signatures and promised behavior across supported releases.',explanation=paragraphs(
+'A library release is used by code you do not own. Start the review with one unchanged downstream consumer: the original call to `Policy::new(3).unwrap().attempts()` must still compile and return three. A green library test suite is useful but can miss a break if those tests were edited together with the API. Compile the same consumer against both library versions instead of fixing it until it passes.',
+'In the example, `attempts` and `delay_ms` are private. Callers construct `Policy` through `new`, so adding the private delay field does not require them to update a struct literal. The existing constructor keeps its parameter, return type and zero-attempt validation. `with_delay` is a new builder that retains the attempt count; omitting it still selects zero delay. This is a deliberately small compatible evolution of this consumer contract, not a proof that every private representation change is harmless.',
+'An entirely public struct is a different contract. Adding a required field breaks a downstream literal that listed all the previous fields. Adding an enum variant can break an exhaustive downstream match. A `#[non_exhaustive]` design can reserve evolution space when chosen before callers depend on exhaustive construction or matching; adding that restriction later may itself break callers. For a public trait, remember that consumers may implement it as well as call it: a new required method affects those implementations.',
+'Source compatibility is one part of the review. Changing an error condition, normalization rule, panic behavior or ordering can break an application that still compiles. Generic bounds, auto traits such as `Send`, lifetimes and documented layout or FFI promises can also matter. The private-field builder does not grant permission to change these properties silently. Write the behavior you promise, then choose a versioning and migration policy that matches it. Cargo\'s SemVer guidance describes conventions and caveats; a version number does not establish that an arbitrary change is safe.',
+'Keep a downstream fixture outside the library\'s own module tests. Pin the consumer source bytes, compile it with the candidate library, run its observable assertions, and retain a deliberately incompatible candidate that the fixture rejects. A changed constructor arity should fail compilation; a constructor that quietly changes the attempt count should compile but fail the consumer assertion. These two failures demonstrate different checks. A finite fixture covers its consumers and inputs, not every possible external program.',
+'Local compiler lab: implement the constructor, getters and builder in `solution.rs` without changing their public signatures. The separate harness calls the API with normal and boundary values and checks that the builder preserves the original attempt count. It does not accept an edited assertion or a printed success string as the implementation. The standard-library example and lab need no server or external crate. Full release CI should additionally test the supported targets, feature sets and compiler versions.'),question='A library adds a required public field to a previously constructible public struct. Which unchanged downstream code can stop compiling?',answers=['A struct literal listing only the old fields','Every call to an unchanged getter necessarily fails','Only code using an experimental compiler is affected'],correct=0,feedback='The old literal has no value for the new required field. Constructor-based examples are a different API shape; an unchanged getter alone does not require a downstream literal.',misconception='Private fields make every later library change SemVer-compatible.',correction='Private representation can evolve more easily, but behavior, auto traits, lifetimes and explicit layout promises still need review.',trace=[('Retain a caller','Keep the original constructor and getter call in a separate consumer.'),('Evolve deliberately','Add a defaulted private field and a builder while preserving validation.'),('Reject a regression','Change constructor arity or returned attempts and observe compilation or behavior failure.')],transfer='Audit a public enum and trait in a library you maintain. Identify an exhaustive match and an external implementation that a candidate change would affect.'),
+dict(id='msrv-verification',title='MSRV Is a Tested Promise',concept='A manifest declaration needs evidence from the minimum supported compiler',minutes=22,example=MSRV,caption='A match-based implementation preserves the optional-limit contract on both tested compiler versions.',rule='Test the actual minimum compiler and supported profiles; metadata alone is not evidence.',explanation=paragraphs(
+'The minimum supported Rust version, or MSRV, is a support promise about the compiler and Cargo environment your package accepts. A `rust-version = "1.78"` declaration tells Cargo the stated minimum; it does not translate newer syntax or standard-library APIs into older equivalents. A current compiler can compile code that the minimum cannot. A release needs a minimum-version job as well as the ordinary current-version job.',
+'Use a concrete failure. `Option::is_none_or` was stabilized in Rust 1.82. An implementation using that method can pass on a newer compiler while failing on 1.78, even if the manifest still says 1.78. The reading\'s `match` expresses the same optional-limit rule without that method: no configured value is permitted, zero is rejected, and a positive value must not exceed the ceiling. Check the boundary where the value equals the ceiling, and the case where the ceiling itself is zero.',
+'A useful support record includes the declared compiler, edition, feature sets, targets, dependency resolution and tests performed. This unit\'s small fixtures use edition 2021 and a dependency-free lockfile understood by both tested toolchains. That keeps a standard-library API failure separate from an unrelated manifest or lockfile-format failure. In a real package, newer Cargo syntax, edition support, build scripts and procedural macros may raise the effective requirement before your own library source is compiled.',
+'Run the actual supported toolchain, for example `cargo +1.78 check --locked` and `cargo +1.78 test --locked`, in an environment that has it installed. Repeat the relevant jobs on the current toolchain and under your documented optional features. A library consumer resolves with its own dependency graph and lockfile, so the author\'s development lockfile is not evidence for every downstream graph. Review compatible dependency updates and retain a representative consumer fixture. Resolver preferences that consider `rust-version` help select packages, but do not prove the resulting source compiles or that every requested combination has a compatible candidate.',
+'Choose and publish an MSRV-change policy. State when an increase can occur, how it is announced and whether an older release line receives fixes. Different projects choose different policies; do not invent a universal requirement that every MSRV increase must use the same SemVer bump. Cargo\'s guidance treats these changes as a compatibility concern and recommends documenting the chosen policy. A CI support matrix should express what you actually promise, not the largest list of versions that looks impressive.',
+'Local compiler lab: implement `permits` and satisfy the independent boundary harness. This validates behavior on the compiler installed in Crabrix. Crabrix uses one pinned toolchain, so that result is not an emulated run of Rust 1.78. The accompanying release fixture is tested separately with the real installed old and current compilers, including the deliberately too-new method. Preserve that distinction when reporting compatibility. Neither check needs backend execution.'),question='A package declares Rust 1.78 and its only CI job passes on a current compiler. What has that job established?',answers=['The declaration guarantees compatibility with Rust 1.78','The tested graph builds on that current compiler; Rust 1.78 remains untested','All optional features and downstream graphs satisfy Rust 1.78'],correct=1,feedback='The declaration is metadata and a support promise. Running the actual minimum toolchain, plus the promised configurations, supplies evidence for the minimum.',misconception='Setting rust-version makes the current compiler reject every API newer than the declared minimum.',correction='The current compiler can accept newer APIs. Check the actual minimum compiler and the supported build configuration.',trace=[('State the promise','Record Rust 1.78, edition 2021 and the dependency/feature profile.'),('Keep behavior fixed','Test absent, zero, equal-to-limit and over-limit values.'),('Use both compilers','The newer method is rejected on 1.78 while the match-based version passes on both.')],transfer='Add the real minimum-version job to a disposable library CI matrix. Introduce one newer library API deliberately, then verify which job catches it.'),
+dict(id='feature-compatibility-matrix',title='The Downstream Feature Matrix',concept='Optional capability must preserve the old consumer across the supported feature sets',minutes=25,example=FEATURES,caption='The old consumer always prints core=7; details and trace add independent functions that can coexist.',rule='Keep the baseline API working with defaults, minimal builds and supported feature unions.',explanation=paragraphs(
+'A feature is part of a package\'s public contract when downstream users can request it. This example preserves `label(7) == "core=7"` while adding `details` and `trace` functions. The existing consumer does not change when either feature is enabled. The two features can be requested together, and the base `label` keeps the same signature and behavior. That is the observable promise the matrix checks.',
+'Cargo combines feature requests for a package within the applicable resolution context. One dependency path can request `details` and another can request `trace`, so code that only compiles with exactly one of them is a downstream hazard. Newer resolver versions isolate some contexts, such as certain build or development dependencies; this does not turn ordinary feature requests into global exclusion switches. Keep the example\'s two functions differently named and additive. A broken alternative that defines the same helper name under both features may pass each individual build and fail their union.',
+'Check a small, explicit matrix rather than trusting `--all-features` alone. Include defaults, `--no-default-features`, each optional feature, and supported combinations. The all-features build can accidentally hide a missing item in the minimal profile. Conversely, checking each feature alone misses collisions when consumers request both. For a large feature set, select combinations from the documented contract and known interactions; checking a few combinations is not a claim to have exhausted an exponential space.',
+'Use a downstream consumer of the library target, not only tests that live inside its private module tree. Keep that consumer\'s source bytes fixed while changing the requested dependency features. Assert both the baseline rendering and each requested optional API. The accompanying fixture compiles and runs this consumer on the minimum and current compilers. It also checks a candidate that changes baseline rendering only when `details` is enabled, and one whose duplicate helper exists only in the union. Each should fail for a different reason.',
+'`default-features = false` is an edge request to avoid enabling that dependency\'s defaults; it is not a command to disable defaults that another dependency path requests. The fixture includes two paths to demonstrate this distinction. Be cautious when removing an existing default feature, renaming an optional capability, changing its implied dependencies or increasing the compiler requirement of that feature. Review those changes under the same published compatibility policy as ordinary public methods.',
+'Local compiler lab: implement the baseline `label` function for all `u16` IDs, preserving the exact `core=` prefix and decimal representation. Its independent, manifest-free harness checks the baseline contract only; a passing lab is not evidence that every Cargo feature profile has run. The complete worked example uses ordinary standard-library code and conditional functions. For the actual Cargo matrix, use the accompanying source fixture and run the documented commands with each feature selection. The app\'s prepared Cargo environment can run supported profiles explicitly; it does not switch to an older compiler. No server, network service or downloaded package is needed for this unit.'),question='Why is a successful all-features build insufficient evidence for the documented no-default-features profile?',answers=['All-features secretly turns every feature off','The minimal profile always has the same items as all-features','An enabled feature can supply an item missing from the minimal profile'],correct=2,feedback='A large feature set can mask missing minimal-profile items. Test that profile independently, then test unions to catch collisions.',misconception='Testing each optional feature separately proves that their union is compatible.',correction='The union can expose duplicate definitions or a changed baseline API. Test the combinations your contract supports.',trace=[('Pin the consumer','Call label(7) from a consumer whose source does not change.'),('Vary requests','Run base, no-default, details, trace and both-feature profiles.'),('Observe two failures','A behavior change fails an assertion; a duplicate helper in the union fails compilation.')],transfer='Select two optional features in a real library. Write an unchanged consumer, test each feature and their union, and describe which other combinations remain untested.')]
+API_START='''pub struct RetryPolicy { attempts: u8, delay_ms: u32 }
+impl RetryPolicy {
+    pub fn new(attempts: u8) -> Option<Self> { todo!("implement the contract") }
+    pub fn attempts(&self) -> u8 { todo!("implement the contract") }
+    pub fn delay_ms(&self) -> u32 { todo!("implement the contract") }
+    pub fn with_delay(self, delay_ms: u32) -> Self { todo!("implement the contract") }
+}
+'''
+API_REF=API_START.replace('pub fn new(attempts: u8) -> Option<Self> { todo!("implement the contract") }','pub fn new(attempts: u8) -> Option<Self> { if attempts == 0 { None } else { Some(Self { attempts, delay_ms: 0 }) } }').replace('pub fn attempts(&self) -> u8 { todo!("implement the contract") }','pub fn attempts(&self) -> u8 { self.attempts }').replace('pub fn delay_ms(&self) -> u32 { todo!("implement the contract") }','pub fn delay_ms(&self) -> u32 { self.delay_ms }').replace('pub fn with_delay(self, delay_ms: u32) -> Self { todo!("implement the contract") }','pub fn with_delay(mut self, delay_ms: u32) -> Self { self.delay_ms = delay_ms; self }')
+CONTRACTS={
+'public-api-compatibility':dict(starter=API_START,reference=API_REF,mutant=API_REF.replace('self.attempts }','3 }'),calls=[('solution::RetryPolicy::new(0).is_none()','true'),('solution::RetryPolicy::new(1).unwrap().attempts()','1'),('solution::RetryPolicy::new(255).unwrap().attempts()','255'),('solution::RetryPolicy::new(2).unwrap().delay_ms()','0'),('solution::RetryPolicy::new(2).unwrap().with_delay(u32::MAX).delay_ms()','u32::MAX'),('solution::RetryPolicy::new(2).unwrap().with_delay(50).attempts()','2')],required=['pub struct RetryPolicy','pub fn new','pub fn attempts','pub fn delay_ms','pub fn with_delay'],task='Implement RetryPolicy::new, attempts, delay_ms and the consuming with_delay builder. Reject zero attempts; preserve every positive u8 attempt count. The constructor sets zero delay, and the builder changes only delay, including u32::MAX. Keep the supplied public signatures.'),
+'msrv-verification':dict(starter='pub fn permits(value: Option<u16>, ceiling: u16) -> bool {\n    todo!("implement the contract")\n}\n',reference='pub fn permits(value: Option<u16>, ceiling: u16) -> bool { match value { None => true, Some(n) => n > 0 && n <= ceiling } }\n',mutant='pub fn permits(value: Option<u16>, ceiling: u16) -> bool { value.unwrap_or(0) <= ceiling }\n',calls=[('solution::permits(None, 0)','true'),('solution::permits(Some(0), 10)','false'),('solution::permits(Some(7), 7)','true'),('solution::permits(Some(8), 7)','false'),('solution::permits(Some(1), 0)','false'),('solution::permits(Some(u16::MAX), u16::MAX)','true')],required=['pub fn permits'],task='Implement permits(value, ceiling): None is allowed, even with a zero ceiling; Some(n) is allowed exactly when 0 < n <= ceiling. Keep the signature and handle the u16 boundaries. The local grader tests behavior on the installed compiler; use the separate two-toolchain fixture to establish MSRV.'),
+'feature-compatibility-matrix':dict(starter='pub fn label(id: u16) -> String {\n    todo!("implement the contract")\n}\n',reference='pub fn label(id: u16) -> String { format!("core={id}") }\n',mutant='pub fn label(id: u16) -> String { format!("core={id:04}") }\n',calls=[('solution::label(0)','"core=0".to_owned()'),('solution::label(7)','"core=7".to_owned()'),('solution::label(42)','"core=42".to_owned()'),('solution::label(u16::MAX)','"core=65535".to_owned()')],required=['pub fn label'],task='Implement the unchanged baseline label contract: core= followed immediately by the ordinary decimal u16 value, with no padding, spaces or newline. The local harness checks this API only. Then use the accompanying Cargo fixture to test the actual feature profiles and their unchanged downstream consumer.')}
+refs=[]
+for order,item in enumerate(lessons):
+ lid=item['id'];c=CONTRACTS[lid];expected=f'PASS {lid}\n';assertions='\n'.join(f'    assert_eq!({call}, {answer}, "case {i+1}");' for i,(call,answer) in enumerate(c['calls']));harness='mod solution;\nfn main() {\n'+assertions+'\n    println!("PASS '+lid+'");\n}\n'
+ lesson={k:item[k] for k in ['id','title','concept','minutes']};lesson.update(parentID='library-contracts',order=order,exerciseKind='runnable',writing={'summary':item['concept']+'.','rule':item['rule'],'explanation':item['explanation'],'exampleCode':item['example'],'exampleCaption':item['caption'],'practiceCode':c['starter'],'task':c['task']+' Open the compiler lab and edit solution.rs. The reading question is independent.','success':'The changed implementation passes the separate normal and boundary harness. MSRV and the full Cargo feature matrix have their own explicit checks.','question':item['question'],'answers':item['answers'],'correctAnswer':item['correct'],'feedback':item['feedback']},depth={'misconception':item['misconception'],'correction':item['correction'],'traceSteps':[dict(title=t,detail=d) for t,d in item['trace']],'transferChallenge':item['transfer'],'connections':[]},illustration={'path':f'media/{lid}.png','alt':f'Diagram for {item["title"]}: the worked Rust example, its compatibility contract and the observed consumer result.','caption':item['caption']})
+ if order:lesson['depth']['connections'].append(dict(direction='previous',title=lessons[order-1]['title'],concept=lessons[order-1]['concept']))
+ if order+1<len(lessons):lesson['depth']['connections'].append(dict(direction='next',title=lessons[order+1]['title'],concept=lessons[order+1]['concept']))
+ lesson['resources']=[{'title':'Compatibility fixtures and reproducible checks','url':'https://github.com/sergii-ziborov/crabrix-courses/tree/library-contracts-2026-11-06/editorial/library_contracts_20261106'}, {'title':'Cargo: '+('SemVer compatibility' if order==0 else 'Rust version support' if order==1 else 'Feature unification'),'url':'https://doc.rust-lang.org/cargo/reference/'+('semver.html' if order==0 else 'rust-version.html' if order==1 else 'features.html')}]
+ save(COURSE/'lessons'/f'{lid}.json',lesson);render_rust(lesson,COURSE/f'media/{lid}.png')
+ save(COURSE/'checks'/f'{lid}.json',{'challenge':{'lessonID':lid,'patternID':lid,'projectName':lid+'-lab','source':c['starter'],'verificationSource':harness,'verificationCases':[dict(kind='visible' if i==0 else 'boundary' if i==len(c['calls'])-1 else 'semantic',input=call,expectedAnswer=ans) for i,(call,ans) in enumerate(c['calls'])],'expectedOutput':expected,'requiredSourceFragments':c['required'],'forbiddenSourceFragments':['todo!("implement the contract")']},'evidence':{'kind':'algorithmChallenge','expectedOutput':{'kind':'exact','value':expected},'requiredSourceFragments':c['required'],'forbiddenSourceFragments':['todo!("implement the contract")']}})
+ project=COURSE/'projects'/lid;save(project/'project.json',dict(name=lid+'-lab',entryFile='solution.rs'));(project/'solution.rs').write_text(c['starter']);(project/'README.md').write_text('# '+item['title']+'\n\nEdit solution.rs for the local baseline-contract harness.\n\nThe real minimum-compiler and Cargo feature checks are separate from that local grade. Reproduce them from the published companion source:\nhttps://github.com/sergii-ziborov/crabrix-courses/tree/library-contracts-2026-11-06/editorial/library_contracts_20261106\n')
+ refs.append(dict(id=lid,reference=c['reference'],starter=c['starter'],mutant=c['mutant'],harness=harness,expectedOutput=expected))
+save(HERE/'lab-contracts.json',refs)
+save(COURSE/'units/library-contracts.json',dict(id='library-contracts',parentID='projects',order=6,level=7,title='Library Contracts',subtitle='SemVer, MSRV and unchanged downstream consumers',lessonIDs=[x['id'] for x in lessons]))
+course=json.loads((COURSE/'course.json').read_text());assert course['contentVersion'] in ['1.0.11','1.0.12'];course['contentVersion']='1.0.12'
+if 'library-contracts' not in course['unitIDs']:course['unitIDs'].append('library-contracts')
+save(COURSE/'course.json',course)
+terms=json.loads((COURSE/'terms.json').read_text());new=[('public-api-contract','Public API contract','The signatures and documented behavior existing downstream consumers rely on.','public-api-compatibility'),('minimum-supported-rust','MSRV','The declared minimum Rust toolchain a package supports, checked with the promised configurations.','msrv-verification'),('feature-matrix','Feature matrix','Separate checks of the minimal, default and supported combined feature profiles.','feature-compatibility-matrix')]
+base=max(t['order'] for t in terms)+1
+for i,(tid,term,description,topic) in enumerate(new):
+ if not any(t['id']==tid for t in terms):terms.append(dict(id=tid,term=term,description=description,topic=topic,order=base+i))
+save(COURSE/'terms.json',terms)
+print('Authored Library Contracts: 3 lessons, 3 separate labs, 3 diagrams')

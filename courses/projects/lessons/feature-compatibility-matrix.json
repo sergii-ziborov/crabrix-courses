@@ -1,0 +1,69 @@
+{
+  "id": "feature-compatibility-matrix",
+  "title": "The Downstream Feature Matrix",
+  "concept": "Optional capability must preserve the old consumer across the supported feature sets",
+  "minutes": 25,
+  "parentID": "library-contracts",
+  "order": 2,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Optional capability must preserve the old consumer across the supported feature sets.",
+    "rule": "Keep the baseline API working with defaults, minimal builds and supported feature unions.",
+    "explanation": "A feature is part of a package's public contract when downstream users can request it. This example preserves `label(7) == \"core=7\"` while adding `details` and `trace` functions. The existing consumer does not change when either feature is enabled. The two features can be requested together, and the base `label` keeps the same signature and behavior. That is the observable promise the matrix checks.\n\nCargo combines feature requests for a package within the applicable resolution context. One dependency path can request `details` and another can request `trace`, so code that only compiles with exactly one of them is a downstream hazard. Newer resolver versions isolate some contexts, such as certain build or development dependencies; this does not turn ordinary feature requests into global exclusion switches. Keep the example's two functions differently named and additive. A broken alternative that defines the same helper name under both features may pass each individual build and fail their union.\n\nCheck a small, explicit matrix rather than trusting `--all-features` alone. Include defaults, `--no-default-features`, each optional feature, and supported combinations. The all-features build can accidentally hide a missing item in the minimal profile. Conversely, checking each feature alone misses collisions when consumers request both. For a large feature set, select combinations from the documented contract and known interactions; checking a few combinations is not a claim to have exhausted an exponential space.\n\nUse a downstream consumer of the library target, not only tests that live inside its private module tree. Keep that consumer's source bytes fixed while changing the requested dependency features. Assert both the baseline rendering and each requested optional API. The accompanying fixture compiles and runs this consumer on the minimum and current compilers. It also checks a candidate that changes baseline rendering only when `details` is enabled, and one whose duplicate helper exists only in the union. Each should fail for a different reason.\n\n`default-features = false` is an edge request to avoid enabling that dependency's defaults; it is not a command to disable defaults that another dependency path requests. The fixture includes two paths to demonstrate this distinction. Be cautious when removing an existing default feature, renaming an optional capability, changing its implied dependencies or increasing the compiler requirement of that feature. Review those changes under the same published compatibility policy as ordinary public methods.\n\nLocal compiler lab: implement the baseline `label` function for all `u16` IDs, preserving the exact `core=` prefix and decimal representation. Its independent, manifest-free harness checks the baseline contract only; a passing lab is not evidence that every Cargo feature profile has run. The complete worked example uses ordinary standard-library code and conditional functions. For the actual Cargo matrix, use the accompanying source fixture and run the documented commands with each feature selection. The app's prepared Cargo environment can run supported profiles explicitly; it does not switch to an older compiler. No server, network service or downloaded package is needed for this unit.",
+    "exampleCode": "mod api {\n    pub fn label(id: u16) -> String { format!(\"core={id}\") }\n    #[cfg(feature = \"details\")]\n    pub fn details(id: u16) -> String {\n        format!(\"{}; details\", label(id))\n    }\n    #[cfg(feature = \"trace\")]\n    pub fn trace(id: u16) -> String {\n        format!(\"trace: {}\", label(id))\n    }\n}\nfn existing_consumer() -> String { api::label(7) }\nfn main() {\n    assert_eq!(existing_consumer(), \"core=7\");\n    #[cfg(feature = \"details\")]\n    assert_eq!(api::details(7), \"core=7; details\");\n    #[cfg(feature = \"trace\")]\n    assert_eq!(api::trace(7), \"trace: core=7\");\n    println!(\"{}\", existing_consumer());\n}\n",
+    "exampleCaption": "The old consumer always prints core=7; details and trace add independent functions that can coexist.",
+    "practiceCode": "pub fn label(id: u16) -> String {\n    todo!(\"implement the contract\")\n}\n",
+    "task": "Implement the unchanged baseline label contract: core= followed immediately by the ordinary decimal u16 value, with no padding, spaces or newline. The local harness checks this API only. Then use the accompanying Cargo fixture to test the actual feature profiles and their unchanged downstream consumer. Open the compiler lab and edit solution.rs. The reading question is independent.",
+    "success": "The changed implementation passes the separate normal and boundary harness. MSRV and the full Cargo feature matrix have their own explicit checks.",
+    "question": "Why is a successful all-features build insufficient evidence for the documented no-default-features profile?",
+    "answers": [
+      "All-features secretly turns every feature off",
+      "The minimal profile always has the same items as all-features",
+      "An enabled feature can supply an item missing from the minimal profile"
+    ],
+    "correctAnswer": 2,
+    "feedback": "A large feature set can mask missing minimal-profile items. Test that profile independently, then test unions to catch collisions."
+  },
+  "depth": {
+    "misconception": "Testing each optional feature separately proves that their union is compatible.",
+    "correction": "The union can expose duplicate definitions or a changed baseline API. Test the combinations your contract supports.",
+    "traceSteps": [
+      {
+        "title": "Pin the consumer",
+        "detail": "Call label(7) from a consumer whose source does not change."
+      },
+      {
+        "title": "Vary requests",
+        "detail": "Run base, no-default, details, trace and both-feature profiles."
+      },
+      {
+        "title": "Observe two failures",
+        "detail": "A behavior change fails an assertion; a duplicate helper in the union fails compilation."
+      }
+    ],
+    "transferChallenge": "Select two optional features in a real library. Write an unchanged consumer, test each feature and their union, and describe which other combinations remain untested.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "MSRV Is a Tested Promise",
+        "concept": "A manifest declaration needs evidence from the minimum supported compiler"
+      }
+    ]
+  },
+  "illustration": {
+    "path": "media/feature-compatibility-matrix.png",
+    "alt": "Diagram for The Downstream Feature Matrix: the worked Rust example, its compatibility contract and the observed consumer result.",
+    "caption": "The old consumer always prints core=7; details and trace add independent functions that can coexist."
+  },
+  "resources": [
+    {
+      "title": "Compatibility fixtures and reproducible checks",
+      "url": "https://github.com/sergii-ziborov/crabrix-courses/tree/library-contracts-2026-11-06/editorial/library_contracts_20261106"
+    },
+    {
+      "title": "Cargo: Feature unification",
+      "url": "https://doc.rust-lang.org/cargo/reference/features.html"
+    }
+  ],
+  "contentDigest": "0e5e33b3c914f06c1b995a6bb0e0a861ed0251d66de4fbd79760c6fd1c7aed7e"
+}
