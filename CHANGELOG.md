@@ -1,3 +1,15 @@
+## 2026-11-06 — precision and senior coverage review
+
+Twelve existing readings correct test-profile, dispatch, Copy/Clone, drop order,
+closure/thread, associated-type, channel, cancellation and FFI contracts. Six
+code-generated diagrams follow the corrected text. Ownership 1.0.9, Projects
+1.0.11, Concurrency 1.0.9 and Systems 1.0.9 preserve lesson IDs, checks and answer
+positions. Seven executable semantic checks and 28 package/editorial tests pass.
+The [senior coverage review](editorial/senior_20261106/README.md) records remaining
+advanced depth gaps rather than treating introductory coverage as complete.
+Complete website Academy reading is now public without registration; content
+redistribution rights and citation requirements are unchanged.
+
 # Changelog
 
 ## Audit corrections — 1 November 2026

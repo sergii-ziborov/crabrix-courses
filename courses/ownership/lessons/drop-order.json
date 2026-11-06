@@ -1,6 +1,6 @@
 {
   "concept": "Deterministic cleanup without a GC",
-  "contentDigest": "867da7aafaffd9ae15d2258be9d1ec311c8de1a877942d9aa59dd6fd32b0ebf9",
+  "contentDigest": "6a71d7cade56671267f9a7f1f119656abdcbca0d156b19f24dcf7b448be6812a",
   "depth": {
     "connections": [
       {
@@ -14,7 +14,7 @@
         "title": "Lifetime Intuition"
       }
     ],
-    "correction": "Locals drop in reverse declaration order when their scope ends: `_inner` at the inner closing brace, then `_second`, then `_first`. Only an explicit `drop(a)` moves a value's cleanup earlier.",
+    "correction": "Remaining locals drop in reverse declaration order at scope end: `_inner` at the inner closing brace, then `_second`, then `_first`. An explicit `drop(a)` releases a value sooner; moving it to another owner or overwriting it also changes where cleanup occurs. Struct fields instead drop in field declaration order after their struct's own destructor.",
     "misconception": "“Locals drop in declaration order, so `_first` goes first.”",
     "traceSteps": [
       {
@@ -45,13 +45,13 @@
       "dropping b"
     ],
     "correctAnswer": 2,
-    "exampleCaption": "Reverse order: the last thing created is the first thing dropped.",
+    "exampleCaption": "At each scope end, the last declared remaining local drops first.",
     "exampleCode": "struct Noisy(&'static str);\n\nimpl Drop for Noisy {\n    fn drop(&mut self) {\n        println!(\"dropping {}\", self.0);\n    }\n}\n\nfn main() {\n    let _first = Noisy(\"first\");\n    let _second = Noisy(\"second\");\n    {\n        let _inner = Noisy(\"inner\");\n        println!(\"end of inner scope\");\n    }\n    println!(\"end of outer scope\");\n}",
-    "explanation": "When a value goes out of scope its Drop implementation runs, and values in a scope drop in reverse declaration order. This is deterministic — no collector decides later — which is what lets Rust manage files, locks, and sockets with the same mechanism it uses for memory.\n\nRust cleans up owned resources at predictable points. When a scope ends, its local values are dropped in reverse declaration order; nested scopes finish before their outer scope continues. `Drop` is a trait whose `drop` method runs during that cleanup. It can release a file, unlock a mutex guard, or close a connection. Memory is only one resource governed by the same rule.\n\nFollow the `Noisy` example and predict the messages before running it. The inner value is created after the outer values and disappears at the inner closing brace. At the outer closing brace, the remaining locals drop from last declared to first declared. The printed order is evidence of the ownership timeline. Binding a value with a leading underscore still owns it; the underscore only suppresses an unused-variable warning. If you need to release a value earlier, `std::mem::drop(value)` consumes it explicitly.\n\nA destructor should not be where essential business logic hides, because callers cannot see that work from the return type. It should reliably release or finalize a resource. Also remember that moving a value transfers the eventual drop to its new owner; the old binding does not run a second destructor. Try moving one `Noisy` value into a helper function and record where its message appears. The exercise connects scope, movement, and cleanup without relying on a garbage collector or manual free call.\n\nWhen several fields belong to one struct, their cleanup order follows the struct’s field declaration order after the struct’s own Drop method runs. Keep resource dependencies in mind if one field’s destructor relies on another resource.",
+    "explanation": "When a value goes out of scope its Drop implementation runs, and remaining local bindings in a scope drop in reverse declaration order. This is deterministic — no collector decides later — which is what lets Rust manage files, locks, and sockets with the same mechanism it uses for memory.\n\nRust cleans up owned resources at predictable points. When a scope ends, its local values are dropped in reverse declaration order; nested scopes finish before their outer scope continues. `Drop` is a trait whose `drop` method runs during that cleanup. It can release a file, unlock a mutex guard, or close a connection. Memory is only one resource governed by the same rule.\n\nFollow the `Noisy` example and predict the messages before running it. The inner value is created after the outer values and disappears at the inner closing brace. At the outer closing brace, the remaining locals drop from last declared to first declared. The printed order is evidence of the ownership timeline. Binding a value with a leading underscore still owns it; the underscore only suppresses an unused-variable warning. If you need to release a value earlier, `std::mem::drop(value)` consumes it explicitly.\n\nA destructor should not be where essential business logic hides, because callers cannot see that work from the return type. It should reliably release or finalize a resource. Also remember that moving a value transfers the eventual drop to its new owner; the old binding does not run a second destructor. Try moving one `Noisy` value into a helper function and record where its message appears. The exercise connects scope, movement, and cleanup without relying on a garbage collector or manual free call.\n\nWhen several fields belong to one struct, their cleanup order follows the struct’s field declaration order after the struct’s own Drop method runs. Keep resource dependencies in mind if one field’s destructor relies on another resource.",
     "feedback": "`a` is dropped early by hand; `b` still drops at the end of the scope.",
     "practiceCode": "struct Noisy(&'static str);\n\nimpl Drop for Noisy {\n    fn drop(&mut self) {\n        println!(\"dropping {}\", self.0);\n    }\n}\n\nlet a = Noisy(\"a\");\nlet b = Noisy(\"b\");\ndrop(a);\nprintln!(\"after explicit drop\");",
     "question": "Which of those messages prints last?",
-    "rule": "Values drop in reverse declaration order when their scope ends.",
+    "rule": "At scope end, remaining locals drop in reverse declaration order; struct fields drop in declaration order.",
     "success": "You can explain why `dropping a` prints before `after explicit drop`, and `dropping b` after it.",
     "summary": "Cleanup runs at a place you can point to in the source.",
     "task": "Predict the printed order before running it."
