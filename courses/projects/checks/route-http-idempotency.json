@@ -1,0 +1,57 @@
+{
+  "challenge": {
+    "lessonID": "route-http-idempotency",
+    "patternID": "route-http-idempotency",
+    "projectName": "route-http-idempotency-lab",
+    "source": "pub fn retry_decision(key: &str, payload: &str, previous: Option<(&str,&str)>) -> u16 {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationSource": "mod solution;\nfn main() {\nassert_eq!(solution::retry_decision(\"k\",\"title\",None), 201, \"case 1\");\nassert_eq!(solution::retry_decision(\"\",\"title\",None), 400, \"case 2\");\nassert_eq!(solution::retry_decision(\"k\",\"title\",Some((\"k\",\"title\"))), 200, \"case 3\");\nassert_eq!(solution::retry_decision(\"k\",\"other\",Some((\"k\",\"title\"))), 409, \"case 4\");\nassert_eq!(solution::retry_decision(\"new\",\"x\",Some((\"old\",\"x\"))), 201, \"case 5\");\n\nprintln!(\"PASS route-http-idempotency\");\n}\n",
+    "verificationCases": [
+      {
+        "kind": "visible",
+        "input": "solution::retry_decision(\"k\",\"title\",None)",
+        "expectedAnswer": "201"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::retry_decision(\"\",\"title\",None)",
+        "expectedAnswer": "400"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::retry_decision(\"k\",\"title\",Some((\"k\",\"title\")))",
+        "expectedAnswer": "200"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::retry_decision(\"k\",\"other\",Some((\"k\",\"title\")))",
+        "expectedAnswer": "409"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::retry_decision(\"new\",\"x\",Some((\"old\",\"x\")))",
+        "expectedAnswer": "201"
+      }
+    ],
+    "expectedOutput": "PASS route-http-idempotency\n",
+    "requiredSourceFragments": [
+      "pub fn retry_decision"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ],
+    "executionProfile": "std-v1"
+  },
+  "evidence": {
+    "kind": "algorithmChallenge",
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS route-http-idempotency\n"
+    },
+    "requiredSourceFragments": [
+      "pub fn retry_decision"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  }
+}

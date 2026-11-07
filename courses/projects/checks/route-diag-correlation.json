@@ -1,0 +1,62 @@
+{
+  "challenge": {
+    "lessonID": "route-diag-correlation",
+    "patternID": "route-diag-correlation",
+    "projectName": "route-diag-correlation-lab",
+    "source": "pub fn request_id(incoming: Option<&str>, fallback: &str) -> String {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationSource": "mod solution;\nfn main() {\nassert_eq!(solution::request_id(Some(\"req_42-A\"),\"generated\"), \"req_42-A\", \"case 1\");\nassert_eq!(solution::request_id(None,\"generated\"), \"generated\", \"case 2\");\nassert_eq!(solution::request_id(Some(\"evil\nrecord\"),\"new\"), \"new\", \"case 3\");\nassert_eq!(solution::request_id(Some(\"🦀\"),\"new\"), \"new\", \"case 4\");\nassert_eq!(solution::request_id(Some(&\"a\".repeat(65)),\"new\"), \"new\", \"case 5\");\nassert_eq!(solution::request_id(Some(\"\"),\"new\"), \"new\", \"case 6\");\n\nprintln!(\"PASS route-diag-correlation\");\n}\n",
+    "verificationCases": [
+      {
+        "kind": "visible",
+        "input": "solution::request_id(Some(\"req_42-A\"),\"generated\")",
+        "expectedAnswer": "\"req_42-A\""
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::request_id(None,\"generated\")",
+        "expectedAnswer": "\"generated\""
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::request_id(Some(\"evil\nrecord\"),\"new\")",
+        "expectedAnswer": "\"new\""
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::request_id(Some(\"🦀\"),\"new\")",
+        "expectedAnswer": "\"new\""
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::request_id(Some(&\"a\".repeat(65)),\"new\")",
+        "expectedAnswer": "\"new\""
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::request_id(Some(\"\"),\"new\")",
+        "expectedAnswer": "\"new\""
+      }
+    ],
+    "expectedOutput": "PASS route-diag-correlation\n",
+    "requiredSourceFragments": [
+      "pub fn request_id"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ],
+    "executionProfile": "std-v1"
+  },
+  "evidence": {
+    "kind": "algorithmChallenge",
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS route-diag-correlation\n"
+    },
+    "requiredSourceFragments": [
+      "pub fn request_id"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  }
+}

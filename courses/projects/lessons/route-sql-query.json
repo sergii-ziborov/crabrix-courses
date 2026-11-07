@@ -1,0 +1,74 @@
+{
+  "id": "route-sql-query",
+  "parentID": "route-sql",
+  "order": 1,
+  "title": "Query the Right Rows in a Stable Order",
+  "concept": "Filter, join and order by the intended relationship",
+  "minutes": 25,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Filter, join and order by the intended relationship.",
+    "rule": "Specify both the inclusion rule and deterministic ordering.",
+    "explanation": "A task report joins tasks to projects and lists unfinished tasks in active projects. Joining by a coincidentally equal name or forgetting the done filter may pass a tiny happy-path fixture. Seed unrelated, archived and completed records so each predicate has observable consequences.\n\nSQL does not promise result ordering without ORDER BY. Sort by project name and then task ID to break ties. A LEFT JOIN and an INNER JOIN have different contracts: this report includes only tasks with an existing active project. The task title does not participate in grouping or identity. Inspect the query plan after establishing correctness, then consider an index on the actual filter/join keys. An index is not permission to change which rows appear. The independent checker rebuilds fixtures and executes your query, allowing different correct SQL formulations.\n\nThe route project is Task Ledger: first keep a reproducible source history, then expose its data through a CLI and HTTP boundary, persist it in SQL, diagnose failures and prepare a release. This lesson owns one contract in that project. Run the worked example before changing the starter and explain which input makes the tempting shortcut fail.\n\nTerminal practice: Run sqlite3 tasks.db .read reports/pending.sql; compare the output after completing a task and archiving its project.\n\nThe compiler lab is independent of the reading question. Edit solution.rs; the app supplies a separate caller with normal, empty and adversarial inputs. A successful unchanged demonstration does not prove your implementation. After the lab, apply the same contract to the route companion project. Its README separates the on-device adapter from the desktop Cargo/TCP profile.",
+    "exampleCode": "pub fn report_sql() -> &'static str {\n    \"SELECT t.id,t.title,p.name FROM tasks t JOIN projects p ON p.id=t.project_id WHERE t.done=0 AND p.active=1 ORDER BY p.name,t.id\"\n}\n\nfn main() {\n    println!(\"{}\", report_sql());\n}\n",
+    "exampleCaption": "This Rust reading prints a SQL statement. The independent compiler lab executes it against real SQLite.",
+    "practiceCode": "pub fn report_sql() -> &'static str {\n    todo!(\"implement the contract\")\n}\n",
+    "task": "Return a read-only query producing columns id,title,name for unfinished tasks in active projects. Tables are tasks(id,title,done,project_id) and projects(id,name,active); join on project_id=id, order by project name then task ID. Keep the public signature. Open the compiler lab and edit solution.rs; do not edit the private verification caller.",
+    "success": "The separate caller accepts the changed solution and rejects unchanged TODO, a wrong implementation and a printed success message.",
+    "question": "What guarantees stable order when project names tie?",
+    "answers": [
+      "ORDER BY project name and task ID",
+      "The storage order of inserted rows",
+      "The presence of any index"
+    ],
+    "correctAnswer": 0,
+    "feedback": "Neither insertion order nor a query plan is a contract for row ordering."
+  },
+  "depth": {
+    "misconception": "The storage order of inserted rows",
+    "correction": "Specify both the inclusion rule and deterministic ordering.",
+    "traceSteps": [
+      {
+        "title": "Identify the boundary",
+        "detail": "Filter, join and order by the intended relationship. Write down its accepted inputs and observable output."
+      },
+      {
+        "title": "Exercise the failure",
+        "detail": "Neither insertion order nor a query plan is a contract for row ordering."
+      },
+      {
+        "title": "Check the independent caller",
+        "detail": "Return a read-only query producing columns id,title,name for unfinished tasks in active projects. Tables are tasks(id,title,done,project_id) and projects(id,name,active); join on project_id=id, order by project name then task ID."
+      }
+    ],
+    "transferChallenge": "Apply this contract to Task Ledger, introduce the failure described in the lesson, and show the failing check before fixing it.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Make Invalid Rows Impossible",
+        "concept": "Enforce domain invariants in a real database"
+      },
+      {
+        "direction": "next",
+        "title": "Bind Values Instead of SQL Syntax",
+        "concept": "Keep untrusted text in a parameter slot"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "title": "Primary reference",
+      "url": "https://www.sqlite.org/lang.html"
+    },
+    {
+      "title": "Task Ledger companion source (ZIP)",
+      "url": "https://crabrix.com/examples/task-ledger-route.zip"
+    }
+  ],
+  "illustration": {
+    "path": "media/route-sql-query.png",
+    "alt": "Diagram for Query the Right Rows in a Stable Order: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "This Rust reading prints a SQL statement. The independent compiler lab executes it against real SQLite."
+  },
+  "contentDigest": "4337654f166ffafc1b35f5aeddf5682fc2ff2d132f5857d700a9bebebdbcac18"
+}

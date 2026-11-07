@@ -1,0 +1,74 @@
+{
+  "id": "route-diag-context",
+  "parentID": "route-diagnostics",
+  "order": 0,
+  "title": "Add Context Without Leaking Secrets",
+  "concept": "Redact sensitive diagnostic fields",
+  "minutes": 25,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Redact sensitive diagnostic fields.",
+    "rule": "An error should identify the operation without copying credentials into logs.",
+    "explanation": "A bare connection failed message loses the operation and request that failed. Add bounded structured context: operation name, request ID and a stable error category. Keep secret fields out of the event. Redacting only one capitalization of Authorization is insufficient when headers are case insensitive.\n\nThis lab preserves field order while replacing authorization, cookie, password, token and api_key values with [REDACTED], case insensitively. It does not claim that this small allowlist finds every possible secret in free text. Production code should prefer explicitly selected safe fields and never dump arbitrary request bodies or connection URLs. Diagnostic context is useful only when a person can connect it to a specific operation; a giant unstructured debug print can be harder to use than a short event with a correlation ID.\n\nThe route project is Task Ledger: first keep a reproducible source history, then expose its data through a CLI and HTTP boundary, persist it in SQL, diagnose failures and prepare a release. This lesson owns one contract in that project. Run the worked example before changing the starter and explain which input makes the tempting shortcut fail.\n\nTerminal practice: Run the companion error case and inspect its request ID and operation context. Keep Authorization out of retained terminal command examples.\n\nThe compiler lab is independent of the reading question. Edit solution.rs; the app supplies a separate caller with normal, empty and adversarial inputs. A successful unchanged demonstration does not prove your implementation. After the lab, apply the same contract to the route companion project. Its README separates the on-device adapter from the desktop Cargo/TCP profile.",
+    "exampleCode": "pub fn safe_fields(fields: &[(&str, &str)]) -> Vec<(String, String)> {\n    fields\n        .iter()\n        .map(|(k, v)| {\n            let sensitive = [\n                \"authorization\",\n                \"cookie\",\n                \"password\",\n                \"token\",\n                \"api_key\",\n            ]\n            .contains(&k.to_ascii_lowercase().as_str());\n            (\n                k.to_string(),\n                if sensitive {\n                    \"[REDACTED]\".to_owned()\n                } else {\n                    v.to_string()\n                },\n            )\n        })\n        .collect()\n}\n\nfn main() {\n    assert_eq!(\n        safe_fields(&[\n            (\"Authorization\", \"bearer x\"),\n            (\"request_id\", \"r1\")\n        ]),\n        vec![\n            (\"Authorization\".to_owned(), \"[REDACTED]\".to_owned()),\n            (\"request_id\".to_owned(), \"r1\".to_owned())\n        ],\n        \"case 1\"\n    );\n    assert_eq!(safe_fields(&[]), vec![], \"case 2\");\n    assert_eq!(\n        safe_fields(&[(\"TOKEN\", \"x\"), (\"api_key\", \"y\")]),\n        vec![\n            (\"TOKEN\".to_owned(), \"[REDACTED]\".to_owned()),\n            (\"api_key\".to_owned(), \"[REDACTED]\".to_owned())\n        ],\n        \"case 3\"\n    );\n    assert_eq!(\n        safe_fields(&[(\"operation\", \"list\")]),\n        vec![(\"operation\".to_owned(), \"list\".to_owned())],\n        \"case 4\"\n    );\n    println!(\"worked example passed\");\n}\n",
+    "exampleCaption": "The worked implementation exercises redact sensitive diagnostic fields. Its tests demonstrate the stated finite contract.",
+    "practiceCode": "pub fn safe_fields(fields: &[(&str,&str)]) -> Vec<(String,String)> {\n    todo!(\"implement the contract\")\n}\n",
+    "task": "Retain field names and order; replace values for authorization,cookie,password,token,api_key with [REDACTED] using ASCII-case-insensitive key matching. Other values stay unchanged. Keep the public signature. Open the compiler lab and edit solution.rs; do not edit the private verification caller.",
+    "success": "The separate caller accepts the changed solution and rejects unchanged TODO, a wrong implementation and a printed success message.",
+    "question": "Which event is useful and safer for a failed request?",
+    "answers": [
+      "Operation and request ID with explicitly redacted secret fields",
+      "Every raw header and the complete body",
+      "A password is safe in logs if the request failed"
+    ],
+    "correctAnswer": 0,
+    "feedback": "Failure does not make credentials safe to copy into a persistent diagnostic record."
+  },
+  "depth": {
+    "misconception": "Every raw header and the complete body",
+    "correction": "An error should identify the operation without copying credentials into logs.",
+    "traceSteps": [
+      {
+        "title": "Identify the boundary",
+        "detail": "Redact sensitive diagnostic fields. Write down its accepted inputs and observable output."
+      },
+      {
+        "title": "Exercise the failure",
+        "detail": "Failure does not make credentials safe to copy into a persistent diagnostic record."
+      },
+      {
+        "title": "Check the independent caller",
+        "detail": "Retain field names and order; replace values for authorization,cookie,password,token,api_key with [REDACTED] using ASCII-case-insensitive key matching. Other values stay unchanged."
+      }
+    ],
+    "transferChallenge": "Apply this contract to Task Ledger, introduce the failure described in the lesson, and show the failing check before fixing it.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Commit Related Changes Atomically",
+        "concept": "Roll back a failed multi-write operation"
+      },
+      {
+        "direction": "next",
+        "title": "Propagate One Request Identity",
+        "concept": "Validate a bounded correlation ID"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "title": "Primary reference",
+      "url": "https://docs.rs/tracing/latest/tracing/"
+    },
+    {
+      "title": "Task Ledger companion source (ZIP)",
+      "url": "https://crabrix.com/examples/task-ledger-route.zip"
+    }
+  ],
+  "illustration": {
+    "path": "media/route-diag-context.png",
+    "alt": "Diagram for Add Context Without Leaking Secrets: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "The worked implementation exercises redact sensitive diagnostic fields. Its tests demonstrate the stated finite contract."
+  },
+  "contentDigest": "012aefb4de538f65b14eb63228bf1d84331d48600d3544ab5b3edb5f5d32823c"
+}

@@ -1,0 +1,74 @@
+{
+  "id": "route-sql-transactions",
+  "parentID": "route-sql",
+  "order": 3,
+  "title": "Commit Related Changes Atomically",
+  "concept": "Roll back a failed multi-write operation",
+  "minutes": 25,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Roll back a failed multi-write operation.",
+    "rule": "All related writes belong to one transaction with an observable failure path.",
+    "explanation": "A transfer debits one account and credits another. If the debit succeeds while the credit fails, the database has lost value. Enclose both writes in one explicit transaction. Constrain balances to remain nonnegative and make a rejected debit fail before any durable credit occurs.\n\nThe exercise transfers an integer amount from account 1 to account 2. A zero transfer leaves balances unchanged. A transfer larger than the source balance triggers the database CHECK and must leave both accounts unchanged. The local SQL host rolls back any open transaction when a statement fails, and refuses a script that ends with an open transaction. SQLx on desktop normally uses a transaction value with explicit commit and rollback behavior. Concurrency isolation, lock timeouts and retry policy need separate tests; this single-connection lab proves only the finite atomicity cases it executes.\n\nThe route project is Task Ledger: first keep a reproducible source history, then expose its data through a CLI and HTTP boundary, persist it in SQL, diagnose failures and prepare a release. This lesson owns one contract in that project. Run the worked example before changing the starter and explain which input makes the tempting shortcut fail.\n\nTerminal practice: Run sqlite3 ledger.db .read migrations/accounts.sql. Execute a valid BEGIN..COMMIT transfer and an overdraw script, then SELECT both balances.\n\nThe compiler lab is independent of the reading question. Edit solution.rs; the app supplies a separate caller with normal, empty and adversarial inputs. A successful unchanged demonstration does not prove your implementation. After the lab, apply the same contract to the route companion project. Its README separates the on-device adapter from the desktop Cargo/TCP profile.",
+    "exampleCode": "pub fn transfer_sql(amount: u32) -> String {\n    format!(\n        \"BEGIN IMMEDIATE; UPDATE accounts SET balance=balance-{amount} WHERE id=1; UPDATE accounts SET balance=balance+{amount} WHERE id=2; COMMIT;\"\n    )\n}\n\nfn main() {\n    println!(\"{}\", transfer_sql(10));\n}\n",
+    "exampleCaption": "This Rust reading prints a SQL statement. The independent compiler lab executes it against real SQLite.",
+    "practiceCode": "pub fn transfer_sql(amount: u32) -> String {\n    todo!(\"implement the contract\")\n}\n",
+    "task": "Return a complete BEGIN..COMMIT SQLite script transferring amount from account 1 to 2. accounts(id,balance) enforces balance>=0. Debit and credit must be atomic, including overdraw failure. Amount is a trusted u32 numeric value. Keep the public signature. Open the compiler lab and edit solution.rs; do not edit the private verification caller.",
+    "success": "The separate caller accepts the changed solution and rejects unchanged TODO, a wrong implementation and a printed success message.",
+    "question": "What should remain after a rejected overdraw?",
+    "answers": [
+      "The credit only",
+      "Both original balances",
+      "The debit only"
+    ],
+    "correctAnswer": 1,
+    "feedback": "Atomicity means the failed transfer cannot leave one half committed."
+  },
+  "depth": {
+    "misconception": "The debit only",
+    "correction": "All related writes belong to one transaction with an observable failure path.",
+    "traceSteps": [
+      {
+        "title": "Identify the boundary",
+        "detail": "Roll back a failed multi-write operation. Write down its accepted inputs and observable output."
+      },
+      {
+        "title": "Exercise the failure",
+        "detail": "Atomicity means the failed transfer cannot leave one half committed."
+      },
+      {
+        "title": "Check the independent caller",
+        "detail": "Return a complete BEGIN..COMMIT SQLite script transferring amount from account 1 to 2. accounts(id,balance) enforces balance>=0. Debit and credit must be atomic, including overdraw failure. Amount is a trusted u32 numeric value."
+      }
+    ],
+    "transferChallenge": "Apply this contract to Task Ledger, introduce the failure described in the lesson, and show the failing check before fixing it.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Bind Values Instead of SQL Syntax",
+        "concept": "Keep untrusted text in a parameter slot"
+      },
+      {
+        "direction": "next",
+        "title": "Add Context Without Leaking Secrets",
+        "concept": "Redact sensitive diagnostic fields"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "title": "Primary reference",
+      "url": "https://www.sqlite.org/lang.html"
+    },
+    {
+      "title": "Task Ledger companion source (ZIP)",
+      "url": "https://crabrix.com/examples/task-ledger-route.zip"
+    }
+  ],
+  "illustration": {
+    "path": "media/route-sql-transactions.png",
+    "alt": "Diagram for Commit Related Changes Atomically: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "This Rust reading prints a SQL statement. The independent compiler lab executes it against real SQLite."
+  },
+  "contentDigest": "57b0e3b3a8bcfe450703f7db675d2f2d8c8f073f696fc792ae732efbd39e36b3"
+}

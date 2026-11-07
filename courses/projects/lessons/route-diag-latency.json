@@ -1,0 +1,74 @@
+{
+  "id": "route-diag-latency",
+  "parentID": "route-diagnostics",
+  "order": 2,
+  "title": "Measure the Tail, Not Just the Average",
+  "concept": "Compute an explicitly defined latency percentile",
+  "minutes": 25,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Compute an explicitly defined latency percentile.",
+    "rule": "State the percentile convention and preserve the original measurements.",
+    "explanation": "Averages can hide slow requests. A service with many quick responses and a few multi-second waits may have an acceptable mean while some users regularly time out. Record a latency distribution and inspect tail behavior alongside throughput and error rate.\n\nThis exercise defines p95 using the nearest-rank rule: sort a copy of the positive or zero millisecond observations, choose rank ceil(0.95*n), and return that element. Return None for an empty sample. Do not mutate the caller's measurements or invent interpolated values. A percentile from a small sample has limited statistical precision; the exact calculation is not evidence that the load generator or measurement conditions were realistic. The desktop companion keeps raw samples, concurrency and toolchain identity with a before/after report.\n\nThe route project is Task Ledger: first keep a reproducible source history, then expose its data through a CLI and HTTP boundary, persist it in SQL, diagnose failures and prepare a release. This lesson owns one contract in that project. Run the worked example before changing the starter and explain which input makes the tempting shortcut fail.\n\nTerminal practice: Run the desktop latency probe, retain raw samples, and compare p95 and failures before and after changing the limit.\n\nThe compiler lab is independent of the reading question. Edit solution.rs; the app supplies a separate caller with normal, empty and adversarial inputs. A successful unchanged demonstration does not prove your implementation. After the lab, apply the same contract to the route companion project. Its README separates the on-device adapter from the desktop Cargo/TCP profile.",
+    "exampleCode": "pub fn p95(samples: &[u64]) -> Option<u64> {\n    if samples.is_empty() {\n        return None;\n    }\n    let mut sorted = samples.to_vec();\n    sorted.sort_unstable();\n    let n = sorted.len();\n    let rank = n - n / 20;\n    Some(sorted[rank - 1])\n}\n\nfn main() {\n    assert_eq!(p95(&[1, 2, 3, 100]), Some(100), \"case 1\");\n    assert_eq!(p95(&[]), None, \"case 2\");\n    assert_eq!(p95(&[7]), Some(7), \"case 3\");\n    assert_eq!(\n        p95(&(1..=20).collect::<Vec<u64>>()),\n        Some(19),\n        \"case 4\"\n    );\n    assert_eq!(p95(&[9, 1, 9, 0]), Some(9), \"case 5\");\n    println!(\"worked example passed\");\n}\n",
+    "exampleCaption": "The worked implementation exercises compute an explicitly defined latency percentile. Its tests demonstrate the stated finite contract.",
+    "practiceCode": "pub fn p95(samples: &[u64]) -> Option<u64> {\n    todo!(\"implement the contract\")\n}\n",
+    "task": "Return nearest-rank p95: sort a copy and choose rank ceil(0.95*n), using one-based ranks. Empty input returns None. Retain exact u64 observations. Keep the public signature. Open the compiler lab and edit solution.rs; do not edit the private verification caller.",
+    "success": "The separate caller accepts the changed solution and rejects unchanged TODO, a wrong implementation and a printed success message.",
+    "question": "Why can a good average coexist with a poor user experience?",
+    "answers": [
+      "Percentiles eliminate the need for sample context",
+      "Slow tail requests can be hidden by many fast ones",
+      "The average is always the slowest request"
+    ],
+    "correctAnswer": 1,
+    "feedback": "A mean alone does not describe the slow tail or the measurement conditions."
+  },
+  "depth": {
+    "misconception": "The average is always the slowest request",
+    "correction": "State the percentile convention and preserve the original measurements.",
+    "traceSteps": [
+      {
+        "title": "Identify the boundary",
+        "detail": "Compute an explicitly defined latency percentile. Write down its accepted inputs and observable output."
+      },
+      {
+        "title": "Exercise the failure",
+        "detail": "A mean alone does not describe the slow tail or the measurement conditions."
+      },
+      {
+        "title": "Check the independent caller",
+        "detail": "Return nearest-rank p95: sort a copy and choose rank ceil(0.95*n), using one-based ranks. Empty input returns None. Retain exact u64 observations."
+      }
+    ],
+    "transferChallenge": "Apply this contract to Task Ledger, introduce the failure described in the lesson, and show the failing check before fixing it.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Propagate One Request Identity",
+        "concept": "Validate a bounded correlation ID"
+      },
+      {
+        "direction": "next",
+        "title": "Bound the Retry Budget",
+        "concept": "Retry transient failures within attempt and time limits"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "title": "Primary reference",
+      "url": "https://docs.rs/tracing/latest/tracing/"
+    },
+    {
+      "title": "Task Ledger companion source (ZIP)",
+      "url": "https://crabrix.com/examples/task-ledger-route.zip"
+    }
+  ],
+  "illustration": {
+    "path": "media/route-diag-latency.png",
+    "alt": "Diagram for Measure the Tail, Not Just the Average: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "The worked implementation exercises compute an explicitly defined latency percentile. Its tests demonstrate the stated finite contract."
+  },
+  "contentDigest": "6364311a57779208f78aab2767aa0e449fc5494b90490e1c0653ee12c910afae"
+}

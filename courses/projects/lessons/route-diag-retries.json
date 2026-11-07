@@ -1,0 +1,74 @@
+{
+  "id": "route-diag-retries",
+  "parentID": "route-diagnostics",
+  "order": 3,
+  "title": "Bound the Retry Budget",
+  "concept": "Retry transient failures within attempt and time limits",
+  "minutes": 25,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Retry transient failures within attempt and time limits.",
+    "rule": "A retry needs a transient failure, remaining attempts and a deadline budget.",
+    "explanation": "Retries amplify load when a dependency is already failing. Decide whether an error is transient, cap total attempts, and stop when the proposed delay plus one minimum operation budget no longer fits the deadline. Retrying authentication failures or malformed input does not repair them.\n\nHere failed_attempts counts attempts already made, including the one that just failed. Retry only transient failures after at least one attempt, while the count is below the total maximum. Require delay + operation_budget to fit in remaining time, using checked arithmetic so an overflow cannot create a false large budget. Jitter and exponential delay selection are separate policies. Before retrying a write, use the idempotency contract from the HTTP stage; a timing budget does not prevent duplicated effects.\n\nThe route project is Task Ledger: first keep a reproducible source history, then expose its data through a CLI and HTTP boundary, persist it in SQL, diagnose failures and prepare a release. This lesson owns one contract in that project. Run the worked example before changing the starter and explain which input makes the tempting shortcut fail.\n\nTerminal practice: Inject a transient failure in the desktop companion, inspect the attempt count and request ID, and confirm deadline exhaustion stops retries.\n\nThe compiler lab is independent of the reading question. Edit solution.rs; the app supplies a separate caller with normal, empty and adversarial inputs. A successful unchanged demonstration does not prove your implementation. After the lab, apply the same contract to the route companion project. Its README separates the on-device adapter from the desktop Cargo/TCP profile.",
+    "exampleCode": "pub fn retry(\n    transient: bool,\n    failed_attempts: u32,\n    maximum: u32,\n    delay: u64,\n    operation_budget: u64,\n    remaining: u64,\n) -> bool {\n    transient\n        && failed_attempts > 0\n        && failed_attempts < maximum\n        && delay\n            .checked_add(operation_budget)\n            .is_some_and(|cost| cost <= remaining)\n}\n\nfn main() {\n    assert_eq!(retry(true, 1, 3, 10, 20, 30), true, \"case 1\");\n    assert_eq!(retry(true, 0, 3, 0, 0, 0), false, \"case 2\");\n    assert_eq!(retry(false, 1, 3, 0, 0, 100), false, \"case 3\");\n    assert_eq!(retry(true, 3, 3, 0, 0, 100), false, \"case 4\");\n    assert_eq!(\n        retry(true, 1, 3, u64::MAX, 1, u64::MAX),\n        false,\n        \"case 5\"\n    );\n    assert_eq!(retry(true, 1, 3, 10, 20, 29), false, \"case 6\");\n    println!(\"worked example passed\");\n}\n",
+    "exampleCaption": "The worked implementation exercises retry transient failures within attempt and time limits. Its tests demonstrate the stated finite contract.",
+    "practiceCode": "pub fn retry(transient: bool, failed_attempts: u32, maximum: u32, delay: u64, operation_budget: u64, remaining: u64) -> bool {\n    todo!(\"implement the contract\")\n}\n",
+    "task": "Return true only for a transient failure with 1<=failed_attempts<maximum and checked delay+operation_budget<=remaining. Overflow refuses the retry. Keep the public signature. Open the compiler lab and edit solution.rs; do not edit the private verification caller.",
+    "success": "The separate caller accepts the changed solution and rejects unchanged TODO, a wrong implementation and a printed success message.",
+    "question": "What else is needed before retrying a possibly committed write?",
+    "answers": [
+      "An idempotency policy",
+      "Only a longer timeout",
+      "Always retry forever until success"
+    ],
+    "correctAnswer": 0,
+    "feedback": "Timeouts and budgets do not prove the previous attempt had no external effect."
+  },
+  "depth": {
+    "misconception": "Only a longer timeout",
+    "correction": "A retry needs a transient failure, remaining attempts and a deadline budget.",
+    "traceSteps": [
+      {
+        "title": "Identify the boundary",
+        "detail": "Retry transient failures within attempt and time limits. Write down its accepted inputs and observable output."
+      },
+      {
+        "title": "Exercise the failure",
+        "detail": "Timeouts and budgets do not prove the previous attempt had no external effect."
+      },
+      {
+        "title": "Check the independent caller",
+        "detail": "Return true only for a transient failure with 1<=failed_attempts<maximum and checked delay+operation_budget<=remaining. Overflow refuses the retry."
+      }
+    ],
+    "transferChallenge": "Apply this contract to Task Ledger, introduce the failure described in the lesson, and show the failing check before fixing it.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Measure the Tail, Not Just the Average",
+        "concept": "Compute an explicitly defined latency percentile"
+      },
+      {
+        "direction": "next",
+        "title": "Make Checks Block Delivery",
+        "concept": "Require all declared release checks"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "title": "Primary reference",
+      "url": "https://docs.rs/tracing/latest/tracing/"
+    },
+    {
+      "title": "Task Ledger companion source (ZIP)",
+      "url": "https://crabrix.com/examples/task-ledger-route.zip"
+    }
+  ],
+  "illustration": {
+    "path": "media/route-diag-retries.png",
+    "alt": "Diagram for Bound the Retry Budget: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "The worked implementation exercises retry transient failures within attempt and time limits. Its tests demonstrate the stated finite contract."
+  },
+  "contentDigest": "4d9d55bccd54cd99417269113dbf6ff670b97fdbaa03eabea840a0e148032586"
+}

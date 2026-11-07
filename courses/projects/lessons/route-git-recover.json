@@ -1,0 +1,74 @@
+{
+  "id": "route-git-recover",
+  "parentID": "route-git",
+  "order": 3,
+  "title": "Recover One Historical File",
+  "concept": "Restore narrowly from a known revision",
+  "minutes": 25,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Restore narrowly from a known revision.",
+    "rule": "A one-file restore must preserve every unrelated current edit.",
+    "explanation": "A rollback need not replace a whole project. To recover one file, first inspect its contents at an exact historical commit, compare it with the current file, then confirm the replacement. A full commit identity makes the preview stable while branch names continue moving.\n\nThe native git restore command opens a preview; applying the restore remains an explicit UI action. This lab models the resulting tree change: replace just the requested path from the historical tree, or remove it if it did not exist there. Preserve unrelated work and deterministic ordering. Restoring a file is also an uncommitted edit; review and commit it as a new change when it belongs in shared history. Do not rewrite already shared history to hide an ordinary correction.\n\nThe route project is Task Ledger: first keep a reproducible source history, then expose its data through a CLI and HTTP boundary, persist it in SQL, diagnose failures and prepare a release. This lesson owns one contract in that project. Run the worked example before changing the starter and explain which input makes the tempting shortcut fail.\n\nTerminal practice: Use git log, git show <full-commit>:src/main.rs, then git restore --source <full-commit> -- src/main.rs and inspect the preview.\n\nThe compiler lab is independent of the reading question. Edit solution.rs; the app supplies a separate caller with normal, empty and adversarial inputs. A successful unchanged demonstration does not prove your implementation. After the lab, apply the same contract to the route companion project. Its README separates the on-device adapter from the desktop Cargo/TCP profile.",
+    "exampleCode": "pub fn restore(\n    work: &[(&str, &str)],\n    historical: &[(&str, &str)],\n    path: &str,\n) -> Vec<(String, String)> {\n    let mut tree: std::collections::BTreeMap<String, String> = work\n        .iter()\n        .map(|(k, v)| (k.to_string(), v.to_string()))\n        .collect();\n    if let Some((_, text)) = historical.iter().find(|(p, _)| *p == path)\n    {\n        tree.insert(path.to_owned(), text.to_string());\n    } else {\n        tree.remove(path);\n    }\n    tree.into_iter().collect()\n}\n\nfn main() {\n    assert_eq!(\n        restore(&[(\"a\", \"new\"), (\"b\", \"keep\")], &[(\"a\", \"old\")], \"a\"),\n        vec![\n            (\"a\".to_owned(), \"old\".to_owned()),\n            (\"b\".to_owned(), \"keep\".to_owned())\n        ],\n        \"case 1\"\n    );\n    assert_eq!(restore(&[], &[], \"missing\"), vec![], \"case 2\");\n    assert_eq!(restore(&[(\"a\", \"x\")], &[], \"a\"), vec![], \"case 3\");\n    assert_eq!(\n        restore(&[], &[(\"a\", \"x\")], \"a\"),\n        vec![(\"a\".to_owned(), \"x\".to_owned())],\n        \"case 4\"\n    );\n    println!(\"worked example passed\");\n}\n",
+    "exampleCaption": "The worked implementation exercises restore narrowly from a known revision. Its tests demonstrate the stated finite contract.",
+    "practiceCode": "pub fn restore(work: &[(&str,&str)], historical: &[(&str,&str)], path: &str) -> Vec<(String,String)> {\n    todo!(\"implement the contract\")\n}\n",
+    "task": "Return the current tree with exactly one path restored from a historical tree. Absence in history removes that path. Keep the public signature. Open the compiler lab and edit solution.rs; do not edit the private verification caller.",
+    "success": "The separate caller accepts the changed solution and rejects unchanged TODO, a wrong implementation and a printed success message.",
+    "question": "After restoring one historical file, what happens to unrelated current edits?",
+    "answers": [
+      "A restore rewrites every previous commit",
+      "They stay in the worktree",
+      "All files should revert to the historical tree"
+    ],
+    "correctAnswer": 1,
+    "feedback": "Replacing the entire tree loses unrelated edits and exceeds the requested recovery."
+  },
+  "depth": {
+    "misconception": "All files should revert to the historical tree",
+    "correction": "A one-file restore must preserve every unrelated current edit.",
+    "traceSteps": [
+      {
+        "title": "Identify the boundary",
+        "detail": "Restore narrowly from a known revision. Write down its accepted inputs and observable output."
+      },
+      {
+        "title": "Exercise the failure",
+        "detail": "Replacing the entire tree loses unrelated edits and exceeds the requested recovery."
+      },
+      {
+        "title": "Check the independent caller",
+        "detail": "Return the current tree with exactly one path restored from a historical tree. Absence in history removes that path."
+      }
+    ],
+    "transferChallenge": "Apply this contract to Task Ledger, introduce the failure described in the lesson, and show the failing check before fixing it.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Switch Without Losing Work",
+        "concept": "Protect dirty worktrees during checkout"
+      },
+      {
+        "direction": "next",
+        "title": "Parse a CLI Contract",
+        "concept": "Preserve arguments and reject ambiguous input"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "title": "Primary reference",
+      "url": "https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository"
+    },
+    {
+      "title": "Task Ledger companion source (ZIP)",
+      "url": "https://crabrix.com/examples/task-ledger-route.zip"
+    }
+  ],
+  "illustration": {
+    "path": "media/route-git-recover.png",
+    "alt": "Diagram for Recover One Historical File: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "The worked implementation exercises restore narrowly from a known revision. Its tests demonstrate the stated finite contract."
+  },
+  "contentDigest": "1ca6ce2e433bd0dbc10aabed5e72925c5ef95328edc82455227aaaf4df6961d6"
+}

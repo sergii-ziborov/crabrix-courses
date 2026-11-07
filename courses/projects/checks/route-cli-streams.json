@@ -1,0 +1,57 @@
+{
+  "challenge": {
+    "lessonID": "route-cli-streams",
+    "patternID": "route-cli-streams",
+    "projectName": "route-cli-streams-lab",
+    "source": "pub fn titles(input: &str, max_bytes: usize) -> Result<Vec<String>,String> {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationSource": "mod solution;\nfn main() {\nassert_eq!(solution::titles(\" one\n\n two \r\n\",100), Ok(vec![\"one\".to_owned(),\"two\".to_owned()]), \"case 1\");\nassert_eq!(solution::titles(\"\",0), Ok(vec![]), \"case 2\");\nassert_eq!(solution::titles(\"🦀\",3), Err(\"too large\".to_owned()), \"case 3\");\nassert_eq!(solution::titles(&\"x\".repeat(81),100), Err(\"title too long\".to_owned()), \"case 4\");\nassert_eq!(solution::titles(\"🦀\",4), Ok(vec![\"🦀\".to_owned()]), \"case 5\");\n\nprintln!(\"PASS route-cli-streams\");\n}\n",
+    "verificationCases": [
+      {
+        "kind": "visible",
+        "input": "solution::titles(\" one\n\n two \r\n\",100)",
+        "expectedAnswer": "Ok(vec![\"one\".to_owned(),\"two\".to_owned()])"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::titles(\"\",0)",
+        "expectedAnswer": "Ok(vec![])"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::titles(\"🦀\",3)",
+        "expectedAnswer": "Err(\"too large\".to_owned())"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::titles(&\"x\".repeat(81),100)",
+        "expectedAnswer": "Err(\"title too long\".to_owned())"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::titles(\"🦀\",4)",
+        "expectedAnswer": "Ok(vec![\"🦀\".to_owned()])"
+      }
+    ],
+    "expectedOutput": "PASS route-cli-streams\n",
+    "requiredSourceFragments": [
+      "pub fn titles"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ],
+    "executionProfile": "std-v1"
+  },
+  "evidence": {
+    "kind": "algorithmChallenge",
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS route-cli-streams\n"
+    },
+    "requiredSourceFragments": [
+      "pub fn titles"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  }
+}

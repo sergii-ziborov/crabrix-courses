@@ -1,0 +1,74 @@
+{
+  "id": "route-diag-correlation",
+  "parentID": "route-diagnostics",
+  "order": 1,
+  "title": "Propagate One Request Identity",
+  "concept": "Validate a bounded correlation ID",
+  "minutes": 25,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Validate a bounded correlation ID.",
+    "rule": "Use the same validated ID across a request and its child operations.",
+    "explanation": "Async work interleaves. Two requests can emit similar messages on one thread, so thread identity alone does not connect the messages that belong together. Give an operation one request ID, propagate it through database calls and retries, and record child work under the same parent context.\n\nAn incoming ID is untrusted data. Accept only a bounded ASCII token here, using letters, digits, dash and underscore; otherwise use a generated fallback supplied by the caller. Reject line breaks so an identifier cannot inject a fake log record. Do not treat a correlation ID as authentication or an idempotency key. Clients can choose or repeat it, and tracing systems have their own full trace-context format. This exercise isolates a small application request-ID policy rather than pretending to implement W3C traceparent.\n\nThe route project is Task Ledger: first keep a reproducible source history, then expose its data through a CLI and HTTP boundary, persist it in SQL, diagnose failures and prepare a release. This lesson owns one contract in that project. Run the worked example before changing the starter and explain which input makes the tempting shortcut fail.\n\nTerminal practice: Send curl -i -H \"X-Request-ID: req_42\" http://127.0.0.1:8080/health and follow the same ID through the diagnostic output.\n\nThe compiler lab is independent of the reading question. Edit solution.rs; the app supplies a separate caller with normal, empty and adversarial inputs. A successful unchanged demonstration does not prove your implementation. After the lab, apply the same contract to the route companion project. Its README separates the on-device adapter from the desktop Cargo/TCP profile.",
+    "exampleCode": "pub fn request_id(incoming: Option<&str>, fallback: &str) -> String {\n    match incoming {\n        Some(v)\n            if !v.is_empty()\n                && v.len() <= 64\n                && v.bytes().all(|b| {\n                    b.is_ascii_alphanumeric() || b == b'-' || b == b'_'\n                }) =>\n        {\n            v.to_owned()\n        }\n        _ => fallback.to_owned(),\n    }\n}\n\nfn main() {\n    assert_eq!(\n        request_id(Some(\"req_42-A\"), \"generated\"),\n        \"req_42-A\",\n        \"case 1\"\n    );\n    assert_eq!(request_id(None, \"generated\"), \"generated\", \"case 2\");\n    assert_eq!(\n        request_id(\n            Some(\n                \"evil\nrecord\"\n            ),\n            \"new\"\n        ),\n        \"new\",\n        \"case 3\"\n    );\n    assert_eq!(request_id(Some(\"🦀\"), \"new\"), \"new\", \"case 4\");\n    assert_eq!(\n        request_id(Some(&\"a\".repeat(65)), \"new\"),\n        \"new\",\n        \"case 5\"\n    );\n    assert_eq!(request_id(Some(\"\"), \"new\"), \"new\", \"case 6\");\n    println!(\"worked example passed\");\n}\n",
+    "exampleCaption": "The worked implementation exercises validate a bounded correlation id. Its tests demonstrate the stated finite contract.",
+    "practiceCode": "pub fn request_id(incoming: Option<&str>, fallback: &str) -> String {\n    todo!(\"implement the contract\")\n}\n",
+    "task": "Accept incoming IDs with 1..=64 bytes composed only of ASCII letters,digits,dash,underscore. Otherwise return the supplied fallback, which the caller guarantees is valid. Keep the public signature. Open the compiler lab and edit solution.rs; do not edit the private verification caller.",
+    "success": "The separate caller accepts the changed solution and rejects unchanged TODO, a wrong implementation and a printed success message.",
+    "question": "Does a client-supplied request ID authenticate the caller?",
+    "answers": [
+      "Yes, a unique-looking string proves identity",
+      "It makes SQL authorization unnecessary",
+      "No, it is diagnostic context"
+    ],
+    "correctAnswer": 2,
+    "feedback": "Correlation identifies related events, not who is allowed to perform an operation."
+  },
+  "depth": {
+    "misconception": "Yes, a unique-looking string proves identity",
+    "correction": "Use the same validated ID across a request and its child operations.",
+    "traceSteps": [
+      {
+        "title": "Identify the boundary",
+        "detail": "Validate a bounded correlation ID. Write down its accepted inputs and observable output."
+      },
+      {
+        "title": "Exercise the failure",
+        "detail": "Correlation identifies related events, not who is allowed to perform an operation."
+      },
+      {
+        "title": "Check the independent caller",
+        "detail": "Accept incoming IDs with 1..=64 bytes composed only of ASCII letters,digits,dash,underscore. Otherwise return the supplied fallback, which the caller guarantees is valid."
+      }
+    ],
+    "transferChallenge": "Apply this contract to Task Ledger, introduce the failure described in the lesson, and show the failing check before fixing it.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Add Context Without Leaking Secrets",
+        "concept": "Redact sensitive diagnostic fields"
+      },
+      {
+        "direction": "next",
+        "title": "Measure the Tail, Not Just the Average",
+        "concept": "Compute an explicitly defined latency percentile"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "title": "Primary reference",
+      "url": "https://docs.rs/tracing/latest/tracing/"
+    },
+    {
+      "title": "Task Ledger companion source (ZIP)",
+      "url": "https://crabrix.com/examples/task-ledger-route.zip"
+    }
+  ],
+  "illustration": {
+    "path": "media/route-diag-correlation.png",
+    "alt": "Diagram for Propagate One Request Identity: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "The worked implementation exercises validate a bounded correlation id. Its tests demonstrate the stated finite contract."
+  },
+  "contentDigest": "92106aa015c1acef3f07b6315a4b22cf09d39d3704ec7a5ebd1c458054d67b30"
+}

@@ -333,7 +333,7 @@ def build(args) -> None:
                       "language": course["language"], "contentVersion": course["contentVersion"],
                       "archiveName": archive.name, "archiveBytes": archive.stat().st_size,
                       "archiveSHA256": sha(archive.read_bytes()), "courseDigest": course["contentDigest"],
-                      "minimumAppVersion": "1.1", "requiredCapabilities": capabilities}
+                      "minimumAppVersion": course.get("minimumAppVersion", "1.1"), "requiredCapabilities": capabilities + course.get("requiredCapabilities", [])}
         save(args.out / f"{course['id']}.descriptor.payload.json", descriptor)
         print(f"Built {archive.name} {descriptor['archiveSHA256']}")
 

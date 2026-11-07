@@ -1,0 +1,74 @@
+{
+  "id": "route-delivery-artifacts",
+  "parentID": "route-delivery",
+  "order": 2,
+  "title": "Bind an Artifact to Its Source",
+  "concept": "Verify release identity and digest metadata",
+  "minutes": 25,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Verify release identity and digest metadata.",
+    "rule": "A filename or version label does not prove which bytes were tested.",
+    "explanation": "A release artifact should have an identity that can be compared with the tested source and the expected content digest. Reusing a mutable latest filename makes rollback and incident investigation harder. Retain the source revision, exact target, digest and verification receipt beside immutable artifact bytes.\n\nThe lab validates metadata: a full lowercase 40-hex Git object ID, a lowercase 64-hex SHA-256 digest and an exact match with an independently supplied expected digest. It does not calculate SHA-256 or prove the claim by validating string shape. The actual delivery script computes the digest from built bytes with a standard tool, then compares it before promotion. A digest detects changed bytes when the expected digest is trusted; it is not an author signature. Keep signing and provenance decisions explicit rather than calling a checksum an authenticity guarantee.\n\nThe route project is Task Ledger: first keep a reproducible source history, then expose its data through a CLI and HTTP boundary, persist it in SQL, diagnose failures and prepare a release. This lesson owns one contract in that project. Run the worked example before changing the starter and explain which input makes the tempting shortcut fail.\n\nTerminal practice: Run the desktop delivery script, inspect its source revision and computed artifact SHA-256, then modify an artifact copy and observe verification fail.\n\nThe compiler lab is independent of the reading question. Edit solution.rs; the app supplies a separate caller with normal, empty and adversarial inputs. A successful unchanged demonstration does not prove your implementation. After the lab, apply the same contract to the route companion project. Its README separates the on-device adapter from the desktop Cargo/TCP profile.",
+    "exampleCode": "pub fn artifact_matches(\n    commit: &str,\n    digest: &str,\n    expected: &str,\n) -> bool {\n    let hex = |s: &str, n: usize| {\n        s.len() == n\n            && s.bytes().all(|b| {\n                b.is_ascii_digit() || (b'a'..=b'f').contains(&b)\n            })\n    };\n    hex(commit, 40)\n        && hex(digest, 64)\n        && hex(expected, 64)\n        && digest == expected\n}\n\nfn main() {\n    assert_eq!(\n        artifact_matches(\n            &\"a\".repeat(40),\n            &\"b\".repeat(64),\n            &\"b\".repeat(64)\n        ),\n        true,\n        \"case 1\"\n    );\n    assert_eq!(\n        artifact_matches(\"main\", &\"b\".repeat(64), &\"b\".repeat(64)),\n        false,\n        \"case 2\"\n    );\n    assert_eq!(\n        artifact_matches(\n            &\"a\".repeat(40),\n            &\"b\".repeat(64),\n            &\"c\".repeat(64)\n        ),\n        false,\n        \"case 3\"\n    );\n    assert_eq!(\n        artifact_matches(\n            &\"A\".repeat(40),\n            &\"b\".repeat(64),\n            &\"b\".repeat(64)\n        ),\n        false,\n        \"case 4\"\n    );\n    assert_eq!(\n        artifact_matches(&\"a\".repeat(40), \"\", \"\"),\n        false,\n        \"case 5\"\n    );\n    println!(\"worked example passed\");\n}\n",
+    "exampleCaption": "The worked implementation exercises verify release identity and digest metadata. Its tests demonstrate the stated finite contract.",
+    "practiceCode": "pub fn artifact_matches(commit: &str, digest: &str, expected: &str) -> bool {\n    todo!(\"implement the contract\")\n}\n",
+    "task": "Validate lowercase hexadecimal commit(40) and digest/expected(64), then require digest==expected. This checks metadata only; actual digest computation belongs to the supplied build-byte verification step. Keep the public signature. Open the compiler lab and edit solution.rs; do not edit the private verification caller.",
+    "success": "The separate caller accepts the changed solution and rejects unchanged TODO, a wrong implementation and a printed success message.",
+    "question": "Does a well-formed SHA-256 string prove the artifact bytes match?",
+    "answers": [
+      "No, compute and compare the actual bytes against a trusted expected digest",
+      "Yes, every 64-character value proves integrity",
+      "A checksum automatically identifies the publisher"
+    ],
+    "correctAnswer": 0,
+    "feedback": "String shape, byte integrity and publisher authenticity are different properties."
+  },
+  "depth": {
+    "misconception": "Yes, every 64-character value proves integrity",
+    "correction": "A filename or version label does not prove which bytes were tested.",
+    "traceSteps": [
+      {
+        "title": "Identify the boundary",
+        "detail": "Verify release identity and digest metadata. Write down its accepted inputs and observable output."
+      },
+      {
+        "title": "Exercise the failure",
+        "detail": "String shape, byte integrity and publisher authenticity are different properties."
+      },
+      {
+        "title": "Check the independent caller",
+        "detail": "Validate lowercase hexadecimal commit(40) and digest/expected(64), then require digest==expected. This checks metadata only; actual digest computation belongs to the supplied build-byte verification step."
+      }
+    ],
+    "transferChallenge": "Apply this contract to Task Ledger, introduce the failure described in the lesson, and show the failing check before fixing it.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Validate Before Starting the Service",
+        "concept": "Reject invalid deployment configuration"
+      },
+      {
+        "direction": "next",
+        "title": "Release, Observe and Recover",
+        "concept": "Keep a known-good version until the candidate is healthy"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "title": "Primary reference",
+      "url": "https://doc.rust-lang.org/cargo/commands/cargo-test.html"
+    },
+    {
+      "title": "Task Ledger companion source (ZIP)",
+      "url": "https://crabrix.com/examples/task-ledger-route.zip"
+    }
+  ],
+  "illustration": {
+    "path": "media/route-delivery-artifacts.png",
+    "alt": "Diagram for Bind an Artifact to Its Source: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "The worked implementation exercises verify release identity and digest metadata. Its tests demonstrate the stated finite contract."
+  },
+  "contentDigest": "606a89759e82e238dd54036610811492a59a3d9ad09651122b775b084d6dc184"
+}

@@ -1,0 +1,74 @@
+{
+  "id": "route-http-json",
+  "parentID": "route-http",
+  "order": 2,
+  "title": "Encode a Valid JSON Boundary",
+  "concept": "Escape JSON strings without corrupting Unicode",
+  "minutes": 25,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Escape JSON strings without corrupting Unicode.",
+    "rule": "Escape control characters, quotes and backslashes while preserving Unicode data.",
+    "explanation": "JSON is a wire format, not arbitrary quoted text. A title containing a quote or newline must remain one string value. Direct interpolation can terminate a string or create a response that no client can decode. Escape the JSON control set while retaining the original Unicode scalar values.\n\nThe exercise builds one JSON string value, including its surrounding quotes. It is deliberately small enough to inspect; the desktop service should use Serde instead of maintaining a general JSON implementation. Do not treat this function as a parser, canonical JSON signer or complete serializer. HTTP response byte lengths must be computed from encoded UTF-8 bytes after serialization, not from character count. The local adapter recalculates Content-Length and closes each connection so an edited response cannot smuggle a second framed response.\n\nThe route project is Task Ledger: first keep a reproducible source history, then expose its data through a CLI and HTTP boundary, persist it in SQL, diagnose failures and prepare a release. This lesson owns one contract in that project. Run the worked example before changing the starter and explain which input makes the tempting shortcut fail.\n\nTerminal practice: Inspect curl -i output for a title containing quotes. Compare the response Content-Length with its encoded body.\n\nThe compiler lab is independent of the reading question. Edit solution.rs; the app supplies a separate caller with normal, empty and adversarial inputs. A successful unchanged demonstration does not prove your implementation. After the lab, apply the same contract to the route companion project. Its README separates the on-device adapter from the desktop Cargo/TCP profile.",
+    "exampleCode": "pub fn json_string(value: &str) -> String {\n    let mut out = String::from(\"\\\"\");\n    for c in value.chars() {\n        match c {\n            '\"' => out.push_str(\"\\\\\\\"\"),\n            '\\\\' => out.push_str(\"\\\\\\\\\"),\n            '\\n' => out.push_str(\"\\\\n\"),\n            '\\r' => out.push_str(\"\\\\r\"),\n            '\\t' => out.push_str(\"\\\\t\"),\n            c if c < ' ' => {\n                out.push_str(&format!(\"\\\\u{:04x}\", c as u32))\n            }\n            c => out.push(c),\n        }\n    }\n    out.push('\"');\n    out\n}\n\nfn main() {\n    assert_eq!(json_string(\"hi\"), \"\\\"hi\\\"\", \"case 1\");\n    assert_eq!(json_string(\"\"), \"\\\"\\\"\", \"case 2\");\n    assert_eq!(json_string(\"a\\\"b\"), \"\\\"a\\\\\\\"b\\\"\", \"case 3\");\n    assert_eq!(\n        json_string(\n            \"a\nb\"\n        ),\n        \"\\\"a\\\\nb\\\"\",\n        \"case 4\"\n    );\n    assert_eq!(json_string(\"🦀\"), \"\\\"🦀\\\"\", \"case 5\");\n    println!(\"worked example passed\");\n}\n",
+    "exampleCaption": "The worked implementation exercises escape json strings without corrupting unicode. Its tests demonstrate the stated finite contract.",
+    "practiceCode": "pub fn json_string(value: &str) -> String {\n    todo!(\"implement the contract\")\n}\n",
+    "task": "Return a quoted JSON string; escape quote, backslash, newline, carriage return and tab, encode remaining controls below U+0020 as lowercase four-digit \\u escapes, and retain other Unicode scalars. Keep the public signature. Open the compiler lab and edit solution.rs; do not edit the private verification caller.",
+    "success": "The separate caller accepts the changed solution and rejects unchanged TODO, a wrong implementation and a printed success message.",
+    "question": "Which response length belongs in Content-Length?",
+    "answers": [
+      "The serialized body byte length",
+      "The number of Rust char values",
+      "The unescaped input title length"
+    ],
+    "correctAnswer": 0,
+    "feedback": "Escaping and UTF-8 encoding can both change byte length."
+  },
+  "depth": {
+    "misconception": "The number of Rust char values",
+    "correction": "Escape control characters, quotes and backslashes while preserving Unicode data.",
+    "traceSteps": [
+      {
+        "title": "Identify the boundary",
+        "detail": "Escape JSON strings without corrupting Unicode. Write down its accepted inputs and observable output."
+      },
+      {
+        "title": "Exercise the failure",
+        "detail": "Escaping and UTF-8 encoding can both change byte length."
+      },
+      {
+        "title": "Check the independent caller",
+        "detail": "Return a quoted JSON string; escape quote, backslash, newline, carriage return and tab, encode remaining controls below U+0020 as lowercase four-digit \\u escapes, and retain other Unicode scalars."
+      }
+    ],
+    "transferChallenge": "Apply this contract to Task Ledger, introduce the failure described in the lesson, and show the failing check before fixing it.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Validate Before Applying Effects",
+        "concept": "Check declared and actual request size"
+      },
+      {
+        "direction": "next",
+        "title": "Retry Without Duplicating Tasks",
+        "concept": "Bind an idempotency key to one request payload"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "title": "Primary reference",
+      "url": "https://www.rfc-editor.org/rfc/rfc9110.html"
+    },
+    {
+      "title": "Task Ledger companion source (ZIP)",
+      "url": "https://crabrix.com/examples/task-ledger-route.zip"
+    }
+  ],
+  "illustration": {
+    "path": "media/route-http-json.png",
+    "alt": "Diagram for Encode a Valid JSON Boundary: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "The worked implementation exercises escape json strings without corrupting unicode. Its tests demonstrate the stated finite contract."
+  },
+  "contentDigest": "515c44fc071874c27164433be06eaff8bc5259bcf7b5c110f6d6ebab6fc53837"
+}

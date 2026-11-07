@@ -1,0 +1,1859 @@
+{
+  "unitIDs": [
+    "projects",
+    "pointers",
+    "cargo-workflow",
+    "project-quality",
+    "files-data",
+    "reliability-labs",
+    "library-contracts"
+  ],
+  "lessons": [
+    {
+      "concept": "Heap allocation and recursive types",
+      "contentDigest": "964c1b04e87524260ea0296c3d65597571ec726142908b613c440408f2abb5af",
+      "depth": {
+        "connections": [
+          {
+            "concept": "Many crates, one lockfile",
+            "direction": "previous",
+            "title": "Workspaces"
+          },
+          {
+            "concept": "Shared ownership and interior mutability",
+            "direction": "next",
+            "title": "Rc & RefCell"
+          }
+        ],
+        "correction": "An enum can contain itself through a pointer. `Box` gives a recursive or unsized value a known-size home, so the type stops being infinitely large.",
+        "misconception": "“An enum can never refer to itself, even through a `Box`.”",
+        "traceSteps": [
+          {
+            "detail": "`Tree::Node` holds two `Box<Tree>` fields, each one pointer, so `Tree` has a fixed size however deep a tree gets.",
+            "title": "Size the enum"
+          },
+          {
+            "detail": "`sum` borrows `&Tree`, so `match` binds `value` to `&i32` and `l` and `r` to `&Box<Tree>`; nothing is moved out.",
+            "title": "Match the variant"
+          },
+          {
+            "detail": "`sum(l)` passes `&Box<Tree>`, and deref coercion turns it into `&Tree`. Leaves return `*value`, so a `Node` over leaves 1 and 2 totals 3.",
+            "title": "Follow the boxes"
+          }
+        ],
+        "transferChallenge": "Fix the practice's `List` with `Box<List>` and write a `total` function for it. Then predict `size_of::<List>()` compared with `size_of::<Box<List>>()` and print both."
+      },
+      "exerciseKind": "planned",
+      "id": "box",
+      "minutes": 14,
+      "order": 0,
+      "parentID": "pointers",
+      "title": "Box<T>",
+      "writing": {
+        "answers": [
+          "An enum can never refer to itself, boxed or not",
+          "The type would have infinite size without an indirection",
+          "An i32 payload is not allowed inside an enum"
+        ],
+        "correctAnswer": 1,
+        "exampleCaption": "Without `Box`, this enum would need infinite size.",
+        "exampleCode": "enum Tree {\n    Leaf(i32),\n    Node(Box<Tree>, Box<Tree>),\n}\n\nfn sum(tree: &Tree) -> i32 {\n    match tree {\n        Tree::Leaf(value) => *value,\n        Tree::Node(l, r) => sum(l) + sum(r),\n    }\n}",
+        "explanation": "A recursive type has no fixed size, because each level would contain another whole level. `Box` has a known pointer size, so putting the recursive part behind one makes the type representable. `Box` also lets a function return a trait object whose concrete size is not known at the call site.\n\nA recursive enum needs a known size at compile time. If `Tree::Node` directly contained two more `Tree` values, each of those nodes would contain more nodes with no finite size the compiler could lay out. `Box<Tree>` replaces each child with a pointer whose size is known. The actual child values live in separate heap allocations, and the boxes own them. Dropping the root recursively drops the owned children.\n\nThe sample's `sum` function borrows `&Tree`, matches on its variants, and reads through the boxes. It does not take ownership of the tree just to traverse it. Trace a root with two leaves and predict the sum before running the code. Then add one nested node and observe how the recursive call follows a box. This exercise shows the separation between the size of the enum variant and the depth of the runtime tree.\n\nA box is also a way to own a value whose concrete type is hidden behind a trait object, `Box<dyn Trait>`. The box does not make every operation faster: following pointers and allocating each node can cost more than a compact flat representation. Use it when indirection expresses a real need, such as recursion or owned dynamic dispatch. For a simple fixed set of values, a `Vec<T>` or plain struct may be clearer. Choose the data shape first, then the pointer type that makes it representable.\n\nThe box is an owning pointer, so moving the box moves ownership of the child allocation without copying the entire tree. That makes recursive construction manageable while preserving deterministic cleanup.",
+        "feedback": "`Box<List>` makes the recursive field pointer-sized and the type finite.",
+        "practiceCode": "enum List {\n    Cons(i32, List),\n    Nil,\n}",
+        "question": "Why does that recursive enum fail to compile?",
+        "rule": "`Box` gives a recursive or unsized value a known-size home.",
+        "success": "It compiles, and you can explain why `Box` is required.",
+        "summary": "`Box` moves a value to the heap behind a single owner.",
+        "task": "Define a recursive type and total its values."
+      },
+      "illustration": {
+        "path": "media/box.png",
+        "alt": "Diagram for Box<T>: a Rust code example flows to the lesson rule and the key observation.",
+        "caption": "Without Box, this enum would need infinite size."
+      }
+    },
+    {
+      "id": "buffered-line-input",
+      "parentID": "files-data",
+      "order": 0,
+      "title": "Buffered Line Input",
+      "concept": "BufRead, Cursor, and fallible iteration",
+      "minutes": 16,
+      "exerciseKind": "runnable",
+      "writing": {
+        "summary": "Separate a streaming parser from the place its bytes come from.",
+        "rule": "A reader can fail between records; handle both I/O and parse errors.",
+        "explanation": "A file is a source of bytes, not a ready-made collection of valid records. Give the parser a generic `R: BufRead` input so the same function can accept a buffered file, locked stdin, or an in-memory `Cursor`. This separates the data transformation from permissions, paths, and device-specific I/O. It also makes the parser easy to exercise without creating a real file.\n\nThe `lines()` iterator yields `io::Result<String>` values. First handle the read result, then decide what a line means. For this small report, trim whitespace, skip blank lines, and parse every other line as `i64`. A malformed nonblank line is an error, not a zero and not a reason to silently discard the record. Include the one-based physical line number in that error, even when earlier lines were blank.\n\nUse `checked_add` when the accepted numeric domain can overflow the accumulator. Returning a clear error preserves the contract instead of making behavior depend on a debug or release overflow setting. Streaming avoids retaining every record, but one unusually long line can still allocate a large string. A production parser needs a separate record-size limit; buffering alone is not a memory quota.\n\nLocal compiler profile: standard library only. The lab uses `Cursor` and needs no filesystem permission, package download, network request, or backend execution. Once the parser is correct, a desktop adapter can pass `BufReader::new(File::open(path)?)`. In Crabrix, an adapter must use files granted to its sandbox. Keep the transformation independently testable before adding that adapter.",
+        "exampleCode": "use std::io::{BufRead, Cursor};\nfn main() {\n    let input = Cursor::new(\"12\\n\\n8\\n\");\n    for line in input.lines() {\n        println!(\"{}\", line.unwrap());\n    }\n}\n",
+        "exampleCaption": "BufRead, Cursor, and fallible iteration",
+        "practiceCode": "use std::io::{BufRead, Cursor};\nfn main() {\n    let input = Cursor::new(\"12\\n\\n8\\n\");\n    for line in input.lines() {\n        println!(\"{}\", line.unwrap());\n    }\n}\n",
+        "task": "Implement total(reader): skip blank lines, sum trimmed i64 records with checked_add, return line N for the first malformed physical line, overflow for arithmetic overflow, and read failed for an I/O failure. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise.",
+        "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
+        "question": "Why can filter_map(Result::ok) silently corrupt this report?",
+        "answers": [
+          "It turns every successful line into bytes",
+          "It drops read failures instead of reporting incomplete input",
+          "It forces all numbers to zero"
+        ],
+        "correctAnswer": 1,
+        "feedback": "Dropping errors can produce a believable total from only part of the input. Propagate read failures and identify malformed records."
+      },
+      "depth": {
+        "misconception": "A buffered reader has already validated every record.",
+        "correction": "Buffering changes how bytes are read; parsing and error policy are separate.",
+        "traceSteps": [
+          {
+            "title": "Read",
+            "detail": "Unwrap each fallible line before parsing its contents."
+          },
+          {
+            "title": "Validate",
+            "detail": "Track the physical line number and reject invalid integers."
+          },
+          {
+            "title": "Accumulate",
+            "detail": "Add with overflow detection and return one result."
+          }
+        ],
+        "transferChallenge": "Replace Cursor with a deliberately failing Read implementation. Confirm the report returns an error rather than a partial total.",
+        "connections": [
+          {
+            "direction": "next",
+            "title": "Paths & Boundaries",
+            "concept": "Path, PathBuf, and lexical validation"
+          }
+        ]
+      },
+      "illustration": {
+        "path": "media/buffered-line-input.png",
+        "alt": "Diagram for Buffered Line Input: a Rust code example flows to the lesson rule and the key observation.",
+        "caption": "BufRead, Cursor, and fallible iteration"
+      },
+      "contentDigest": "3f3939493c927b561b17ee1c31fe59d43b2afc4170832d2b8299e3fcd89c63fe"
+    },
+    {
+      "concept": "Choose the cheapest command that proves the next fact",
+      "contentDigest": "0dc62c4438f587771b1d529171bcb6986995b2a7e3e9abc2b97a68db3940f5bb",
+      "depth": {
+        "connections": [
+          {
+            "concept": "Map Cargo targets to predictable source paths",
+            "direction": "previous",
+            "title": "Package Layout"
+          },
+          {
+            "concept": "Separate runtime, build, and test-only tools",
+            "direction": "next",
+            "title": "Dependency Kinds"
+          }
+        ],
+        "correction": "`cargo check` proves type correctness without final code generation, so logic bugs survive it. `cargo run` executes the binary and shows its behaviour.",
+        "misconception": "“A passing `cargo check` means the program does the right thing.”",
+        "traceSteps": [
+          {
+            "detail": "`cargo check` parses, type checks, and borrow checks the crate, with no executable at the end.",
+            "title": "Ask for types"
+          },
+          {
+            "detail": "`cargo build` also runs code generation and leaves an executable under `target/debug`, without starting it.",
+            "title": "Ask for a binary"
+          },
+          {
+            "detail": "`cargo run` builds if anything changed, then executes that binary, so it is the only one of the three that shows output.",
+            "title": "Ask for behaviour"
+          }
+        ],
+        "transferChallenge": "Add a test for `double` and put `cargo test` into the list. Say where it belongs between `cargo check` and `cargo run`, and what a pass proves that `cargo check` cannot."
+      },
+      "exerciseKind": "planned",
+      "id": "cargo-command-cycle",
+      "minutes": 14,
+      "order": 1,
+      "parentID": "cargo-workflow",
+      "title": "Check, Build, Run",
+      "writing": {
+        "answers": [
+          "cargo check",
+          "cargo build",
+          "cargo run"
+        ],
+        "correctAnswer": 0,
+        "exampleCaption": "Three commands, three levels of evidence: types, an artifact, then a run.",
+        "exampleCode": "// Fast type feedback:\n// cargo check\n// Produce an executable:\n// cargo build\n// Build and execute:\n// cargo run",
+        "explanation": "`cargo check` proves type correctness without final code generation, build creates artifacts, and run executes a binary after building it. Fast feedback comes from asking only for the evidence you need.\n\nThe fastest useful command depends on the question you are asking. After an edit, `cargo check` verifies parsing, types, borrowing, and many other compiler rules without producing a final executable. `cargo test` compiles the test harness and runs tests. `cargo run` builds a binary if needed and executes it. `cargo build` produces an artifact without executing it. `cargo run` reuses what `cargo build` produced, while `cargo check` keeps its own output, and each command provides different evidence.\n\nA productive loop is edit, check, test the changed behavior, then run the whole program when interaction matters. A successful `cargo check` does not prove a function returns the right answer; a passing unit test does not prove the CLI arguments are wired correctly. `cargo build --release` uses the release profile and is appropriate when validating a shippable artifact or measuring optimized performance. It is usually slower than a quick debug check during a small edit.\n\nTry introducing a type mismatch and observe which command catches it first. Fix that, then introduce a logic bug that compiles but fails an assertion. Finally run the application with a representative input. Record what each stage established and what it left untested. This distinction prevents “it compiled” from becoming an overconfident claim. Keep the loop short while developing, and use broader checks at meaningful checkpoints rather than waiting until the end of the project.\n\nFor a library-only package, `cargo run` has no default binary to execute; choose an example or add a binary target. In a workspace, a command may need `-p package_name` to identify which member you mean. These small command choices keep feedback focused.",
+        "feedback": "`cargo check` stops after analysis, so it reports type and borrow errors without producing an executable.",
+        "practiceCode": "fn double(value: i32) -> i32 {\n    value + 2\n}\n\nfn main() {\n    println!(\"{}\", double(4));\n}",
+        "question": "Which command skips final code generation?",
+        "rule": "`cargo check` proves type correctness without final code generation, build creates artifacts, and run executes a binary after building it.",
+        "success": "You can name the fact each command proved and the fact it left untested.",
+        "summary": "Choose the cheapest command that proves the next fact.",
+        "task": "Say which of `cargo check`, `cargo build`, and `cargo run` first reveals that `double(4)` gives 6, not 8. Then break the return type and ask the same question."
+      },
+      "illustration": {
+        "path": "media/cargo-command-cycle.png",
+        "alt": "The edit, cargo check, cargo test, cargo run loop branches to a release build for shipping.",
+        "caption": "Ask Cargo for the evidence needed at each stage of development."
+      }
+    },
+    {
+      "concept": "Weak<T> and leaks Rust cannot prevent",
+      "contentDigest": "46636b915ea699631f2a55946dbfd05c32869e240fcf41001b036d943f931ef0",
+      "depth": {
+        "connections": [
+          {
+            "concept": "Making a type behave like a reference",
+            "direction": "previous",
+            "title": "Deref & Drop"
+          },
+          {
+            "concept": "Map Cargo targets to predictable source paths",
+            "direction": "next",
+            "title": "Package Layout"
+          }
+        ],
+        "correction": "The compiler accepts a strong cycle, and its counts never reach zero. `Weak` does not keep a value alive, so a weak back link breaks the cycle and `upgrade()` may return `None`.",
+        "misconception": "“Rust's ownership rules stop reference cycles from leaking.”",
+        "traceSteps": [
+          {
+            "detail": "`leaf` starts with an empty `Weak::new()` parent, so upgrading at that point would return `None`.",
+            "title": "Build the leaf"
+          },
+          {
+            "detail": "`branch` owns `leaf` through a strong `Rc` in `children`, while `Rc::downgrade(&branch)` stores only a weak link in `leaf.parent`.",
+            "title": "Link both ways"
+          },
+          {
+            "detail": "`upgrade()` returns `Some` while `branch` is alive, so this prints `parent Some(5)`. After `branch` is dropped it would return `None`.",
+            "title": "Upgrade the link"
+          }
+        ],
+        "transferChallenge": "Change the practice's `parent` field to `RefCell<Weak<Node>>` and store `Rc::downgrade(&parent)`. Predict `Rc::strong_count(&parent)` and `Rc::weak_count(&parent)`, then print both."
+      },
+      "exerciseKind": "planned",
+      "id": "cycles",
+      "minutes": 18,
+      "order": 3,
+      "parentID": "pointers",
+      "title": "Reference Cycles",
+      "writing": {
+        "answers": [
+          "A Weak link is cheaper to clone than an Rc",
+          "Two Rc links in a cycle never reach zero, so nothing is freed",
+          "The compiler refuses to build a cyclic Rc graph"
+        ],
+        "correctAnswer": 1,
+        "exampleCaption": "The child points back with `Weak`, so the cycle never forms.",
+        "exampleCode": "use std::cell::RefCell;\nuse std::rc::{Rc, Weak};\n\nstruct Node {\n    value: i32,\n    parent: RefCell<Weak<Node>>,\n    children: RefCell<Vec<Rc<Node>>>,\n}\n\nlet leaf = Rc::new(Node {\n    value: 3,\n    parent: RefCell::new(Weak::new()),\n    children: RefCell::new(vec![]),\n});\nlet branch = Rc::new(Node {\n    value: 5,\n    parent: RefCell::new(Weak::new()),\n    children: RefCell::new(vec![Rc::clone(&leaf)]),\n});\n*leaf.parent.borrow_mut() = Rc::downgrade(&branch);\n\nlet parent = leaf.parent.borrow().upgrade();\nprintln!(\"parent {:?}\", parent.map(|node| node.value));",
+        "explanation": "Two `Rc` handles pointing at each other never reach a count of zero, so neither is freed. `Weak<T>` is the answer: it does not count towards ownership and must be upgraded before use, which turns a parent pointer into something that can legitimately be gone.\n\nReference counting releases an allocation only when its strong count reaches zero. If node A owns an `Rc` to B and B owns an `Rc` back to A, each keeps the other alive after all outside handles are dropped. Rust prevents memory unsafety here, but the allocations leak. A graph needs a deliberate ownership direction, not strong links in every direction.\n\nA common tree design lets a parent own children through strong `Rc` handles while each child keeps a `Weak` reference back to its parent. A weak reference does not keep the parent alive. `upgrade()` returns an `Option<Rc<T>>`, because the parent may have been dropped. That absence is a normal state to handle, not an exceptional failure. In the sample, `Rc::downgrade` stores the parent link, and the `Option` from `upgrade()` is checked before reading through it.\n\nDraw two nodes and label the strong links before writing code. Remove all external owners on paper: if every node still has an incoming strong link from within the cycle, cleanup cannot begin. Replace one direction with weak links and repeat the count. For practice, create a parent and child, then drop the parent and verify that upgrading the child's weak parent link returns `None` if the child is still held externally. The lesson is not to avoid shared ownership entirely, but to make the owning direction explicit.\n\nWeak references can also be used for caches that should not keep objects alive. The caller must accept that `upgrade()` may return `None`; a weak link is a question about whether the target still exists, not an ownership guarantee. Draw strong and weak edges with different arrows during review.",
+        "feedback": "Ownership should flow one way; the back-reference observes without owning.",
+        "practiceCode": "use std::cell::RefCell;\nuse std::rc::Rc;\n\n#[derive(Default)]\nstruct Node {\n    parent: RefCell<Option<Rc<Node>>>,\n    children: RefCell<Vec<Rc<Node>>>,\n}\n\nlet parent = Rc::new(Node::default());\nlet child = Rc::new(Node::default());\nparent.children.borrow_mut().push(Rc::clone(&child));\n*child.parent.borrow_mut() = Some(Rc::clone(&parent));\nprintln!(\"{}\", Rc::strong_count(&parent));",
+        "question": "Why should that parent link be Weak?",
+        "rule": "`Weak` does not keep a value alive, so `upgrade()` may return `None`.",
+        "success": "You can name which direction owns and which merely observes.",
+        "summary": "Rust prevents data races, not leaks — a cycle can still strand memory.",
+        "task": "Explain where a parent pointer should be Weak rather than `Rc`."
+      },
+      "illustration": {
+        "path": "media/cycles.png",
+        "alt": "Two strong Rc links form a cycle; replacing the back link with Weak breaks the strong cycle.",
+        "caption": "A weak back link permits cleanup after external owners go away."
+      }
+    },
+    {
+      "concept": "crates.io, SemVer, and features",
+      "contentDigest": "2f38f69dfe71534a1183a893bd4d439c97143e09384f0107e579f40604a9a448",
+      "depth": {
+        "connections": [
+          {
+            "concept": "Propagation and custom errors",
+            "direction": "previous",
+            "title": "Error Design"
+          },
+          {
+            "concept": "Many crates, one lockfile",
+            "direction": "next",
+            "title": "Workspaces"
+          }
+        ],
+        "correction": "Below 1.0 the minor number is the breaking one, so `\"0.4\"` means >=0.4.0 and <0.5.0. `Cargo.lock` then records the exact version chosen.",
+        "misconception": "“`\"0.4\"` works like `\"1.2\"`, so any newer `0.x` release is allowed.”",
+        "traceSteps": [
+          {
+            "detail": "`smallvec = \"1\"` accepts any compatible 1.x release, not one fixed version.",
+            "title": "Read the requirement"
+          },
+          {
+            "detail": "`features = [\"derive\"]` adds to `serde`'s defaults, while `default-features = false` drops the default request for `memchr` on this edge.",
+            "title": "Read the features"
+          },
+          {
+            "detail": "The resolver picks exact versions and writes them to `Cargo.lock`; `cargo tree` shows the graph it selected.",
+            "title": "Find the real choice"
+          }
+        ],
+        "transferChallenge": "Add `log = \"0.4\"` and write down the range it allows. Run `cargo update -p log` in a copy of the project and check that `Cargo.lock` stays inside that range."
+      },
+      "exerciseKind": "planned",
+      "id": "dependencies",
+      "minutes": 16,
+      "order": 3,
+      "parentID": "projects",
+      "title": "Dependencies",
+      "writing": {
+        "answers": [
+          "0.5.0",
+          "0.4.9",
+          "1.0.0"
+        ],
+        "correctAnswer": 1,
+        "exampleCaption": "A requirement, a feature set, and an opt-out of defaults.",
+        "exampleCode": "[dependencies]\nserde = \"=1.0.229\"\nserde_json = \"=1.0.151\"\nsmallvec = \"1\"\nmemchr = { version = \"2\", default-features = false }",
+        "explanation": "\"1.2\" means any 1.x at or above 1.2, because Cargo follows SemVer: patch and minor releases must stay compatible. The resolver picks the highest match and records the exact choice in `Cargo.lock`, and features let one crate ship optional pieces you opt into rather than paying for by default.\n\nA dependency declaration is a compatibility request, not a permanent pin. In Cargo's default caret requirement, `version = \"1.2\"` accepts compatible 1.x releases from 1.2 upward but not 2.0. `Cargo.lock` records the concrete versions selected for a particular resolution, so two developers can rebuild the same application graph. Read both files when investigating why a new release did or did not appear in your build.\n\nFeatures let a dependency expose optional capabilities. In the example, `serde` with `derive` enables procedural derives; `default-features = false` on another dependency removes only that dependency edge's default request. Features are unified when the same package is reached through several paths, so another dependency can still turn a feature on. Treat features as additive options, and inspect the resolved feature graph when behavior surprises you.\n\nBefore adding a crate, check what problem it solves, whether its API fits the project, and what it brings into the build. A small dependency can be worthwhile, but every dependency adds a maintenance and security surface. Pinning every version forever is not a substitute for tests; compatible updates still need verification. Practice with `cargo tree` to inspect the graph, update one package deliberately, and run tests after the lockfile changes. Keep direct dependency declarations clear and leave transitive selection to the resolver unless a real constraint requires intervention.\n\nWhen reading a version requirement, pay attention to pre-release versions and major version zero, whose compatibility rules are narrower. Do not infer safety solely from a SemVer range; examine release notes and run meaningful tests after updates.\n\nExecution profile: the Serde: Decode, Validate, Encode lesson contains the qualified, pinned Cargo project for both the app and web Playground. It uses explicit Serde traits. Enabling derive adds a procedural macro dependency and needs separately qualified macro support; downloading serde alone does not provide that capability.",
+        "feedback": "Below 1.0 the minor number is the breaking one, so 0.4.x only.",
+        "practiceCode": "[dependencies]\nexample = \"0.4\"",
+        "question": "Which version can that requirement resolve to?",
+        "rule": "\"1.2\" means >=1.2.0 and <2.0.0; the lockfile records what was actually chosen.",
+        "success": "`Cargo.lock` pins an exact version that satisfies the requirement.",
+        "summary": "A dependency is a version requirement, not a fixed version.",
+        "task": "Add a dependency with an explicit feature and resolve it."
+      },
+      "illustration": {
+        "path": "media/dependencies.png",
+        "alt": "Diagram for Dependencies: a Rust code example flows to the lesson rule and the key observation.",
+        "caption": "A requirement, a feature set, and an opt-out of defaults."
+      }
+    },
+    {
+      "concept": "Separate runtime, build, and test-only tools",
+      "contentDigest": "58127601b4f8e7962be1f514515b06cbfea5395678c4c1ecae357ce5462c38ed",
+      "depth": {
+        "connections": [
+          {
+            "concept": "Choose the cheapest command that proves the next fact",
+            "direction": "previous",
+            "title": "Check, Build, Run"
+          },
+          {
+            "concept": "Make optional capability additive and explicit",
+            "direction": "next",
+            "title": "Feature Design"
+          }
+        ],
+        "correction": "Dev dependencies exist for tests and examples, so a test-only crate belongs under `[dev-dependencies]`. Normal dependencies become part of a target graph, and build dependencies support build scripts.",
+        "misconception": "“A crate used only in tests still has to be a normal dependency.”",
+        "traceSteps": [
+          {
+            "detail": "`log` is under `[dependencies]`, so library and binary code can import it, and consumers build it too.",
+            "title": "Read the normal section"
+          },
+          {
+            "detail": "`pretty_assertions` is under `[dev-dependencies]`, so only tests, examples, and benchmarks can import it.",
+            "title": "Read the test helper"
+          },
+          {
+            "detail": "`use pretty_assertions::assert_eq;` in `src/lib.rs` fails in `cargo build` as an unresolved import, though the same line works in `tests/`.",
+            "title": "Try the wrong import"
+          }
+        ],
+        "transferChallenge": "Add a `build.rs` and a crate it uses under `[build-dependencies]`. Predict whether `src/main.rs` can import that crate, then check with `cargo build`."
+      },
+      "exerciseKind": "planned",
+      "id": "dependency-kinds",
+      "minutes": 16,
+      "order": 2,
+      "parentID": "cargo-workflow",
+      "title": "Dependency Kinds",
+      "writing": {
+        "answers": [
+          "dev-dependencies",
+          "profile.release",
+          "workspace"
+        ],
+        "correctAnswer": 0,
+        "exampleCaption": "`log` is part of the normal graph; `pretty_assertions` is available only to tests, examples, and benchmarks.",
+        "exampleCode": "[dependencies]\nlog = \"0.4\"\n\n[dev-dependencies]\npretty_assertions = \"1\"",
+        "explanation": "Normal dependencies become part of a target graph, build dependencies support build scripts, and dev dependencies exist for tests and examples. The distinction keeps production graphs smaller and clearer.\n\nCargo separates dependencies by the role they play in a package. Normal `[dependencies]` are needed to build the library or binary target. `[build-dependencies]` are available to a `build.rs` script that runs during the build, often to generate files or detect native libraries. `[dev-dependencies]` support tests, examples, and benchmarks but are not ordinary runtime dependencies of the published library. The distinction helps make a package's requirements understandable.\n\nRead the sample manifest and ask where each crate is used. A logging interface needed by production code belongs under normal dependencies. A prettier assertion formatter used only in tests belongs under dev dependencies. Moving it into normal dependencies may unnecessarily expand consumers' build graphs. Conversely, placing a production import under dev dependencies makes a normal build fail even if tests happen to compile in a different configuration.\n\nDependency kinds do not by themselves make a crate trustworthy or small. Versions, features, and transitive dependencies still matter. Use `cargo tree` with the relevant target or feature flags to inspect the resolved graph. Add one test-only helper and confirm `cargo build` does not need its API in production code. Then add a build script only if there is a real build-time task; generated code adds another layer to debug. Treat each manifest section as a statement of when that capability is actually required.",
+        "feedback": "`[dev-dependencies]` are available to tests, examples, and benchmarks, and stay out of what consumers build.",
+        "practiceCode": "[dependencies]\nlog = \"0.4\"\npretty_assertions = \"1\"",
+        "question": "Where does a test-only crate belong?",
+        "rule": "Normal dependencies become part of a target graph, build dependencies support build scripts, and dev dependencies exist for tests and examples.",
+        "success": "`cargo tree -e normal` no longer lists it, and `cargo test` still compiles the tests.",
+        "summary": "Separate runtime, build, and test-only tools.",
+        "task": "`pretty_assertions` is used only by the tests. Move it to the right section, then compare `cargo tree -e normal` before and after."
+      },
+      "illustration": {
+        "path": "media/dependency-kinds.png",
+        "alt": "Diagram for Dependency Kinds: a Rust code example flows to the lesson rule and the key observation.",
+        "caption": "`log` is part of the normal graph; `pretty_assertions` is available only to tests, examples, and benchmarks."
+      }
+    },
+    {
+      "concept": "Making a type behave like a reference",
+      "contentDigest": "75e4efb845929bdaf19106f04143b39735a98b224de237b541faa8ad24c172bd",
+      "depth": {
+        "connections": [
+          {
+            "concept": "Shared ownership and interior mutability",
+            "direction": "previous",
+            "title": "Rc & RefCell"
+          },
+          {
+            "concept": "Weak<T> and leaks Rust cannot prevent",
+            "direction": "next",
+            "title": "Reference Cycles"
+          }
+        ],
+        "correction": "`Drop` runs automatically when the owner leaves scope. `std::mem::drop` only ends that scope sooner.",
+        "misconception": "“Cleanup runs only if you call `drop` on a value yourself.”",
+        "traceSteps": [
+          {
+            "detail": "`Deref` for `MyBox<T>` sets `Target = T`, and `deref` returns `&self.0`, a reference to the wrapped value.",
+            "title": "Read the impl"
+          },
+          {
+            "detail": "`greet(&boxed)` passes `&MyBox<String>`. The compiler applies `MyBox`'s `deref` to get `&String`, then `String`'s to get `&str`.",
+            "title": "Follow the coercion"
+          },
+          {
+            "detail": "No conversion appears at the call site, and the function prints `hello ada`. Coercion stops as soon as the types line up.",
+            "title": "See the call"
+          }
+        ],
+        "transferChallenge": "Add a `Drop` impl to `MyBox<T>` that prints a line, then create a second `MyBox` in an inner block. Predict the order of `hello` and each drop line before running it."
+      },
+      "exerciseKind": "planned",
+      "id": "deref-drop",
+      "minutes": 16,
+      "order": 2,
+      "parentID": "pointers",
+      "title": "Deref & Drop",
+      "writing": {
+        "answers": [
+          "Only when you call drop() on it explicitly",
+          "Automatically when the value leaves scope",
+          "At program exit, once main has returned"
+        ],
+        "correctAnswer": 1,
+        "exampleCaption": "Deref coercion is why `&MyBox<String>` reaches a `&str` parameter.",
+        "exampleCode": "use std::ops::Deref;\n\nstruct MyBox<T>(T);\n\nimpl<T> Deref for MyBox<T> {\n    type Target = T;\n    fn deref(&self) -> &T { &self.0 }\n}\n\nfn greet(name: &str) { println!(\"hello {name}\"); }\n\nlet boxed = MyBox(String::from(\"ada\"));\ngreet(&boxed); // &MyBox<String> -> &String -> &str",
+        "explanation": "Implementing Deref lets the compiler insert conversions automatically, which is why `&String` works where `&str` is expected. Drop lets a type run code when it goes out of scope, and the two together are how smart pointers feel built in — a `Box` behaves like the value it holds and cleans up on its own.\n\n`Deref` tells Rust how a pointer-like wrapper exposes a reference to its target. In the example, `MyBox<T>` can return `&T` from its inner field, so code can read the wrapped value through familiar syntax. Deref coercion can adapt `&String` to `&str` through the type's implementations. This convenience should be predictable: implementing `Deref` for a type that is not really pointer-like can make method resolution and ownership harder to understand.\n\n`Drop` describes cleanup when an owner leaves scope. A wrapper around a file or other resource can release it in `drop`, and the caller does not need to remember an explicit cleanup line on every path. You cannot normally call a value's `drop` method directly; `std::mem::drop(value)` consumes it and triggers cleanup early. A moved wrapper is dropped by its new owner, not again at the old binding.\n\nBuild a small wrapper, implement `Deref`, and call a method from the inner type through it. Then add a `Drop` implementation that logs when cleanup happens. Place one wrapper in an inner block and predict the log order. Keep the wrapper's behavior unsurprising: `Deref` for transparent access, `Drop` for resource cleanup. If the wrapper needs complex policy or fallible access, explicit methods often communicate more clearly than pretending it is the target value.\n\nRemember that `Drop::drop` receives `&mut self`, so it can inspect and release fields but cannot move arbitrary fields out as if the object were still complete. The compiler still drops fields after the method returns. Avoid panicking in destructors, especially during unwinding, and keep cleanup as reliable as possible.\n\nTest the exact point where each wrapper leaves scope.",
+        "feedback": "Drop runs at the end of the value's scope; `std::mem::drop` just ends it sooner.",
+        "practiceCode": "struct Guard;\n\nimpl Drop for Guard {\n    fn drop(&mut self) { println!(\"released\"); }\n}\n\nfn main() {\n    let _guard = Guard;\n    println!(\"working\");\n}",
+        "question": "When does that Drop message print?",
+        "rule": "Deref coercion applies repeatedly until the types line up.",
+        "success": "The call compiles without an explicit conversion.",
+        "summary": "Deref makes your type usable like a reference to another one.",
+        "task": "Implement Deref for a wrapper and pass it where the inner type is expected."
+      },
+      "illustration": {
+        "path": "media/deref-drop.png",
+        "alt": "Diagram for Deref & Drop: a Rust code example flows to the lesson rule and the key observation.",
+        "caption": "Deref coercion is why `&MyBox<String>` reaches a `&str` parameter."
+      }
+    },
+    {
+      "concept": "Keep API examples checked by the test suite",
+      "contentDigest": "2a11e6101c479022edcf19b5baf2effc49d980329563603dad9b7c86291366cc",
+      "depth": {
+        "connections": [
+          {
+            "concept": "Preserve a cause while explaining the failed operation",
+            "direction": "previous",
+            "title": "Error Context"
+          },
+          {
+            "concept": "Tune optimization without changing source behavior",
+            "direction": "next",
+            "title": "Release Profiles"
+          }
+        ],
+        "correction": "By default, `cargo test` compiles and runs Rust code fences in library documentation; `no_run` and `ignore` change that behavior.",
+        "misconception": "“A Rust code fence in a `///` comment is only documentation, so nothing checks it.”",
+        "traceSteps": [
+          {
+            "title": "Find the documented call",
+            "detail": "Locate `add_one` and the Rust code fence in its `///` comment."
+          },
+          {
+            "title": "Predict the check",
+            "detail": "Compare `add_one(4)` with the asserted value before running `cargo test --doc`."
+          },
+          {
+            "title": "Test an exception",
+            "detail": "Explain how `no_run` and `ignore` would change what rustdoc checks."
+          }
+        ],
+        "transferChallenge": "Add a second example for `add_one(0)`. Predict whether the doc test passes, then run `cargo test --doc`."
+      },
+      "exerciseKind": "planned",
+      "id": "doc-examples",
+      "minutes": 14,
+      "order": 2,
+      "parentID": "project-quality",
+      "title": "Executable Documentation",
+      "writing": {
+        "answers": [
+          "cargo test",
+          "cargo clean",
+          "rustfmt only"
+        ],
+        "correctAnswer": 0,
+        "exampleCaption": "The `assert_eq!` in the doc comment is compiled and run by `cargo test`.",
+        "exampleCode": "/// Adds one.\n///\n/// ```\n/// assert_eq!(demo::add_one(4), 5);\n/// ```\npub fn add_one(v: i32) -> i32 { v + 1 }",
+        "explanation": "Rust documentation examples in Rust code fences can compile and run as tests during `cargo test`, unless their fence attributes opt out or change execution. A small realistic example teaches usage and fails when an API change makes the documentation stale.\n\nA documentation example is a small public usage test. A Rust code block in a `///` comment can be compiled and run by rustdoc during `cargo test`. The sample demonstrates `add_one` with an assertion, so a changed return value can fail the documentation check. In a library crate named `demo`, the example imports the public item as `demo::add_one`; use the actual crate name in a real package. Documentation that calls an item without bringing it into scope can fail even when the function itself is correct.\n\nKeep a doc example focused on the call a user is likely to make, including setup only when needed. Explain the purpose, important input constraints, and meaning of the return value in prose. You can hide incidental setup lines with rustdoc's `#` marker, but the behavior being promised should remain visible. Some fences are marked `no_run` or `ignore` for specific reasons; those attributes affect whether a block executes, so avoid claiming every fenced block is automatically a test.\n\nRun `cargo test --doc` after changing a public API and see whether the example still works. Try deliberately changing the asserted value to observe the failure. Then add an edge-case example if it clarifies behavior, but resist turning documentation into a long test suite. A good example is both readable on the docs page and executable in the test harness. It prevents a common drift: code changes while the published instructions continue teaching an obsolete call.\n\nIf a code block requires network access or another external resource, it may be unsuitable as a routine doctest. Show the API in a short self-contained example and put slower environment-dependent checks in integration tests. Keep the documentation honest about what runs automatically.",
+        "feedback": "`cargo test` runs eligible documentation tests.",
+        "practiceCode": "/// Adds one.\n///\n/// ```\n/// assert_eq!(demo::add_one(4), 6);\n/// ```\npub fn add_one(v: i32) -> i32 { v + 1 }",
+        "question": "What checks a Rust doc example?",
+        "rule": "By default, `cargo test` compiles and runs Rust code fences in library documentation; `no_run` and `ignore` change that behavior.",
+        "success": "You can identify a failing doc test, repair its assertion, and explain when `no_run` or `ignore` changes execution.",
+        "summary": "Keep API examples checked by the test suite.",
+        "task": "This `add_one` example expects 6. Run `cargo test --doc` and explain the failure."
+      },
+      "illustration": {
+        "path": "media/doc-examples.png",
+        "alt": "A documentation assertion passes through compilation and cargo test to a green result.",
+        "caption": "An executable example can catch documentation that no longer matches the API."
+      }
+    },
+    {
+      "concept": "Preserve a cause while explaining the failed operation",
+      "contentDigest": "b2c77814e11d35fc829beecf634f653a03902cdb71cdd329a505f99b5b76e677",
+      "depth": {
+        "connections": [
+          {
+            "concept": "Test the public API as an outside user",
+            "direction": "previous",
+            "title": "Integration Tests"
+          },
+          {
+            "concept": "Keep API examples checked by the test suite",
+            "direction": "next",
+            "title": "Executable Documentation"
+          }
+        ],
+        "correction": "A useful error says what operation failed and retains the original cause. “invalid input” hides both the value and the reason.",
+        "misconception": "“Replacing a low-level error with one clear message is the same as adding context.”",
+        "traceSteps": [
+          {
+            "detail": "`text.parse()` infers `u16` from the return type, so `8080` gives `Ok(8080)` and the `map_err` closure never runs.",
+            "title": "Try the parse"
+          },
+          {
+            "detail": "For `abc`, `parse` returns `Err`, and `map_err` runs its closure with the `ParseIntError` as `error`.",
+            "title": "Hit the failure"
+          },
+          {
+            "detail": "`format!` produces `invalid port abc: invalid digit found in string`, so the text carries both the operation and the cause.",
+            "title": "Read the message"
+          }
+        ],
+        "transferChallenge": "Replace the `String` with an enum that holds the `ParseIntError`, and implement `Display` and `Error::source`. Predict what a caller can now do that a formatted string did not allow."
+      },
+      "exerciseKind": "planned",
+      "id": "error-context",
+      "minutes": 18,
+      "order": 1,
+      "parentID": "project-quality",
+      "title": "Error Context",
+      "writing": {
+        "answers": [
+          "The original cause",
+          "Only a short label",
+          "A stack address"
+        ],
+        "correctAnswer": 0,
+        "exampleCaption": "`map_err` adds the operation and the value, and keeps the parser's message in the text.",
+        "exampleCode": "fn port(text: &str) -> Result<u16, String> {\n    text.parse().map_err(|error| {\n        format!(\"invalid port {text}: {error}\")\n    })\n}",
+        "explanation": "A useful error says what operation failed and retains the original cause. Add context at abstraction boundaries rather than replacing specific information with one vague message.\n\nAn error should carry enough information for someone at the boundary to understand what failed. `text.parse::<u16>()` can report a parsing failure, but a caller may need to know that this text was supposed to be a port. The example's `map_err` adds the offending value and the operation while preserving the underlying cause in the formatted message. At a higher layer, you might add which configuration file or command supplied that value.\n\nThe useful question is where to add context. A low-level parser knows syntax; a configuration loader knows the field name; a CLI knows what the user was trying to do. Each layer should add only the information it owns. Replacing every error with the same \"invalid input\" string erases evidence. Duplicating full messages at every layer produces noise. Structured error types or source chains can preserve machine-readable causes until the final presentation layer chooses wording.\n\nTry the port function with valid text, letters, and a number too large for `u16`. Check that the user-facing message distinguishes where the failure occurred without exposing irrelevant internal details. If recovery is possible, return `Result` so the caller can decide. If the error is logged, include enough context to reproduce it while avoiding secrets or full sensitive input. Good diagnostics are a collaboration between error type, call-site context, and final display—not a single catch-all message.",
+        "feedback": "Context should add what the caller was doing without losing why it failed, so keep the parser's error in the message or as a source.",
+        "practiceCode": "fn port(text: &str) -> Result<u16, String> {\n    text.parse().map_err(|_| {\n        \"invalid input\".to_string()\n    })\n}",
+        "question": "What should context preserve?",
+        "rule": "A useful error says what operation failed and retains the original cause.",
+        "success": "Both failures name the value and keep the parser's own reason.",
+        "summary": "Preserve a cause while explaining the failed operation.",
+        "task": "Call this `port` with `abc` and with `99999`, then compare the two messages. Rewrite the `map_err` so each one says which value failed and why."
+      },
+      "illustration": {
+        "path": "media/error-context.png",
+        "alt": "Diagram for Error Context: a Rust code example flows to the lesson rule and the key observation.",
+        "caption": "`map_err` adds the operation and the value, and keeps the parser's message in the text."
+      }
+    },
+    {
+      "concept": "Propagation and custom errors",
+      "contentDigest": "34ea65c5dfb4e2e1d70880207de31c87da40bce675421c33baf36a3290561b81",
+      "depth": {
+        "connections": [
+          {
+            "concept": "Unit and integration tests",
+            "direction": "previous",
+            "title": "Testing"
+          },
+          {
+            "concept": "crates.io, SemVer, and features",
+            "direction": "next",
+            "title": "Dependencies"
+          }
+        ],
+        "correction": "`unwrap()` panics on `Err`. Panic for a bug; `Result` for a situation the caller can act on, such as a missing file.",
+        "misconception": "“`unwrap()` hands back a harmless default when a file read fails.”",
+        "traceSteps": [
+          {
+            "detail": "`load` returns `Result<String, std::io::Error>`, so every caller can see that the read may fail.",
+            "title": "Read the signature"
+          },
+          {
+            "detail": "`read_to_string(path)?` unwraps an `Ok` into `text`. On `Err`, it returns that I/O error from `load` at once.",
+            "title": "Apply the ? operator"
+          },
+          {
+            "detail": "`Ok(text)` wraps the contents back up, so the caller chooses what to do with either variant.",
+            "title": "Reach the success path"
+          }
+        ],
+        "transferChallenge": "Add a step that parses the text into a `u16`, with a custom error enum covering I/O and parsing. Predict which `?` needs a `From` impl, then check with the compiler."
+      },
+      "exerciseKind": "planned",
+      "id": "errors",
+      "minutes": 18,
+      "order": 2,
+      "parentID": "projects",
+      "title": "Error Design",
+      "writing": {
+        "answers": [
+          "Returns an empty string on failure",
+          "Panics; unwinding or process abort depends on the panic configuration",
+          "Logs a warning and continues with a default"
+        ],
+        "correctAnswer": 1,
+        "exampleCaption": "The `?` operator returns an `Err` to the caller, which can handle or propagate it.",
+        "exampleCode": "fn load(\n    path: &str,\n) -> Result<String, std::io::Error> {\n    let text = std::fs::read_to_string(path)?;\n    Ok(text)\n}",
+        "explanation": "`Result`, custom error types, and ? separate expected failure from programmer mistakes. A panic says this should never happen; a `Result` says the caller has a decision to make — and conflating the two is what makes error handling painful later.\n\nExpected failures should travel through a function's type. Reading a file may fail because it does not exist or cannot be accessed; returning `Result<String, std::io::Error>` tells the caller that a successful string and a recoverable error are both possible. In the sample, `?` returns the I/O error early while leaving the successful path uncluttered. It does not hide the error: the caller must still handle or propagate it.\n\nAt the command-line or UI boundary, turn the error into a message with context. “Could not load configuration from settings.toml” is more useful than “file error” because it identifies the attempted operation. Keep the original cause available for diagnostics when possible. A reusable library should avoid panicking for ordinary missing files or invalid input. Reserve panic for violated internal assumptions where the program cannot reasonably continue.\n\nTry calling `load` with an existing file and a missing one. In the caller, match on `Ok(text)` and `Err(error)`, print a helpful message, and decide whether to retry or exit. Then introduce a custom error enum for a workflow that can fail in two different ways, such as I/O and parsing. The type should distinguish those cases without forcing every helper to know about the final presentation. Error handling becomes manageable when each layer adds the context it owns and lets the caller make the next decision.\n\nA caller may attach more context with `map_err` or a custom error type without changing the original low-level fact. That separation keeps errors useful to both programs and people.",
+        "feedback": "unwrap panics on Err. With unwinding, an appropriate boundary may catch that panic; panic=abort terminates the process. Return Result for expected I/O failures rather than using panic as routine control flow.",
+        "practiceCode": "fn read(path: &str) -> String {\n    std::fs::read_to_string(path).unwrap()\n}",
+        "question": "What does unwrap() do if this file operation returns Err?",
+        "rule": "Panic for a bug; `Result` for a situation the caller can act on.",
+        "success": "The caller handles the failure without losing its cause.",
+        "summary": "Good errors preserve context and keep recovery near the caller.",
+        "task": "Replace a panic with a `Result` and propagate it through one caller."
+      },
+      "illustration": {
+        "path": "media/errors.png",
+        "alt": "A parser error gains field context in the domain layer and becomes a clear application message.",
+        "caption": "Each layer adds the context it owns while the original failure travels upward."
+      }
+    },
+    {
+      "id": "feature-compatibility-matrix",
+      "title": "The Downstream Feature Matrix",
+      "concept": "Optional capability must preserve the old consumer across the supported feature sets",
+      "minutes": 25,
+      "parentID": "library-contracts",
+      "order": 2,
+      "exerciseKind": "runnable",
+      "writing": {
+        "summary": "Optional capability must preserve the old consumer across the supported feature sets.",
+        "rule": "Keep the baseline API working with defaults, minimal builds and supported feature unions.",
+        "explanation": "A feature is part of a package's public contract when downstream users can request it. This example preserves `label(7) == \"core=7\"` while adding `details` and `trace` functions. The existing consumer does not change when either feature is enabled. The two features can be requested together, and the base `label` keeps the same signature and behavior. That is the observable promise the matrix checks.\n\nCargo combines feature requests for a package within the applicable resolution context. One dependency path can request `details` and another can request `trace`, so code that only compiles with exactly one of them is a downstream hazard. Newer resolver versions isolate some contexts, such as certain build or development dependencies; this does not turn ordinary feature requests into global exclusion switches. Keep the example's two functions differently named and additive. A broken alternative that defines the same helper name under both features may pass each individual build and fail their union.\n\nCheck a small, explicit matrix rather than trusting `--all-features` alone. Include defaults, `--no-default-features`, each optional feature, and supported combinations. The all-features build can accidentally hide a missing item in the minimal profile. Conversely, checking each feature alone misses collisions when consumers request both. For a large feature set, select combinations from the documented contract and known interactions; checking a few combinations is not a claim to have exhausted an exponential space.\n\nUse a downstream consumer of the library target, not only tests that live inside its private module tree. Keep that consumer's source bytes fixed while changing the requested dependency features. Assert both the baseline rendering and each requested optional API. The accompanying fixture compiles and runs this consumer on the minimum and current compilers. It also checks a candidate that changes baseline rendering only when `details` is enabled, and one whose duplicate helper exists only in the union. Each should fail for a different reason.\n\n`default-features = false` is an edge request to avoid enabling that dependency's defaults; it is not a command to disable defaults that another dependency path requests. The fixture includes two paths to demonstrate this distinction. Be cautious when removing an existing default feature, renaming an optional capability, changing its implied dependencies or increasing the compiler requirement of that feature. Review those changes under the same published compatibility policy as ordinary public methods.\n\nLocal compiler lab: implement the baseline `label` function for all `u16` IDs, preserving the exact `core=` prefix and decimal representation. Its independent, manifest-free harness checks the baseline contract only; a passing lab is not evidence that every Cargo feature profile has run. The complete worked example uses ordinary standard-library code and conditional functions. For the actual Cargo matrix, use the accompanying source fixture and run the documented commands with each feature selection. The app's prepared Cargo environment can run supported profiles explicitly; it does not switch to an older compiler. No server, network service or downloaded package is needed for this unit.",
+        "exampleCode": "mod api {\n    pub fn label(id: u16) -> String { format!(\"core={id}\") }\n    #[cfg(feature = \"details\")]\n    pub fn details(id: u16) -> String {\n        format!(\"{}; details\", label(id))\n    }\n    #[cfg(feature = \"trace\")]\n    pub fn trace(id: u16) -> String {\n        format!(\"trace: {}\", label(id))\n    }\n}\nfn existing_consumer() -> String { api::label(7) }\nfn main() {\n    assert_eq!(existing_consumer(), \"core=7\");\n    #[cfg(feature = \"details\")]\n    assert_eq!(api::details(7), \"core=7; details\");\n    #[cfg(feature = \"trace\")]\n    assert_eq!(api::trace(7), \"trace: core=7\");\n    println!(\"{}\", existing_consumer());\n}\n",
+        "exampleCaption": "The old consumer always prints core=7; details and trace add independent functions that can coexist.",
+        "practiceCode": "pub fn label(id: u16) -> String {\n    todo!(\"implement the contract\")\n}\n",
+        "task": "Implement the unchanged baseline label contract: core= followed immediately by the ordinary decimal u16 value, with no padding, spaces or newline. The local harness checks this API only. Then use the accompanying Cargo fixture to test the actual feature profiles and their unchanged downstream consumer. Open the compiler lab and edit solution.rs. The reading question is independent.",
+        "success": "The changed implementation passes the separate normal and boundary harness. MSRV and the full Cargo feature matrix have their own explicit checks.",
+        "question": "Why is a successful all-features build insufficient evidence for the documented no-default-features profile?",
+        "answers": [
+          "All-features secretly turns every feature off",
+          "The minimal profile always has the same items as all-features",
+          "An enabled feature can supply an item missing from the minimal profile"
+        ],
+        "correctAnswer": 2,
+        "feedback": "A large feature set can mask missing minimal-profile items. Test that profile independently, then test unions to catch collisions."
+      },
+      "depth": {
+        "misconception": "Testing each optional feature separately proves that their union is compatible.",
+        "correction": "The union can expose duplicate definitions or a changed baseline API. Test the combinations your contract supports.",
+        "traceSteps": [
+          {
+            "title": "Pin the consumer",
+            "detail": "Call label(7) from a consumer whose source does not change."
+          },
+          {
+            "title": "Vary requests",
+            "detail": "Run base, no-default, details, trace and both-feature profiles."
+          },
+          {
+            "title": "Observe two failures",
+            "detail": "A behavior change fails an assertion; a duplicate helper in the union fails compilation."
+          }
+        ],
+        "transferChallenge": "Select two optional features in a real library. Write an unchanged consumer, test each feature and their union, and describe which other combinations remain untested.",
+        "connections": [
+          {
+            "direction": "previous",
+            "title": "MSRV Is a Tested Promise",
+            "concept": "A manifest declaration needs evidence from the minimum supported compiler"
+          }
+        ]
+      },
+      "illustration": {
+        "path": "media/feature-compatibility-matrix.png",
+        "alt": "Diagram for The Downstream Feature Matrix: the worked Rust example, its compatibility contract and the observed consumer result.",
+        "caption": "The old consumer always prints core=7; details and trace add independent functions that can coexist."
+      },
+      "resources": [
+        {
+          "title": "Compatibility fixtures and reproducible checks",
+          "url": "https://github.com/sergii-ziborov/crabrix-courses/tree/library-contracts-2026-11-06/editorial/library_contracts_20261106"
+        },
+        {
+          "title": "Cargo: Feature unification",
+          "url": "https://doc.rust-lang.org/cargo/reference/features.html"
+        }
+      ],
+      "contentDigest": "0e5e33b3c914f06c1b995a6bb0e0a861ed0251d66de4fbd79760c6fd1c7aed7e"
+    },
+    {
+      "concept": "Make optional capability additive and explicit",
+      "contentDigest": "2afae06350a76d33a7b0d71b280674a74dacd5f88e5c75250ba8521f21d7208a",
+      "depth": {
+        "connections": [
+          {
+            "concept": "Separate runtime, build, and test-only tools",
+            "direction": "previous",
+            "title": "Dependency Kinds"
+          },
+          {
+            "concept": "Build the same resolved graph again",
+            "direction": "next",
+            "title": "Lockfile Reproducibility"
+          }
+        ],
+        "correction": "Cargo features are unified across a dependency graph, so disabling one consumer's feature may not disable it globally. Another path can still enable it.",
+        "misconception": "“Setting `default-features = false` on my dependency turns those features off everywhere.”",
+        "traceSteps": [
+          {
+            "detail": "`#[cfg(feature = \"color\")]` keeps the first `paint` only when the `color` feature is on for this build.",
+            "title": "Read the gate"
+          },
+          {
+            "detail": "`#[cfg(not(feature = \"color\"))]` provides the other `paint`, so exactly one definition exists in each build.",
+            "title": "Read the fallback"
+          },
+          {
+            "detail": "A call to `paint()` prints `plain` by default and `color` with `--features color`. The choice cannot change after compilation.",
+            "title": "Compare the builds"
+          }
+        ],
+        "transferChallenge": "Add a `fn shade()` gated on a second feature, `shadow`, and list the four combinations with `color`. Predict what each one compiles, then check them with `cargo check --features`."
+      },
+      "exerciseKind": "planned",
+      "id": "feature-design",
+      "minutes": 18,
+      "order": 3,
+      "parentID": "cargo-workflow",
+      "title": "Feature Design",
+      "writing": {
+        "answers": [
+          "Additive capability",
+          "Mutual exclusion",
+          "Hidden defaults"
+        ],
+        "correctAnswer": 0,
+        "exampleCaption": "Each build compiles exactly one `paint`, chosen by whether `color` is on.",
+        "exampleCode": "#[cfg(feature = \"color\")]\nfn paint() { println!(\"color\"); }\n\n#[cfg(not(feature = \"color\"))]\nfn paint() { println!(\"plain\"); }",
+        "explanation": "Cargo features are unified across a dependency graph, so disabling one consumer's feature may not disable it globally. Prefer additive capabilities and avoid features that make the same API mean incompatible things.\n\nA feature is a named, additive capability a crate can enable at compile time. `#[cfg(feature = \"color\")]` includes code only when that feature is active; another branch can provide behavior without it. A feature is not a runtime switch, so a binary cannot toggle it after compilation. The public API exposed under different feature sets should be understandable and tested in each supported configuration.\n\nCargo unifies feature requests for the same package in a dependency graph. If one dependency path asks for feature A and another asks for feature B, the package may be built with both. That makes mutually exclusive features fragile: downstream users can accidentally activate the combination. Prefer features that add independent capabilities and keep a sensible default. If two backends truly cannot coexist, document and enforce that constraint explicitly, or consider a different design.\n\nCreate a tiny crate with a `color` feature and compile it with and without `--features color`. Then add two dependents that request different features of the same library and inspect the resulting feature graph with `cargo tree -e features`. Test `--no-default-features` if you claim that mode works. Avoid assuming that setting `default-features = false` at one edge globally disables defaults; another path can enable them. Feature design is part of the compatibility contract, not only a way to reduce compile time.\n\nA feature name should describe the capability it adds. Avoid names that merely encode an internal implementation file, because external users will depend on the public meaning over time.",
+        "feedback": "Additive capabilities only add code, so the union Cargo builds still compiles. Mutually exclusive features break as soon as two dependents enable both.",
+        "practiceCode": "#[cfg(feature = \"backend_a\")]\nfn backend() -> &'static str { \"a\" }\n\n#[cfg(feature = \"backend_b\")]\nfn backend() -> &'static str { \"b\" }\n\nfn main() {\n    println!(\"{}\", backend());\n}",
+        "question": "What style makes features compose well?",
+        "rule": "Cargo features are unified across a dependency graph, so disabling one consumer's feature may not disable it globally.",
+        "success": "Every feature combination compiles, including both on together, and you can say why Cargo may ask for that union.",
+        "summary": "Make optional capability additive and explicit.",
+        "task": "Declare both features, build with `--features backend_a,backend_b`, and read the error. Then redesign them as additive capabilities that can be on at once."
+      },
+      "illustration": {
+        "path": "media/feature-design.png",
+        "alt": "Two dependents request different additive features and Cargo activates their union.",
+        "caption": "Features are unified across dependency paths."
+      }
+    },
+    {
+      "id": "hostile-parser-inputs",
+      "parentID": "reliability-labs",
+      "order": 1,
+      "title": "Adversarial Parser Tests",
+      "concept": "Reject malformed data without panic or silent truncation",
+      "minutes": 16,
+      "exerciseKind": "runnable",
+      "writing": {
+        "summary": "Start with a grammar, then make a test table for the ways input can violate it.",
+        "rule": "No panic is necessary for an expected invalid input, but success must still mean the whole record was accepted.",
+        "explanation": "A parser that never panics can still be wrong if it silently ignores a suffix, rounds an overflowing value, or accepts a missing field. Write down the accepted grammar before writing adversarial cases. This lesson's grammar is exactly two trimmed unsigned decimal byte values separated by one colon. Both values must fit u8. A third field, an empty field, a sign, or nondecimal text is invalid.\n\nOrganize tests by failure class instead of adding random strings without a hypothesis. Test a missing delimiter, repeated delimiters, a negative value, a leading plus, overflow, whitespace-only fields, Unicode digits, and the two valid numeric boundaries. Rust's numeric parser may accept syntax you did not intend, so enforce the grammar's ASCII-digit rule before parsing. Return None for this small API; a richer user-facing parser should expose a precise error type.\n\nAvoid `filter_map` on fallible fields: it can turn a three-field record with one bad field into two apparently good values. Do not index a collected vector until its length has been checked. Check complete consumption so a valid prefix cannot conceal trailing junk. These ideas transfer directly to command input, imported project metadata, and network messages.\n\nLocal compiler profile: standard library only. The lab uses deterministic hostile cases. Desktop cargo-fuzz is a separate toolchain that can explore byte inputs and save crashes; it does not belong to the browser or iOS run profile merely because the parser itself is portable. A useful fuzz target asserts domain properties after successful parsing and never treats rejection of arbitrary bytes as a bug.",
+        "exampleCode": "fn decimal_byte(text: &str) -> Option<u8> {\n    let text = text.trim();\n    if text.is_empty()\n        || !text.bytes().all(|b| b.is_ascii_digit())\n    {\n        return None;\n    }\n    text.parse().ok()\n}\nfn main() {\n    assert_eq!(decimal_byte(\"255\"), Some(255));\n    assert_eq!(decimal_byte(\"256\"), None);\n    assert_eq!(decimal_byte(\"+1\"), None);\n}\n",
+        "exampleCaption": "Reject malformed data without panic or silent truncation",
+        "practiceCode": "fn decimal_byte(text: &str) -> Option<u8> {\n    let text = text.trim();\n    if text.is_empty()\n        || !text.bytes().all(|b| b.is_ascii_digit())\n    {\n        return None;\n    }\n    text.parse().ok()\n}\nfn main() {\n    assert_eq!(decimal_byte(\"255\"), Some(255));\n    assert_eq!(decimal_byte(\"256\"), None);\n    assert_eq!(decimal_byte(\"+1\"), None);\n}\n",
+        "task": "Parse exactly two trimmed ASCII-decimal u8 fields separated by one colon. Reject signs, empty fields, extra fields, non-ASCII digits, and overflow. Return None on invalid input. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise.",
+        "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
+        "question": "Why test a leading plus sign separately from a negative number?",
+        "answers": [
+          "The declared grammar may forbid syntax that a numeric parser accepts",
+          "Plus signs always overflow u8",
+          "It makes the parser multithreaded"
+        ],
+        "correctAnswer": 0,
+        "feedback": "The application's grammar can be narrower than parse::<u8>(). Test the declared syntax as well as the numeric range."
+      },
+      "depth": {
+        "misconception": "Anything accepted by parse::<u8>() belongs to my format.",
+        "correction": "Primitive parsing is a building block; the full record grammar remains your responsibility.",
+        "traceSteps": [
+          {
+            "title": "Partition",
+            "detail": "List valid boundaries and independent invalid-input classes."
+          },
+          {
+            "title": "Validate",
+            "detail": "Check field count and ASCII decimal syntax before conversion."
+          },
+          {
+            "title": "Reject",
+            "detail": "Return a failure rather than panicking or accepting a valid prefix."
+          }
+        ],
+        "transferChallenge": "Write a desktop fuzz target that feeds arbitrary bytes through UTF-8 validation and then checks the successful parse contract.",
+        "connections": [
+          {
+            "direction": "previous",
+            "title": "Test Properties, Not Just Examples",
+            "concept": "An independent oracle and bounded generated cases"
+          },
+          {
+            "direction": "next",
+            "title": "Keep a Unicode Regression",
+            "concept": "A minimal failure that survives a refactor"
+          }
+        ]
+      },
+      "illustration": {
+        "path": "media/hostile-parser-inputs.png",
+        "alt": "Diagram for Adversarial Parser Tests: a Rust code example flows to the lesson rule and the key observation.",
+        "caption": "Reject malformed data without panic or silent truncation"
+      },
+      "contentDigest": "873a27fbcfd098d6643c323cabb53b47550a93b7e6f58c80fc6a817b78b38621"
+    },
+    {
+      "concept": "Test the public API as an outside user",
+      "contentDigest": "d8c469d07d6e13c2e5708eaac7b02f23af4778472f594b9b9a7353131c29faeb",
+      "depth": {
+        "connections": [
+          {
+            "concept": "Build the same resolved graph again",
+            "direction": "previous",
+            "title": "Lockfile Reproducibility"
+          },
+          {
+            "concept": "Preserve a cause while explaining the failed operation",
+            "direction": "next",
+            "title": "Error Context"
+          }
+        ],
+        "correction": "Files under `tests/` compile as separate crates and can only use the library's public API. Reaching private logic is the job of a unit test beside the code.",
+        "misconception": "“A file under `tests/` is part of the library, so it can reach private helpers.”",
+        "traceSteps": [
+          {
+            "detail": "`use demo::answer;` imports through the library's crate name, because `tests/public_api.rs` is a separate crate.",
+            "title": "Name the crate"
+          },
+          {
+            "detail": "`#[test]` registers `answer_is_stable`, and `cargo test --test public_api` runs only this file.",
+            "title": "Reach the test"
+          },
+          {
+            "detail": "`assert_eq!(answer(), 42)` holds the public promise, so an internal rename that keeps that promise does not touch this test.",
+            "title": "Compare the result"
+          }
+        ],
+        "transferChallenge": "Add `tests/edge_cases.rs` beside this file. Predict whether it can call functions defined in `public_api.rs`, then add a `pub fn` to the library only if the new test truly needs one."
+      },
+      "exerciseKind": "planned",
+      "id": "integration-tests",
+      "minutes": 16,
+      "order": 0,
+      "parentID": "project-quality",
+      "title": "Integration Tests",
+      "writing": {
+        "answers": [
+          "It is a separate crate",
+          "Tests ban privacy",
+          "assert_eq! hides them"
+        ],
+        "correctAnswer": 0,
+        "exampleCaption": "The test imports `demo::answer` by crate name, as any outside caller would.",
+        "exampleCode": "// tests/public_api.rs\nuse demo::answer;\n\n#[test]\nfn answer_is_stable() {\n    assert_eq!(answer(), 42);\n}",
+        "explanation": "Files under `tests/` compile as separate crates and can only use the library's public API. That boundary catches accidental reliance on private implementation details.\n\nAn integration test behaves like an external user of your library. Each file under `tests/` is compiled as a separate crate and imports the public API by crate name. It cannot reach private helpers simply because they exist in the same repository. That constraint is valuable: if a test can accomplish a real task through the public interface, downstream callers probably can too.\n\nThe sample test imports `demo::answer` and asserts a stable result. Add a second test for a boundary case and a third for an error path. Give each a name that describes the promised behavior. Avoid testing private implementation details through elaborate scaffolding; those tests can become brittle when you refactor without changing the external contract. Unit tests next to the code are still useful for focused private logic. The two test locations serve different levels of confidence.\n\nIf an integration test needs a binary or fixture, make setup explicit and keep test cases independent so order does not matter. A test that relies on shared mutable files or network state can fail intermittently and hide real regressions. Run `cargo test --test public_api` while developing that file, then `cargo test` for the full suite. When a test fails, distinguish a library behavior change from a test assumption that was never part of the public contract. A small, representative collection of black-box tests often gives more confidence than many tests coupled to internal functions.",
+        "feedback": "A file under `tests/` is compiled as its own crate, so it sees only `pub` items, just as a downstream user would.",
+        "practiceCode": "// src/lib.rs\npub fn answer() -> u32 { helper() }\nfn helper() -> u32 { 42 }\n\n// tests/public_api.rs\nuse demo::helper;\n\n#[test]\nfn helper_is_reachable() {\n    assert_eq!(helper(), 42);\n}",
+        "question": "Why can this test not use private items?",
+        "rule": "Files under `tests/` compile as separate crates and can only use the library's public API.",
+        "success": "The test passes through the public API, and you can say what it no longer depends on.",
+        "summary": "Test the public API as an outside user.",
+        "task": "Predict the compiler error for this test. Then rewrite it so it checks the same behaviour through `answer`, leaving `helper` private."
+      },
+      "illustration": {
+        "path": "media/integration-tests.png",
+        "alt": "Separate integration test files call a library through its public API and report their results.",
+        "caption": "External tests exercise the interface a real consumer can reach."
+      }
+    },
+    {
+      "concept": "Build the same resolved graph again",
+      "contentDigest": "19d8dec0eea2d1c419c907b7b9ffd61a405db8625a80be89ab0047f25b317076",
+      "depth": {
+        "connections": [
+          {
+            "concept": "Make optional capability additive and explicit",
+            "direction": "previous",
+            "title": "Feature Design"
+          },
+          {
+            "concept": "Test the public API as an outside user",
+            "direction": "next",
+            "title": "Integration Tests"
+          }
+        ],
+        "correction": "`Cargo.lock` records the exact chosen graph, including transitive packages, while `Cargo.toml` only describes allowed versions.",
+        "misconception": "“`Cargo.lock` pins only the dependencies named in `Cargo.toml`.”",
+        "traceSteps": [
+          {
+            "detail": "`name` and `version` record one resolved package: `smallvec` at exactly 1.13.2.",
+            "title": "Find the package"
+          },
+          {
+            "detail": "`checksum` holds the hash Cargo verifies against the downloaded package. It is shortened to `...` here.",
+            "title": "Find the checksum"
+          },
+          {
+            "detail": "`Cargo.toml` might only ask for `\"1\"`, yet ordinary builds keep using 1.13.2 until an update changes this entry.",
+            "title": "Compare the manifest"
+          }
+        ],
+        "transferChallenge": "Run `cargo update -p smallvec` in a disposable copy and read the lockfile diff. State what changed and what did not, then say why consumers of a library would not see this entry."
+      },
+      "exerciseKind": "planned",
+      "id": "lockfile-reproducibility",
+      "minutes": 16,
+      "order": 4,
+      "parentID": "cargo-workflow",
+      "title": "Lockfile Reproducibility",
+      "writing": {
+        "answers": [
+          "The exact resolved graph",
+          "Only the root package name",
+          "The Rust edition"
+        ],
+        "correctAnswer": 0,
+        "exampleCaption": "Each registry `[[package]]` entry records one exact name, version, and checksum.",
+        "exampleCode": "[[package]]\nname = \"smallvec\"\nversion = \"1.13.2\"\nchecksum = \"...\"",
+        "explanation": "`Cargo.toml` describes allowed versions while `Cargo.lock` records the exact chosen graph. Applications normally commit the lockfile so a later build does not silently select newer compatible releases.\n\n`Cargo.toml` says which versions are acceptable; `Cargo.lock` records which exact package versions the resolver selected. If a manifest permits several compatible releases, the lockfile keeps subsequent ordinary builds on the same chosen graph until an update changes it. This helps a team reproduce a bug and compare results without silently pulling a newer dependency on every checkout.\n\nAn application normally commits its lockfile. A library crate may also commit one for its own development and tests, but downstream consumers resolve dependencies using their own lockfiles. The lockfile is therefore not a universal promise that every consumer uses the library author's exact dependency graph. If you are publishing a binary or deploying a service, review lockfile changes along with source changes, because a dependency update can alter behavior even when your own code is unchanged.\n\nTry `cargo update -p package_name` in a disposable branch and inspect the lockfile diff. Run tests and, where relevant, a release build. To check whether a clean machine can reproduce the selected graph without modifying the lockfile, use `cargo build --locked`. Be aware that a lockfile pins versions, not the entire operating environment or external native libraries. Reproducibility improves when toolchain, build flags, and platform assumptions are recorded too.",
+        "feedback": "`Cargo.lock` records the exact version of every package the resolver selected, not just the root.",
+        "practiceCode": "# Cargo.toml\n[dependencies]\nsmallvec = \"=1.13.1\"\n\n# Cargo.lock, from an earlier build\n[[package]]\nname = \"smallvec\"\nversion = \"1.13.2\"",
+        "question": "What does Cargo.lock pin?",
+        "rule": "`Cargo.toml` describes allowed versions while `Cargo.lock` records the exact chosen graph.",
+        "success": "You can say why `--locked` refused to change the lockfile and which line a plain build rewrites.",
+        "summary": "Build the same resolved graph again.",
+        "task": "The requirement was just changed to `=1.13.1`, and `Cargo.lock` still says 1.13.2. Predict what `cargo build --locked` does, then what plain `cargo build` does to the lockfile."
+      },
+      "illustration": {
+        "path": "media/lockfile-reproducibility.png",
+        "alt": "Diagram for Lockfile Reproducibility: a Rust code example flows to the lesson rule and the key observation.",
+        "caption": "Each registry `[[package]]` entry records one exact name, version, and checksum."
+      }
+    },
+    {
+      "concept": "Cargo.toml and sibling files",
+      "contentDigest": "281d903976a8763ee76861a344709768b1c610f1435228512c6644c3ab7b0003",
+      "depth": {
+        "connections": [
+          {
+            "concept": "Unit and integration tests",
+            "direction": "next",
+            "title": "Testing"
+          }
+        ],
+        "correction": "Items are private by default; `pub` is what exposes them. `helper` stays private to `util` until it is marked `pub`.",
+        "misconception": "“A function inside a `mod` is visible to the rest of the crate by default.”",
+        "traceSteps": [
+          {
+            "detail": "`mod greeter;` in `src/main.rs` tells Rust to compile `src/greeter.rs` as the `greeter` module.",
+            "title": "Find the file"
+          },
+          {
+            "detail": "`greeter::message()` names the function through its module, and `pub` on `message` is what lets `main` reach it.",
+            "title": "Follow the path"
+          },
+          {
+            "detail": "Delete `pub` and the call fails with E0603: the file layout found the code, but visibility still refuses the caller.",
+            "title": "Remove pub"
+          }
+        ],
+        "transferChallenge": "Move `message` into a new `src/text.rs` and keep the `greeter::message()` call working with a `pub use`. Predict which `mod`, `use`, and `pub` lines must change."
+      },
+      "exerciseKind": "multiFile",
+      "id": "modules",
+      "minutes": 14,
+      "order": 0,
+      "parentID": "projects",
+      "title": "Modules",
+      "writing": {
+        "answers": [
+          "It lives in a different file from main",
+          "Items are private by default, so it needs pub",
+          "A module function has to return a Result"
+        ],
+        "correctAnswer": 1,
+        "exampleCaption": "`mod` declares it; `pub` decides what leaves it.",
+        "exampleCode": "// src/main.rs\nmod greeter;\n\nfn main() {\n    println!(\"{}\", greeter::message());\n}\n\n// src/greeter.rs\npub fn message() -> &'static str {\n    \"hello from a module\"\n}",
+        "explanation": "mod declares a module and use brings a path into scope, while pub decides what actually escapes. `Cargo.toml` describes the package around them — the same file the package manager reads to resolve your dependencies.\n\nA module gives names and boundaries to related code. In the example, `mod greeter;` tells Rust to compile the module from `src/greeter.rs`; `greeter::message()` follows a path to an item inside it. The `use` keyword can shorten a path in the current scope, but it does not change whether an item is visible. Visibility starts private. `pub` opens an item to callers permitted by the module hierarchy, and a public function exposed from a library crate becomes part of the interface other crates may rely on.\n\nStart a tiny project with `src/main.rs` and `src/greeter.rs`. First call the function by its full path. Then import it with `use` and compare the call site. Remove `pub` and read the compiler diagnostic. This sequence separates three ideas that are easy to blur: file layout determines where code is found, module paths determine how it is named, and visibility determines who may call it. A file is a convenient module boundary, not a permission switch by itself.\n\nAs a project grows, prefer modules named for responsibilities rather than for arbitrary technical layers. Keep small helpers private and expose the minimum stable API. If callers need to write a long, surprising path, consider a deliberate `pub use` re-export at the crate root. That keeps internal files free to move without forcing every caller to change. `Cargo.toml` describes the package and dependencies; it is related to the project but does not replace Rust's module tree.",
+        "feedback": "Privacy is the default; `pub fn helper` makes it reachable.",
+        "practiceCode": "mod util {\n    fn helper() -> u32 { 1 }\n}\nlet value = util::helper();",
+        "question": "Why can't main call helper?",
+        "rule": "Items are private by default; `pub` is what exposes them.",
+        "success": "It compiles from `src/main.rs` and prints the edited output.",
+        "summary": "Modules split a crate into files, and privacy shapes the surface.",
+        "task": "Open the multi-file project, trace mod greeter, and change its public function."
+      },
+      "illustration": {
+        "path": "media/modules.png",
+        "alt": "A crate root contains modules with both public and private items.",
+        "caption": "Module paths organize code; visibility controls what callers may use."
+      }
+    },
+    {
+      "id": "msrv-verification",
+      "title": "MSRV Is a Tested Promise",
+      "concept": "A manifest declaration needs evidence from the minimum supported compiler",
+      "minutes": 22,
+      "parentID": "library-contracts",
+      "order": 1,
+      "exerciseKind": "runnable",
+      "writing": {
+        "summary": "A manifest declaration needs evidence from the minimum supported compiler.",
+        "rule": "Test the actual minimum compiler and supported profiles; metadata alone is not evidence.",
+        "explanation": "The minimum supported Rust version, or MSRV, is a support promise about the compiler and Cargo environment your package accepts. A `rust-version = \"1.78\"` declaration tells Cargo the stated minimum; it does not translate newer syntax or standard-library APIs into older equivalents. A current compiler can compile code that the minimum cannot. A release needs a minimum-version job as well as the ordinary current-version job.\n\nUse a concrete failure. `Option::is_none_or` was stabilized in Rust 1.82. An implementation using that method can pass on a newer compiler while failing on 1.78, even if the manifest still says 1.78. The reading's `match` expresses the same optional-limit rule without that method: no configured value is permitted, zero is rejected, and a positive value must not exceed the ceiling. Check the boundary where the value equals the ceiling, and the case where the ceiling itself is zero.\n\nA useful support record includes the declared compiler, edition, feature sets, targets, dependency resolution and tests performed. This unit's small fixtures use edition 2021 and a dependency-free lockfile understood by both tested toolchains. That keeps a standard-library API failure separate from an unrelated manifest or lockfile-format failure. In a real package, newer Cargo syntax, edition support, build scripts and procedural macros may raise the effective requirement before your own library source is compiled.\n\nRun the actual supported toolchain, for example `cargo +1.78 check --locked` and `cargo +1.78 test --locked`, in an environment that has it installed. Repeat the relevant jobs on the current toolchain and under your documented optional features. A library consumer resolves with its own dependency graph and lockfile, so the author's development lockfile is not evidence for every downstream graph. Review compatible dependency updates and retain a representative consumer fixture. Resolver preferences that consider `rust-version` help select packages, but do not prove the resulting source compiles or that every requested combination has a compatible candidate.\n\nChoose and publish an MSRV-change policy. State when an increase can occur, how it is announced and whether an older release line receives fixes. Different projects choose different policies; do not invent a universal requirement that every MSRV increase must use the same SemVer bump. Cargo's guidance treats these changes as a compatibility concern and recommends documenting the chosen policy. A CI support matrix should express what you actually promise, not the largest list of versions that looks impressive.\n\nLocal compiler lab: implement `permits` and satisfy the independent boundary harness. This validates behavior on the compiler installed in Crabrix. Crabrix uses one pinned toolchain, so that result is not an emulated run of Rust 1.78. The accompanying release fixture is tested separately with the real installed old and current compilers, including the deliberately too-new method. Preserve that distinction when reporting compatibility. Neither check needs backend execution.",
+        "exampleCode": "fn permits(value: Option<u16>, ceiling: u16) -> bool {\n    match value {\n        None => true,\n        Some(n) => n > 0 && n <= ceiling,\n    }\n}\nfn main() {\n    assert!(permits(None, 0));\n    assert!(permits(Some(7), 7));\n    assert!(!permits(Some(0), 7));\n    assert!(!permits(Some(8), 7));\n    println!(\"same contract on old and current Rust\");\n}\n",
+        "exampleCaption": "A match-based implementation preserves the optional-limit contract on both tested compiler versions.",
+        "practiceCode": "pub fn permits(value: Option<u16>, ceiling: u16) -> bool {\n    todo!(\"implement the contract\")\n}\n",
+        "task": "Implement permits(value, ceiling): None is allowed, even with a zero ceiling; Some(n) is allowed exactly when 0 < n <= ceiling. Keep the signature and handle the u16 boundaries. The local grader tests behavior on the installed compiler; use the separate two-toolchain fixture to establish MSRV. Open the compiler lab and edit solution.rs. The reading question is independent.",
+        "success": "The changed implementation passes the separate normal and boundary harness. MSRV and the full Cargo feature matrix have their own explicit checks.",
+        "question": "A package declares Rust 1.78 and its only CI job passes on a current compiler. What has that job established?",
+        "answers": [
+          "The declaration guarantees compatibility with Rust 1.78",
+          "The tested graph builds on that current compiler; Rust 1.78 remains untested",
+          "All optional features and downstream graphs satisfy Rust 1.78"
+        ],
+        "correctAnswer": 1,
+        "feedback": "The declaration is metadata and a support promise. Running the actual minimum toolchain, plus the promised configurations, supplies evidence for the minimum."
+      },
+      "depth": {
+        "misconception": "Setting rust-version makes the current compiler reject every API newer than the declared minimum.",
+        "correction": "The current compiler can accept newer APIs. Check the actual minimum compiler and the supported build configuration.",
+        "traceSteps": [
+          {
+            "title": "State the promise",
+            "detail": "Record Rust 1.78, edition 2021 and the dependency/feature profile."
+          },
+          {
+            "title": "Keep behavior fixed",
+            "detail": "Test absent, zero, equal-to-limit and over-limit values."
+          },
+          {
+            "title": "Use both compilers",
+            "detail": "The newer method is rejected on 1.78 while the match-based version passes on both."
+          }
+        ],
+        "transferChallenge": "Add the real minimum-version job to a disposable library CI matrix. Introduce one newer library API deliberately, then verify which job catches it.",
+        "connections": [
+          {
+            "direction": "previous",
+            "title": "Evolving a Public API",
+            "concept": "Compile the unchanged consumer before calling an API change compatible"
+          },
+          {
+            "direction": "next",
+            "title": "The Downstream Feature Matrix",
+            "concept": "Optional capability must preserve the old consumer across the supported feature sets"
+          }
+        ]
+      },
+      "illustration": {
+        "path": "media/msrv-verification.png",
+        "alt": "Diagram for MSRV Is a Tested Promise: the worked Rust example, its compatibility contract and the observed consumer result.",
+        "caption": "A match-based implementation preserves the optional-limit contract on both tested compiler versions."
+      },
+      "resources": [
+        {
+          "title": "Compatibility fixtures and reproducible checks",
+          "url": "https://github.com/sergii-ziborov/crabrix-courses/tree/library-contracts-2026-11-06/editorial/library_contracts_20261106"
+        },
+        {
+          "title": "Cargo: Rust version support",
+          "url": "https://doc.rust-lang.org/cargo/reference/rust-version.html"
+        }
+      ],
+      "contentDigest": "6012abeef57452ed9fae2d19f2f718d19f3e16537c475a78edc91fb60efed5e9"
+    },
+    {
+      "concept": "Map Cargo targets to predictable source paths",
+      "contentDigest": "5715d3284390bd69e3223215e490eb89fd07f0b0fe25dc2c5df18c135c4cbf4d",
+      "depth": {
+        "connections": [
+          {
+            "concept": "Weak<T> and leaks Rust cannot prevent",
+            "direction": "previous",
+            "title": "Reference Cycles"
+          },
+          {
+            "concept": "Choose the cheapest command that proves the next fact",
+            "direction": "next",
+            "title": "Check, Build, Run"
+          }
+        ],
+        "correction": "`src/lib.rs` defines the library target. `src/main.rs` is the default binary, which uses the library like any other caller.",
+        "misconception": "“`src/main.rs` is the library target, because it holds the project's main code.”",
+        "traceSteps": [
+          {
+            "detail": "`src/lib.rs` makes a library target and `src/main.rs` a binary target in one package, so they compile as two crates.",
+            "title": "Spot the targets"
+          },
+          {
+            "detail": "`demo::answer()` in `main` names the library by its crate name, `demo`, derived from the package name.",
+            "title": "Follow the path"
+          },
+          {
+            "detail": "`answer` is `pub`, so the binary may call it and the line prints 42. A private function would be rejected.",
+            "title": "Check the boundary"
+          }
+        ],
+        "transferChallenge": "Add `src/bin/report.rs` and `tests/answer.rs`, both calling `demo::answer()`. Predict how many binaries `cargo build` produces and which command runs only the new test."
+      },
+      "exerciseKind": "planned",
+      "id": "package-layout",
+      "minutes": 14,
+      "order": 0,
+      "parentID": "cargo-workflow",
+      "title": "Package Layout",
+      "writing": {
+        "answers": [
+          "src/lib.rs",
+          "src/main.rs",
+          "Cargo.lock"
+        ],
+        "correctAnswer": 0,
+        "exampleCaption": "`src/lib.rs` defines the library; `src/main.rs` calls it by its crate name, `demo`.",
+        "exampleCode": "// src/lib.rs\npub fn answer() -> u32 { 42 }\n\n// src/main.rs\nfn main() {\n    println!(\"{}\", demo::answer());\n}",
+        "explanation": "`src/main.rs` defines the default binary and `src/lib.rs` defines the library target. Additional binaries and integration tests have conventional directories that keep tooling automatic.\n\nCargo recognizes conventional paths, which lets a small project grow without custom build configuration. `src/main.rs` is the default binary entry point. `src/lib.rs` defines a library target that other crates and integration tests can import. Additional binaries can live under `src/bin/`, while external tests live under `tests/`. These paths describe targets, not just folders for tidiness.\n\nIn the sample, `demo::answer()` calls the library from the binary. The name before the double colon is the library crate name, normally derived from the package name unless configured otherwise. A binary in the same package still uses the library through its public interface. This is useful discipline: the CLI can remain a thin layer around reusable logic, and integration tests can exercise the same API that a user imports.\n\nTry moving a function from `main.rs` into `lib.rs`, marking it public, and calling it from both the binary and a test in `tests/`. Confirm which imports compile and which private helpers remain inaccessible. Keep module files inside the appropriate target; creating a file by itself does not make Rust compile it unless it is a recognized target or declared from the module tree. A conventional layout reduces configuration surprises, but choose a new crate only when the code deserves its own package boundary.",
+        "feedback": "`src/lib.rs` is the root of the library target. `src/main.rs` is the binary, and it can only call what the library marks `pub`.",
+        "practiceCode": "// src/lib.rs\npub fn answer() -> u32 { 42 }\nfn secret() -> u32 { 7 }\n\n// src/main.rs\nfn main() {\n    println!(\"{}\", demo::answer());\n    println!(\"{}\", demo::secret());\n}",
+        "question": "Which file defines the library target?",
+        "rule": "`src/main.rs` defines the default binary and `src/lib.rs` defines the library target.",
+        "success": "You can say which file defines each target and why `main` reaches the library only through `pub` items.",
+        "summary": "Map Cargo targets to predictable source paths.",
+        "task": "Predict which call in `src/main.rs` fails to compile. Then fix it with a one-word change in `src/lib.rs` and say what that change adds to the library's API."
+      },
+      "illustration": {
+        "path": "media/package-layout.png",
+        "alt": "Diagram for Package Layout: a Rust code example flows to the lesson rule and the key observation.",
+        "caption": "`src/lib.rs` defines the library; `src/main.rs` calls it by its crate name, `demo`."
+      }
+    },
+    {
+      "id": "paths-and-boundaries",
+      "parentID": "files-data",
+      "order": 1,
+      "title": "Paths & Boundaries",
+      "concept": "Path, PathBuf, and lexical validation",
+      "minutes": 16,
+      "exerciseKind": "runnable",
+      "writing": {
+        "summary": "Treat a path as structured input and keep lexical checks distinct from filesystem authority.",
+        "rule": "Joining a path is not permission checking, and lexical validation does not resolve symlinks.",
+        "explanation": "Use `Path` for a borrowed path and `PathBuf` for an owned path that can be extended. Concatenating strings can mishandle separators and makes it difficult to see which input controls the destination. `root.join(name)` expresses the relationship, but it does not guarantee that the result stays beneath root. In particular, an absolute name can replace the beginning, and parent components can walk upward.\n\nFor the lab, accept only a nonempty sequence of normal relative components. Reject an absolute path, any parent component, and a path containing only current-directory components. Joining the accepted components gives a useful lexical rule for an imported project name. Spaces and Unicode are legitimate filename content; do not reject them merely because a shell command would need quoting. No shell command is involved in this operation.\n\nThis is deliberately not a complete security boundary for a hostile filesystem. A symlink inside root may point elsewhere, and checking a canonical path before opening it can race with a later replacement. Real authority comes from the host's granted directory handles and platform-specific safe open operations. A WebAssembly guest should not gain access to a user's home directory just because a path string looks harmless.\n\nLocal compiler profile: standard library only. The exercise manipulates paths without touching disk. The following file lesson demonstrates a granted sandbox destination. Keep these layers separate: parse a requested relative path, apply the host's access policy, and handle the actual open result. This separation is useful when importing archives or moving project files as well as when writing a command-line report.",
+        "exampleCode": "use std::path::Path;\nfn main() {\n    let path =\n        Path::new(\"reports\").join(\"daily.txt\");\n    assert_eq!(\n        path.file_name().unwrap(),\n        \"daily.txt\"\n    );\n}\n",
+        "exampleCaption": "Path, PathBuf, and lexical validation",
+        "practiceCode": "use std::path::Path;\nfn main() {\n    let path =\n        Path::new(\"reports\").join(\"daily.txt\");\n    assert_eq!(\n        path.file_name().unwrap(),\n        \"daily.txt\"\n    );\n}\n",
+        "task": "Accept normal relative components and optional dot components, reject parent/root/prefix components and an empty effective name, then join the trusted root. This is lexical validation, not a symlink security boundary. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise.",
+        "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
+        "question": "Does rejecting .. components prevent escape through a symlink?",
+        "answers": [
+          "Yes, every filesystem must interpret it lexically",
+          "Yes, when the name ends in .txt",
+          "No; symlink resolution and authority require separate protection"
+        ],
+        "correctAnswer": 2,
+        "feedback": "The lexical rule rejects obvious traversal but does not establish authority over a changing filesystem."
+      },
+      "depth": {
+        "misconception": "A root.join call always stays inside root.",
+        "correction": "An absolute argument or parent traversal changes the destination; symlinks add another layer.",
+        "traceSteps": [
+          {
+            "title": "Inspect",
+            "detail": "Split the requested path into components."
+          },
+          {
+            "title": "Reject",
+            "detail": "Refuse roots, prefixes, parents, and an empty effective name."
+          },
+          {
+            "title": "Join",
+            "detail": "Append accepted normal components; leave permissions to the host."
+          }
+        ],
+        "transferChallenge": "Explain which additional host guarantees are needed before using this validator to extract an untrusted archive.",
+        "connections": [
+          {
+            "direction": "previous",
+            "title": "Buffered Line Input",
+            "concept": "BufRead, Cursor, and fallible iteration"
+          },
+          {
+            "direction": "next",
+            "title": "Save & Read a Text File",
+            "concept": "Fallible filesystem effects in a granted directory"
+          }
+        ]
+      },
+      "illustration": {
+        "path": "media/paths-and-boundaries.png",
+        "alt": "Diagram for Paths & Boundaries: a Rust code example flows to the lesson rule and the key observation.",
+        "caption": "Path, PathBuf, and lexical validation"
+      },
+      "contentDigest": "7ae288207c4397ed547df7abfe93e8e19fff98d04dee8558d9ba1c90d6464648"
+    },
+    {
+      "id": "properties-and-oracles",
+      "parentID": "reliability-labs",
+      "order": 0,
+      "title": "Test Properties, Not Just Examples",
+      "concept": "An independent oracle and bounded generated cases",
+      "minutes": 16,
+      "exerciseKind": "runnable",
+      "writing": {
+        "summary": "A normalization function should satisfy laws on many inputs, not only one expected output.",
+        "rule": "Use an independent oracle; repeating the implementation in the assertion repeats its bugs.",
+        "explanation": "A few examples help explain a function, while properties describe behavior across a family of inputs. For a canonical set of integer IDs, the output must be sorted, contain no duplicates, preserve membership, and be idempotent. None of those laws alone is enough: a function returning an empty vector is sorted and idempotent but discards every ID.\n\nCompare against an independent model such as BTreeSet rather than copying the same sort-and-deduplicate sequence into the test. Generate bounded combinations from a small domain, including negative values and repeated IDs. Small exhaustive spaces are often excellent at finding boundary mistakes, are deterministic, and require no external dependency. They still establish evidence only for the inputs tested, not a proof for every vector length.\n\nThe compiler lab's private harness checks concrete outputs and generated membership behavior. A learner cannot make it pass merely by editing an assertion in the starter. The code under test remains editable; the verdict is produced by a separate harness after calls finish. Treat this as feedback about the exercise contract, not a hostile-code containment guarantee: arbitrary source remains inside the ordinary bounded local runtime.\n\nLocal compiler profile: standard library only. On desktop Cargo, property-testing crates such as proptest can generate larger spaces and shrink a failing input into a small counterexample. Preserve the smallest failure as a named regression test even after the generator finds it. Do not call a deterministic loop a fuzzing campaign or claim complete correctness because a finite test suite passed.",
+        "exampleCode": "fn canonical(mut ids: Vec<i32>) -> Vec<i32> {\n    ids.sort_unstable();\n    ids.dedup();\n    ids\n}\nfn main() {\n    let once = canonical(vec![3, 1, 3]);\n    assert_eq!(once, [1, 3]);\n    assert_eq!(canonical(once.clone()), once);\n}\n",
+        "exampleCaption": "An independent oracle and bounded generated cases",
+        "practiceCode": "fn canonical(mut ids: Vec<i32>) -> Vec<i32> {\n    ids.sort_unstable();\n    ids.dedup();\n    ids\n}\nfn main() {\n    let once = canonical(vec![3, 1, 3]);\n    assert_eq!(once, [1, 3]);\n    assert_eq!(canonical(once.clone()), once);\n}\n",
+        "task": "Return all distinct input IDs in ascending order. Preserve negative values and integer extremes; empty input stays empty. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise.",
+        "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
+        "question": "Which property rules out a function that always returns an empty vector?",
+        "answers": [
+          "Idempotence alone",
+          "Sorted output alone",
+          "Preserving input membership"
+        ],
+        "correctAnswer": 2,
+        "feedback": "Membership preservation catches lost data. Combine it with ordering and uniqueness rather than trusting a single weak property."
+      },
+      "depth": {
+        "misconception": "A single algebraic property proves the whole implementation.",
+        "correction": "Several incorrect functions satisfy one convenient property; use a complete contract and independent model.",
+        "traceSteps": [
+          {
+            "title": "State laws",
+            "detail": "Specify order, uniqueness, membership, and idempotence."
+          },
+          {
+            "title": "Generate",
+            "detail": "Enumerate a bounded input space reproducibly."
+          },
+          {
+            "title": "Compare",
+            "detail": "Use a different data structure as the oracle."
+          }
+        ],
+        "transferChallenge": "Write a desktop proptest version and keep one shrunk failure as a deterministic regression test.",
+        "connections": [
+          {
+            "direction": "next",
+            "title": "Adversarial Parser Tests",
+            "concept": "Reject malformed data without panic or silent truncation"
+          }
+        ]
+      },
+      "illustration": {
+        "path": "media/properties-and-oracles.png",
+        "alt": "Diagram for Test Properties, Not Just Examples: a Rust code example flows to the lesson rule and the key observation.",
+        "caption": "An independent oracle and bounded generated cases"
+      },
+      "contentDigest": "9df349a715f0d4ae9426c287b5ad7750cae5ae0b989c32ba73640352d93bac8b"
+    },
+    {
+      "id": "public-api-compatibility",
+      "title": "Evolving a Public API",
+      "concept": "Compile the unchanged consumer before calling an API change compatible",
+      "minutes": 24,
+      "parentID": "library-contracts",
+      "order": 0,
+      "exerciseKind": "runnable",
+      "writing": {
+        "summary": "Compile the unchanged consumer before calling an API change compatible.",
+        "rule": "Keep the original caller's signatures and promised behavior across supported releases.",
+        "explanation": "A library release is used by code you do not own. Start the review with one unchanged downstream consumer: the original call to `Policy::new(3).unwrap().attempts()` must still compile and return three. A green library test suite is useful but can miss a break if those tests were edited together with the API. Compile the same consumer against both library versions instead of fixing it until it passes.\n\nIn the example, `attempts` and `delay_ms` are private. Callers construct `Policy` through `new`, so adding the private delay field does not require them to update a struct literal. The existing constructor keeps its parameter, return type and zero-attempt validation. `with_delay` is a new builder that retains the attempt count; omitting it still selects zero delay. This is a deliberately small compatible evolution of this consumer contract, not a proof that every private representation change is harmless.\n\nAn entirely public struct is a different contract. Adding a required field breaks a downstream literal that listed all the previous fields. Adding an enum variant can break an exhaustive downstream match. A `#[non_exhaustive]` design can reserve evolution space when chosen before callers depend on exhaustive construction or matching; adding that restriction later may itself break callers. For a public trait, remember that consumers may implement it as well as call it: a new required method affects those implementations.\n\nSource compatibility is one part of the review. Changing an error condition, normalization rule, panic behavior or ordering can break an application that still compiles. Generic bounds, auto traits such as `Send`, lifetimes and documented layout or FFI promises can also matter. The private-field builder does not grant permission to change these properties silently. Write the behavior you promise, then choose a versioning and migration policy that matches it. Cargo's SemVer guidance describes conventions and caveats; a version number does not establish that an arbitrary change is safe.\n\nKeep a downstream fixture outside the library's own module tests. Pin the consumer source bytes, compile it with the candidate library, run its observable assertions, and retain a deliberately incompatible candidate that the fixture rejects. A changed constructor arity should fail compilation; a constructor that quietly changes the attempt count should compile but fail the consumer assertion. These two failures demonstrate different checks. A finite fixture covers its consumers and inputs, not every possible external program.\n\nLocal compiler lab: implement the constructor, getters and builder in `solution.rs` without changing their public signatures. The separate harness calls the API with normal and boundary values and checks that the builder preserves the original attempt count. It does not accept an edited assertion or a printed success string as the implementation. The standard-library example and lab need no server or external crate. Full release CI should additionally test the supported targets, feature sets and compiler versions.",
+        "exampleCode": "mod retry {\n    pub struct Policy { attempts: u8, delay_ms: u32 }\n    impl Policy {\n        pub fn new(attempts: u8) -> Option<Self> {\n            if attempts == 0 { return None; }\n            Some(Self { attempts, delay_ms: 0 })\n        }\n        pub fn attempts(&self) -> u8 { self.attempts }\n        pub fn with_delay(mut self, delay_ms: u32) -> Self {\n            self.delay_ms = delay_ms;\n            self\n        }\n        pub fn delay_ms(&self) -> u32 { self.delay_ms }\n    }\n}\nfn existing_consumer() -> u8 {\n    retry::Policy::new(3).unwrap().attempts()\n}\nfn main() {\n    assert_eq!(existing_consumer(), 3);\n    let policy = retry::Policy::new(2).unwrap().with_delay(50);\n    assert_eq!((policy.attempts(), policy.delay_ms()), (2, 50));\n    println!(\"old consumer=3; new delay=50\");\n}\n",
+        "exampleCaption": "The original constructor and getter still work; the builder adds delay without changing the old caller.",
+        "practiceCode": "pub struct RetryPolicy { attempts: u8, delay_ms: u32 }\nimpl RetryPolicy {\n    pub fn new(attempts: u8) -> Option<Self> { todo!(\"implement the contract\") }\n    pub fn attempts(&self) -> u8 { todo!(\"implement the contract\") }\n    pub fn delay_ms(&self) -> u32 { todo!(\"implement the contract\") }\n    pub fn with_delay(self, delay_ms: u32) -> Self { todo!(\"implement the contract\") }\n}\n",
+        "task": "Implement RetryPolicy::new, attempts, delay_ms and the consuming with_delay builder. Reject zero attempts; preserve every positive u8 attempt count. The constructor sets zero delay, and the builder changes only delay, including u32::MAX. Keep the supplied public signatures. Open the compiler lab and edit solution.rs. The reading question is independent.",
+        "success": "The changed implementation passes the separate normal and boundary harness. MSRV and the full Cargo feature matrix have their own explicit checks.",
+        "question": "A library adds a required public field to a previously constructible public struct. Which unchanged downstream code can stop compiling?",
+        "answers": [
+          "A struct literal listing only the old fields",
+          "Every call to an unchanged getter necessarily fails",
+          "Only code using an experimental compiler is affected"
+        ],
+        "correctAnswer": 0,
+        "feedback": "The old literal has no value for the new required field. Constructor-based examples are a different API shape; an unchanged getter alone does not require a downstream literal."
+      },
+      "depth": {
+        "misconception": "Private fields make every later library change SemVer-compatible.",
+        "correction": "Private representation can evolve more easily, but behavior, auto traits, lifetimes and explicit layout promises still need review.",
+        "traceSteps": [
+          {
+            "title": "Retain a caller",
+            "detail": "Keep the original constructor and getter call in a separate consumer."
+          },
+          {
+            "title": "Evolve deliberately",
+            "detail": "Add a defaulted private field and a builder while preserving validation."
+          },
+          {
+            "title": "Reject a regression",
+            "detail": "Change constructor arity or returned attempts and observe compilation or behavior failure."
+          }
+        ],
+        "transferChallenge": "Audit a public enum and trait in a library you maintain. Identify an exhaustive match and an external implementation that a candidate change would affect.",
+        "connections": [
+          {
+            "direction": "next",
+            "title": "MSRV Is a Tested Promise",
+            "concept": "A manifest declaration needs evidence from the minimum supported compiler"
+          }
+        ]
+      },
+      "illustration": {
+        "path": "media/public-api-compatibility.png",
+        "alt": "Diagram for Evolving a Public API: the worked Rust example, its compatibility contract and the observed consumer result.",
+        "caption": "The original constructor and getter still work; the builder adds delay without changing the old caller."
+      },
+      "resources": [
+        {
+          "title": "Compatibility fixtures and reproducible checks",
+          "url": "https://github.com/sergii-ziborov/crabrix-courses/tree/library-contracts-2026-11-06/editorial/library_contracts_20261106"
+        },
+        {
+          "title": "Cargo: SemVer compatibility",
+          "url": "https://doc.rust-lang.org/cargo/reference/semver.html"
+        }
+      ],
+      "contentDigest": "a3a493ecefafa2ce2fe5f612f15bb33ed6aed90b82f3237e1e1f1370096274c2"
+    },
+    {
+      "concept": "Shared ownership and interior mutability",
+      "contentDigest": "5abadaef035d4da81ac70470d3ab307611b2a32ce4078399b2fed00d6df1de93",
+      "depth": {
+        "connections": [
+          {
+            "concept": "Heap allocation and recursive types",
+            "direction": "previous",
+            "title": "Box<T>"
+          },
+          {
+            "concept": "Making a type behave like a reference",
+            "direction": "next",
+            "title": "Deref & Drop"
+          }
+        ],
+        "correction": "`RefCell` moves the borrow rules to runtime; breaking them panics. The second `borrow_mut` compiles, then panics because the first guard is still alive.",
+        "misconception": "“The compiler rejects a second `borrow_mut`, as it does for `&mut`.”",
+        "traceSteps": [
+          {
+            "detail": "`Rc::clone(&shared)` creates `second`, another handle to the one `RefCell`. The vector is not copied.",
+            "title": "Share the allocation"
+          },
+          {
+            "detail": "`second.borrow_mut()` returns a guard for that statement, and `push(4)` adds to the vector both handles share.",
+            "title": "Mutate through a handle"
+          },
+          {
+            "detail": "`shared.borrow()` now shows `[1, 2, 3, 4]` and `Rc::strong_count` reports 2: counting owners and checking access are separate jobs.",
+            "title": "Read both facts"
+          }
+        ],
+        "transferChallenge": "Hold `let guard = shared.borrow();` across the `push` and predict what happens. Then call `try_borrow_mut` at that spot and read the `Err` it returns."
+      },
+      "exerciseKind": "planned",
+      "id": "rc-refcell",
+      "minutes": 19,
+      "order": 1,
+      "parentID": "pointers",
+      "title": "Rc & RefCell",
+      "writing": {
+        "answers": [
+          "It compiles and works",
+          "It panics at runtime",
+          "It is a compile error"
+        ],
+        "correctAnswer": 1,
+        "exampleCaption": "Shared ownership on the outside, controlled mutation on the inside.",
+        "exampleCode": "use std::cell::RefCell;\nuse std::rc::Rc;\n\nlet shared = Rc::new(RefCell::new(vec![1, 2, 3]));\nlet second = Rc::clone(&shared);\n\nsecond.borrow_mut().push(4);\nprintln!(\"{:?}\", shared.borrow());\nprintln!(\"owners {}\", Rc::strong_count(&shared));",
+        "explanation": "`Rc<T>` keeps a count and frees when it reaches zero, but only hands out shared references. Pairing it with `RefCell<T>` lets you mutate through that shared handle, with the borrow rules checked at runtime instead — a violation panics rather than failing to compile. Neither is thread-safe; that is `Arc` and `Mutex`.\n\n`Rc<T>` provides shared ownership within one thread. Each clone of an `Rc` is another strong handle to the same allocation, not a deep copy of `T`. The allocation is released when its last strong owner disappears. Because multiple owners can access the same value, `Rc<T>` normally provides shared read access. Wrapping the value in `RefCell<T>` permits mutation by checking the borrow rule at runtime.\n\nIn the sample, both `shared` and `second` refer to the same cell. A `borrow_mut()` guard grants exclusive access while it is alive; a `borrow()` guard permits reading, possibly alongside other readers. If a writer and reader overlap, `RefCell` panics, or `try_borrow` returns an error. Keep the guard's lifetime short. If the mutation is awkward only because the ownership design is unclear, a simpler owner with explicit mutable borrowing may be preferable.\n\nUse `Rc<RefCell<T>>` for a local graph or UI state where several single-threaded owners truly need to share a mutable value. It is not a concurrency primitive. `Rc` does not implement the thread-safety traits needed for cross-thread sharing, and `RefCell` does not synchronize threads. The rough cross-thread counterparts are `Arc<T>` for shared ownership and a `Mutex<T>` or another synchronization strategy for mutation. Draw each owner and each active borrow separately; counting handles and checking access are two different mechanisms.\n\nIf you need only several read-only owners, `Rc<T>` alone is simpler. Add `RefCell` only when mutation behind shared ownership is a real requirement.",
+        "feedback": "`RefCell` enforces the same rule, just later and with a panic.",
+        "practiceCode": "use std::cell::RefCell;\n\nlet cell = RefCell::new(5);\nlet a = cell.borrow_mut();\nlet b = cell.borrow_mut();",
+        "question": "What happens on the second borrow_mut?",
+        "rule": "`RefCell` moves the borrow rules to runtime; breaking them panics.",
+        "success": "Both handles observe the change and the count is correct.",
+        "summary": "`Rc` shares ownership; `RefCell` moves the borrow check to runtime.",
+        "task": "Share one vector between two handles and mutate it through both."
+      },
+      "illustration": {
+        "path": "media/rc-refcell.png",
+        "alt": "Two Rc owners share one RefCell allocation; separate panels show multiple read guards or one write guard.",
+        "caption": "Rc counts owners, while RefCell checks access at runtime."
+      }
+    },
+    {
+      "concept": "Tune optimization without changing source behavior",
+      "contentDigest": "3a995302622a558ca3b87877f9e64ae46e98c2ff7ac7b3e2811e63abf36c25e9",
+      "depth": {
+        "connections": [
+          {
+            "concept": "Keep API examples checked by the test suite",
+            "direction": "previous",
+            "title": "Executable Documentation"
+          }
+        ],
+        "correction": "Cargo profiles configure optimization, debug information, panic strategy, and more, and each setting trades something away. Measure the real workload before keeping a change.",
+        "misconception": "“More optimization settings always make the program better.”",
+        "traceSteps": [
+          {
+            "detail": "`opt-level = 3` asks for full optimization, usually at the price of slower builds.",
+            "title": "Read the level"
+          },
+          {
+            "detail": "`lto = \"thin\"` adds link-time optimization across crates, which adds work at build time.",
+            "title": "Read the link step"
+          },
+          {
+            "detail": "`debug = 1` keeps limited debug information for diagnosing crashes. All three settings apply to `--release` builds, not to `cargo build`.",
+            "title": "Read the symbols"
+          }
+        ],
+        "transferChallenge": "Add `panic = \"abort\"` and measure the binary size again. Predict what happens to a `catch_unwind` call in this build, then decide whether the saving justifies that change."
+      },
+      "exerciseKind": "planned",
+      "id": "release-profiles",
+      "minutes": 16,
+      "order": 3,
+      "parentID": "project-quality",
+      "title": "Release Profiles",
+      "writing": {
+        "answers": [
+          "Measurements",
+          "The longest option list",
+          "Debug defaults"
+        ],
+        "correctAnswer": 0,
+        "exampleCaption": "A candidate release profile: full optimization, thin LTO, and limited debug information.",
+        "exampleCode": "[profile.release]\nopt-level = 3\nlto = \"thin\"\ndebug = 1",
+        "explanation": "Cargo profiles configure optimization, debug information, panic strategy, and more. Measure the real workload before trading compile time, binary size, or debuggability for speed.\n\nA Cargo profile controls how a target is compiled. The default development profile favors fast builds and useful diagnostics; the release profile typically enables stronger optimization. Settings such as `opt-level`, `lto`, debug information, and panic behavior change compile time, runtime speed, binary size, or the quality of stack traces. There is no one best combination for every workload.\n\nThe sample enables optimization and thin link-time optimization while retaining some debug information. That is a reasonable candidate to measure, not a universal prescription. Compare debug and release builds on a representative task. If a binary is latency-sensitive, measure latency; if it must fit a size limit, measure bytes; if production crashes need investigation, keep enough symbols to diagnose them. A microbenchmark on an empty loop may say little about a real application doing I/O and allocation.\n\nUse `cargo build --release` to create the optimized artifact, and keep tests running in the configurations you support. Some bugs only appear under different optimization or feature combinations, even though safe Rust prevents many memory errors. Record the baseline before changing a profile, change one setting, and compare the same workload. If the result is within noise, prefer the simpler configuration. Release settings should be driven by evidence and operational needs, not by copying every available optimization flag into the manifest.",
+        "feedback": "Profile settings trade compile time, binary size, and debuggability against speed, so measurements of your own workload decide which to keep.",
+        "practiceCode": "[profile.release]\nopt-level = \"s\"\nlto = \"thin\"\ndebug = 1",
+        "question": "What should guide profile changes?",
+        "rule": "Cargo profiles configure optimization, debug information, panic strategy, and more.",
+        "success": "You can report before and after numbers for that one change and justify keeping or rejecting it.",
+        "summary": "Tune optimization without changing source behavior.",
+        "task": "This profile changes one setting from the example, `opt-level`. Build both with `cargo build --release`, then record binary size and the time of one real workload."
+      },
+      "illustration": {
+        "path": "media/release-profiles.png",
+        "alt": "Diagram for Release Profiles: a Rust code example flows to the lesson rule and the key observation.",
+        "caption": "A candidate release profile: full optimization, thin LTO, and limited debug information."
+      }
+    },
+    {
+      "id": "sandbox-file-roundtrip",
+      "parentID": "files-data",
+      "order": 2,
+      "title": "Save & Read a Text File",
+      "concept": "Fallible filesystem effects in a granted directory",
+      "minutes": 16,
+      "exerciseKind": "runnable",
+      "writing": {
+        "summary": "Make the file effect explicit, return errors, and verify the bytes that came back.",
+        "rule": "A successful write is not a promise of crash-safe durability.",
+        "explanation": "A small report can keep parsing pure and put file access in a narrow adapter. Accept a borrowed `Path`, write UTF-8 text, read it back, and return `io::Result<String>`. The question mark propagates the real I/O error to the caller. An unreadable destination, missing parent directory, or invalid UTF-8 on a later read is not equivalent to an empty report.\n\nLocal compiler profile: standard library with Crabrix's writable `/sandbox` directory. That is a guest path granted by the runtime, not arbitrary access to the iPhone's Files library. The verification harness chooses a sandbox path on wasm32 and a temporary working-directory path for the desktop test. It checks empty text, multiline text, Unicode, and replacement of an existing file. The lesson does not request network or account access.\n\n`fs::write` creates or truncates the target. That is appropriate for this exercise's replace-the-report contract, but it can destroy an older report before a new write finishes. A crash-safe save strategy typically writes a sibling temporary file, flushes and syncs as required, then replaces the destination. Atomic rename and durability details depend on the host filesystem; do not advertise a portable power-loss guarantee from a single write call.\n\nRound-trip equality proves the observed contents for this run. It does not prove every possible failure mode or make concurrent writers safe. If two participants edit a shared Playground, coordinate document updates before asking either participant to save a local copy. A remote output event must never silently trigger the filesystem effect on another device. Keep execution and saving explicit actions owned by the local user.",
+        "exampleCode": "use std::{fs, io};\nfn main() -> io::Result<()> {\n    // Crabrix guest path; choose a local path for desktop Cargo.\n    fs::write(\"/sandbox/report.txt\", \"crab: 3\\n\")?;\n    let text =\n        fs::read_to_string(\"/sandbox/report.txt\")?;\n    assert_eq!(text, \"crab: 3\\n\");\n    Ok(())\n}\n",
+        "exampleCaption": "Fallible filesystem effects in a granted directory",
+        "practiceCode": "use std::{fs, io};\nfn main() -> io::Result<()> {\n    // Crabrix guest path; choose a local path for desktop Cargo.\n    fs::write(\"/sandbox/report.txt\", \"crab: 3\\n\")?;\n    let text =\n        fs::read_to_string(\"/sandbox/report.txt\")?;\n    assert_eq!(text, \"crab: 3\\n\");\n    Ok(())\n}\n",
+        "task": "Use fs::write and fs::read_to_string, propagating errors. Return the exact saved text; do not append to an existing file. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise.",
+        "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
+        "question": "What does fs::write do to an existing target?",
+        "answers": [
+          "It appends automatically",
+          "It creates or truncates the file",
+          "It guarantees a power-loss-safe transaction"
+        ],
+        "correctAnswer": 1,
+        "feedback": "The target is created or truncated. Crash-safe replacement and durability are separate design requirements."
+      },
+      "depth": {
+        "misconception": "Writing a file automatically makes the save transactional.",
+        "correction": "Creation/truncation, atomic replacement, and durable persistence are distinct guarantees.",
+        "traceSteps": [
+          {
+            "title": "Choose authority",
+            "detail": "Use only a destination granted by the local runtime."
+          },
+          {
+            "title": "Perform effect",
+            "detail": "Propagate write and read errors with question marks."
+          },
+          {
+            "title": "Verify",
+            "detail": "Compare exact text, including empty input and Unicode."
+          }
+        ],
+        "transferChallenge": "Design a temporary-file replacement sequence for desktop Cargo and list what could fail at each step.",
+        "connections": [
+          {
+            "direction": "previous",
+            "title": "Paths & Boundaries",
+            "concept": "Path, PathBuf, and lexical validation"
+          },
+          {
+            "direction": "next",
+            "title": "Validate Data Records",
+            "concept": "A bounded text format with precise errors"
+          }
+        ]
+      },
+      "illustration": {
+        "path": "media/sandbox-file-roundtrip.png",
+        "alt": "Diagram for Save & Read a Text File: a Rust code example flows to the lesson rule and the key observation.",
+        "caption": "Fallible filesystem effects in a granted directory"
+      },
+      "contentDigest": "cfbc8cc6c940c6ef0b264256f0096608bd01a8e7cad4c1f344b67259fba6c011"
+    },
+    {
+      "id": "serde-roundtrip-validation",
+      "parentID": "files-data",
+      "order": 4,
+      "title": "Serde: Decode, Validate, Encode",
+      "concept": "Serialization is not domain validation",
+      "minutes": 20,
+      "exerciseKind": "runnable",
+      "writing": {
+        "summary": "Turn JSON into a transport type, validate it, and only then create a domain value.",
+        "rule": "Deserialization checks the transport shape; your domain invariants still need an explicit boundary.",
+        "explanation": "JSON describes data exchange, while your application model describes valid state. Deserialize into a small transport structure, then convert it into a domain value whose constructor enforces the rules. A syntactically valid JSON object can still contain a blank display name, a negative quantity, or a count larger than the application supports. Do not spread those checks across every consumer.\n\nChoose an evolution policy. Serde derive normally ignores unknown fields unless configured with `deny_unknown_fields`. This explicit visitor rejects unknown and duplicate fields itself. Neither choice is universally safer: rejecting surprises is useful for a tightly controlled command, while forward-compatible clients may need to tolerate new fields. Document the decision, and use an explicit format version when a later change would reinterpret an existing field.\n\nCompare decoded meaning in a round-trip test rather than relying on object-key order or pretty-print whitespace. Avoid printing full input documents into error logs when they may contain private data. Limit input size before decoding untrusted text, and distinguish a parse error from a domain validation error. The lab in the previous lesson stays dependency-free; this lesson shows how to replace its intentionally restricted transport format with an established serialization library.\n\nThe visitor checks duplicate, missing and unknown fields while Serde checks each field type. A u32 rejects negative and overflowing counts. The separate decode function bounds input size and rejects blank names. Main asserts all of those failures as well as a Unicode round-trip; a successful JSON parse alone is not evidence of domain validity.\n\nLocal Cargo profile: open the supplied project in Crabrix or the browser Playground. Explicitly prepare its pinned Cargo packages once on each device, then Run and Debug compile and execute on that device without a backend. The project includes Cargo.lock. The lesson question remains the completion exercise; running an unchanged demonstration does not prove a separate programming challenge. This starter uses real serde 1.0.229 and serde_json 1.0.151 with explicit Serialize and Deserialize implementations. That keeps the typed round-trip, strict field policy and domain validation portable without a procedural macro. Derive can generate the same traits on a toolchain with qualified macro support; this lab does not require the experimental macro compiler.",
+        "exampleCode": "use serde::{Deserialize, Deserializer, Serialize, Serializer};\nuse serde::de::{Error, MapAccess, Visitor};\nuse serde::ser::SerializeStruct;\nuse std::fmt;\n\n#[derive(Debug, PartialEq)]\nstruct Record { name: String, count: u32 }\n\n// Explicit Serde traits keep this example portable to the released WASI\n// compiler. They use the real serde/serde_json crates, without derive macros.\nimpl Serialize for Record {\n    fn serialize<S: Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {\n        let mut fields = s.serialize_struct(\"Record\", 2)?;\n        fields.serialize_field(\"name\", &self.name)?;\n        fields.serialize_field(\"count\", &self.count)?;\n        fields.end()\n    }\n}\nimpl<'de> Deserialize<'de> for Record {\n    fn deserialize<D: Deserializer<'de>>(d: D) -> Result<Self, D::Error> {\n        struct RecordVisitor;\n        impl<'de> Visitor<'de> for RecordVisitor {\n            type Value = Record;\n            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {\n                f.write_str(\"a record with name and count\")\n            }\n            fn visit_map<M: MapAccess<'de>>(self, mut map: M) -> Result<Record, M::Error> {\n                let (mut name, mut count) = (None, None);\n                while let Some(key) = map.next_key::<String>()? {\n                    match key.as_str() {\n                        \"name\" => {\n                            if name.is_some() { return Err(M::Error::duplicate_field(\"name\")); }\n                            name = Some(map.next_value()?);\n                        }\n                        \"count\" => {\n                            if count.is_some() { return Err(M::Error::duplicate_field(\"count\")); }\n                            count = Some(map.next_value()?);\n                        }\n                        _ => return Err(M::Error::unknown_field(&key, &[\"name\", \"count\"])),\n                    }\n                }\n                Ok(Record {\n                    name: name.ok_or_else(|| M::Error::missing_field(\"name\"))?,\n                    count: count.ok_or_else(|| M::Error::missing_field(\"count\"))?,\n                })\n            }\n        }\n        d.deserialize_struct(\"Record\", &[\"name\", \"count\"], RecordVisitor)\n    }\n}\nfn decode(text: &str) -> Result<Record, Box<dyn std::error::Error>> {\n    if text.len() > 4096 { return Err(\"record is too large\".into()); }\n    let row: Record = serde_json::from_str(text)?;\n    if row.name.trim().is_empty() { return Err(\"blank name\".into()); }\n    Ok(row)\n}\nfn main() -> Result<(), Box<dyn std::error::Error>> {\n    let row = decode(r#\"{\"name\":\"crab 🦀\",\"count\":3}\"#)?;\n    let encoded = serde_json::to_string(&row)?;\n    assert_eq!(decode(&encoded)?, row);\n    for bad in [r#\"{\"name\":\" \",\"count\":3}\"#, r#\"{\"name\":\"crab\"}\"#,\n        r#\"{\"name\":\"crab\",\"count\":-1}\"#, r#\"{\"name\":\"crab\",\"count\":4294967296}\"#,\n        r#\"{\"name\":\"crab\",\"count\":3,\"extra\":true}\"#,\n        r#\"{\"name\":\"crab\",\"name\":\"other\",\"count\":3}\"#, \"{\"] {\n        assert!(decode(bad).is_err());\n    }\n    assert!(decode(&\"x\".repeat(4097)).is_err());\n    println!(\"Serde round-trip and validation: ok\");\n    Ok(())\n}\n",
+        "exampleCaption": "Real Serde traits: strict typed decoding, separate domain validation and a semantic JSON round-trip.",
+        "practiceCode": "use serde::{Deserialize, Deserializer, Serialize, Serializer};\nuse serde::de::{Error, MapAccess, Visitor};\nuse serde::ser::SerializeStruct;\nuse std::fmt;\n\n#[derive(Debug, PartialEq)]\nstruct Record { name: String, count: u32 }\n\n// Explicit Serde traits keep this example portable to the released WASI\n// compiler. They use the real serde/serde_json crates, without derive macros.\nimpl Serialize for Record {\n    fn serialize<S: Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {\n        let mut fields = s.serialize_struct(\"Record\", 2)?;\n        fields.serialize_field(\"name\", &self.name)?;\n        fields.serialize_field(\"count\", &self.count)?;\n        fields.end()\n    }\n}\nimpl<'de> Deserialize<'de> for Record {\n    fn deserialize<D: Deserializer<'de>>(d: D) -> Result<Self, D::Error> {\n        struct RecordVisitor;\n        impl<'de> Visitor<'de> for RecordVisitor {\n            type Value = Record;\n            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {\n                f.write_str(\"a record with name and count\")\n            }\n            fn visit_map<M: MapAccess<'de>>(self, mut map: M) -> Result<Record, M::Error> {\n                let (mut name, mut count) = (None, None);\n                while let Some(key) = map.next_key::<String>()? {\n                    match key.as_str() {\n                        \"name\" => {\n                            if name.is_some() { return Err(M::Error::duplicate_field(\"name\")); }\n                            name = Some(map.next_value()?);\n                        }\n                        \"count\" => {\n                            if count.is_some() { return Err(M::Error::duplicate_field(\"count\")); }\n                            count = Some(map.next_value()?);\n                        }\n                        _ => return Err(M::Error::unknown_field(&key, &[\"name\", \"count\"])),\n                    }\n                }\n                Ok(Record {\n                    name: name.ok_or_else(|| M::Error::missing_field(\"name\"))?,\n                    count: count.ok_or_else(|| M::Error::missing_field(\"count\"))?,\n                })\n            }\n        }\n        d.deserialize_struct(\"Record\", &[\"name\", \"count\"], RecordVisitor)\n    }\n}\nfn decode(text: &str) -> Result<Record, Box<dyn std::error::Error>> {\n    if text.len() > 4096 { return Err(\"record is too large\".into()); }\n    let row: Record = serde_json::from_str(text)?;\n    if row.name.trim().is_empty() { return Err(\"blank name\".into()); }\n    Ok(row)\n}\nfn main() -> Result<(), Box<dyn std::error::Error>> {\n    let row = decode(r#\"{\"name\":\"crab 🦀\",\"count\":3}\"#)?;\n    let encoded = serde_json::to_string(&row)?;\n    assert_eq!(decode(&encoded)?, row);\n    for bad in [r#\"{\"name\":\" \",\"count\":3}\"#, r#\"{\"name\":\"crab\"}\"#,\n        r#\"{\"name\":\"crab\",\"count\":-1}\"#, r#\"{\"name\":\"crab\",\"count\":4294967296}\"#,\n        r#\"{\"name\":\"crab\",\"count\":3,\"extra\":true}\"#,\n        r#\"{\"name\":\"crab\",\"name\":\"other\",\"count\":3}\"#, \"{\"] {\n        assert!(decode(bad).is_err());\n    }\n    assert!(decode(&\"x\".repeat(4097)).is_err());\n    println!(\"Serde round-trip and validation: ok\");\n    Ok(())\n}\n",
+        "task": "In Crabrix or the web Playground, run the example with the two declared dependencies. Add a domain constructor, then test blank names, missing fields, unknown fields, and an out-of-range count. Open the supplied local Cargo project, prepare packages, then Run or Debug it. Change inputs and examine the assertions. Answer the lesson question separately.",
+        "success": "A String is structurally valid even when empty. Validate domain invariants after decoding.",
+        "question": "Does deriving Deserialize guarantee that name is nonblank?",
+        "answers": [
+          "Yes, all String fields are nonblank",
+          "No, the application must validate that invariant",
+          "Only if JSON keys are sorted"
+        ],
+        "correctAnswer": 1,
+        "feedback": "A String is structurally valid even when empty. Validate domain invariants after decoding."
+      },
+      "depth": {
+        "misconception": "Valid JSON is already a valid business record.",
+        "correction": "The format and type checker do not know application-specific constraints.",
+        "traceSteps": [
+          {
+            "title": "Decode",
+            "detail": "Turn JSON into a transport structure and preserve a useful error."
+          },
+          {
+            "title": "Validate",
+            "detail": "Construct domain state only after checking its invariants."
+          },
+          {
+            "title": "Encode",
+            "detail": "Round-trip meaning and document the schema's evolution policy."
+          }
+        ],
+        "transferChallenge": "Design a versioned settings format that accepts an older document without silently changing the meaning of a stored field.",
+        "connections": [
+          {
+            "direction": "previous",
+            "title": "Validate Data Records",
+            "concept": "A bounded text format with precise errors"
+          }
+        ]
+      },
+      "illustration": {
+        "path": "media/serde-roundtrip-validation.png",
+        "alt": "Diagram for Serde: Decode, Validate, Encode: a Rust code example flows to the lesson rule and the key observation.",
+        "caption": "Serialization is not domain validation"
+      },
+      "contentDigest": "9973b4f20da00a428bc9788044d7a9b8de9e1bb96f537e81bde8562a135025cf"
+    },
+    {
+      "concept": "Unit and integration tests",
+      "contentDigest": "7c815124b06d0d1ad9666585270fa9d4255aec45cdf6531862345af872e79763",
+      "depth": {
+        "connections": [
+          {
+            "concept": "Cargo.toml and sibling files",
+            "direction": "previous",
+            "title": "Modules"
+          },
+          {
+            "concept": "Propagation and custom errors",
+            "direction": "next",
+            "title": "Error Design"
+          }
+        ],
+        "correction": "This test can fail only by panicking, so without an assertion it passes whatever `compute` returns. Add `assert_eq!` with a value you can justify.",
+        "misconception": "“A test with no assertion still checks that the result is right.”",
+        "traceSteps": [
+          {
+            "detail": "`#[cfg(test)]` compiles `mod tests` only for the test harness, so a normal build never sees it.",
+            "title": "Find the module"
+          },
+          {
+            "detail": "`use super::*` brings in the parent module's items, including private ones, which is how `add` is in scope.",
+            "title": "Import the code"
+          },
+          {
+            "detail": "`#[test]` registers `adds_two_numbers`. `assert_eq!(add(2, 2), 4)` panics on a mismatch, and the harness reports that panic as a failure.",
+            "title": "Run the assertion"
+          }
+        ],
+        "transferChallenge": "Add one test for `add(0, 5)` and one for `add(i32::MAX, 1)`. Predict which one panics under `cargo test`, then compare with `cargo test --release`."
+      },
+      "exerciseKind": "planned",
+      "id": "testing",
+      "minutes": 16,
+      "order": 1,
+      "parentID": "projects",
+      "title": "Testing",
+      "writing": {
+        "answers": [
+          "A return type so the harness can read the result",
+          "An assertion — the test passes no matter what compute returns",
+          "The #[cfg(test)] attribute above the module"
+        ],
+        "correctAnswer": 1,
+        "exampleCaption": "Tests live beside the code and can see its private parts.",
+        "exampleCode": "#[cfg(test)]\nmod tests {\n    use super::*;\n\n    #[test]\n    fn adds_two_numbers() {\n        assert_eq!(add(2, 2), 4);\n    }\n}",
+        "explanation": "`#[test]` registers functions with the test harness. A `#[cfg(test)]` module is excluded from ordinary builds, including `cargo build --release`, but included by `cargo test --release`. Test mode and optimization profile are separate choices. Unit tests sit beside the code and can reach its private details; integration tests live in `tests/` and see only the public API, which is a useful check on your own interface.\n\nA test records an observable promise. `#[test]` marks a function that the test harness runs under `cargo test`; an assertion compares the actual value with a prediction. The sample puts tests beside the implementation in a `#[cfg(test)]` module, which is a good place for small unit tests of edge cases and private helpers. The module is only compiled when testing, so it does not become a normal production code path.\n\nStart with a function that adds two numbers. Test a typical case, zero, and a boundary that might reveal overflow or an incorrect sign. Name tests for the behavior they protect rather than the implementation line they execute. If a test fails, its assertion should tell you what input produced the mismatch. A test that merely repeats the function's code is weak: it can share the same mistake. Prefer a simple expected result you can justify independently.\n\nIntegration tests under `tests/` compile as separate crates and call the public library API. They are useful when you want evidence that an external consumer can use the package as intended. A practical suite usually combines focused unit tests with a few end-to-end cases. Tests do not prove an implementation correct for every input, but they make intended behavior executable and guard against later changes. Run the narrowest relevant test while editing and the full suite before shipping; both speeds of feedback matter.\n\nCompare `cargo test` and `cargo test --release`: both execute assertions. Integer overflow checks normally differ between the default dev and release profiles, and projects can override that policy. Write explicit checked arithmetic when overflow is part of the API contract, rather than relying on the test profile.",
+        "feedback": "A test with no assertion only proves the code did not panic.",
+        "practiceCode": "fn compute() -> i32 { 2 + 2 }\n\n#[test]\nfn works() {\n    let result = compute();\n}",
+        "question": "What is missing from that test?",
+        "rule": "`#[cfg(test)]` selects test builds, including `cargo test --release`; ordinary builds exclude that module.",
+        "success": "Both are deterministic and fail for a deliberately broken implementation.",
+        "summary": "Tests turn behaviour into executable evidence.",
+        "task": "Add one success case and one boundary case for a pure function."
+      },
+      "illustration": {
+        "path": "media/testing.png",
+        "alt": "Diagram for Testing: a Rust code example flows to the lesson rule and the key observation.",
+        "caption": "Tests live beside the code and can see its private parts."
+      }
+    },
+    {
+      "id": "unicode-regression-tests",
+      "parentID": "reliability-labs",
+      "order": 2,
+      "title": "Keep a Unicode Regression",
+      "concept": "A minimal failure that survives a refactor",
+      "minutes": 16,
+      "exerciseKind": "runnable",
+      "writing": {
+        "summary": "Turn a real boundary failure into a small, named case that protects future changes.",
+        "rule": "Define the unit before testing a text limit: bytes, scalar values, and grapheme clusters differ.",
+        "explanation": "Suppose a preview function once sliced text at a byte offset and panicked on an accented character. Replacing it with a character iterator fixes that specific bug, but keep a regression that would fail under the old implementation. A test named after the behavior, such as truncates_at_scalar_boundary, is more useful than one named after an unrelated ticket number.\n\nThe contract here is to keep at most n Unicode scalar values and add no ellipsis. Return all text when it is shorter than n, and an empty string when n is zero. This is not a display-column limit or a grapheme-cluster limit. An e followed by a combining accent consists of two scalar values; stopping after one may produce a visually surprising but contractually valid result. A user-interface preview may need a grapheme-aware library instead.\n\nA strong regression set contains the smallest original failure, zero, an empty input, an oversized limit, and a neighboring ASCII case. Add a property that the result is a prefix at a valid UTF-8 boundary and contains at most the requested number of scalar values. Avoid assuming that String::len counts characters; it counts bytes.\n\nLocal compiler profile: standard library only. The lab compiles the changed function and checks the regression cases independently. Before changing the contract to add an ellipsis, decide whether the ellipsis counts toward the limit and whether existing callers depend on exact output. Good tests document that contract; they should not freeze every internal implementation choice or discourage a clearer iterator-based solution.",
+        "exampleCode": "fn prefix(text: &str, n: usize) -> String {\n    text.chars().take(n).collect()\n}\nfn main() {\n    assert_eq!(prefix(\"É🦀rust\", 2), \"É🦀\");\n    assert_eq!(prefix(\"abc\", 0), \"\");\n}\n",
+        "exampleCaption": "A minimal failure that survives a refactor",
+        "practiceCode": "fn prefix(text: &str, n: usize) -> String {\n    text.chars().take(n).collect()\n}\nfn main() {\n    assert_eq!(prefix(\"É🦀rust\", 2), \"É🦀\");\n    assert_eq!(prefix(\"abc\", 0), \"\");\n}\n",
+        "task": "Return at most n Unicode scalar values from the start, with no ellipsis. Never slice at an unchecked byte offset. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise.",
+        "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
+        "question": "How many Unicode scalar values are in e followed by a combining accent?",
+        "answers": [
+          "One in every representation",
+          "Two, although they may render as one grapheme",
+          "The UTF-8 byte length is always the scalar count"
+        ],
+        "correctAnswer": 1,
+        "feedback": "A scalar value and a grapheme are different units. State and test the intended unit explicitly."
+      },
+      "depth": {
+        "misconception": "chars().count() always measures visible character width.",
+        "correction": "Scalar values can combine into a grapheme and have different display widths.",
+        "traceSteps": [
+          {
+            "title": "Reproduce",
+            "detail": "Keep the smallest input that broke byte slicing."
+          },
+          {
+            "title": "Specify",
+            "detail": "Define zero, short input, and the Unicode unit."
+          },
+          {
+            "title": "Protect",
+            "detail": "Retain the regression while allowing the implementation to change."
+          }
+        ],
+        "transferChallenge": "Design a grapheme-aware version for desktop Cargo. Explain how its output differs for combining accents and emoji sequences.",
+        "connections": [
+          {
+            "direction": "previous",
+            "title": "Adversarial Parser Tests",
+            "concept": "Reject malformed data without panic or silent truncation"
+          }
+        ]
+      },
+      "illustration": {
+        "path": "media/unicode-regression-tests.png",
+        "alt": "Diagram for Keep a Unicode Regression: a Rust code example flows to the lesson rule and the key observation.",
+        "caption": "A minimal failure that survives a refactor"
+      },
+      "contentDigest": "cadbf71a8d670a21143032599262ac64bd05eafbda0f29aaafd5512cfbcf3bac"
+    },
+    {
+      "id": "validated-records",
+      "parentID": "files-data",
+      "order": 3,
+      "title": "Validate Data Records",
+      "concept": "A bounded text format with precise errors",
+      "minutes": 16,
+      "exerciseKind": "runnable",
+      "writing": {
+        "summary": "Specify a small input format before implementing its parser.",
+        "rule": "Malformed records must not disappear from a successful report.",
+        "explanation": "The report format in this exercise is intentionally smaller than CSV: one nonblank record per line, exactly two comma-separated fields, a nonempty trimmed name, and an unsigned count. Quoting and escaped commas are unsupported and must be rejected. Calling a split-on-comma parser a complete CSV parser would be misleading; real CSV permits quoted delimiters, embedded newlines, and escaped quote characters.\n\nParse the entire record before changing the report total. Validate the number of fields, trim both fields, check that the name is nonempty, and parse the count as `u32`. Report a typed or clearly documented error instead of substituting zero. At an application boundary, attach a one-based line number while preserving enough information to explain whether the structure or the number was invalid.\n\nThe compiler lab focuses on one record so its contract stays small. A later adapter can reuse the buffered-line reader, skip blank lines, and call this parser. A successful parse returns owned data that can outlive the input buffer. If ownership costs become significant, consider a borrowed intermediate representation, but measure before introducing lifetimes into every public API.\n\nLocal compiler profile: standard library only. Tests cover whitespace, zero, extra fields, missing fields, a negative count, overflow, and unsupported quotes. These cases are examples of a broader rule: input validation is a part of the data model, not a cosmetic step at the end. Before extending this format, decide whether an established CSV crate is a better fit than adding another exception to a home-grown grammar.",
+        "exampleCode": "fn main() {\n    let fields: Vec<_> = \"crab, 3\"\n        .split(',')\n        .map(str::trim)\n        .collect();\n    assert_eq!(fields, [\"crab\", \"3\"]);\n    // Validate field count, name, and count before accepting a record.\n}\n",
+        "exampleCaption": "A bounded text format with precise errors",
+        "practiceCode": "fn main() {\n    let fields: Vec<_> = \"crab, 3\"\n        .split(',')\n        .map(str::trim)\n        .collect();\n    assert_eq!(fields, [\"crab\", \"3\"]);\n    // Validate field count, name, and count before accepting a record.\n}\n",
+        "task": "Return a trimmed owned name and u32 count from exactly two comma-separated fields. Reject quotes, empty names, extra/missing fields, invalid counts and overflow with Err(invalid). This is not a general CSV parser. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise.",
+        "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
+        "question": "Why is split(',') insufficient for general CSV?",
+        "answers": [
+          "CSV can contain delimiters inside quoted fields",
+          "CSV never contains commas",
+          "Rust strings cannot contain newlines"
+        ],
+        "correctAnswer": 0,
+        "feedback": "Quoted fields change the grammar. Use a CSV parser for the general format; keep this exercise's restrictions explicit."
+      },
+      "depth": {
+        "misconception": "Every comma-delimited file can be safely parsed with split.",
+        "correction": "A simplified grammar is useful only when its accepted and rejected inputs are explicit.",
+        "traceSteps": [
+          {
+            "title": "Shape",
+            "detail": "Require exactly two fields and refuse quote characters."
+          },
+          {
+            "title": "Domain",
+            "detail": "Require a name and a valid unsigned count."
+          },
+          {
+            "title": "Own",
+            "detail": "Return an owned name so the record can outlive its input buffer."
+          }
+        ],
+        "transferChallenge": "Add line-number context in a streaming adapter without turning errors into skipped records.",
+        "connections": [
+          {
+            "direction": "previous",
+            "title": "Save & Read a Text File",
+            "concept": "Fallible filesystem effects in a granted directory"
+          },
+          {
+            "direction": "next",
+            "title": "Serde: Decode, Validate, Encode",
+            "concept": "Serialization is not domain validation"
+          }
+        ]
+      },
+      "illustration": {
+        "path": "media/validated-records.png",
+        "alt": "Diagram for Validate Data Records: a Rust code example flows to the lesson rule and the key observation.",
+        "caption": "A bounded text format with precise errors"
+      },
+      "contentDigest": "db7e176851db5bb1038ae70ff44069c2168da1aac6e358c6ba138954906378f6"
+    },
+    {
+      "concept": "Many crates, one lockfile",
+      "contentDigest": "9915d16cb99808ef49dc3ceb9cc71d6580148d39f907af8551c146eba37502d2",
+      "depth": {
+        "connections": [
+          {
+            "concept": "crates.io, SemVer, and features",
+            "direction": "previous",
+            "title": "Dependencies"
+          },
+          {
+            "concept": "Heap allocation and recursive types",
+            "direction": "next",
+            "title": "Box<T>"
+          }
+        ],
+        "correction": "Members share one lockfile, not one version: incompatible requirements still resolve to several versions, and `cargo tree` shows them.",
+        "misconception": "“A workspace guarantees one version of every dependency.”",
+        "traceSteps": [
+          {
+            "detail": "`[workspace]` lists `core` and `cli` as members, and `resolver = \"3\"` sets the dependency resolver they all use.",
+            "title": "Read the root"
+          },
+          {
+            "detail": "`cli/Cargo.toml` names `core` with a `path`. Being a member does not make one crate visible to another; this line does.",
+            "title": "Follow the path"
+          },
+          {
+            "detail": "A workspace build writes one `Cargo.lock` and one `target/` at the root, not one per member.",
+            "title": "Find the shared files"
+          }
+        ],
+        "transferChallenge": "Give `core` and `cli` different major versions of the same dependency. Predict how many entries `Cargo.lock` holds for it, then confirm with `cargo tree`."
+      },
+      "exerciseKind": "planned",
+      "id": "workspaces",
+      "minutes": 14,
+      "order": 4,
+      "parentID": "projects",
+      "title": "Workspaces",
+      "writing": {
+        "answers": [
+          "Nothing, they are independent",
+          "One lockfile and one target directory",
+          "Their source files"
+        ],
+        "correctAnswer": 1,
+        "exampleCaption": "One root manifest, many members, one shared lockfile.",
+        "exampleCode": "# Cargo.toml at the workspace root\n[workspace]\nresolver = \"3\"\nmembers = [\"core\", \"cli\"]\n\n# cli/Cargo.toml\n[dependencies]\ncore = { path = \"../core\" }",
+        "explanation": "Members share a target directory and lockfile, while the resolver may still select multiple versions of a dependency when requirements are incompatible. Splitting a project into a library plus a thin binary is the usual first move, because it makes the library testable on its own.\n\nA Cargo workspace groups packages that are developed together. A root `Cargo.toml` lists members such as `core` and `cli`; the packages share a lockfile and build output directory, and workspace commands can operate across members. A common design puts reusable behavior in a library and keeps the binary thin: the CLI parses arguments, calls library functions, and prints a result. This makes the core easier to test and reuse.\n\nThe example's dependency path from `cli` to `core` is explicit in the CLI manifest. Being in the same workspace does not automatically make every crate visible to every other crate. Nor does it guarantee there is only one version of every external package: incompatible requirements can still resolve to multiple versions. The shared lockfile records the actual graph. Use `cargo tree` when you need to inspect it rather than assuming deduplication.\n\nCreate a workspace with two members, add a public function to the library, and call it from the CLI. Run `cargo test --workspace` to exercise all members. Then add a test that calls the library directly and compare it with a CLI-level test. The workspace boundary is a useful organizational choice when packages have separate purposes or release needs. Splitting every file into a crate would add manifest and versioning overhead without improving the design. Start with a clear library/binary split when that split reflects a real responsibility.\n\nA workspace is also a convenient boundary for coordinated checks: formatting, linting, and tests can cover all members together while each package keeps its own public API and dependencies.",
+        "feedback": "The members resolve together into one `Cargo.lock`, and a shared `target` directory reuses build output. Incompatible requirements can still select two versions of a dependency.",
+        "practiceCode": "[workspace]\nresolver = \"3\"\nmembers = [\"core\", \"cli\"]",
+        "question": "What do the members share?",
+        "rule": "Workspace members share one lockfile, which records every resolved version; incompatible requirements can still select several.",
+        "success": "The library holds the logic and the binary only wires it up.",
+        "summary": "A workspace builds several crates against one lockfile.",
+        "task": "Describe how you would split a project into a library and a binary."
+      },
+      "illustration": {
+        "path": "media/workspaces.png",
+        "alt": "A Cargo workspace groups a library, CLI, and tests around a shared lockfile and build directory.",
+        "caption": "Workspace members coordinate builds while keeping distinct package responsibilities."
+      }
+    }
+  ]
+}

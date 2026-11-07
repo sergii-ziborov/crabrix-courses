@@ -1,0 +1,74 @@
+{
+  "id": "route-http-idempotency",
+  "parentID": "route-http",
+  "order": 3,
+  "title": "Retry Without Duplicating Tasks",
+  "concept": "Bind an idempotency key to one request payload",
+  "minutes": 25,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Bind an idempotency key to one request payload.",
+    "rule": "Reuse a stored result only when the key and original payload agree.",
+    "explanation": "A timeout does not prove that the server performed no work. It can commit a task and lose the response. An unconditional retry then creates a duplicate. Store a stable request key with the original payload and result; on a repeated request, compare the payload before reusing that result.\n\nThis lab models the decision without claiming an in-memory map is durable. A new key creates once, the same key and payload replays, and the same key with a different payload conflicts. Missing or blank keys are invalid. Production storage must enforce the key uniqueness and the business write in one transaction. Set an explicit retention policy; expiring a key changes how late retries behave. The SQL and capstone stages demonstrate that the deduplication record belongs beside the committed task.\n\nThe route project is Task Ledger: first keep a reproducible source history, then expose its data through a CLI and HTTP boundary, persist it in SQL, diagnose failures and prepare a release. This lesson owns one contract in that project. Run the worked example before changing the starter and explain which input makes the tempting shortcut fail.\n\nTerminal practice: Create one task twice with curl using the same Idempotency-Key header, then change the title while retaining the key.\n\nThe compiler lab is independent of the reading question. Edit solution.rs; the app supplies a separate caller with normal, empty and adversarial inputs. A successful unchanged demonstration does not prove your implementation. After the lab, apply the same contract to the route companion project. Its README separates the on-device adapter from the desktop Cargo/TCP profile.",
+    "exampleCode": "pub fn retry_decision(\n    key: &str,\n    payload: &str,\n    previous: Option<(&str, &str)>,\n) -> u16 {\n    if key.trim().is_empty() {\n        400\n    } else {\n        match previous {\n            Some((old_key, old_payload)) if old_key == key => {\n                if old_payload == payload {\n                    200\n                } else {\n                    409\n                }\n            }\n            _ => 201,\n        }\n    }\n}\n\nfn main() {\n    assert_eq!(retry_decision(\"k\", \"title\", None), 201, \"case 1\");\n    assert_eq!(retry_decision(\"\", \"title\", None), 400, \"case 2\");\n    assert_eq!(\n        retry_decision(\"k\", \"title\", Some((\"k\", \"title\"))),\n        200,\n        \"case 3\"\n    );\n    assert_eq!(\n        retry_decision(\"k\", \"other\", Some((\"k\", \"title\"))),\n        409,\n        \"case 4\"\n    );\n    assert_eq!(\n        retry_decision(\"new\", \"x\", Some((\"old\", \"x\"))),\n        201,\n        \"case 5\"\n    );\n    println!(\"worked example passed\");\n}\n",
+    "exampleCaption": "The worked implementation exercises bind an idempotency key to one request payload. Its tests demonstrate the stated finite contract.",
+    "practiceCode": "pub fn retry_decision(key: &str, payload: &str, previous: Option<(&str,&str)>) -> u16 {\n    todo!(\"implement the contract\")\n}\n",
+    "task": "Return 400 for a blank key; 200 for the same stored key and payload; 409 for the same key with another payload; 201 for a new key. Keep the public signature. Open the compiler lab and edit solution.rs; do not edit the private verification caller.",
+    "success": "The separate caller accepts the changed solution and rejects unchanged TODO, a wrong implementation and a printed success message.",
+    "question": "A repeated key arrives with different content. What should happen?",
+    "answers": [
+      "Return a successful response for the unrelated original request",
+      "Always create another task",
+      "Reject the conflict"
+    ],
+    "correctAnswer": 2,
+    "feedback": "An idempotency key identifies the original operation, not permission to change its payload."
+  },
+  "depth": {
+    "misconception": "Return a successful response for the unrelated original request",
+    "correction": "Reuse a stored result only when the key and original payload agree.",
+    "traceSteps": [
+      {
+        "title": "Identify the boundary",
+        "detail": "Bind an idempotency key to one request payload. Write down its accepted inputs and observable output."
+      },
+      {
+        "title": "Exercise the failure",
+        "detail": "An idempotency key identifies the original operation, not permission to change its payload."
+      },
+      {
+        "title": "Check the independent caller",
+        "detail": "Return 400 for a blank key; 200 for the same stored key and payload; 409 for the same key with another payload; 201 for a new key."
+      }
+    ],
+    "transferChallenge": "Apply this contract to Task Ledger, introduce the failure described in the lesson, and show the failing check before fixing it.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Encode a Valid JSON Boundary",
+        "concept": "Escape JSON strings without corrupting Unicode"
+      },
+      {
+        "direction": "next",
+        "title": "Make Invalid Rows Impossible",
+        "concept": "Enforce domain invariants in a real database"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "title": "Primary reference",
+      "url": "https://www.rfc-editor.org/rfc/rfc9110.html"
+    },
+    {
+      "title": "Task Ledger companion source (ZIP)",
+      "url": "https://crabrix.com/examples/task-ledger-route.zip"
+    }
+  ],
+  "illustration": {
+    "path": "media/route-http-idempotency.png",
+    "alt": "Diagram for Retry Without Duplicating Tasks: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "The worked implementation exercises bind an idempotency key to one request payload. Its tests demonstrate the stated finite contract."
+  },
+  "contentDigest": "59b307a159554a520264dd7b7e0f86740724eceab4d55427b3951fe8040f194e"
+}

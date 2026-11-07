@@ -1,0 +1,67 @@
+{
+  "challenge": {
+    "lessonID": "route-delivery-config",
+    "patternID": "route-delivery-config",
+    "projectName": "route-delivery-config-lab",
+    "source": "pub fn config(port: &str, database: &str) -> Result<u16,&'static str> {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationSource": "mod solution;\nfn main() {\nassert_eq!(solution::config(\"8080\",\"tasks.db\"), Ok(8080), \"case 1\");\nassert_eq!(solution::config(\"0\",\"tasks.db\"), Err(\"port\"), \"case 2\");\nassert_eq!(solution::config(\"65536\",\"tasks.db\"), Err(\"port\"), \"case 3\");\nassert_eq!(solution::config(\"+8080\",\"tasks.db\"), Err(\"port\"), \"case 4\");\nassert_eq!(solution::config(\"8080\",\"\"), Err(\"database\"), \"case 5\");\nassert_eq!(solution::config(\"8080\",\"bad path\"), Err(\"database\"), \"case 6\");\nassert_eq!(solution::config(\"65535\",\"db\"), Ok(65535), \"case 7\");\n\nprintln!(\"PASS route-delivery-config\");\n}\n",
+    "verificationCases": [
+      {
+        "kind": "visible",
+        "input": "solution::config(\"8080\",\"tasks.db\")",
+        "expectedAnswer": "Ok(8080)"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::config(\"0\",\"tasks.db\")",
+        "expectedAnswer": "Err(\"port\")"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::config(\"65536\",\"tasks.db\")",
+        "expectedAnswer": "Err(\"port\")"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::config(\"+8080\",\"tasks.db\")",
+        "expectedAnswer": "Err(\"port\")"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::config(\"8080\",\"\")",
+        "expectedAnswer": "Err(\"database\")"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::config(\"8080\",\"bad path\")",
+        "expectedAnswer": "Err(\"database\")"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::config(\"65535\",\"db\")",
+        "expectedAnswer": "Ok(65535)"
+      }
+    ],
+    "expectedOutput": "PASS route-delivery-config\n",
+    "requiredSourceFragments": [
+      "pub fn config"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ],
+    "executionProfile": "std-v1"
+  },
+  "evidence": {
+    "kind": "algorithmChallenge",
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS route-delivery-config\n"
+    },
+    "requiredSourceFragments": [
+      "pub fn config"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  }
+}

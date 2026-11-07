@@ -1,0 +1,52 @@
+{
+  "challenge": {
+    "lessonID": "route-sql-schema",
+    "patternID": "route-sql-schema",
+    "projectName": "route-sql-schema-lab",
+    "source": "pub fn schema() -> &'static str {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationSource": "mod solution;\n\nfn quote(s: &str) -> String {\n    let mut out=String::from(\"\\\"\");\n    for c in s.chars() { match c { '\"'=>out.push_str(\"\\\\\\\"\"), '\\\\'=>out.push_str(\"\\\\\\\\\"), '\\n'=>out.push_str(\"\\\\n\"), '\\r'=>out.push_str(\"\\\\r\"), '\\t'=>out.push_str(\"\\\\t\"), c if c<' '=>out.push_str(&format!(\"\\\\u{:04x}\",c as u32)), c=>out.push(c) } }\n    out.push('\"'); out\n}\nfn db(sql: &str, params: &[&str], readonly: bool) -> String {\n    let request=format!(\"{{\\\"sql\\\":{},\\\"params\\\":[{}],\\\"readOnly\\\":{}}}\",quote(sql),params.iter().map(|s|quote(s)).collect::<Vec<_>>().join(\",\"),readonly);\n    #[cfg(target_arch=\"wasm32\")]\n    {\n        #[link(wasm_import_module=\"crabrix_sql\")]\n        unsafe extern \"C\" { #[link_name=\"crabrix_sql_query\"] fn crabrix_sql_query(p:*const u8,n:usize,out:*mut u8,cap:usize)->i32; }\n        let mut out=vec![0u8;65536];\n        let size=unsafe { crabrix_sql_query(request.as_ptr(),request.len(),out.as_mut_ptr(),out.len()) };\n        assert!(size>=0 && (size as usize)<=out.len(),\"bounded SQL bridge failed\");\n        out.truncate(size as usize); String::from_utf8(out).unwrap()\n    }\n    #[cfg(not(target_arch=\"wasm32\"))]\n    {\n        let output=std::process::Command::new(\"python3\").arg(std::env::var(\"ROUTE_SQL_RUNNER\").unwrap()).arg(request).output().unwrap();\n        assert!(output.status.success());String::from_utf8(output.stdout).unwrap().trim().to_owned()\n    }\n}\nfn ok(sql:&str) { let result=db(sql,&[],false); assert!(!result.contains(\"\\\"error\\\"\"),\"SQL operation failed: {result}\"); }\nfn rejects(sql:&str) { assert!(db(sql,&[],false).contains(\"\\\"error\\\"\"),\"invalid write was accepted\"); }\nfn same(sql:&str,params:&[&str],oracle:&str) { assert_eq!(db(sql,params,true),db(oracle,&[],true),\"query result differs from independent fixture\"); }\n\nfn main() {\nok(solution::schema());\nok(\"INSERT INTO tasks(id,title) VALUES(1,'learn SQL');\");\nsame(\"SELECT id,title,done FROM tasks\",&[],\"SELECT 1 AS id,'learn SQL' AS title,0 AS done\");\nfor invalid in [\"INSERT INTO tasks VALUES(2,'',0)\",\"INSERT INTO tasks VALUES(2,'   ',0)\",\"INSERT INTO tasks VALUES(2,NULL,0)\",\"INSERT INTO tasks VALUES(2,'x',NULL)\",\"INSERT INTO tasks VALUES(2,'x',2)\",\"INSERT INTO tasks VALUES(1,'duplicate',0)\"] {rejects(invalid);}\nrejects(&format!(\"INSERT INTO tasks VALUES(2,'{}',0)\",\"x\".repeat(81)));\nok(\"INSERT INTO tasks VALUES(2,'valid',1)\");\nprintln!(\"PASS route-sql-schema\");\n}\n",
+    "verificationCases": [
+      {
+        "kind": "visible",
+        "input": "create tasks schema",
+        "expectedAnswer": "valid task inserts"
+      },
+      {
+        "kind": "boundary",
+        "input": "blank/null title",
+        "expectedAnswer": "rejected by SQLite"
+      },
+      {
+        "kind": "semantic",
+        "input": "duplicate primary key",
+        "expectedAnswer": "rejected by SQLite"
+      },
+      {
+        "kind": "semantic",
+        "input": "done=2",
+        "expectedAnswer": "rejected by SQLite"
+      }
+    ],
+    "expectedOutput": "PASS route-sql-schema\n",
+    "requiredSourceFragments": [
+      "pub fn schema"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ],
+    "executionProfile": "sqlite-v1"
+  },
+  "evidence": {
+    "kind": "algorithmChallenge",
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS route-sql-schema\n"
+    },
+    "requiredSourceFragments": [
+      "pub fn schema"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  }
+}
