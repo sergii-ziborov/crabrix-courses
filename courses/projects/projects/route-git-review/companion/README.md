@@ -119,3 +119,7 @@ The editable request files have matching HTTP syntax highlighting. Send one with
 `http run requests/health.http` or `http run requests/create.http`. Each file
 contains one explicit request. Environment examples are configuration references;
 neither this app nor the desktop sample loads .env files implicitly.
+
+The root .github/workflows/desktop.yml runs that desktop profile when this whole
+project is used as a Git repository. The nested desktop workflow also works if
+you deliberately extract desktop/ into a standalone repository.
