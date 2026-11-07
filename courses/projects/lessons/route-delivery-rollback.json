@@ -1,0 +1,69 @@
+{
+  "id": "route-delivery-rollback",
+  "parentID": "route-delivery",
+  "order": 3,
+  "title": "Release, Observe and Recover",
+  "concept": "Keep a known-good version until the candidate is healthy",
+  "minutes": 25,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Keep a known-good version until the candidate is healthy.",
+    "rule": "A failed readiness check preserves the previous active version.",
+    "explanation": "Delivery continues after uploading bytes. A candidate can build successfully and fail a migration or readiness check in the target environment. Retain the previous active version while preparing the candidate, promote only after the required health evidence, and preserve a concrete recovery path.\n\nThe state transition in this lab receives the current version, candidate and readiness observations. Reject a blank candidate, an unchanged version or a candidate without successful required checks. On every rejection return the original active version; a partially configured candidate is not an active release. A real database migration may be irreversible, so reverting an executable is not automatically a schema rollback. Prefer compatible expand/contract changes and test recovery against actual persistent state. The capstone asks for an incident record showing the failing condition, observed data and successful recovery rather than a screenshot of a green pipeline.\n\nThe route project is Task Ledger: first keep a reproducible source history, then expose its data through a CLI and HTTP boundary, persist it in SQL, diagnose failures and prepare a release. This lesson owns one contract in that project. Run the worked example before changing the starter and explain which input makes the tempting shortcut fail.\n\nTerminal practice: Run the capstone acceptance checks, introduce a failed readiness condition, retain the old version, and document the recovery.\n\nThe compiler lab is independent of the reading question. Edit solution.rs; the app supplies a separate caller with normal, empty and adversarial inputs. A successful unchanged demonstration does not prove your implementation. After the lab, apply the same contract to the route companion project. Its README separates the on-device adapter from the desktop Cargo/TCP profile.",
+    "exampleCode": "pub fn promote(\n    current: &str,\n    candidate: &str,\n    checks_ok: bool,\n    ready: bool,\n) -> (String, bool) {\n    if !candidate.trim().is_empty()\n        && candidate != current\n        && checks_ok\n        && ready\n    {\n        (candidate.to_owned(), true)\n    } else {\n        (current.to_owned(), false)\n    }\n}\n\nfn main() {\n    assert_eq!(\n        promote(\"v1\", \"v2\", true, true),\n        (\"v2\".to_owned(), true),\n        \"case 1\"\n    );\n    assert_eq!(\n        promote(\"v1\", \"\", true, true),\n        (\"v1\".to_owned(), false),\n        \"case 2\"\n    );\n    assert_eq!(\n        promote(\"v1\", \"v2\", true, false),\n        (\"v1\".to_owned(), false),\n        \"case 3\"\n    );\n    assert_eq!(\n        promote(\"v1\", \"v2\", false, true),\n        (\"v1\".to_owned(), false),\n        \"case 4\"\n    );\n    assert_eq!(\n        promote(\"v1\", \"v1\", true, true),\n        (\"v1\".to_owned(), false),\n        \"case 5\"\n    );\n    println!(\"worked example passed\");\n}\n",
+    "exampleCaption": "The worked implementation exercises keep a known-good version until the candidate is healthy. Its tests demonstrate the stated finite contract.",
+    "practiceCode": "pub fn promote(current: &str, candidate: &str, checks_ok: bool, ready: bool) -> (String,bool) {\n    todo!(\"implement the contract\")\n}\n",
+    "task": "Return candidate,true only for a nonblank changed candidate with checks_ok and ready both true. Every refused promotion returns current,false unchanged. Keep the public signature. Open the compiler lab and edit solution.rs; do not edit the private verification caller.",
+    "success": "The separate caller accepts the changed solution and rejects unchanged TODO, a wrong implementation and a printed success message.",
+    "question": "A candidate fails readiness. Which version remains active?",
+    "answers": [
+      "The failed candidate because it uploaded successfully",
+      "No version; delete the previous artifact first",
+      "The previous known-good version"
+    ],
+    "correctAnswer": 2,
+    "feedback": "Upload or build success is insufficient to replace an active service."
+  },
+  "depth": {
+    "misconception": "The failed candidate because it uploaded successfully",
+    "correction": "A failed readiness check preserves the previous active version.",
+    "traceSteps": [
+      {
+        "title": "Identify the boundary",
+        "detail": "Keep a known-good version until the candidate is healthy. Write down its accepted inputs and observable output."
+      },
+      {
+        "title": "Exercise the failure",
+        "detail": "Upload or build success is insufficient to replace an active service."
+      },
+      {
+        "title": "Check the independent caller",
+        "detail": "Return candidate,true only for a nonblank changed candidate with checks_ok and ready both true. Every refused promotion returns current,false unchanged."
+      }
+    ],
+    "transferChallenge": "Apply this contract to Task Ledger, introduce the failure described in the lesson, and show the failing check before fixing it.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Bind an Artifact to Its Source",
+        "concept": "Verify release identity and digest metadata"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "title": "Primary reference",
+      "url": "https://doc.rust-lang.org/cargo/commands/cargo-test.html"
+    },
+    {
+      "title": "Task Ledger companion source (ZIP)",
+      "url": "https://crabrix.com/examples/task-ledger-route.zip"
+    }
+  ],
+  "illustration": {
+    "path": "media/route-delivery-rollback.png",
+    "alt": "Diagram for Release, Observe and Recover: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "The worked implementation exercises keep a known-good version until the candidate is healthy. Its tests demonstrate the stated finite contract."
+  },
+  "contentDigest": "345228fb831d05cd467a893b58fe1ff3a40470651bb0f93550390cff0bb822a7"
+}

@@ -1,0 +1,52 @@
+{
+  "challenge": {
+    "lessonID": "route-sql-parameters",
+    "patternID": "route-sql-parameters",
+    "projectName": "route-sql-parameters-lab",
+    "source": "pub fn title_sql() -> &'static str {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationSource": "mod solution;\n\nfn quote(s: &str) -> String {\n    let mut out=String::from(\"\\\"\");\n    for c in s.chars() { match c { '\"'=>out.push_str(\"\\\\\\\"\"), '\\\\'=>out.push_str(\"\\\\\\\\\"), '\\n'=>out.push_str(\"\\\\n\"), '\\r'=>out.push_str(\"\\\\r\"), '\\t'=>out.push_str(\"\\\\t\"), c if c<' '=>out.push_str(&format!(\"\\\\u{:04x}\",c as u32)), c=>out.push(c) } }\n    out.push('\"'); out\n}\nfn db(sql: &str, params: &[&str], readonly: bool) -> String {\n    let request=format!(\"{{\\\"sql\\\":{},\\\"params\\\":[{}],\\\"readOnly\\\":{}}}\",quote(sql),params.iter().map(|s|quote(s)).collect::<Vec<_>>().join(\",\"),readonly);\n    #[cfg(target_arch=\"wasm32\")]\n    {\n        #[link(wasm_import_module=\"crabrix_sql\")]\n        unsafe extern \"C\" { #[link_name=\"crabrix_sql_query\"] fn crabrix_sql_query(p:*const u8,n:usize,out:*mut u8,cap:usize)->i32; }\n        let mut out=vec![0u8;65536];\n        let size=unsafe { crabrix_sql_query(request.as_ptr(),request.len(),out.as_mut_ptr(),out.len()) };\n        assert!(size>=0 && (size as usize)<=out.len(),\"bounded SQL bridge failed\");\n        out.truncate(size as usize); String::from_utf8(out).unwrap()\n    }\n    #[cfg(not(target_arch=\"wasm32\"))]\n    {\n        let output=std::process::Command::new(\"python3\").arg(std::env::var(\"ROUTE_SQL_RUNNER\").unwrap()).arg(request).output().unwrap();\n        assert!(output.status.success());String::from_utf8(output.stdout).unwrap().trim().to_owned()\n    }\n}\nfn ok(sql:&str) { let result=db(sql,&[],false); assert!(!result.contains(\"\\\"error\\\"\"),\"SQL operation failed: {result}\"); }\nfn rejects(sql:&str) { assert!(db(sql,&[],false).contains(\"\\\"error\\\"\"),\"invalid write was accepted\"); }\nfn same(sql:&str,params:&[&str],oracle:&str) { assert_eq!(db(sql,params,true),db(oracle,&[],true),\"query result differs from independent fixture\"); }\n\nfn main() {\nok(\"CREATE TABLE tasks(id INTEGER PRIMARY KEY,title TEXT); INSERT INTO tasks VALUES(1,'plain'),(2,'Ada''s task'),(3,'🦀'),(4,'plain'),(5,'x'' OR 1=1 --'),(6,'%'),(7,'anything');\");\nfor (title,oracle) in [(\"plain\",\"SELECT id FROM tasks WHERE id IN (1,4) ORDER BY id\"),(\"Ada's task\",\"SELECT 2 AS id\"),(\"🦀\",\"SELECT 3 AS id\"),(\"x' OR 1=1 --\",\"SELECT 5 AS id\"),(\"missing\",\"SELECT id FROM tasks WHERE 0\"),(\"%\",\"SELECT 6 AS id\")]{same(solution::title_sql(),&[title],oracle);}\nprintln!(\"PASS route-sql-parameters\");\n}\n",
+    "verificationCases": [
+      {
+        "kind": "visible",
+        "input": "plain title",
+        "expectedAnswer": "all exact matches"
+      },
+      {
+        "kind": "boundary",
+        "input": "apostrophe in title",
+        "expectedAnswer": "preserved as data"
+      },
+      {
+        "kind": "semantic",
+        "input": "injection-shaped title",
+        "expectedAnswer": "only that title matches"
+      },
+      {
+        "kind": "semantic",
+        "input": "missing title",
+        "expectedAnswer": "no rows"
+      }
+    ],
+    "expectedOutput": "PASS route-sql-parameters\n",
+    "requiredSourceFragments": [
+      "pub fn title_sql"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ],
+    "executionProfile": "sqlite-v1"
+  },
+  "evidence": {
+    "kind": "algorithmChallenge",
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS route-sql-parameters\n"
+    },
+    "requiredSourceFragments": [
+      "pub fn title_sql"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  }
+}

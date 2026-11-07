@@ -1,0 +1,74 @@
+{
+  "id": "route-git-select",
+  "parentID": "route-git",
+  "order": 1,
+  "title": "Commit Only Reviewed Paths",
+  "concept": "Construct the selected commit tree",
+  "minutes": 25,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Construct the selected commit tree.",
+    "rule": "An unselected worktree edit must not silently enter a selected-path commit.",
+    "explanation": "Task Ledger changes its CLI and a private scratch note at the same time. A commit intended to fix CLI parsing should contain the CLI change, leaving the note outside history. The tree to commit begins with HEAD, not with every current worktree file. Apply selected additions, modifications and deletions onto that tree.\n\nA selection can include a deleted path: remove it from the commit tree instead of resurrecting its old text. Unknown selected paths have no effect in this model. An actual Git operation additionally validates file paths, expected HEAD and concurrent editor revisions. The terminal deliberately uses selected-path commits rather than pretending to implement an independent staging area. Desktop Git can use its index; distinguish that workflow from this app profile.\n\nThe route project is Task Ledger: first keep a reproducible source history, then expose its data through a CLI and HTTP boundary, persist it in SQL, diagnose failures and prepare a release. This lesson owns one contract in that project. Run the worked example before changing the starter and explain which input makes the tempting shortcut fail.\n\nTerminal practice: Configure git config user.name and user.email, then git commit -m \"Validate CLI input\" -- src/main.rs; inspect git status afterwards.\n\nThe compiler lab is independent of the reading question. Edit solution.rs; the app supplies a separate caller with normal, empty and adversarial inputs. A successful unchanged demonstration does not prove your implementation. After the lab, apply the same contract to the route companion project. Its README separates the on-device adapter from the desktop Cargo/TCP profile.",
+    "exampleCode": "pub fn selected_tree(\n    head: &[(&str, &str)],\n    work: &[(&str, &str)],\n    selected: &[&str],\n) -> Vec<(String, String)> {\n    let mut tree: std::collections::BTreeMap<String, String> = head\n        .iter()\n        .map(|(k, v)| (k.to_string(), v.to_string()))\n        .collect();\n    let work: std::collections::BTreeMap<_, _> =\n        work.iter().copied().collect();\n    for path in selected {\n        if let Some(value) = work.get(path) {\n            tree.insert(path.to_string(), value.to_string());\n        } else {\n            tree.remove(*path);\n        }\n    }\n    tree.into_iter().collect()\n}\n\nfn main() {\n    assert_eq!(\n        selected_tree(\n            &[(\"a\", \"old\"), (\"b\", \"old\")],\n            &[(\"a\", \"new\"), (\"b\", \"secret\")],\n            &[\"a\"]\n        ),\n        vec![\n            (\"a\".to_owned(), \"new\".to_owned()),\n            (\"b\".to_owned(), \"old\".to_owned())\n        ],\n        \"case 1\"\n    );\n    assert_eq!(\n        selected_tree(&[], &[(\"a\", \"x\")], &[]),\n        vec![],\n        \"case 2\"\n    );\n    assert_eq!(\n        selected_tree(&[(\"a\", \"x\")], &[], &[\"a\"]),\n        vec![],\n        \"case 3\"\n    );\n    assert_eq!(\n        selected_tree(&[], &[(\"b\", \"x\")], &[\"b\", \"b\"]),\n        vec![(\"b\".to_owned(), \"x\".to_owned())],\n        \"case 4\"\n    );\n    println!(\"worked example passed\");\n}\n",
+    "exampleCaption": "The worked implementation exercises construct the selected commit tree. Its tests demonstrate the stated finite contract.",
+    "practiceCode": "pub fn selected_tree(head: &[(&str,&str)], work: &[(&str,&str)], selected: &[&str]) -> Vec<(String,String)> {\n    todo!(\"implement the contract\")\n}\n",
+    "task": "Return the HEAD tree with only selected paths replaced from the worktree, or removed if selected and missing. Sort by path; paths are unique in each input. Keep the public signature. Open the compiler lab and edit solution.rs; do not edit the private verification caller.",
+    "success": "The separate caller accepts the changed solution and rejects unchanged TODO, a wrong implementation and a printed success message.",
+    "question": "Which tree is the starting point for a selected-path commit?",
+    "answers": [
+      "HEAD, followed by selected changes",
+      "The whole current worktree always enters the commit",
+      "The selected filenames without their contents"
+    ],
+    "correctAnswer": 0,
+    "feedback": "Starting from the whole worktree includes unrelated edits."
+  },
+  "depth": {
+    "misconception": "The whole current worktree always enters the commit",
+    "correction": "An unselected worktree edit must not silently enter a selected-path commit.",
+    "traceSteps": [
+      {
+        "title": "Identify the boundary",
+        "detail": "Construct the selected commit tree. Write down its accepted inputs and observable output."
+      },
+      {
+        "title": "Exercise the failure",
+        "detail": "Starting from the whole worktree includes unrelated edits."
+      },
+      {
+        "title": "Check the independent caller",
+        "detail": "Return the HEAD tree with only selected paths replaced from the worktree, or removed if selected and missing. Sort by path; paths are unique in each input."
+      }
+    ],
+    "transferChallenge": "Apply this contract to Task Ledger, introduce the failure described in the lesson, and show the failing check before fixing it.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Review the Exact Change",
+        "concept": "Distinguish changed, added and deleted paths"
+      },
+      {
+        "direction": "next",
+        "title": "Switch Without Losing Work",
+        "concept": "Protect dirty worktrees during checkout"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "title": "Primary reference",
+      "url": "https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository"
+    },
+    {
+      "title": "Task Ledger companion source (ZIP)",
+      "url": "https://crabrix.com/examples/task-ledger-route.zip"
+    }
+  ],
+  "illustration": {
+    "path": "media/route-git-select.png",
+    "alt": "Diagram for Commit Only Reviewed Paths: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "The worked implementation exercises construct the selected commit tree. Its tests demonstrate the stated finite contract."
+  },
+  "contentDigest": "ae61382e0bc4c6a8549de1d9bf311e3ae1df35a377cf58fc2e03daf6e1c3ae0f"
+}

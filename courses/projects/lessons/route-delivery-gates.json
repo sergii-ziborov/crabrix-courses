@@ -1,0 +1,74 @@
+{
+  "id": "route-delivery-gates",
+  "parentID": "route-delivery",
+  "order": 0,
+  "title": "Make Checks Block Delivery",
+  "concept": "Require all declared release checks",
+  "minutes": 25,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Require all declared release checks.",
+    "rule": "An absent or failed required check cannot be treated as a green release.",
+    "explanation": "A reproducible release pipeline connects source checks to a specific revision. Formatting, compilation and tests answer different questions. A successful build does not establish that tests ran, and a test job from an older revision does not approve newer source.\n\nThe release policy requires fmt, test and build exactly once with successful results; extra unrelated checks may be present. Duplicate required records are ambiguous and should refuse delivery rather than choosing whichever result looks better. This lab models gate aggregation, while the companion workflow runs the actual commands in a clean checkout with Cargo.lock retained. The iOS terminal runs its supported Cargo profile; the desktop CI workflow exercises the server target, SQL migrations and integration requests. Keep those receipts separate instead of claiming one target qualifies the other.\n\nThe route project is Task Ledger: first keep a reproducible source history, then expose its data through a CLI and HTTP boundary, persist it in SQL, diagnose failures and prepare a release. This lesson owns one contract in that project. Run the worked example before changing the starter and explain which input makes the tempting shortcut fail.\n\nTerminal practice: Run cargo fmt --check, cargo test and cargo build. Inspect the companion GitHub workflow for desktop integration checks.\n\nThe compiler lab is independent of the reading question. Edit solution.rs; the app supplies a separate caller with normal, empty and adversarial inputs. A successful unchanged demonstration does not prove your implementation. After the lab, apply the same contract to the route companion project. Its README separates the on-device adapter from the desktop Cargo/TCP profile.",
+    "exampleCode": "pub fn release_ready(checks: &[(&str, bool)]) -> bool {\n    [\"fmt\", \"test\", \"build\"].iter().all(|required| {\n        let rows: Vec<_> = checks\n            .iter()\n            .filter(|(name, _)| name == required)\n            .collect();\n        rows.len() == 1 && rows[0].1\n    })\n}\n\nfn main() {\n    assert_eq!(\n        release_ready(&[\n            (\"fmt\", true),\n            (\"test\", true),\n            (\"build\", true)\n        ]),\n        true,\n        \"case 1\"\n    );\n    assert_eq!(release_ready(&[]), false, \"case 2\");\n    assert_eq!(\n        release_ready(&[\n            (\"fmt\", true),\n            (\"test\", false),\n            (\"build\", true)\n        ]),\n        false,\n        \"case 3\"\n    );\n    assert_eq!(\n        release_ready(&[\n            (\"fmt\", true),\n            (\"test\", true),\n            (\"build\", true),\n            (\"test\", true)\n        ]),\n        false,\n        \"case 4\"\n    );\n    assert_eq!(\n        release_ready(&[\n            (\"fmt\", true),\n            (\"test\", true),\n            (\"build\", true),\n            (\"docs\", false)\n        ]),\n        true,\n        \"case 5\"\n    );\n    println!(\"worked example passed\");\n}\n",
+    "exampleCaption": "The worked implementation exercises require all declared release checks. Its tests demonstrate the stated finite contract.",
+    "practiceCode": "pub fn release_ready(checks: &[(&str,bool)]) -> bool {\n    todo!(\"implement the contract\")\n}\n",
+    "task": "Require exactly one successful result for each of fmt,test,build. Missing, failed or duplicate required results refuse release; unrelated checks do not affect this contract. Keep the public signature. Open the compiler lab and edit solution.rs; do not edit the private verification caller.",
+    "success": "The separate caller accepts the changed solution and rejects unchanged TODO, a wrong implementation and a printed success message.",
+    "question": "Does a successful build prove that the test job ran?",
+    "answers": [
+      "Yes, building automatically runs every test",
+      "A missing check should default to success",
+      "No, it is a separate required observation"
+    ],
+    "correctAnswer": 2,
+    "feedback": "Compilation success and independently executed tests provide different evidence."
+  },
+  "depth": {
+    "misconception": "Yes, building automatically runs every test",
+    "correction": "An absent or failed required check cannot be treated as a green release.",
+    "traceSteps": [
+      {
+        "title": "Identify the boundary",
+        "detail": "Require all declared release checks. Write down its accepted inputs and observable output."
+      },
+      {
+        "title": "Exercise the failure",
+        "detail": "Compilation success and independently executed tests provide different evidence."
+      },
+      {
+        "title": "Check the independent caller",
+        "detail": "Require exactly one successful result for each of fmt,test,build. Missing, failed or duplicate required results refuse release; unrelated checks do not affect this contract."
+      }
+    ],
+    "transferChallenge": "Apply this contract to Task Ledger, introduce the failure described in the lesson, and show the failing check before fixing it.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Bound the Retry Budget",
+        "concept": "Retry transient failures within attempt and time limits"
+      },
+      {
+        "direction": "next",
+        "title": "Validate Before Starting the Service",
+        "concept": "Reject invalid deployment configuration"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "title": "Primary reference",
+      "url": "https://doc.rust-lang.org/cargo/commands/cargo-test.html"
+    },
+    {
+      "title": "Task Ledger companion source (ZIP)",
+      "url": "https://crabrix.com/examples/task-ledger-route.zip"
+    }
+  ],
+  "illustration": {
+    "path": "media/route-delivery-gates.png",
+    "alt": "Diagram for Make Checks Block Delivery: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "The worked implementation exercises require all declared release checks. Its tests demonstrate the stated finite contract."
+  },
+  "contentDigest": "c3c9f68f7a76980f96c3ffadfa1295d33fa2749c45b88cbe0276628bee78bde7"
+}

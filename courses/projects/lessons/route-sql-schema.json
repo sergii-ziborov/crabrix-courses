@@ -1,0 +1,74 @@
+{
+  "id": "route-sql-schema",
+  "parentID": "route-sql",
+  "order": 0,
+  "title": "Make Invalid Rows Impossible",
+  "concept": "Enforce domain invariants in a real database",
+  "minutes": 25,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Enforce domain invariants in a real database.",
+    "rule": "Validate in Rust for helpful errors and in SQL for every writer.",
+    "explanation": "Task Ledger must not accept empty titles just because a caller bypasses the API. A database schema is an independent enforcement boundary. Give each task an integer primary key, require a title whose trimmed length is between 1 and 80, and constrain done to exactly 0 or 1 with a default of 0.\n\nA CHECK returning null can behave differently from a false expression; NOT NULL remains a separate requirement. A default applies when a column is omitted, not when a caller explicitly sends null. SQLite trim without a second argument removes ordinary spaces, rather than Rust's full Unicode whitespace set. Store canonical titles and keep that policy explicit. Migration history belongs in version control. Once a production schema exists, changing CREATE TABLE text does not update an existing database: write and test a migration. This lab starts from a fresh SQLite database and executes your DDL, then tries valid, null, empty, duplicate and out-of-domain writes. It does not merely compare the SQL text.\n\nThe route project is Task Ledger: first keep a reproducible source history, then expose its data through a CLI and HTTP boundary, persist it in SQL, diagnose failures and prepare a release. This lesson owns one contract in that project. Run the worked example before changing the starter and explain which input makes the tempting shortcut fail.\n\nTerminal practice: Run sqlite3 tasks.db .read migrations/001.sql, then attempt valid and invalid INSERT statements. The compiler lab executes your DDL against fresh real SQLite.\n\nThe compiler lab is independent of the reading question. Edit solution.rs; the app supplies a separate caller with normal, empty and adversarial inputs. A successful unchanged demonstration does not prove your implementation. After the lab, apply the same contract to the route companion project. Its README separates the on-device adapter from the desktop Cargo/TCP profile.",
+    "exampleCode": "pub fn schema() -> &'static str {\n    \"CREATE TABLE tasks(id INTEGER PRIMARY KEY, title TEXT NOT NULL CHECK(length(trim(title)) BETWEEN 1 AND 80), done INTEGER NOT NULL DEFAULT 0 CHECK(done IN (0,1)));\"\n}\n\nfn main() {\n    println!(\"{}\", schema());\n}\n",
+    "exampleCaption": "This Rust reading prints a SQL statement. The independent compiler lab executes it against real SQLite.",
+    "practiceCode": "pub fn schema() -> &'static str {\n    todo!(\"implement the contract\")\n}\n",
+    "task": "Return DDL creating tasks(id INTEGER PRIMARY KEY,title TEXT NOT NULL,done INTEGER NOT NULL DEFAULT 0). Enforce a trimmed title length of 1..=80 and done IN (0,1) using SQL constraints. Keep the public signature. Open the compiler lab and edit solution.rs; do not edit the private verification caller.",
+    "success": "The separate caller accepts the changed solution and rejects unchanged TODO, a wrong implementation and a printed success message.",
+    "question": "Why keep SQL constraints when the Rust handler already validates titles?",
+    "answers": [
+      "Defaults reject every explicit null",
+      "Other writers and future bugs can bypass the handler",
+      "A Rust validation function automatically changes the database schema"
+    ],
+    "correctAnswer": 1,
+    "feedback": "The database must protect its own invariant independently of one application entry point."
+  },
+  "depth": {
+    "misconception": "A Rust validation function automatically changes the database schema",
+    "correction": "Validate in Rust for helpful errors and in SQL for every writer.",
+    "traceSteps": [
+      {
+        "title": "Identify the boundary",
+        "detail": "Enforce domain invariants in a real database. Write down its accepted inputs and observable output."
+      },
+      {
+        "title": "Exercise the failure",
+        "detail": "The database must protect its own invariant independently of one application entry point."
+      },
+      {
+        "title": "Check the independent caller",
+        "detail": "Return DDL creating tasks(id INTEGER PRIMARY KEY,title TEXT NOT NULL,done INTEGER NOT NULL DEFAULT 0). Enforce a trimmed title length of 1..=80 and done IN (0,1) using SQL constraints."
+      }
+    ],
+    "transferChallenge": "Apply this contract to Task Ledger, introduce the failure described in the lesson, and show the failing check before fixing it.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Retry Without Duplicating Tasks",
+        "concept": "Bind an idempotency key to one request payload"
+      },
+      {
+        "direction": "next",
+        "title": "Query the Right Rows in a Stable Order",
+        "concept": "Filter, join and order by the intended relationship"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "title": "Primary reference",
+      "url": "https://www.sqlite.org/lang.html"
+    },
+    {
+      "title": "Task Ledger companion source (ZIP)",
+      "url": "https://crabrix.com/examples/task-ledger-route.zip"
+    }
+  ],
+  "illustration": {
+    "path": "media/route-sql-schema.png",
+    "alt": "Diagram for Make Invalid Rows Impossible: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "This Rust reading prints a SQL statement. The independent compiler lab executes it against real SQLite."
+  },
+  "contentDigest": "ecdf9ea968f16bac46fae45e075809c625de4c44bdc49825af4ca06b966264f1"
+}

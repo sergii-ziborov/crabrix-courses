@@ -1,0 +1,74 @@
+{
+  "id": "route-cli-exit",
+  "parentID": "route-cli",
+  "order": 3,
+  "title": "Separate Output from Failure",
+  "concept": "Return observable stdout, stderr and exit status",
+  "minutes": 25,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Return observable stdout, stderr and exit status.",
+    "rule": "Data goes to stdout; a failure has stderr context and a nonzero status.",
+    "explanation": "Automation observes a program through more than its printed text. A machine may consume stdout as data and use the exit status to decide whether the next stage may run. Putting an error into stdout while returning success makes a broken command look like a valid empty result.\n\nUse status 0 for a successful task count and 2 for a usage or input error in this CLI contract. Error text belongs on stderr and ends in a newline. Do not add a success banner to machine-readable stdout. A program that crashes or fails compilation is different from a deliberate domain error; retain that distinction when diagnosing the terminal result. The finite lab models the three outputs so tests can assert them separately; the companion uses println, eprintln and process::exit at its actual boundary.\n\nThe route project is Task Ledger: first keep a reproducible source history, then expose its data through a CLI and HTTP boundary, persist it in SQL, diagnose failures and prepare a release. This lesson owns one contract in that project. Run the worked example before changing the starter and explain which input makes the tempting shortcut fail.\n\nTerminal practice: Run a valid and an invalid companion CLI invocation and compare output, error stream and exit result.\n\nThe compiler lab is independent of the reading question. Edit solution.rs; the app supplies a separate caller with normal, empty and adversarial inputs. A successful unchanged demonstration does not prove your implementation. After the lab, apply the same contract to the route companion project. Its README separates the on-device adapter from the desktop Cargo/TCP profile.",
+    "exampleCode": "pub fn report(result: Result<usize, &str>) -> (String, String, u8) {\n    match result {\n        Ok(n) => (format!(\"{n}\\n\"), String::new(), 0),\n        Err(e) => (String::new(), format!(\"error: {e}\\n\"), 2),\n    }\n}\n\nfn main() {\n    assert_eq!(\n        report(Ok(3)),\n        (\n            \"3\n\"\n            .to_owned(),\n            \"\".to_owned(),\n            0\n        ),\n        \"case 1\"\n    );\n    assert_eq!(\n        report(Ok(0)),\n        (\n            \"0\n\"\n            .to_owned(),\n            \"\".to_owned(),\n            0\n        ),\n        \"case 2\"\n    );\n    assert_eq!(\n        report(Err(\"invalid title\")),\n        (\n            \"\".to_owned(),\n            \"error: invalid title\n\"\n            .to_owned(),\n            2\n        ),\n        \"case 3\"\n    );\n    assert_eq!(\n        report(Err(\"missing input\")),\n        (\n            \"\".to_owned(),\n            \"error: missing input\n\"\n            .to_owned(),\n            2\n        ),\n        \"case 4\"\n    );\n    println!(\"worked example passed\");\n}\n",
+    "exampleCaption": "The worked implementation exercises return observable stdout, stderr and exit status. Its tests demonstrate the stated finite contract.",
+    "practiceCode": "pub fn report(result: Result<usize,&str>) -> (String,String,u8) {\n    todo!(\"implement the contract\")\n}\n",
+    "task": "Return stdout, stderr and exit code. Success emits COUNT followed by newline only on stdout with 0; errors emit error: MESSAGE followed by newline only on stderr with 2. Keep the public signature. Open the compiler lab and edit solution.rs; do not edit the private verification caller.",
+    "success": "The separate caller accepts the changed solution and rejects unchanged TODO, a wrong implementation and a printed success message.",
+    "question": "A command prints an error but exits with status 0. What is wrong for automation?",
+    "answers": [
+      "The command reports success through its status",
+      "Any text on stderr automatically changes the exit status",
+      "Exit codes are only decorative"
+    ],
+    "correctAnswer": 0,
+    "feedback": "Writing stderr does not itself set a nonzero process exit status."
+  },
+  "depth": {
+    "misconception": "Any text on stderr automatically changes the exit status",
+    "correction": "Data goes to stdout; a failure has stderr context and a nonzero status.",
+    "traceSteps": [
+      {
+        "title": "Identify the boundary",
+        "detail": "Return observable stdout, stderr and exit status. Write down its accepted inputs and observable output."
+      },
+      {
+        "title": "Exercise the failure",
+        "detail": "Writing stderr does not itself set a nonzero process exit status."
+      },
+      {
+        "title": "Check the independent caller",
+        "detail": "Return stdout, stderr and exit code. Success emits COUNT followed by newline only on stdout with 0; errors emit error: MESSAGE followed by newline only on stderr with 2."
+      }
+    ],
+    "transferChallenge": "Apply this contract to Task Ledger, introduce the failure described in the lesson, and show the failing check before fixing it.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Process Bounded Standard Input",
+        "concept": "Treat input as data with resource limits"
+      },
+      {
+        "direction": "next",
+        "title": "Route Method and Path Together",
+        "concept": "Separate unknown routes from disallowed methods"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "title": "Primary reference",
+      "url": "https://rust-cli.github.io/book/index.html"
+    },
+    {
+      "title": "Task Ledger companion source (ZIP)",
+      "url": "https://crabrix.com/examples/task-ledger-route.zip"
+    }
+  ],
+  "illustration": {
+    "path": "media/route-cli-exit.png",
+    "alt": "Diagram for Separate Output from Failure: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "The worked implementation exercises return observable stdout, stderr and exit status. Its tests demonstrate the stated finite contract."
+  },
+  "contentDigest": "de829d1a2a98d6e9b122952262ca79e2e1dcf376b10bef0fefeb2828cbcd12b4"
+}

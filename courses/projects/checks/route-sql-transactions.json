@@ -1,0 +1,52 @@
+{
+  "challenge": {
+    "lessonID": "route-sql-transactions",
+    "patternID": "route-sql-transactions",
+    "projectName": "route-sql-transactions-lab",
+    "source": "pub fn transfer_sql(amount: u32) -> String {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationSource": "mod solution;\n\nfn quote(s: &str) -> String {\n    let mut out=String::from(\"\\\"\");\n    for c in s.chars() { match c { '\"'=>out.push_str(\"\\\\\\\"\"), '\\\\'=>out.push_str(\"\\\\\\\\\"), '\\n'=>out.push_str(\"\\\\n\"), '\\r'=>out.push_str(\"\\\\r\"), '\\t'=>out.push_str(\"\\\\t\"), c if c<' '=>out.push_str(&format!(\"\\\\u{:04x}\",c as u32)), c=>out.push(c) } }\n    out.push('\"'); out\n}\nfn db(sql: &str, params: &[&str], readonly: bool) -> String {\n    let request=format!(\"{{\\\"sql\\\":{},\\\"params\\\":[{}],\\\"readOnly\\\":{}}}\",quote(sql),params.iter().map(|s|quote(s)).collect::<Vec<_>>().join(\",\"),readonly);\n    #[cfg(target_arch=\"wasm32\")]\n    {\n        #[link(wasm_import_module=\"crabrix_sql\")]\n        unsafe extern \"C\" { #[link_name=\"crabrix_sql_query\"] fn crabrix_sql_query(p:*const u8,n:usize,out:*mut u8,cap:usize)->i32; }\n        let mut out=vec![0u8;65536];\n        let size=unsafe { crabrix_sql_query(request.as_ptr(),request.len(),out.as_mut_ptr(),out.len()) };\n        assert!(size>=0 && (size as usize)<=out.len(),\"bounded SQL bridge failed\");\n        out.truncate(size as usize); String::from_utf8(out).unwrap()\n    }\n    #[cfg(not(target_arch=\"wasm32\"))]\n    {\n        let output=std::process::Command::new(\"python3\").arg(std::env::var(\"ROUTE_SQL_RUNNER\").unwrap()).arg(request).output().unwrap();\n        assert!(output.status.success());String::from_utf8(output.stdout).unwrap().trim().to_owned()\n    }\n}\nfn ok(sql:&str) { let result=db(sql,&[],false); assert!(!result.contains(\"\\\"error\\\"\"),\"SQL operation failed: {result}\"); }\nfn rejects(sql:&str) { assert!(db(sql,&[],false).contains(\"\\\"error\\\"\"),\"invalid write was accepted\"); }\nfn same(sql:&str,params:&[&str],oracle:&str) { assert_eq!(db(sql,params,true),db(oracle,&[],true),\"query result differs from independent fixture\"); }\n\nfn main() {\nok(\"CREATE TABLE accounts(id INTEGER PRIMARY KEY,balance INTEGER NOT NULL CHECK(balance>=0)); INSERT INTO accounts VALUES(1,100),(2,20);\");\nok(&solution::transfer_sql(30));same(\"SELECT id,balance FROM accounts ORDER BY id\",&[],\"SELECT 1 AS id,70 AS balance UNION ALL SELECT 2,50\");\nrejects(&solution::transfer_sql(71));same(\"SELECT id,balance FROM accounts ORDER BY id\",&[],\"SELECT 1 AS id,70 AS balance UNION ALL SELECT 2,50\");\nok(&solution::transfer_sql(0));same(\"SELECT sum(balance) AS total FROM accounts\",&[],\"SELECT 120 AS total\");\nok(&solution::transfer_sql(70));same(\"SELECT id,balance FROM accounts ORDER BY id\",&[],\"SELECT 1 AS id,0 AS balance UNION ALL SELECT 2,120\");\nprintln!(\"PASS route-sql-transactions\");\n}\n",
+    "verificationCases": [
+      {
+        "kind": "visible",
+        "input": "transfer 30 from 100/20",
+        "expectedAnswer": "70/50"
+      },
+      {
+        "kind": "boundary",
+        "input": "transfer exceeds balance",
+        "expectedAnswer": "rejected with balances unchanged"
+      },
+      {
+        "kind": "semantic",
+        "input": "transfer zero",
+        "expectedAnswer": "no balance change"
+      },
+      {
+        "kind": "semantic",
+        "input": "transfer entire balance",
+        "expectedAnswer": "0/120"
+      }
+    ],
+    "expectedOutput": "PASS route-sql-transactions\n",
+    "requiredSourceFragments": [
+      "pub fn transfer_sql"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ],
+    "executionProfile": "sqlite-v1"
+  },
+  "evidence": {
+    "kind": "algorithmChallenge",
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS route-sql-transactions\n"
+    },
+    "requiredSourceFragments": [
+      "pub fn transfer_sql"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "id": "route-http-routing",
+  "parentID": "route-http",
+  "order": 0,
+  "title": "Route Method and Path Together",
+  "concept": "Separate unknown routes from disallowed methods",
+  "minutes": 25,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Separate unknown routes from disallowed methods.",
+    "rule": "Resolve the resource first, then the allowed HTTP method.",
+    "explanation": "An HTTP method is part of the request contract. GET /tasks lists tasks; POST /tasks creates one. A known resource with a disallowed method is different from a path the application does not own. This lab returns 405 for unsupported methods on /tasks and 404 for unknown paths; GET /health returns 200, while other health methods return 405.\n\nThe request target can include a query string. Separate it before matching the path, but do not lowercase the path or decode arbitrary escapes without a policy: route names can be case sensitive. The lab implements literal paths only. A desktop Axum router handles the transport; the on-device adapter passes a bounded real HTTP request to Rust through stdin. It is an HTTP/1.x adapter with one response per connection, not an implementation of every HTTP version or chunked body mode.\n\nThe route project is Task Ledger: first keep a reproducible source history, then expose its data through a CLI and HTTP boundary, persist it in SQL, diagnose failures and prepare a release. This lesson owns one contract in that project. Run the worked example before changing the starter and explain which input makes the tempting shortcut fail.\n\nTerminal practice: Run cargo serve --port 8080 --database tasks.db, then curl -i http://127.0.0.1:8080/tasks and curl -i -X DELETE http://127.0.0.1:8080/tasks. Stop with http stop.\n\nThe compiler lab is independent of the reading question. Edit solution.rs; the app supplies a separate caller with normal, empty and adversarial inputs. A successful unchanged demonstration does not prove your implementation. After the lab, apply the same contract to the route companion project. Its README separates the on-device adapter from the desktop Cargo/TCP profile.",
+    "exampleCode": "pub fn route(method: &str, target: &str) -> u16 {\n    match target.split('?').next().unwrap_or(\"\") {\n        \"/tasks\" => match method {\n            \"GET\" => 200,\n            \"POST\" => 201,\n            _ => 405,\n        },\n        \"/health\" => {\n            if method == \"GET\" {\n                200\n            } else {\n                405\n            }\n        }\n        _ => 404,\n    }\n}\n\nfn main() {\n    assert_eq!(route(\"GET\", \"/tasks?limit=5\"), 200, \"case 1\");\n    assert_eq!(route(\"GET\", \"/missing\"), 404, \"case 2\");\n    assert_eq!(route(\"DELETE\", \"/tasks\"), 405, \"case 3\");\n    assert_eq!(route(\"POST\", \"/tasks\"), 201, \"case 4\");\n    assert_eq!(route(\"GET\", \"/Tasks\"), 404, \"case 5\");\n    assert_eq!(route(\"POST\", \"/health\"), 405, \"case 6\");\n    println!(\"worked example passed\");\n}\n",
+    "exampleCaption": "The worked implementation exercises separate unknown routes from disallowed methods. Its tests demonstrate the stated finite contract.",
+    "practiceCode": "pub fn route(method: &str, target: &str) -> u16 {\n    todo!(\"implement the contract\")\n}\n",
+    "task": "Match literal /tasks and /health after removing the query string. GET tasks=200, POST tasks=201, GET health=200; other methods on those paths=405, unknown paths=404. Keep the public signature. Open the compiler lab and edit solution.rs; do not edit the private verification caller.",
+    "success": "The separate caller accepts the changed solution and rejects unchanged TODO, a wrong implementation and a printed success message.",
+    "question": "What distinguishes 405 from 404 in this routing contract?",
+    "answers": [
+      "Both statuses always mean the same thing",
+      "An unknown path should return 200 with an empty body",
+      "The resource exists but the method is disallowed"
+    ],
+    "correctAnswer": 2,
+    "feedback": "Matching only a method or only a path loses the distinction between unsupported operations and unknown resources."
+  },
+  "depth": {
+    "misconception": "Both statuses always mean the same thing",
+    "correction": "Resolve the resource first, then the allowed HTTP method.",
+    "traceSteps": [
+      {
+        "title": "Identify the boundary",
+        "detail": "Separate unknown routes from disallowed methods. Write down its accepted inputs and observable output."
+      },
+      {
+        "title": "Exercise the failure",
+        "detail": "Matching only a method or only a path loses the distinction between unsupported operations and unknown resources."
+      },
+      {
+        "title": "Check the independent caller",
+        "detail": "Match literal /tasks and /health after removing the query string. GET tasks=200, POST tasks=201, GET health=200; other methods on those paths=405, unknown paths=404."
+      }
+    ],
+    "transferChallenge": "Apply this contract to Task Ledger, introduce the failure described in the lesson, and show the failing check before fixing it.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Separate Output from Failure",
+        "concept": "Return observable stdout, stderr and exit status"
+      },
+      {
+        "direction": "next",
+        "title": "Validate Before Applying Effects",
+        "concept": "Check declared and actual request size"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "title": "Primary reference",
+      "url": "https://www.rfc-editor.org/rfc/rfc9110.html"
+    },
+    {
+      "title": "Task Ledger companion source (ZIP)",
+      "url": "https://crabrix.com/examples/task-ledger-route.zip"
+    }
+  ],
+  "illustration": {
+    "path": "media/route-http-routing.png",
+    "alt": "Diagram for Route Method and Path Together: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "The worked implementation exercises separate unknown routes from disallowed methods. Its tests demonstrate the stated finite contract."
+  },
+  "contentDigest": "02bb096ac7d45c826a93f4b631817c00b6340da0cffbd05a72ef6632593b44b0"
+}

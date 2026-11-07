@@ -1,0 +1,74 @@
+{
+  "id": "route-sql-parameters",
+  "parentID": "route-sql",
+  "order": 2,
+  "title": "Bind Values Instead of SQL Syntax",
+  "concept": "Keep untrusted text in a parameter slot",
+  "minutes": 25,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Keep untrusted text in a parameter slot.",
+    "rule": "A title is data even when it contains quotes or SQL-looking text.",
+    "explanation": "A title can contain an apostrophe or text that resembles SQL. Concatenating it into a WHERE clause turns data into syntax and makes quoting rules part of the security boundary. Bind the title into a placeholder instead; the database receives the statement structure separately from the value.\n\nThe local bridge accepts JSON with sql and params fields. The desktop SQLx profile uses its own bind API; placeholders differ across drivers, so SQLite ?1 is not PostgreSQL $1. This lesson grades a read-only SQLite query with exactly one positional title parameter. Fixtures include an apostrophe, Unicode, and an injection-shaped title that must match only itself. LIKE is a different search contract and should not replace exact equality. Parameterization does not grant access control: the application must still decide which caller is allowed to read a project.\n\nThe route project is Task Ledger: first keep a reproducible source history, then expose its data through a CLI and HTTP boundary, persist it in SQL, diagnose failures and prepare a release. This lesson owns one contract in that project. Run the worked example before changing the starter and explain which input makes the tempting shortcut fail.\n\nTerminal practice: Inspect the companion db::query call: the title travels in params, while SQL remains unchanged. Use a title containing an apostrophe in the HTTP request.\n\nThe compiler lab is independent of the reading question. Edit solution.rs; the app supplies a separate caller with normal, empty and adversarial inputs. A successful unchanged demonstration does not prove your implementation. After the lab, apply the same contract to the route companion project. Its README separates the on-device adapter from the desktop Cargo/TCP profile.",
+    "exampleCode": "pub fn title_sql() -> &'static str {\n    \"SELECT id FROM tasks WHERE title=?1 ORDER BY id\"\n}\n\nfn main() {\n    println!(\"{}\", title_sql());\n}\n",
+    "exampleCaption": "This Rust reading prints a SQL statement. The independent compiler lab executes it against real SQLite.",
+    "practiceCode": "pub fn title_sql() -> &'static str {\n    todo!(\"implement the contract\")\n}\n",
+    "task": "Return a read-only query selecting task IDs with title exactly equal to parameter ?1, ordered by id. Table tasks has id and title columns; do not interpolate a title into SQL. Keep the public signature. Open the compiler lab and edit solution.rs; do not edit the private verification caller.",
+    "success": "The separate caller accepts the changed solution and rejects unchanged TODO, a wrong implementation and a printed success message.",
+    "question": "Does binding a title give it permission to become a SQL clause?",
+    "answers": [
+      "Yes, a quote in the value closes the SQL string",
+      "Parameters replace the authorization policy",
+      "No, it stays a value"
+    ],
+    "correctAnswer": 2,
+    "feedback": "A parameter cannot change statement structure; authorization remains a separate application decision."
+  },
+  "depth": {
+    "misconception": "Yes, a quote in the value closes the SQL string",
+    "correction": "A title is data even when it contains quotes or SQL-looking text.",
+    "traceSteps": [
+      {
+        "title": "Identify the boundary",
+        "detail": "Keep untrusted text in a parameter slot. Write down its accepted inputs and observable output."
+      },
+      {
+        "title": "Exercise the failure",
+        "detail": "A parameter cannot change statement structure; authorization remains a separate application decision."
+      },
+      {
+        "title": "Check the independent caller",
+        "detail": "Return a read-only query selecting task IDs with title exactly equal to parameter ?1, ordered by id. Table tasks has id and title columns; do not interpolate a title into SQL."
+      }
+    ],
+    "transferChallenge": "Apply this contract to Task Ledger, introduce the failure described in the lesson, and show the failing check before fixing it.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Query the Right Rows in a Stable Order",
+        "concept": "Filter, join and order by the intended relationship"
+      },
+      {
+        "direction": "next",
+        "title": "Commit Related Changes Atomically",
+        "concept": "Roll back a failed multi-write operation"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "title": "Primary reference",
+      "url": "https://www.sqlite.org/lang.html"
+    },
+    {
+      "title": "Task Ledger companion source (ZIP)",
+      "url": "https://crabrix.com/examples/task-ledger-route.zip"
+    }
+  ],
+  "illustration": {
+    "path": "media/route-sql-parameters.png",
+    "alt": "Diagram for Bind Values Instead of SQL Syntax: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "This Rust reading prints a SQL statement. The independent compiler lab executes it against real SQLite."
+  },
+  "contentDigest": "6359138950a2ff1a599b74675127f11c0ab1d99f47d9c05d106f3f9cbb55ae95"
+}

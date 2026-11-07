@@ -1,0 +1,74 @@
+{
+  "id": "route-http-limits",
+  "parentID": "route-http",
+  "order": 1,
+  "title": "Validate Before Applying Effects",
+  "concept": "Check declared and actual request size",
+  "minutes": 25,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Check declared and actual request size.",
+    "rule": "A body-length mismatch is a framing error; an exceeded limit is a resource error.",
+    "explanation": "A request can advertise one size and deliver another. A server needs limits on both the declared size and accumulated bytes. Check limits before parsing the domain object or applying writes, otherwise an oversized request can consume unbounded resources or leave partial state.\n\nThis function receives an optional parsed Content-Length, actual byte count and maximum. Return 413 if either known size exceeds the maximum. Otherwise a present length that differs from actual input returns 400; valid bounded input returns 200. Missing length is accepted by this isolated policy when transport framing has already supplied a complete body. The native HTTP adapter has a stricter framing profile: it rejects chunked transfer, duplicate lengths and pipelined bytes. Never use this size-only policy as a complete HTTP parser.\n\nThe route project is Task Ledger: first keep a reproducible source history, then expose its data through a CLI and HTTP boundary, persist it in SQL, diagnose failures and prepare a release. This lesson owns one contract in that project. Run the worked example before changing the starter and explain which input makes the tempting shortcut fail.\n\nTerminal practice: Use curl -i -H \"Content-Type: application/json\" -d @request.json http://127.0.0.1:8080/tasks and compare a rejected oversized title with a valid request.\n\nThe compiler lab is independent of the reading question. Edit solution.rs; the app supplies a separate caller with normal, empty and adversarial inputs. A successful unchanged demonstration does not prove your implementation. After the lab, apply the same contract to the route companion project. Its README separates the on-device adapter from the desktop Cargo/TCP profile.",
+    "exampleCode": "pub fn body_status(\n    declared: Option<usize>,\n    actual: usize,\n    maximum: usize,\n) -> u16 {\n    if actual > maximum || declared.is_some_and(|n| n > maximum) {\n        413\n    } else if declared.is_some_and(|n| n != actual) {\n        400\n    } else {\n        200\n    }\n}\n\nfn main() {\n    assert_eq!(body_status(Some(5), 5, 10), 200, \"case 1\");\n    assert_eq!(body_status(Some(0), 0, 0), 200, \"case 2\");\n    assert_eq!(body_status(Some(20), 0, 10), 413, \"case 3\");\n    assert_eq!(body_status(Some(5), 4, 10), 400, \"case 4\");\n    assert_eq!(body_status(None, 11, 10), 413, \"case 5\");\n    assert_eq!(body_status(None, 5, 10), 200, \"case 6\");\n    println!(\"worked example passed\");\n}\n",
+    "exampleCaption": "The worked implementation exercises check declared and actual request size. Its tests demonstrate the stated finite contract.",
+    "practiceCode": "pub fn body_status(declared: Option<usize>, actual: usize, maximum: usize) -> u16 {\n    todo!(\"implement the contract\")\n}\n",
+    "task": "Return 413 if declared or actual bytes exceed maximum; otherwise 400 for a present mismatching length; otherwise 200. Keep the public signature. Open the compiler lab and edit solution.rs; do not edit the private verification caller.",
+    "success": "The separate caller accepts the changed solution and rejects unchanged TODO, a wrong implementation and a printed success message.",
+    "question": "Can a small declared length replace a limit on actual bytes?",
+    "answers": [
+      "Only decoded character count matters",
+      "No, actual bytes also need a bound",
+      "Yes, clients always report an accurate size"
+    ],
+    "correctAnswer": 1,
+    "feedback": "Clients can lie or disconnect mid-body, so declared size alone is insufficient."
+  },
+  "depth": {
+    "misconception": "Yes, clients always report an accurate size",
+    "correction": "A body-length mismatch is a framing error; an exceeded limit is a resource error.",
+    "traceSteps": [
+      {
+        "title": "Identify the boundary",
+        "detail": "Check declared and actual request size. Write down its accepted inputs and observable output."
+      },
+      {
+        "title": "Exercise the failure",
+        "detail": "Clients can lie or disconnect mid-body, so declared size alone is insufficient."
+      },
+      {
+        "title": "Check the independent caller",
+        "detail": "Return 413 if declared or actual bytes exceed maximum; otherwise 400 for a present mismatching length; otherwise 200."
+      }
+    ],
+    "transferChallenge": "Apply this contract to Task Ledger, introduce the failure described in the lesson, and show the failing check before fixing it.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Route Method and Path Together",
+        "concept": "Separate unknown routes from disallowed methods"
+      },
+      {
+        "direction": "next",
+        "title": "Encode a Valid JSON Boundary",
+        "concept": "Escape JSON strings without corrupting Unicode"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "title": "Primary reference",
+      "url": "https://www.rfc-editor.org/rfc/rfc9110.html"
+    },
+    {
+      "title": "Task Ledger companion source (ZIP)",
+      "url": "https://crabrix.com/examples/task-ledger-route.zip"
+    }
+  ],
+  "illustration": {
+    "path": "media/route-http-limits.png",
+    "alt": "Diagram for Validate Before Applying Effects: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "The worked implementation exercises check declared and actual request size. Its tests demonstrate the stated finite contract."
+  },
+  "contentDigest": "d7e0101e95ce15207a3569e2e21b5cd60fa4125765219046012380d0fa881ec2"
+}

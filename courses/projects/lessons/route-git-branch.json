@@ -1,0 +1,74 @@
+{
+  "id": "route-git-branch",
+  "parentID": "route-git",
+  "order": 2,
+  "title": "Switch Without Losing Work",
+  "concept": "Protect dirty worktrees during checkout",
+  "minutes": 25,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Protect dirty worktrees during checkout.",
+    "rule": "Require a clean worktree before this profile replaces files from another branch.",
+    "explanation": "Branches name positions in history. Creating a branch does not copy a folder, and switching it is not merely changing a label: the target tree can replace editor files. A clean-checkout policy is easy to explain and test. It refuses the operation whenever the current worktree differs from its HEAD, including an untracked file or deletion.\n\nCompare trees without relying on their enumeration order. A new branch can be created while preserving current edits, but switching uses the clean-tree precondition in this terminal. A desktop client may support more nuanced preservation or stash; those are distinct contracts. After committing, refresh status before switching, because a successful commit of one captured snapshot does not prove newer typing was also committed.\n\nThe route project is Task Ledger: first keep a reproducible source history, then expose its data through a CLI and HTTP boundary, persist it in SQL, diagnose failures and prepare a release. This lesson owns one contract in that project. Run the worked example before changing the starter and explain which input makes the tempting shortcut fail.\n\nTerminal practice: Run git branch feature-cli, git status, then git switch feature-cli after the tree is clean.\n\nThe compiler lab is independent of the reading question. Edit solution.rs; the app supplies a separate caller with normal, empty and adversarial inputs. A successful unchanged demonstration does not prove your implementation. After the lab, apply the same contract to the route companion project. Its README separates the on-device adapter from the desktop Cargo/TCP profile.",
+    "exampleCode": "pub fn clean(work: &[(&str, &str)], head: &[(&str, &str)]) -> bool {\n    work.iter()\n        .copied()\n        .collect::<std::collections::BTreeMap<_, _>>()\n        == head\n            .iter()\n            .copied()\n            .collect::<std::collections::BTreeMap<_, _>>()\n}\n\nfn main() {\n    assert_eq!(\n        clean(&[(\"b\", \"2\"), (\"a\", \"1\")], &[(\"a\", \"1\"), (\"b\", \"2\")]),\n        true,\n        \"case 1\"\n    );\n    assert_eq!(clean(&[], &[]), true, \"case 2\");\n    assert_eq!(\n        clean(&[(\"a\", \"new\")], &[(\"a\", \"old\")]),\n        false,\n        \"case 3\"\n    );\n    assert_eq!(clean(&[(\"extra\", \"x\")], &[]), false, \"case 4\");\n    assert_eq!(clean(&[], &[(\"gone\", \"x\")]), false, \"case 5\");\n    println!(\"worked example passed\");\n}\n",
+    "exampleCaption": "The worked implementation exercises protect dirty worktrees during checkout. Its tests demonstrate the stated finite contract.",
+    "practiceCode": "pub fn clean(work: &[(&str,&str)], head: &[(&str,&str)]) -> bool {\n    todo!(\"implement the contract\")\n}\n",
+    "task": "Return whether two unique-path trees have identical contents, independent of enumeration order. Keep the public signature. Open the compiler lab and edit solution.rs; do not edit the private verification caller.",
+    "success": "The separate caller accepts the changed solution and rejects unchanged TODO, a wrong implementation and a printed success message.",
+    "question": "Can an untracked file matter to a clean-checkout policy?",
+    "answers": [
+      "Only tracked modifications can make a checkout unsafe",
+      "Changing branch names preserves every file automatically",
+      "Yes; the worktree differs from HEAD"
+    ],
+    "correctAnswer": 2,
+    "feedback": "An added or deleted file is a tree difference even when tracked file contents match."
+  },
+  "depth": {
+    "misconception": "Only tracked modifications can make a checkout unsafe",
+    "correction": "Require a clean worktree before this profile replaces files from another branch.",
+    "traceSteps": [
+      {
+        "title": "Identify the boundary",
+        "detail": "Protect dirty worktrees during checkout. Write down its accepted inputs and observable output."
+      },
+      {
+        "title": "Exercise the failure",
+        "detail": "An added or deleted file is a tree difference even when tracked file contents match."
+      },
+      {
+        "title": "Check the independent caller",
+        "detail": "Return whether two unique-path trees have identical contents, independent of enumeration order."
+      }
+    ],
+    "transferChallenge": "Apply this contract to Task Ledger, introduce the failure described in the lesson, and show the failing check before fixing it.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Commit Only Reviewed Paths",
+        "concept": "Construct the selected commit tree"
+      },
+      {
+        "direction": "next",
+        "title": "Recover One Historical File",
+        "concept": "Restore narrowly from a known revision"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "title": "Primary reference",
+      "url": "https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository"
+    },
+    {
+      "title": "Task Ledger companion source (ZIP)",
+      "url": "https://crabrix.com/examples/task-ledger-route.zip"
+    }
+  ],
+  "illustration": {
+    "path": "media/route-git-branch.png",
+    "alt": "Diagram for Switch Without Losing Work: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "The worked implementation exercises protect dirty worktrees during checkout. Its tests demonstrate the stated finite contract."
+  },
+  "contentDigest": "e56d865751558b0ac6935093f0fe438d084d231cc09a68c0f9e99f11bad6c2dc"
+}

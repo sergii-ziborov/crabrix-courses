@@ -1,0 +1,69 @@
+{
+  "id": "route-git-review",
+  "parentID": "route-git",
+  "order": 0,
+  "title": "Review the Exact Change",
+  "concept": "Distinguish changed, added and deleted paths",
+  "minutes": 25,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Distinguish changed, added and deleted paths.",
+    "rule": "Compare source snapshots by path and content before selecting a commit.",
+    "explanation": "A worktree is the collection you are editing. A commit records a particular tree; autosave protects edits but does not create a commit. Review both before selecting paths. A file can disappear, appear, or keep its name while its contents change. Looking only for new names misses modifications and deletions.\n\nBuild the candidate path set from both trees and compare values. Return each changed path once in lexical order. File ordering is presentation, not Git object identity. This lab models text trees; real Git also stores modes and opaque bytes. In the native terminal, inspect actual history through the existing libgit2-backed commands. The selected-path commit profile commits exactly the reviewed paths, so unrelated edits stay uncommitted.\n\nThe route project is Task Ledger: first keep a reproducible source history, then expose its data through a CLI and HTTP boundary, persist it in SQL, diagnose failures and prepare a release. This lesson owns one contract in that project. Run the worked example before changing the starter and explain which input makes the tempting shortcut fail.\n\nTerminal practice: Run git status and git diff src/main.rs before committing. The terminal uses real Git; the lab isolates the tree-comparison contract.\n\nThe compiler lab is independent of the reading question. Edit solution.rs; the app supplies a separate caller with normal, empty and adversarial inputs. A successful unchanged demonstration does not prove your implementation. After the lab, apply the same contract to the route companion project. Its README separates the on-device adapter from the desktop Cargo/TCP profile.",
+    "exampleCode": "pub fn changed(\n    before: &[(&str, &str)],\n    after: &[(&str, &str)],\n) -> Vec<String> {\n    let a: std::collections::BTreeMap<_, _> =\n        before.iter().copied().collect();\n    let b: std::collections::BTreeMap<_, _> =\n        after.iter().copied().collect();\n    a.keys()\n        .chain(b.keys())\n        .copied()\n        .collect::<std::collections::BTreeSet<_>>()\n        .into_iter()\n        .filter(|k| a.get(k) != b.get(k))\n        .map(str::to_owned)\n        .collect()\n}\n\nfn main() {\n    assert_eq!(\n        changed(&[(\"a\", \"1\")], &[(\"a\", \"2\"), (\"b\", \"3\")]),\n        vec![\"a\".to_owned(), \"b\".to_owned()],\n        \"case 1\"\n    );\n    assert_eq!(changed(&[], &[]), Vec::<String>::new(), \"case 2\");\n    assert_eq!(\n        changed(&[(\"gone\", \"x\")], &[]),\n        vec![\"gone\".to_owned()],\n        \"case 3\"\n    );\n    assert_eq!(\n        changed(&[(\"a\", \"1\")], &[(\"a\", \"1\")]),\n        Vec::<String>::new(),\n        \"case 4\"\n    );\n    println!(\"worked example passed\");\n}\n",
+    "exampleCaption": "The worked implementation exercises distinguish changed, added and deleted paths. Its tests demonstrate the stated finite contract.",
+    "practiceCode": "pub fn changed(before: &[(&str, &str)], after: &[(&str, &str)]) -> Vec<String> {\n    todo!(\"implement the contract\")\n}\n",
+    "task": "Return the sorted unique paths whose contents differ between two trees; include additions and deletions. Each input has unique paths. Keep the public signature. Open the compiler lab and edit solution.rs; do not edit the private verification caller.",
+    "success": "The separate caller accepts the changed solution and rejects unchanged TODO, a wrong implementation and a printed success message.",
+    "question": "An existing file keeps its name but changes content. Should it appear in the review?",
+    "answers": [
+      "Autosave makes the edit a commit",
+      "Yes, content is part of the snapshot",
+      "Only newly named files belong in a change review"
+    ],
+    "correctAnswer": 1,
+    "feedback": "Comparing only path names misses modified content; comparing only the new tree misses deletions."
+  },
+  "depth": {
+    "misconception": "Only newly named files belong in a change review",
+    "correction": "Compare source snapshots by path and content before selecting a commit.",
+    "traceSteps": [
+      {
+        "title": "Identify the boundary",
+        "detail": "Distinguish changed, added and deleted paths. Write down its accepted inputs and observable output."
+      },
+      {
+        "title": "Exercise the failure",
+        "detail": "Comparing only path names misses modified content; comparing only the new tree misses deletions."
+      },
+      {
+        "title": "Check the independent caller",
+        "detail": "Return the sorted unique paths whose contents differ between two trees; include additions and deletions. Each input has unique paths."
+      }
+    ],
+    "transferChallenge": "Apply this contract to Task Ledger, introduce the failure described in the lesson, and show the failing check before fixing it.",
+    "connections": [
+      {
+        "direction": "next",
+        "title": "Commit Only Reviewed Paths",
+        "concept": "Construct the selected commit tree"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "title": "Primary reference",
+      "url": "https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository"
+    },
+    {
+      "title": "Task Ledger companion source (ZIP)",
+      "url": "https://crabrix.com/examples/task-ledger-route.zip"
+    }
+  ],
+  "illustration": {
+    "path": "media/route-git-review.png",
+    "alt": "Diagram for Review the Exact Change: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "The worked implementation exercises distinguish changed, added and deleted paths. Its tests demonstrate the stated finite contract."
+  },
+  "contentDigest": "00e43eb141e07891b8fb414b22995e56eae606c77f7d13c777f2f8a772ed4a6c"
+}

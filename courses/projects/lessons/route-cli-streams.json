@@ -1,0 +1,74 @@
+{
+  "id": "route-cli-streams",
+  "parentID": "route-cli",
+  "order": 2,
+  "title": "Process Bounded Standard Input",
+  "concept": "Treat input as data with resource limits",
+  "minutes": 25,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Treat input as data with resource limits.",
+    "rule": "Check byte limits before retaining input and validate complete records.",
+    "explanation": "Standard input makes a tool composable: a file can feed the same parser as typed input. Rust strings are UTF-8; byte length and character count answer different questions. A memory budget is measured in bytes, so an emoji can consume several bytes of the budget. A record title is a nonblank line after trimming, with at most 80 Unicode scalar values in this lab.\n\nReject the complete input if its byte size exceeds the supplied budget or any title is too long. Ignore blank lines and keep record order. A production streaming parser additionally stops accumulation as it reads; this exercise receives an already bounded string to isolate validation. The companion reads through a limited reader and detects one byte beyond its limit. Do not advertise a post-read length check as protection against an unbounded stream.\n\nThe route project is Task Ledger: first keep a reproducible source history, then expose its data through a CLI and HTTP boundary, persist it in SQL, diagnose failures and prepare a release. This lesson owns one contract in that project. Run the worked example before changing the starter and explain which input makes the tempting shortcut fail.\n\nTerminal practice: Create input.txt, then run cargo run -- import < input.txt; inspect stderr for an oversized record.\n\nThe compiler lab is independent of the reading question. Edit solution.rs; the app supplies a separate caller with normal, empty and adversarial inputs. A successful unchanged demonstration does not prove your implementation. After the lab, apply the same contract to the route companion project. Its README separates the on-device adapter from the desktop Cargo/TCP profile.",
+    "exampleCode": "pub fn titles(\n    input: &str,\n    max_bytes: usize,\n) -> Result<Vec<String>, String> {\n    if input.len() > max_bytes {\n        return Err(\"too large\".to_owned());\n    }\n    let mut out = Vec::new();\n    for line in input.lines() {\n        let value = line.trim();\n        if value.chars().count() > 80 {\n            return Err(\"title too long\".to_owned());\n        }\n        if !value.is_empty() {\n            out.push(value.to_owned());\n        }\n    }\n    Ok(out)\n}\n\nfn main() {\n    assert_eq!(\n        titles(\n            \" one\n\n two \n\",\n            100\n        ),\n        Ok(vec![\"one\".to_owned(), \"two\".to_owned()]),\n        \"case 1\"\n    );\n    assert_eq!(titles(\"\", 0), Ok(vec![]), \"case 2\");\n    assert_eq!(titles(\"🦀\", 3), Err(\"too large\".to_owned()), \"case 3\");\n    assert_eq!(\n        titles(&\"x\".repeat(81), 100),\n        Err(\"title too long\".to_owned()),\n        \"case 4\"\n    );\n    assert_eq!(titles(\"🦀\", 4), Ok(vec![\"🦀\".to_owned()]), \"case 5\");\n    println!(\"worked example passed\");\n}\n",
+    "exampleCaption": "The worked implementation exercises treat input as data with resource limits. Its tests demonstrate the stated finite contract.",
+    "practiceCode": "pub fn titles(input: &str, max_bytes: usize) -> Result<Vec<String>,String> {\n    todo!(\"implement the contract\")\n}\n",
+    "task": "Reject input exceeding max_bytes; trim lines, omit blanks, reject titles longer than 80 Unicode scalar values, and preserve order. Keep the public signature. Open the compiler lab and edit solution.rs; do not edit the private verification caller.",
+    "success": "The separate caller accepts the changed solution and rejects unchanged TODO, a wrong implementation and a printed success message.",
+    "question": "Which size controls a UTF-8 input memory budget?",
+    "answers": [
+      "The number of newline separators",
+      "Encoded byte length",
+      "Only the number of visible characters"
+    ],
+    "correctAnswer": 1,
+    "feedback": "An emoji can fit one scalar position while exceeding a three-byte budget."
+  },
+  "depth": {
+    "misconception": "Only the number of visible characters",
+    "correction": "Check byte limits before retaining input and validate complete records.",
+    "traceSteps": [
+      {
+        "title": "Identify the boundary",
+        "detail": "Treat input as data with resource limits. Write down its accepted inputs and observable output."
+      },
+      {
+        "title": "Exercise the failure",
+        "detail": "An emoji can fit one scalar position while exceeding a three-byte budget."
+      },
+      {
+        "title": "Check the independent caller",
+        "detail": "Reject input exceeding max_bytes; trim lines, omit blanks, reject titles longer than 80 Unicode scalar values, and preserve order."
+      }
+    ],
+    "transferChallenge": "Apply this contract to Task Ledger, introduce the failure described in the lesson, and show the failing check before fixing it.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Resolve Configuration Once",
+        "concept": "Apply explicit configuration precedence"
+      },
+      {
+        "direction": "next",
+        "title": "Separate Output from Failure",
+        "concept": "Return observable stdout, stderr and exit status"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "title": "Primary reference",
+      "url": "https://rust-cli.github.io/book/index.html"
+    },
+    {
+      "title": "Task Ledger companion source (ZIP)",
+      "url": "https://crabrix.com/examples/task-ledger-route.zip"
+    }
+  ],
+  "illustration": {
+    "path": "media/route-cli-streams.png",
+    "alt": "Diagram for Process Bounded Standard Input: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "The worked implementation exercises treat input as data with resource limits. Its tests demonstrate the stated finite contract."
+  },
+  "contentDigest": "5df876fb617d6dabae3287f75925dc6ec01f17b9a496c43e59bc53d8b3f34eaa"
+}

@@ -1,0 +1,74 @@
+{
+  "id": "route-cli-config",
+  "parentID": "route-cli",
+  "order": 1,
+  "title": "Resolve Configuration Once",
+  "concept": "Apply explicit configuration precedence",
+  "minutes": 25,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Apply explicit configuration precedence.",
+    "rule": "Choose flag over environment over default, then validate the chosen value.",
+    "explanation": "Configuration can come from a flag, an environment variable or a default. Establish precedence before parsing so a broken lower-priority value does not override an explicit valid flag. Conversely, do not silently fall back when the chosen highest-priority value is malformed: the operator needs to know their request was rejected.\n\nThe list limit must be an integer from 1 to 100. Absence selects 20, but an explicitly empty string is an invalid value, not absence. In production, report which configuration source failed without printing secrets. Invocation environment in Crabrix is passed only to the student program; it never changes the compiler or dependency build-script environment. This prevents an educational flag from accidentally reconfiguring the toolchain.\n\nThe route project is Task Ledger: first keep a reproducible source history, then expose its data through a CLI and HTTP boundary, persist it in SQL, diagnose failures and prepare a release. This lesson owns one contract in that project. Run the worked example before changing the starter and explain which input makes the tempting shortcut fail.\n\nTerminal practice: Run env TASK_LIMIT=7 cargo run -- list. Compare with env TASK_LIMIT=bad cargo run -- list.\n\nThe compiler lab is independent of the reading question. Edit solution.rs; the app supplies a separate caller with normal, empty and adversarial inputs. A successful unchanged demonstration does not prove your implementation. After the lab, apply the same contract to the route companion project. Its README separates the on-device adapter from the desktop Cargo/TCP profile.",
+    "exampleCode": "pub fn limit(\n    flag: Option<&str>,\n    environment: Option<&str>,\n) -> Result<u16, String> {\n    let raw = flag.or(environment).unwrap_or(\"20\");\n    match raw.parse::<u16>() {\n        Ok(n) if (1..=100).contains(&n) => Ok(n),\n        _ => Err(\"invalid limit\".to_owned()),\n    }\n}\n\nfn main() {\n    assert_eq!(limit(Some(\"7\"), Some(\"bad\")), Ok(7), \"case 1\");\n    assert_eq!(limit(None, None), Ok(20), \"case 2\");\n    assert_eq!(limit(None, Some(\"100\")), Ok(100), \"case 3\");\n    assert_eq!(\n        limit(Some(\"\"), Some(\"5\")),\n        Err(\"invalid limit\".to_owned()),\n        \"case 4\"\n    );\n    assert_eq!(\n        limit(Some(\"0\"), None),\n        Err(\"invalid limit\".to_owned()),\n        \"case 5\"\n    );\n    assert_eq!(\n        limit(None, Some(\"101\")),\n        Err(\"invalid limit\".to_owned()),\n        \"case 6\"\n    );\n    println!(\"worked example passed\");\n}\n",
+    "exampleCaption": "The worked implementation exercises apply explicit configuration precedence. Its tests demonstrate the stated finite contract.",
+    "practiceCode": "pub fn limit(flag: Option<&str>, environment: Option<&str>) -> Result<u16,String> {\n    todo!(\"implement the contract\")\n}\n",
+    "task": "Choose flag, otherwise environment, otherwise 20. Parse the chosen string as u16 and accept only 1..=100; return invalid limit on failure. Keep the public signature. Open the compiler lab and edit solution.rs; do not edit the private verification caller.",
+    "success": "The separate caller accepts the changed solution and rejects unchanged TODO, a wrong implementation and a printed success message.",
+    "question": "An explicit valid flag overrides a malformed environment value. What should happen?",
+    "answers": [
+      "Reject the unrelated lower-priority value",
+      "Always use the default",
+      "Use the flag"
+    ],
+    "correctAnswer": 2,
+    "feedback": "Precedence decides the authoritative value before validation; invalid authoritative input must still fail."
+  },
+  "depth": {
+    "misconception": "Reject the unrelated lower-priority value",
+    "correction": "Choose flag over environment over default, then validate the chosen value.",
+    "traceSteps": [
+      {
+        "title": "Identify the boundary",
+        "detail": "Apply explicit configuration precedence. Write down its accepted inputs and observable output."
+      },
+      {
+        "title": "Exercise the failure",
+        "detail": "Precedence decides the authoritative value before validation; invalid authoritative input must still fail."
+      },
+      {
+        "title": "Check the independent caller",
+        "detail": "Choose flag, otherwise environment, otherwise 20. Parse the chosen string as u16 and accept only 1..=100; return invalid limit on failure."
+      }
+    ],
+    "transferChallenge": "Apply this contract to Task Ledger, introduce the failure described in the lesson, and show the failing check before fixing it.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Parse a CLI Contract",
+        "concept": "Preserve arguments and reject ambiguous input"
+      },
+      {
+        "direction": "next",
+        "title": "Process Bounded Standard Input",
+        "concept": "Treat input as data with resource limits"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "title": "Primary reference",
+      "url": "https://rust-cli.github.io/book/index.html"
+    },
+    {
+      "title": "Task Ledger companion source (ZIP)",
+      "url": "https://crabrix.com/examples/task-ledger-route.zip"
+    }
+  ],
+  "illustration": {
+    "path": "media/route-cli-config.png",
+    "alt": "Diagram for Resolve Configuration Once: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "The worked implementation exercises apply explicit configuration precedence. Its tests demonstrate the stated finite contract."
+  },
+  "contentDigest": "6c3b4707a5ad8b2784ca6c519df0ccfcb0bcbdd1edf5c1ed089fde536a438e02"
+}

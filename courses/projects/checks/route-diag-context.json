@@ -1,0 +1,52 @@
+{
+  "challenge": {
+    "lessonID": "route-diag-context",
+    "patternID": "route-diag-context",
+    "projectName": "route-diag-context-lab",
+    "source": "pub fn safe_fields(fields: &[(&str,&str)]) -> Vec<(String,String)> {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationSource": "mod solution;\nfn main() {\nassert_eq!(solution::safe_fields(&[(\"Authorization\",\"bearer x\"),(\"request_id\",\"r1\")]), vec![(\"Authorization\".to_owned(),\"[REDACTED]\".to_owned()),(\"request_id\".to_owned(),\"r1\".to_owned())], \"case 1\");\nassert_eq!(solution::safe_fields(&[]), vec![], \"case 2\");\nassert_eq!(solution::safe_fields(&[(\"TOKEN\",\"x\"),(\"api_key\",\"y\")]), vec![(\"TOKEN\".to_owned(),\"[REDACTED]\".to_owned()),(\"api_key\".to_owned(),\"[REDACTED]\".to_owned())], \"case 3\");\nassert_eq!(solution::safe_fields(&[(\"operation\",\"list\")]), vec![(\"operation\".to_owned(),\"list\".to_owned())], \"case 4\");\n\nprintln!(\"PASS route-diag-context\");\n}\n",
+    "verificationCases": [
+      {
+        "kind": "visible",
+        "input": "solution::safe_fields(&[(\"Authorization\",\"bearer x\"),(\"request_id\",\"r1\")])",
+        "expectedAnswer": "vec![(\"Authorization\".to_owned(),\"[REDACTED]\".to_owned()),(\"request_id\".to_owned(),\"r1\".to_owned())]"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::safe_fields(&[])",
+        "expectedAnswer": "vec![]"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::safe_fields(&[(\"TOKEN\",\"x\"),(\"api_key\",\"y\")])",
+        "expectedAnswer": "vec![(\"TOKEN\".to_owned(),\"[REDACTED]\".to_owned()),(\"api_key\".to_owned(),\"[REDACTED]\".to_owned())]"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::safe_fields(&[(\"operation\",\"list\")])",
+        "expectedAnswer": "vec![(\"operation\".to_owned(),\"list\".to_owned())]"
+      }
+    ],
+    "expectedOutput": "PASS route-diag-context\n",
+    "requiredSourceFragments": [
+      "pub fn safe_fields"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ],
+    "executionProfile": "std-v1"
+  },
+  "evidence": {
+    "kind": "algorithmChallenge",
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS route-diag-context\n"
+    },
+    "requiredSourceFragments": [
+      "pub fn safe_fields"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  }
+}

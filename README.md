@@ -29,6 +29,16 @@ The [Constellation Generator 1.0.4 verification](https://github.com/sergii-zibor
 
 The corrected Printing Values graphic has an editable SVG source at `artwork/print-formatting.svg`; `courses/basics/media/print-formatting.png` is its packaged raster export.
 
+## Engineering workflow route — 7 November 2026
+
+The current authored snapshot has **798 lessons/stages: 198 Rust + 600 Atlas**.
+Projects 1.1.0 adds 24 substantial, compiler-checked lessons covering
+Git → CLI → HTTP API → SQL → diagnostics → delivery, with a shared Task Ledger
+companion. Real SQLite grades the four SQL labs; the desktop server has actual
+HTTP/SQL acceptance checks. This is a **Crabrix 1.1.8 authoring candidate**, requiring
+workflow-terminal-v1; the signed production catalog is unchanged.
+[Reproduction, scope and native qualification](editorial/workflow_route_20261107/README.md).
+
 ## Audit corrections — 1 November 2026
 
 Catalog sequence 17 publishes reviewed versions of all seven courses. Atlas now

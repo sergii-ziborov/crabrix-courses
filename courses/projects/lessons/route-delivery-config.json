@@ -1,0 +1,74 @@
+{
+  "id": "route-delivery-config",
+  "parentID": "route-delivery",
+  "order": 1,
+  "title": "Validate Before Starting the Service",
+  "concept": "Reject invalid deployment configuration",
+  "minutes": 25,
+  "exerciseKind": "runnable",
+  "writing": {
+    "summary": "Reject invalid deployment configuration.",
+    "rule": "A deployment configuration must fail before the service accepts traffic.",
+    "explanation": "A service can compile correctly and still fail because its deployment configuration is wrong. Parse the bind port, database address and operational limits before opening a listener. Report the failed field without echoing a password-bearing connection URL.\n\nThis lab accepts decimal ports from 1024 to 65535 and a nonempty database setting containing no whitespace. It rejects signed port syntax, surrounding whitespace and malformed numbers so accepted configuration is predictable. The database check here is intentionally syntactic; it does not prove connectivity, credentials or migration compatibility. The desktop service should perform those separate startup checks and expose readiness only after required initialization. A liveness endpoint and a readiness endpoint answer different operational questions.\n\nThe route project is Task Ledger: first keep a reproducible source history, then expose its data through a CLI and HTTP boundary, persist it in SQL, diagnose failures and prepare a release. This lesson owns one contract in that project. Run the worked example before changing the starter and explain which input makes the tempting shortcut fail.\n\nTerminal practice: Start cargo serve --port 8080 --database tasks.db. Refuse an invalid port, then check /health after successful startup.\n\nThe compiler lab is independent of the reading question. Edit solution.rs; the app supplies a separate caller with normal, empty and adversarial inputs. A successful unchanged demonstration does not prove your implementation. After the lab, apply the same contract to the route companion project. Its README separates the on-device adapter from the desktop Cargo/TCP profile.",
+    "exampleCode": "pub fn config(port: &str, database: &str) -> Result<u16, &'static str> {\n    if port.is_empty() || !port.bytes().all(|b| b.is_ascii_digit()) {\n        return Err(\"port\");\n    }\n    let n = port.parse::<u16>().map_err(|_| \"port\")?;\n    if n < 1024 {\n        return Err(\"port\");\n    }\n    if database.is_empty() || database.chars().any(char::is_whitespace)\n    {\n        return Err(\"database\");\n    }\n    Ok(n)\n}\n\nfn main() {\n    assert_eq!(config(\"8080\", \"tasks.db\"), Ok(8080), \"case 1\");\n    assert_eq!(config(\"0\", \"tasks.db\"), Err(\"port\"), \"case 2\");\n    assert_eq!(config(\"65536\", \"tasks.db\"), Err(\"port\"), \"case 3\");\n    assert_eq!(config(\"+8080\", \"tasks.db\"), Err(\"port\"), \"case 4\");\n    assert_eq!(config(\"8080\", \"\"), Err(\"database\"), \"case 5\");\n    assert_eq!(config(\"8080\", \"bad path\"), Err(\"database\"), \"case 6\");\n    assert_eq!(config(\"65535\", \"db\"), Ok(65535), \"case 7\");\n    println!(\"worked example passed\");\n}\n",
+    "exampleCaption": "The worked implementation exercises reject invalid deployment configuration. Its tests demonstrate the stated finite contract.",
+    "practiceCode": "pub fn config(port: &str, database: &str) -> Result<u16,&'static str> {\n    todo!(\"implement the contract\")\n}\n",
+    "task": "Accept an ASCII-digit decimal port in 1024..=65535 and a nonempty database string without whitespace. Return port for port errors and database for database errors; validate the port first. Keep the public signature. Open the compiler lab and edit solution.rs; do not edit the private verification caller.",
+    "success": "The separate caller accepts the changed solution and rejects unchanged TODO, a wrong implementation and a printed success message.",
+    "question": "What does accepting a database configuration string prove?",
+    "answers": [
+      "That every future request will succeed",
+      "Only the declared syntactic policy",
+      "That credentials and migrations work"
+    ],
+    "correctAnswer": 1,
+    "feedback": "Configuration parsing, connectivity and readiness are separate checks."
+  },
+  "depth": {
+    "misconception": "That credentials and migrations work",
+    "correction": "A deployment configuration must fail before the service accepts traffic.",
+    "traceSteps": [
+      {
+        "title": "Identify the boundary",
+        "detail": "Reject invalid deployment configuration. Write down its accepted inputs and observable output."
+      },
+      {
+        "title": "Exercise the failure",
+        "detail": "Configuration parsing, connectivity and readiness are separate checks."
+      },
+      {
+        "title": "Check the independent caller",
+        "detail": "Accept an ASCII-digit decimal port in 1024..=65535 and a nonempty database string without whitespace. Return port for port errors and database for database errors; validate the port first."
+      }
+    ],
+    "transferChallenge": "Apply this contract to Task Ledger, introduce the failure described in the lesson, and show the failing check before fixing it.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Make Checks Block Delivery",
+        "concept": "Require all declared release checks"
+      },
+      {
+        "direction": "next",
+        "title": "Bind an Artifact to Its Source",
+        "concept": "Verify release identity and digest metadata"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "title": "Primary reference",
+      "url": "https://doc.rust-lang.org/cargo/commands/cargo-test.html"
+    },
+    {
+      "title": "Task Ledger companion source (ZIP)",
+      "url": "https://crabrix.com/examples/task-ledger-route.zip"
+    }
+  ],
+  "illustration": {
+    "path": "media/route-delivery-config.png",
+    "alt": "Diagram for Validate Before Starting the Service: a Rust code example flows to the lesson rule and the key observation.",
+    "caption": "The worked implementation exercises reject invalid deployment configuration. Its tests demonstrate the stated finite contract."
+  },
+  "contentDigest": "c1a2396f68a274f6a1fa1bc8143d7e9c6d9406ac64b031d85db49b5f9e7c4a27"
+}
