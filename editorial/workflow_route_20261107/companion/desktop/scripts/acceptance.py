@@ -30,6 +30,8 @@ with tempfile.TemporaryDirectory() as directory:
  process=start()
  try:
   assert request('/tasks')==(200,[])
+  probe=subprocess.run(['python3','scripts/retry_probe.py','--url',f'http://127.0.0.1:{port}/ready'],cwd=root,capture_output=True,text=True,check=True);assert json.loads(probe.stdout)['ready']
+  latency=Path(directory)/'latency.json';subprocess.run(['python3','scripts/latency.py','--url',f'http://127.0.0.1:{port}/tasks','--requests','8','--concurrency','2','--out',str(latency)],cwd=root,capture_output=True,text=True,check=True);assert json.loads(latency.read_text())['failures']==0
   first=request('/tasks',{'title':'learn 🦀'},'key-1');assert first[0]==201,first
   replay=request('/tasks',{'title':'learn 🦀'},'key-1');assert replay==(200,first[1]),replay
   assert request('/tasks',{'title':'changed'},'key-1')[0]==409
@@ -41,6 +43,7 @@ with tempfile.TemporaryDirectory() as directory:
   injection=request('/tasks',{'title':"x'; DROP TABLE tasks; --"},'key-3');assert injection[0]==201,injection
   assert len(request('/tasks')[1])==2
  finally:process.send_signal(signal.SIGINT);process.wait(timeout=10)
+ failed=subprocess.run(['python3','scripts/retry_probe.py','--url',f'http://127.0.0.1:{port}/ready','--deadline','.5'],cwd=root,capture_output=True,text=True);assert failed.returncode==2;assert 1<=len(json.loads(failed.stdout)['attempts'])<=3
  process=start()
  try:assert len(request('/tasks')[1])==2
  finally:process.send_signal(signal.SIGINT);process.wait(timeout=10)

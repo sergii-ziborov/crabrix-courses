@@ -326,7 +326,7 @@ This exercise defines p95 using the nearest-rank rule: sort a copy of the positi
 'Return nearest-rank p95: sort a copy and choose rank ceil(0.95*n), using one-based ranks. Empty input returns None. Retain exact u64 observations.',
 'Why can a good average coexist with a poor user experience?', ['Slow tail requests can be hidden by many fast ones','The average is always the slowest request','Percentiles eliminate the need for sample context'],
 'A mean alone does not describe the slow tail or the measurement conditions.',
-'Run the desktop latency probe, retain raw samples, and compare p95 and failures before and after changing the limit.',DIAG,mutant='samples.first().copied()')
+'Run python3 scripts/latency.py in the desktop companion, retain its raw samples and error count, then compare p95 before and after a change.',DIAG,mutant='samples.first().copied()')
 lab(4,'route-diag-retries','Bound the Retry Budget','Retry transient failures within attempt and time limits','A retry needs a transient failure, remaining attempts and a deadline budget.',
 '''Retries amplify load when a dependency is already failing. Decide whether an error is transient, cap total attempts, and stop when the proposed delay plus one minimum operation budget no longer fits the deadline. Retrying authentication failures or malformed input does not repair them.
 
@@ -337,7 +337,7 @@ Here failed_attempts counts attempts already made, including the one that just f
 'Return true only for a transient failure with 1<=failed_attempts<maximum and checked delay+operation_budget<=remaining. Overflow refuses the retry.',
 'What else is needed before retrying a possibly committed write?', ['An idempotency policy','Only a longer timeout','Always retry forever until success'],
 'Timeouts and budgets do not prove the previous attempt had no external effect.',
-'Inject a transient failure in the desktop companion, inspect the attempt count and request ID, and confirm deadline exhaustion stops retries.',DIAG,mutant='transient')
+'Run python3 scripts/retry_probe.py against the desktop readiness endpoint. Stop the service and repeat; inspect the bounded attempt count and request ID. This probe retries an idempotent client GET, rather than automatically retrying service writes.',DIAG,mutant='transient')
 
 DELIVERY='https://doc.rust-lang.org/cargo/commands/cargo-test.html'
 lab(5,'route-delivery-gates','Make Checks Block Delivery','Require all declared release checks','An absent or failed required check cannot be treated as a green release.',

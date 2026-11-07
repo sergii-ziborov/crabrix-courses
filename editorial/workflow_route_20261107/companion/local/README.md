@@ -4,6 +4,8 @@ Open this personal copy through **Open Task Ledger** on a route lesson's Apply p
 A new copy has its own project identity. Opening, editing or downloading it never
 starts a service or queries a database. Keep one personal copy as you progress.
 Each of the 24 lessons also has a separate compiler lab with private checks.
+The web Playground does not provide this native SQL host or loopback listener;
+its lesson reading examples remain independent std-only programs.
 
 ## 1. Git: review and retain a source history
 
