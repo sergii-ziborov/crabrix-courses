@@ -22,7 +22,17 @@
       "The debit only"
     ],
     "correctAnswer": 1,
-    "feedback": "Atomicity means the failed transfer cannot leave one half committed."
+    "feedback": "Atomicity means the failed transfer cannot leave one half committed.",
+    "recall": [
+      {
+        "question": "A transfer runs its debit and credit as two separate UPDATE statements with no explicit transaction. The debit succeeds and the credit fails. What state is left?",
+        "answer": "The debit stays committed and the credit never happens, so value is lost. Both writes belong in one explicit transaction that is rolled back when either statement fails."
+      },
+      {
+        "question": "Inside `BEGIN ... COMMIT` in SQLite, one UPDATE fails its CHECK constraint. What does SQLite do by default, and what must the caller therefore do?",
+        "answer": "SQLite aborts only the failing statement; the transaction stays open with earlier writes intact, and a following `COMMIT` would keep them. The caller or host must issue `ROLLBACK` on any failure so both balances stay unchanged."
+      }
+    ]
   },
   "depth": {
     "misconception": "The debit only",
@@ -70,5 +80,5 @@
     "alt": "Diagram for Commit Related Changes Atomically: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "This Rust reading prints a SQL statement. The independent compiler lab executes it against real SQLite."
   },
-  "contentDigest": "57b0e3b3a8bcfe450703f7db675d2f2d8c8f073f696fc792ae732efbd39e36b3"
+  "contentDigest": "947624e48bdc751a7d213e8a46fcd9f656ecada36ee70f62bd932b1f8223564b"
 }

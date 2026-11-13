@@ -22,7 +22,17 @@
       "All optional features and downstream graphs satisfy Rust 1.78"
     ],
     "correctAnswer": 1,
-    "feedback": "The declaration is metadata and a support promise. Running the actual minimum toolchain, plus the promised configurations, supplies evidence for the minimum."
+    "feedback": "The declaration is metadata and a support promise. Running the actual minimum toolchain, plus the promised configurations, supplies evidence for the minimum.",
+    "recall": [
+      {
+        "question": "A crate declares `rust-version = \"1.78\"` but uses `Option::is_none_or`, stabilized in 1.82. What happens on a current compiler and on 1.78?",
+        "answer": "The current compiler accepts it, so a current-only CI job passes, while Rust 1.78 fails to compile it. `rust-version` neither rejects newer APIs nor translates them; an equivalent `match` on the `Option` works on both."
+      },
+      {
+        "question": "What gives real evidence for an MSRV promise, and why is the author's lockfile not evidence for downstream users?",
+        "answer": "Running the actual minimum toolchain, for example `cargo +1.78 check --locked` and `cargo +1.78 test --locked`, alongside current-version jobs and documented features. Consumers resolve their own dependency graph, so the author's lockfile does not cover them."
+      }
+    ]
   },
   "depth": {
     "misconception": "Setting rust-version makes the current compiler reject every API newer than the declared minimum.",
@@ -70,5 +80,5 @@
       "url": "https://doc.rust-lang.org/cargo/reference/rust-version.html"
     }
   ],
-  "contentDigest": "6012abeef57452ed9fae2d19f2f718d19f3e16537c475a78edc91fb60efed5e9"
+  "contentDigest": "d6096472a042f4934c5c57d878027e72e39cdd981ed56dbbe9db33301fdd4036"
 }

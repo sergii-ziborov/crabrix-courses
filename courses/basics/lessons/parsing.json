@@ -1,6 +1,6 @@
 {
   "concept": "Turning text into typed data",
-  "contentDigest": "974ea5ed421c9b1e051386e9d2e0f7a590bab370f1d2b10647e291b35d8417da",
+  "contentDigest": "ff538ceec297247edb5691b53b66c0f0e4cbfc3332efd2dd1301e729ede9f18f",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "Parsing returns `Result` because input text is not guaranteed to fit the target type.",
     "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
     "summary": "Parsing crosses from untrusted text into a type with explicit success or failure.",
-    "task": "Trim and parse an unsigned 32-bit count. Return Err with the text invalid count for malformed, negative, empty, or overflowing input. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise."
+    "task": "Trim and parse an unsigned 32-bit count. Return Err with the text invalid count for malformed, negative, empty, or overflowing input. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise.",
+    "recall": [
+      {
+        "question": "What do these three lines print?",
+        "answer": "`false`, `false`, `true`. `300` is all digits but exceeds `u8`'s range (number too large to fit in target type), and the leading space is an invalid digit unless you `trim` first.",
+        "code": "println!(\"{}\", \"300\".parse::<u8>().is_ok());\nprintln!(\"{}\", \" 42\".parse::<i32>().is_ok());\nprintln!(\"{}\", \" 42\".trim().parse::<i32>().is_ok());"
+      },
+      {
+        "question": "`\"-3\".parse::<i32>()` returns `Ok(-3)`. Why might a program reading an item count still need to reject it?",
+        "answer": "Parsing only checks syntax for the target type; `-3` is a valid `i32` but not a valid count. Validate the domain rule as a separate step (or parse into a type such as `u32`) and report which rule was broken."
+      }
+    ]
   },
   "illustration": {
     "path": "media/parsing.png",

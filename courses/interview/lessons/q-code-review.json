@@ -1,6 +1,6 @@
 {
   "concept": "Prioritize correctness, API contracts, then style",
-  "contentDigest": "67dcf5e23f1a332e9e240a710de46573502b3f0c387c9ea83920af911dcbff69",
+  "contentDigest": "fba35737a4629fd14bd339ebbfa38d3247a22276fbf55ecab05a366e5bf037ec",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "Start with soundness, data loss, and observable behavior before naming cosmetic issues.",
     "success": "Your finding points at `values[0]`, states the empty-input panic, and offers `Option<&str>` before any style comment.",
     "summary": "Prioritize correctness, API contracts, then style.",
-    "task": "Review `first` as if in a pull request: name the input that breaks it, the impact, and the smallest change that fixes it."
+    "task": "Review `first` as if in a pull request: name the input that breaks it, the impact, and the smallest change that fixes it.",
+    "recall": [
+      {
+        "question": "When can an `unwrap()` be acceptable in reviewed Rust code, and what question should the reviewer ask about it?",
+        "answer": "It can be justified by a proven invariant, for example in a test or in startup configuration that must be valid. The reviewer should ask what input makes the line fail; on external input, that answer usually makes it a bug."
+      },
+      {
+        "question": "In what order should a Rust code review raise issues, and how should each issue be presented?",
+        "answer": "Soundness, data loss and observable behaviour come first, then API contracts and tests, then style. Point to a concrete line, describe the failure scenario, offer a smaller fix or test, and mark blocking issues separately from suggestions."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-code-review.png",

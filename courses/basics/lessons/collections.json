@@ -1,6 +1,6 @@
 {
   "concept": "Vec, String, and HashMap",
-  "contentDigest": "2e0604230b242f95395461c5c71598915e0ed817947fa6d755375003850119dc",
+  "contentDigest": "670d497707a8f2eaedf6510575bc0b97776f8904d8d5b95e6832e6eee322d1c1",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,19 @@
     "rule": "`entry().or_insert()` gives you a mutable reference either way.",
     "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
     "summary": "`Vec`, `String`, and `HashMap` own growable data with different trade-offs.",
-    "task": "Count repeated words in a BTreeMap with owned keys. Keep case as supplied; empty input produces an empty map. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise."
+    "task": "Count repeated words in a BTreeMap with owned keys. Keep case as supplied; empty input produces an empty map. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise.",
+    "recall": [
+      {
+        "question": "Why does this line fail, and why is the `*` in `*counts.entry(word).or_insert(0) += 1` needed?",
+        "answer": "`or_insert` returns `&mut usize`, a reference to the stored count, not the number itself, so rustc reports E0368: `+=` cannot be applied to `&mut usize`. Dereferencing with `*` updates the value inside the map.",
+        "code": "let mut counts: HashMap<&str, usize> = HashMap::new();\ncounts.entry(\"a\").or_insert(0) += 1;"
+      },
+      {
+        "question": "What do these three lines print?",
+        "answer": "`None`, `Some(36)`, `Some(37)`. `insert` returns the previous value for the key, if any, and replaces it, because keys are unique. `get` returns an `Option` holding a reference to the current value.",
+        "code": "use std::collections::HashMap;\nlet mut ages = HashMap::new();\nprintln!(\"{:?}\", ages.insert(\"ada\", 36));\nprintln!(\"{:?}\", ages.insert(\"ada\", 37));\nprintln!(\"{:?}\", ages.get(\"ada\"));"
+      }
+    ]
   },
   "illustration": {
     "path": "media/collections.png",

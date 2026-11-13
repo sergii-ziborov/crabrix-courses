@@ -1,6 +1,6 @@
 {
   "concept": "Preserve a cause while explaining the failed operation",
-  "contentDigest": "b2c77814e11d35fc829beecf634f653a03902cdb71cdd329a505f99b5b76e677",
+  "contentDigest": "d7268597c18924cf66571cbd129b0eb8e0a72589abed7ded3ec7a64b95880327",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "A useful error says what operation failed and retains the original cause.",
     "success": "Both failures name the value and keep the parser's own reason.",
     "summary": "Preserve a cause while explaining the failed operation.",
-    "task": "Call this `port` with `abc` and with `99999`, then compare the two messages. Rewrite the `map_err` so each one says which value failed and why."
+    "task": "Call this `port` with `abc` and with `99999`, then compare the two messages. Rewrite the `map_err` so each one says which value failed and why.",
+    "recall": [
+      {
+        "question": "What does `port(\"70000\")` return?",
+        "code": "fn port(text: &str) -> Result<u16, String> {\n    text.parse().map_err(|error| {\n        format!(\"invalid port {text}: {error}\")\n    })\n}",
+        "answer": "`Err(\"invalid port 70000: number too large to fit in target type\")`. The message names the operation and value while keeping the original parse error as its cause."
+      },
+      {
+        "question": "A CLI calls a configuration loader, which calls a number parser. Which context should each layer add to an error?",
+        "answer": "The parser reports the syntax problem, the loader adds the field name and file, and the CLI adds what the user was trying to do. Each layer adds only what it owns; repeating full messages at every layer creates noise, and secrets should never be included."
+      }
+    ]
   },
   "illustration": {
     "path": "media/error-context.png",

@@ -1,6 +1,6 @@
 {
   "concept": "Update one shared value without a lock",
-  "contentDigest": "3657074b837f735ceb6904b51c5a1b92911a67ef1dcde5a4b3fab86326638673",
+  "contentDigest": "e5aae0770157c8855f0608e5230af66c233b1afc2d2a5ac4ff49a1bf478eb4ba",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "Atomic operations are indivisible but still need an ordering that describes cross-thread visibility.",
     "success": "You can say why `Relaxed` is enough for a count and why this ready flag needs more.",
     "summary": "Update one shared value without a lock.",
-    "task": "Predict what the second thread prints, and name the `Release` store and the `Acquire` load that make the answer certain."
+    "task": "Predict what the second thread prints, and name the `Release` store and the `Acquire` load that make the answer certain.",
+    "recall": [
+      {
+        "question": "Why can incrementing a shared counter with `let v = c.load(..); c.store(v + 1, ..);` lose updates, while `c.fetch_add(1, ..)` cannot?",
+        "answer": "Between one thread's `load` and `store`, another thread can store its own increment, which is then overwritten with a stale value. `fetch_add` is one indivisible read-modify-write, so no other thread can slip in between."
+      },
+      {
+        "question": "Why is `Ordering::Relaxed` fine for a hit counter read after all workers are joined, but not for a `ready` flag that tells a consumer a buffer is filled?",
+        "answer": "For the counter, only the atomic value itself matters, and `join` already synchronises the final read. The flag must also make the buffer writes visible, which needs a `Release` store paired with an `Acquire` load; `Relaxed` makes no such promise."
+      }
+    ]
   },
   "illustration": {
     "path": "media/atomics-basics.png",

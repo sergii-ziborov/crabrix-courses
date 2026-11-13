@@ -1,6 +1,6 @@
 {
   "concept": "Track a compile-time state with no stored value",
-  "contentDigest": "9d32b2b2ee46999904adc37e109a9ca0ab7c57644e99982cdc3464384b563ad2",
+  "contentDigest": "5f197cf346e8337f71783acfed1ce504894211f11c1ab3cb4e828b852b1f5955",
   "depth": {
     "connections": [
       {
@@ -49,7 +49,18 @@
     "rule": "PhantomData tells the type system that a zero-sized marker matters to ownership or state.",
     "success": "You can explain why `PhantomData<State>` is needed, and what it costs at runtime.",
     "summary": "Track a compile-time state with no stored value.",
-    "task": "Say what `Job<Ready>` stores at runtime, and what the `state` field is for."
+    "task": "Say what `Job<Ready>` stores at runtime, and what the `state` field is for.",
+    "recall": [
+      {
+        "question": "What happens when this compiles, and why is it caught at that stage?",
+        "answer": "It fails with E0599: no method named `finish` for `Job<Ready>`. The state is part of the type, and `finish` is only defined in `impl Job<Running>`, so the illegal transition is not a callable method. No runtime flag needs checking.",
+        "code": "use std::marker::PhantomData;\nstruct Ready; struct Running;\nstruct Job<S> { id: u32, state: PhantomData<S> }\nimpl Job<Ready> {\n    fn start(self) -> Job<Running> { Job { id: self.id, state: PhantomData } }\n}\nimpl Job<Running> { fn finish(self) {} }\n\nlet job = Job::<Ready> { id: 1, state: PhantomData };\njob.finish();"
+      },
+      {
+        "question": "Why should a typestate transition like `start` take `self` rather than `&self`?",
+        "answer": "Taking `self` consumes the `Job<Ready>`, so after `let running = job.start();` any further use of `job` is E0382. Only one version of the logical job exists, and the old state cannot be used alongside the new one."
+      }
+    ]
   },
   "illustration": {
     "path": "media/phantom-data.png",

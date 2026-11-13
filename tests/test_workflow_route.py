@@ -5,8 +5,11 @@ class WorkflowRouteTests(unittest.TestCase):
  def test_previous_lessons_and_saved_answers_are_unchanged(self):
   previous=json.loads((REV/'previous-identities.json').read_text());course=json.loads((C/'course.json').read_text())
   self.assertEqual(course['unitIDs'][:len(previous['unitIDs'])],previous['unitIDs'])
+  # Later releases may add recall questions; everything else stays as it was.
+  def frozen(lesson):
+   lesson={k:v for k,v in lesson.items() if k!='contentDigest'};lesson['writing']={k:v for k,v in lesson['writing'].items() if k!='recall'};return lesson
   for old in previous['lessons']:
-   self.assertEqual(json.loads((C/'lessons'/f'{old["id"]}.json').read_text()),old,old['id'])
+   self.assertEqual(frozen(json.loads((C/'lessons'/f'{old["id"]}.json').read_text())),frozen(old),old['id'])
  def test_route_has_six_ordered_units_and_independent_practice(self):
   units=[json.loads(p.read_text()) for p in (C/'units').glob('route-*.json')];self.assertEqual(len(units),6)
   labs=json.loads((REV/'lab-contracts.json').read_text());self.assertEqual(len(labs),24)

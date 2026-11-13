@@ -1,6 +1,6 @@
 {
   "concept": "Build the same resolved graph again",
-  "contentDigest": "19d8dec0eea2d1c419c907b7b9ffd61a405db8625a80be89ab0047f25b317076",
+  "contentDigest": "5826bcb14d4cf0e68fc14dc929e8685167af3294586f46f17748e748ef21f35d",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "`Cargo.toml` describes allowed versions while `Cargo.lock` records the exact chosen graph.",
     "success": "You can say why `--locked` refused to change the lockfile and which line a plain build rewrites.",
     "summary": "Build the same resolved graph again.",
-    "task": "The requirement was just changed to `=1.13.1`, and `Cargo.lock` still says 1.13.2. Predict what `cargo build --locked` does, then what plain `cargo build` does to the lockfile."
+    "task": "The requirement was just changed to `=1.13.1`, and `Cargo.lock` still says 1.13.2. Predict what `cargo build --locked` does, then what plain `cargo build` does to the lockfile.",
+    "recall": [
+      {
+        "question": "A library crate commits its `Cargo.lock`. What effect does that have on downstream crates that depend on it?",
+        "answer": "None on their resolution: downstream consumers resolve dependencies with their own lockfiles. The library's lockfile only fixes the graph for the library's own development and tests."
+      },
+      {
+        "question": "What does `cargo build --locked` check, and what does a lockfile not pin?",
+        "answer": "It fails instead of modifying `Cargo.lock`, so it confirms the recorded graph builds as-is on a clean machine. The lockfile pins package versions only, not the toolchain, build flags, platform or external native libraries."
+      }
+    ]
   },
   "illustration": {
     "path": "media/lockfile-reproducibility.png",

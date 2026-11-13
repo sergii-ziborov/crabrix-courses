@@ -1,6 +1,6 @@
 {
   "concept": "extern \"C\", repr(C), and raw pointers",
-  "contentDigest": "03156d89aa37e84f57e888f18b514441bbb11492e14029b0c036763661e78be0",
+  "contentDigest": "903a4f4509e6a6f3e3e0f11341218d781f9c6408808ed02cb758f71af3b88fef",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "`repr(C)` follows C layout rules for the target; it is not a recursive layout, ownership or pointer-validity guarantee.",
     "success": "The ownership contract is written down, not assumed.",
     "summary": "FFI needs explicit ABI, layout, ownership and validity contracts; unsafe code must uphold the foreign function requirements.",
-    "task": "Declare a foreign function and describe who owns any memory it returns."
+    "task": "Declare a foreign function and describe who owns any memory it returns.",
+    "recall": [
+      {
+        "question": "The Rust declaration `fn abs(value: i32) -> i32;` type-checks. Why is calling it with `i32::MIN` still a problem?",
+        "answer": "C's `abs` has no valid result for the minimum `int`, because its positive magnitude doesn't fit, so the call is undefined behaviour on the C side. The Rust compiler can't see the foreign implementation, so the `SAFETY` argument has to cover the allowed argument range."
+      },
+      {
+        "question": "A C library keeps a pointer to a buffer you pass and reads it after the call returns. What must the Rust side guarantee, and why can't the borrow checker help?",
+        "answer": "The buffer must stay alive, unmoved and not reallocated for as long as C may use it, and both sides must agree who frees it and with which allocator. From Rust's view the borrow ends when the call returns; the compiler cannot see that the foreign side kept the pointer."
+      }
+    ]
   },
   "illustration": {
     "path": "media/ffi.png",

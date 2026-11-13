@@ -216,6 +216,18 @@ def validate(args) -> None:
                 writing = lesson["writing"]
                 if not writing["answers"] or not 0 <= writing["correctAnswer"] < len(writing["answers"]):
                     raise ValueError(f"question answers: {lid}")
+                recall = writing.get("recall")
+                if recall is not None:
+                    if not isinstance(recall, list) or not 1 <= len(recall) <= 4:
+                        raise ValueError(f"recall questions: {lid}")
+                    for card in recall:
+                        if (not isinstance(card, dict) or set(card) - {"question", "answer", "code"}
+                                or not str(card.get("question", "")).strip()
+                                or not str(card.get("answer", "")).strip()
+                                or len(card["answer"]) > 600
+                                or "core idea" in card["question"].lower()
+                                or len(str(card.get("code", "")).splitlines()) > 16):
+                            raise ValueError(f"recall question: {lid}")
                 if "starterProject" in lesson:
                     base = f"projects/{lid}/"
                     expected.add(base + "project.json")

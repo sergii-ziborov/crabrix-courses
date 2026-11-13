@@ -1,6 +1,6 @@
 {
   "concept": "Message passing with mpsc",
-  "contentDigest": "09d5882a4966d0eddd90de640016aa2e8036717290ccaa7172ebd28fc65ebca3",
+  "contentDigest": "745e520ef4fea5d6a6ecc64726a3bd607493ab61328dea7331a4dfb0b3673d84",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,19 @@
     "rule": "A receiver iterator finishes after every sender is dropped and all queued messages have been received.",
     "success": "The receiving loop finishes without a sentinel value.",
     "summary": "Do not communicate by sharing memory; share memory by communicating.",
-    "task": "Send results from several threads to one collector."
+    "task": "Send results from several threads to one collector.",
+    "recall": [
+      {
+        "question": "Why is the last line rejected, and why is that a safety feature?",
+        "answer": "`send` takes the value by value, so `msg` moved into the channel: E0382. Because the sender no longer owns it, the receiver can't be handed something the sender is still mutating; no shared mutable state exists.",
+        "code": "use std::sync::mpsc;\nlet (tx, rx) = mpsc::channel();\nlet msg = String::from(\"hi\");\ntx.send(msg).unwrap();\nprintln!(\"{msg}\");"
+      },
+      {
+        "question": "What does this print?",
+        "answer": "`hi`. With the receiver gone, `send` fails and returns a `SendError` that holds the unsent value, so the sender gets its message back and can decide what to do with it.",
+        "code": "use std::sync::mpsc;\nlet (tx, rx) = mpsc::channel::<String>();\ndrop(rx);\nlet err = tx.send(String::from(\"hi\")).unwrap_err();\nprintln!(\"{}\", err.0);"
+      }
+    ]
   },
   "illustration": {
     "path": "media/channels.png",

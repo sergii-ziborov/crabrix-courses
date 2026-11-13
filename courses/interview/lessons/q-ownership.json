@@ -1,6 +1,6 @@
 {
   "concept": "Moves, Copy, Drop, and scope",
-  "contentDigest": "e8f4a818c969a51566e7d8055c29ede839dec068a8c09a4214ccd998e661372d",
+  "contentDigest": "922819ce70aa8e1cd4e06e0be6b0372893f992e194f777dda7625d1b9f17f672",
   "depth": {
     "connections": [
       {
@@ -49,7 +49,17 @@
     "rule": "Ownership tracks resource responsibility; move, borrow and clone express different contracts.",
     "success": "You name moves, Copy, and Drop without mentioning syntax first.",
     "summary": "Explaining ownership well means naming the guarantee, not the syntax.",
-    "task": "Explain ownership in under a minute, out loud."
+    "task": "Explain ownership in under a minute, out loud.",
+    "recall": [
+      {
+        "question": "When a `String` is moved from `a` to `b` with `let b = a;`, what is actually transferred, and what happens to the heap bytes?",
+        "answer": "Only the small handle (pointer, length, capacity) and the responsibility for freeing the buffer move to `b`; the heap bytes are not copied. `a` becomes unusable, which is why moves are cheap and `clone()` is an explicit, possibly allocating request."
+      },
+      {
+        "question": "Rust frees owned values deterministically at scope exit, yet memory safety does not promise every destructor runs. Name ways cleanup can be skipped.",
+        "answer": "Forgetting a value (for example `std::mem::forget`), a cycle of strong `Rc`/`Arc` references, or process termination can all skip `Drop`. Safety guarantees no use of freed memory, not that every resource is cleaned up."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-ownership.png",

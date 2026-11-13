@@ -1,6 +1,6 @@
 {
   "concept": "Reusable types and functions",
-  "contentDigest": "131834593dd981032dee30518c8e9fcd8101a1f556bd8d5a9964a2aea182ec03",
+  "contentDigest": "b9e4e6579d7f61dc43b92d0d86ec2de6aa4166e0206d3ee3170d49a6e7b5fe6d",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "Concrete generic instantiations normally use static dispatch; measure code size, allocation and runtime cost.",
     "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
     "summary": "Generics reuse an algorithm while keeping concrete types.",
-    "task": "Return the larger owned input for any Ord type, without adding Copy or Clone bounds. This lab also calls the function with String. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise."
+    "task": "Return the larger owned input for any Ord type, without adding Copy or Clone bounds. This lab also calls the function with String. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise.",
+    "recall": [
+      {
+        "question": "What happens when `largest` is called with an empty slice, and how would you make that case safe?",
+        "answer": "It compiles, but `&items[0]` panics at runtime with index out of bounds (the len is 0). Return `Option<&T>` instead, for example starting from `items.first()?`, so the caller has to handle emptiness.",
+        "code": "fn largest<T: PartialOrd>(items: &[T]) -> &T {\n    let mut best = &items[0];\n    for item in items {\n        if item > best { best = item; }\n    }\n    best\n}"
+      },
+      {
+        "question": "Why is `largest` bounded by `T: PartialOrd` rather than `T: Ord` if you want `largest(&[1.5, 0.2, 3.25])` to work?",
+        "answer": "Floats implement only `PartialOrd`, because `NaN` has no total order. With an `Ord` bound that call fails with E0277 (`{float}: Ord` is not satisfied). The body only uses `>`, so `PartialOrd` is the honest, least restrictive bound."
+      }
+    ]
   },
   "illustration": {
     "path": "media/generics.png",

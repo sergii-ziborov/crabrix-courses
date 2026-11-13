@@ -1,6 +1,6 @@
 {
   "concept": "Weak<T> and leaks Rust cannot prevent",
-  "contentDigest": "46636b915ea699631f2a55946dbfd05c32869e240fcf41001b036d943f931ef0",
+  "contentDigest": "9881554da27d1badb503aab06308c00ef9c92bec8a2f1764456df689c7f4ce26",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "`Weak` does not keep a value alive, so `upgrade()` may return `None`.",
     "success": "You can name which direction owns and which merely observes.",
     "summary": "Rust prevents data races, not leaks — a cycle can still strand memory.",
-    "task": "Explain where a parent pointer should be Weak rather than `Rc`."
+    "task": "Explain where a parent pointer should be Weak rather than `Rc`.",
+    "recall": [
+      {
+        "question": "A child holds a `Weak` link to its parent. The parent is dropped while the child is still owned elsewhere. What does `child.parent.borrow().upgrade()` return?",
+        "answer": "`None`. A `Weak` reference does not keep the parent alive, so once the last strong owner is gone, `upgrade()` reports the absence as an `Option` that the code must handle."
+      },
+      {
+        "question": "How can you tell on paper whether a group of `Rc`-linked nodes will leak?",
+        "answer": "Remove every external owner. If each node still has an incoming strong link from inside the group, no count can reach zero and nothing is freed. Turning one direction, such as child-to-parent, into `Weak` links breaks the cycle."
+      }
+    ]
   },
   "illustration": {
     "path": "media/cycles.png",

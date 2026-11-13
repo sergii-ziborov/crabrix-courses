@@ -1,6 +1,6 @@
 {
   "concept": "Distinguish a pinned !Unpin pointee from an Unpin value and its movable pointer wrapper",
-  "contentDigest": "4c56b1edcf267b48131ef24c2872e00df826438a8b2b741e74861f9f573b08b5",
+  "contentDigest": "27afac3b47e9044a7ed43e8437f0fb11ba80354fb0d9e271de546e7a8adec440",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "`Pin` constrains moves of a pointee that relies on pinning. `Unpin` types such as `String` opt out of that restriction; moving the pointer wrapper itself is a separate matter.",
     "success": "You can say why this safe move works for `String` and why it is unavailable for a `!Unpin` pointee.",
     "summary": "Promise that a value will not move in memory.",
-    "task": "Run the safe String example, then explain why the same safe extraction API is unavailable for an address-sensitive !Unpin pointee. Do not use unsafe code to bypass its contract."
+    "task": "Run the safe String example, then explain why the same safe extraction API is unavailable for an address-sensitive !Unpin pointee. Do not use unsafe code to bypass its contract.",
+    "recall": [
+      {
+        "question": "`Pin::new(&mut text)` works for a `String`. Why is `Pin::new(&mut fut)` rejected for an async block, and what should you use?",
+        "answer": "`Pin::new` is only safe for `Unpin` types, and an async block's state machine is `!Unpin` because it may hold references into itself (E0277: the async block cannot be unpinned). Pin it in place with `std::pin::pin!` or on the heap with `Box::pin`.",
+        "code": "use std::pin::Pin;\nlet mut fut = async {};\nlet p = Pin::new(&mut fut);"
+      },
+      {
+        "question": "`Future::poll` takes `self: Pin<&mut Self>`. What does that guarantee give a `!Unpin` future?",
+        "answer": "That once it has been pinned, it will not be moved again, so any references its suspended state holds into itself stay valid across polls. It is a promise about the value's address from pinning onwards, not that the pointer variable can't move."
+      }
+    ]
   },
   "illustration": {
     "path": "media/pinning-intuition.png",

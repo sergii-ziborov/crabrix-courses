@@ -1,6 +1,6 @@
 {
   "concept": "Why references stay valid",
-  "contentDigest": "2c2780e02402b6949fa1bb8842fda8e8a6086d708105e9219dd5036d67b9a018",
+  "contentDigest": "28b4ad62c117951b0f5338fdb1daa4cabec5b8ab47d3ba73127b9c66eb1cb6fa",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "A lifetime annotation relates borrows; it never extends one.",
     "success": "You can explain why `pick` needs one lifetime name on both inputs and the result.",
     "summary": "Lifetimes describe relationships between references, not timers.",
-    "task": "Describe which input borrow a returned reference may depend on."
+    "task": "Describe which input borrow a returned reference may depend on.",
+    "recall": [
+      {
+        "question": "`longest` returns whichever string is longer, and `outer` is longer. Why is this still rejected?",
+        "answer": "The check uses the signature, not runtime values: the result may borrow from either input, so it cannot be used after `inner` is dropped (E0597, `inner` does not live long enough). Use `result` inside the block, or return an owned `String`.",
+        "code": "fn longest<'a>(left: &'a str, right: &'a str) -> &'a str { /* ... */ }\n\nlet outer = String::from(\"long string\");\nlet result;\n{\n    let inner = String::from(\"xyz\");\n    result = longest(&outer, &inner);\n}\nprintln!(\"{result}\");"
+      },
+      {
+        "question": "What does the signature `fn longest<'a>(left: &'a str, right: &'a str) -> &'a str` promise a caller about the returned reference?",
+        "answer": "That it borrows from `left` or `right`, so it is only valid while both inputs are still valid, in practice the shorter of the two borrows. It does not keep either string alive or change when anything is dropped."
+      }
+    ]
   },
   "illustration": {
     "path": "media/lifetimes-intro.png",

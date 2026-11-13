@@ -1,6 +1,6 @@
 {
   "concept": "Keep a global lock order and short critical sections",
-  "contentDigest": "6990d8a9bcbded9d51aa5abcb0e29ee82f433dcd07b236bd5d83844a2d2281b2",
+  "contentDigest": "325999f6f5c67e40ec5cf5ffd31d84ed4d782c58463b68ba969fec9616f8e4b8",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "Rust prevents data races, not deadlocks.",
     "success": "You can point to the cycle in the swapped version and to the lock order that removes it.",
     "summary": "Keep a global lock order and short critical sections.",
-    "task": "Swap the two `lock` lines in `worker_b` and draw the wait-for graph. Say which schedule hangs, and check that the compiler still accepts the code."
+    "task": "Swap the two `lock` lines in `worker_b` and draw the wait-for graph. Say which schedule hangs, and check that the compiler still accepts the code.",
+    "recall": [
+      {
+        "question": "Why is replacing `lock()` with a loop of `try_lock()` retries not automatically a deadlock fix?",
+        "answer": "Without backoff, threads can keep failing and retrying in step (livelock) and burn CPU, and progress still isn't guaranteed. A timeout or `try_lock` helps detect contention; it doesn't make a two-lock transfer atomic. A consistent lock order is the stronger fix."
+      },
+      {
+        "question": "Why is calling an unknown callback while holding a `MutexGuard` risky?",
+        "answer": "The callback might lock the same mutex; `std::sync::Mutex` is not re-entrant, so the thread waits on itself and deadlocks. It might also take other locks in a different order. Drop the guard, or copy the needed data out, before calling unknown code."
+      }
+    ]
   },
   "illustration": {
     "path": "media/deadlock-avoidance.png",

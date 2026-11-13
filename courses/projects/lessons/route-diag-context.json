@@ -22,7 +22,17 @@
       "A password is safe in logs if the request failed"
     ],
     "correctAnswer": 0,
-    "feedback": "Failure does not make credentials safe to copy into a persistent diagnostic record."
+    "feedback": "Failure does not make credentials safe to copy into a persistent diagnostic record.",
+    "recall": [
+      {
+        "question": "The redactor replaces values whose lowercased key is exactly `authorization`, `cookie`, `password`, `token` or `api_key`. What does it do with `(\"Cookie\", \"s=1\")` and `(\"X-Api-Key\", \"k\")`?",
+        "answer": "`Cookie` is redacted, because the match ignores case. `X-Api-Key` keeps its value `k`, because only exact names match. That is why production logging should select known-safe fields rather than rely on a small block list."
+      },
+      {
+        "question": "What should a useful, safe diagnostic event for a failed request contain, and what should never go into it?",
+        "answer": "The operation name, the request ID and a stable error category, so a person can connect it to one operation. Never dump arbitrary request bodies, raw headers or connection URLs that may carry credentials."
+      }
+    ]
   },
   "depth": {
     "misconception": "Every raw header and the complete body",
@@ -70,5 +80,5 @@
     "alt": "Diagram for Add Context Without Leaking Secrets: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "The worked implementation exercises redact sensitive diagnostic fields. Its tests demonstrate the stated finite contract."
   },
-  "contentDigest": "012aefb4de538f65b14eb63228bf1d84331d48600d3544ab5b3edb5f5d32823c"
+  "contentDigest": "71932d5ca20dddf8d1f58812328001010f54e33580958d04a7be3c2b058b7898"
 }

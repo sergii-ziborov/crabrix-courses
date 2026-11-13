@@ -22,7 +22,17 @@
       "Only code using an experimental compiler is affected"
     ],
     "correctAnswer": 0,
-    "feedback": "The old literal has no value for the new required field. Constructor-based examples are a different API shape; an unchanged getter alone does not require a downstream literal."
+    "feedback": "The old literal has no value for the new required field. Constructor-based examples are a different API shape; an unchanged getter alone does not require a downstream literal.",
+    "recall": [
+      {
+        "question": "Why does adding a private `delay_ms` field to `Policy` leave `Policy::new(3).unwrap().attempts()` working?",
+        "answer": "Callers cannot write a `Policy` struct literal because its fields are private; they must use `new`, which keeps its parameter, return type and zero-attempt validation. The new `with_delay` builder is optional and defaults to zero delay."
+      },
+      {
+        "question": "The library's own test suite passes after an API change. Why is that weak evidence of compatibility, and what is a better check?",
+        "answer": "Those tests may have been edited together with the API. Compile an unchanged downstream consumer fixture against both versions and run its assertions; behaviour changes such as a different error condition or ordering can break users even when the code still compiles."
+      }
+    ]
   },
   "depth": {
     "misconception": "Private fields make every later library change SemVer-compatible.",
@@ -65,5 +75,5 @@
       "url": "https://doc.rust-lang.org/cargo/reference/semver.html"
     }
   ],
-  "contentDigest": "a3a493ecefafa2ce2fe5f612f15bb33ed6aed90b82f3237e1e1f1370096274c2"
+  "contentDigest": "b00a4764997fcde8eeaa665849ab3ee08e4d3c0940ab2b85cbd679ccb2cd1ca9"
 }

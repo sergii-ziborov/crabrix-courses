@@ -1,6 +1,6 @@
 {
   "concept": "Notice a panic that may leave state inconsistent",
-  "contentDigest": "556148db02213982e9d396e7ad40983f182142d5e7ef521f1a50a9674f25ce74",
+  "contentDigest": "ba4a5cf3ab0d8690550a5690d1307b0e6573e229855cd6584cf67c46fc558e5b",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "A standard `Mutex` becomes poisoned when a holder panics.",
     "success": "You can separate the panic returned by `join` from the poison returned by `lock`, and say when recovery is justified.",
     "summary": "Notice a panic that may leave state inconsistent.",
-    "task": "Predict both printed lines. Then replace the last `is_err()` with a `match` that recovers the value through `into_inner` and checks it before trusting it."
+    "task": "Predict both printed lines. Then replace the last `is_err()` with a `match` that recovers the value through `into_inner` and checks it before trusting it.",
+    "recall": [
+      {
+        "question": "What does this print, and which two separate events report the panic?",
+        "answer": "`true true`, then `6`. `join()` returns `Err` because the thread panicked, and `lock()` returns a `PoisonError` because it panicked while holding the guard. The data is still reachable through `into_inner`, including the increment made before the panic.",
+        "code": "let m = Arc::new(Mutex::new(5));\nlet m2 = Arc::clone(&m);\nlet r = thread::spawn(move || {\n    let mut g = m2.lock().unwrap();\n    *g += 1;\n    panic!(\"oops\");\n}).join();\nprintln!(\"{} {}\", r.is_err(), m.lock().is_err());\nlet v = *m.lock().unwrap_or_else(|e| e.into_inner());\nprintln!(\"{v}\");"
+      },
+      {
+        "question": "When is it reasonable to recover from a poisoned mutex, and when should the operation fail instead?",
+        "answer": "Recover when the protected state can be checked or rebuilt, such as a cache whose entries can be cleared. If a panic could have left a multi-field invariant half updated, like a ledger transfer, validate it first or fail rather than unwrapping the poison away."
+      }
+    ]
   },
   "illustration": {
     "path": "media/mutex-poisoning.png",

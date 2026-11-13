@@ -22,7 +22,17 @@
       "Rust strings cannot contain newlines"
     ],
     "correctAnswer": 0,
-    "feedback": "Quoted fields change the grammar. Use a CSV parser for the general format; keep this exercise's restrictions explicit."
+    "feedback": "Quoted fields change the grammar. Use a CSV parser for the general format; keep this exercise's restrictions explicit.",
+    "recall": [
+      {
+        "question": "The format is: one record per line, exactly two comma-separated fields, a nonempty trimmed name and a `u32` count, no quoting. Which of `crab, 3`, `crab,-1`, `crab,3,4`, ` ,3` and `\"a,b\",3` are accepted?",
+        "answer": "Only `crab, 3` (name `crab`, count 3). `-1` is not a `u32`, `crab,3,4` has an extra field, ` ,3` has a blank name, and the quoted record is rejected because quoting is unsupported and the split yields three fields."
+      },
+      {
+        "question": "Why should the parser validate a whole record before adding its count to the report total?",
+        "answer": "So a malformed record can never partly change the report or silently vanish from a successful one. Validate field count, name and count first, then report a clear error with a one-based line number instead of substituting zero."
+      }
+    ]
   },
   "depth": {
     "misconception": "Every comma-delimited file can be safely parsed with split.",
@@ -60,5 +70,5 @@
     "alt": "Diagram for Validate Data Records: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "A bounded text format with precise errors"
   },
-  "contentDigest": "db7e176851db5bb1038ae70ff44069c2168da1aac6e358c6ba138954906378f6"
+  "contentDigest": "e4eedb79b8b77864d0bfae4c1f7d39e17768c0f79adaf2b0eead9235b01247eb"
 }

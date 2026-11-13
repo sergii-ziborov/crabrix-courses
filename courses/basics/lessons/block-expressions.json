@@ -1,6 +1,6 @@
 {
   "concept": "Statements, tail values, and semicolons",
-  "contentDigest": "dc6db45aeb6c04fdaf4d9e7994cab91331a14e0f1611ea977b5d57cbc37098c3",
+  "contentDigest": "db57012f3243c58a9bd6a0932a8d5a9dfdbbb8a9c7b7f681df21c2a587eff05c",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,19 @@
     "rule": "No semicolon means a tail value; a semicolon turns it into `()`.",
     "success": "The binding receives the tail expression's numeric value.",
     "summary": "A block can perform statements and then produce one final value.",
-    "task": "Calculate a value inside a block and return it without `return`."
+    "task": "Calculate a value inside a block and return it without `return`.",
+    "recall": [
+      {
+        "question": "What does this print?",
+        "answer": "`5 16`. Inside the block a new `x` shadows the outer one with `15`, and the tail expression `x + 1` (no semicolon) becomes the block's value. The inner `x` ends at the brace, so the outer `x` is still `5`.",
+        "code": "let x = 5;\nlet y = {\n    let x = x * 3;\n    x + 1\n};\nprintln!(\"{x} {y}\");"
+      },
+      {
+        "question": "Why does this `if` expression fail to compile?",
+        "answer": "The semicolon turns `\"fail\"` into a statement, so the `else` block yields `()` while the `if` branch yields `&str`. rustc reports that `if` and `else` have incompatible types (E0308).",
+        "code": "let score = 70;\nlet label = if score > 50 { \"pass\" } else { \"fail\"; };"
+      }
+    ]
   },
   "illustration": {
     "path": "media/block-expressions.png",

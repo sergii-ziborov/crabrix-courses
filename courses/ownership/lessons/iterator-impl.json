@@ -1,6 +1,6 @@
 {
   "concept": "impl Iterator and the next method",
-  "contentDigest": "4e14e662061765274a4ad86c51614270e8c31224a33c13283ea2384df1c44be8",
+  "contentDigest": "21fc9fda11305c2af6a55ae145b76be1cd3f153749e7ef024d1a047578c80967",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "Implement next(); the adapters are default methods on the trait.",
     "success": "`Countdown { left: 3 }.sum::<u32>()` returns 6 through an adapter you did not write.",
     "summary": "Implementing one method gives you the whole adapter library.",
-    "task": "Fill in the `???` so `Countdown` ends when `left` reaches zero."
+    "task": "Fill in the `???` so `Countdown` ends when `left` reaches zero.",
+    "recall": [
+      {
+        "question": "What does this print?",
+        "answer": "`88`, the sum of 0, 1, 1, 2, 3, 5, 8, 13, 21, 34. Only `next` was written; `take` and `sum` are default methods built on repeated `next` calls.",
+        "code": "struct Fibonacci { a: u64, b: u64 }\nimpl Iterator for Fibonacci {\n    type Item = u64;\n    fn next(&mut self) -> Option<u64> {\n        let value = self.a;\n        self.a = self.b;\n        self.b = value + self.b;\n        Some(value)\n    }\n}\nlet total: u64 = Fibonacci { a: 0, b: 1 }.take(10).sum();\nprintln!(\"{total}\");"
+      },
+      {
+        "question": "What goes wrong if you call `.collect::<Vec<u64>>()` on this `Fibonacci` iterator without `take`, in a debug build?",
+        "answer": "`next` never returns `None`, so `collect` has no stopping point. After about 90 values, `value + self.b` exceeds `u64`, and the debug build panics with `attempt to add with overflow`. Use `take(n)`, or make `next` return `None` via `checked_add`."
+      }
+    ]
   },
   "illustration": {
     "path": "media/iterator-impl.png",

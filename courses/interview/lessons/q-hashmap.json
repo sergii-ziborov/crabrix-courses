@@ -1,6 +1,6 @@
 {
   "concept": "Why Rust seeds its hasher",
-  "contentDigest": "add2780662adfb20b7830d9f45bec841e492d591874ef5cea037a0fba6e23bb0",
+  "contentDigest": "4e40e883eef2b185ebdb6660558ca2b539c2aa69f3d96936d34478257d92f62c",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "Hash choice is a security decision whenever the keys are attacker-controlled.",
     "success": "The choice is justified by where the keys come from.",
     "summary": "A hash map is O(1) until an adversary picks your keys.",
-    "task": "Decide whether a faster hasher is safe for two different key sources."
+    "task": "Decide whether a faster hasher is safe for two different key sources.",
+    "recall": [
+      {
+        "question": "Why should you not write a `HashMap`'s iteration order directly into output that must be stable?",
+        "answer": "A hash map promises no stable iteration order, and the standard map's random seeding means the order can differ between runs. Use a `BTreeMap` or sort the entries when order matters."
+      },
+      {
+        "question": "A `HashMap` once held a million keys, and almost all were removed. Why can the process still use a lot of memory for it?",
+        "answer": "Removing entries does not necessarily release the map's internal capacity; the large table stays allocated. Calling `shrink_to_fit` or rebuilding the map can return the memory when that matters."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-hashmap.png",

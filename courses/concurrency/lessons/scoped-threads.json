@@ -1,6 +1,6 @@
 {
   "concept": "Borrow local data while threads are guaranteed to join",
-  "contentDigest": "196834f0f7a3de01027cfe8208d52a9dd21552c87a506687d3190dbdd0aacf68",
+  "contentDigest": "1677ee410c8fcc4db80b259b010dc9bba3a829870021b028ff69e122c03386cc",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,19 @@
     "rule": "`thread::scope` proves every spawned thread finishes before borrowed stack data disappears.",
     "success": "You can say why two disjoint `&mut` halves compile and why two mutable borrows of `values` do not.",
     "summary": "Borrow local data while threads are guaranteed to join.",
-    "task": "Predict what this prints. Then make both workers change `values` directly instead of one half each, and read the rejection."
+    "task": "Predict what this prints. Then make both workers change `values` directly instead of one half each, and read the rejection.",
+    "recall": [
+      {
+        "question": "Why does the compiler accept these two mutable borrows, and what is printed?",
+        "answer": "`split_at_mut` returns two non-overlapping `&mut` slices, so each thread has exclusive access to its half, and the scope joins both before `data` is used again. It prints `[10, 20, 4, 5]`.",
+        "code": "let mut data = [1, 2, 3, 4];\nlet (left, right) = data.split_at_mut(2);\nstd::thread::scope(|s| {\n    s.spawn(|| left.iter_mut().for_each(|x| *x *= 10));\n    s.spawn(|| right.iter_mut().for_each(|x| *x += 1));\n});\nprintln!(\"{data:?}\");"
+      },
+      {
+        "question": "These threads are scoped and will be joined. Why is this still rejected?",
+        "answer": "Both closures capture `data` by mutable borrow at the same time, which is E0499 (cannot borrow `data` as mutable more than once). A scope only guarantees lifetime; the usual aliasing rules still apply. Split the array first, for example with `split_at_mut`.",
+        "code": "let mut data = [1, 2, 3, 4];\nstd::thread::scope(|s| {\n    s.spawn(|| data[0] += 1);\n    s.spawn(|| data[1] += 1);\n});"
+      }
+    ]
   },
   "illustration": {
     "path": "media/scoped-threads.png",

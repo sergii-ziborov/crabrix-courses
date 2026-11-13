@@ -1,3 +1,14 @@
+## 2026-11-13 — recall questions for flashcards
+
+Every lesson now has authored recall questions in `writing.recall`: two per Rust
+lesson and one per Algorithms step, 996 in all, replacing the app's generic
+"What is the core idea of …?" card from Crabrix 1.1.9. Claims about program
+output, compile errors and Tokio behaviour were checked with rustc 1.99 and Tokio
+1.54.1, and SQL claims with SQLite. Algorithms 1.0.8, Basics 1.0.9, Concurrency
+1.0.10, Interview 1.1.2, Ownership 1.0.11, Projects 1.1.1 and Systems 1.0.10 keep
+lesson IDs, answers and answer positions; older apps ignore the new field.
+Signed catalog sequence 25 builds on 24.
+
 ## 2026-11-06 — precision and senior coverage review
 
 Twelve existing readings correct test-profile, dispatch, Copy/Clone, drop order,

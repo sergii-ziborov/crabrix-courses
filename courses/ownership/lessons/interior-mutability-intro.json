@@ -1,6 +1,6 @@
 {
   "concept": "Move a checked borrow rule to runtime",
-  "contentDigest": "0b02ef7840ca71e3f2ed2113f07f4f600042b0d0a69e3619a9b17a76d6bf2e47",
+  "contentDigest": "a216e8946d27aaa242ba644e675c8da5e895c41902dac4d2c9343361e0c351be",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,19 @@
     "rule": "`Cell` and `RefCell` allow mutation behind an immutable outer binding.",
     "success": "You can say why the later `borrow()` succeeds, and what would make it panic.",
     "summary": "Move a checked borrow rule to runtime.",
-    "task": "Find where the guard from `borrow_mut()` starts and ends, and where the check happens."
+    "task": "Find where the guard from `borrow_mut()` starts and ends, and where the check happens.",
+    "recall": [
+      {
+        "question": "Why doesn't this panic, even though `borrow_mut` and `borrow` are both called on `notes`?",
+        "answer": "The `RefMut` guard from `borrow_mut()` is a temporary dropped at the end of its statement, so the write borrow has ended before `borrow()` runs. It prints `1`. Keeping the guard in a variable would make the later `borrow()` panic.",
+        "code": "use std::cell::RefCell;\nlet notes = RefCell::new(Vec::new());\nnotes.borrow_mut().push(\"ready\");\nprintln!(\"{}\", notes.borrow().len());"
+      },
+      {
+        "question": "What do the two `println!` lines print, and when would you prefer `try_borrow` over `borrow`?",
+        "answer": "`true`, then `false`. While the `RefMut` guard is alive, a shared borrow would overlap a writer, so `try_borrow` returns an error where `borrow` would panic. Use the `try_` form when such a conflict is a normal possibility you want to handle.",
+        "code": "use std::cell::RefCell;\nlet notes = RefCell::new(vec![1]);\nlet guard = notes.borrow_mut();\nprintln!(\"{}\", notes.try_borrow().is_err());\ndrop(guard);\nprintln!(\"{}\", notes.try_borrow().is_err());"
+      }
+    ]
   },
   "illustration": {
     "path": "media/interior-mutability-intro.png",

@@ -1,6 +1,6 @@
 {
   "concept": "Cargo.toml and sibling files",
-  "contentDigest": "281d903976a8763ee76861a344709768b1c610f1435228512c6644c3ab7b0003",
+  "contentDigest": "bf7d52c54824dbe647432ac4caa1c1df6532206eb53a29d73c3403cad5871b59",
   "depth": {
     "connections": [
       {
@@ -49,7 +49,17 @@
     "rule": "Items are private by default; `pub` is what exposes them.",
     "success": "It compiles from `src/main.rs` and prints the edited output.",
     "summary": "Modules split a crate into files, and privacy shapes the surface.",
-    "task": "Open the multi-file project, trace mod greeter, and change its public function."
+    "task": "Open the multi-file project, trace mod greeter, and change its public function.",
+    "recall": [
+      {
+        "question": "`greeter::message` is not marked `pub`. What happens if `main` writes `use greeter::message;` and calls `message()`?",
+        "answer": "It fails with E0603, function `message` is private. `use` only shortens a path in the current scope; it never changes visibility. Only `pub` exposes the item."
+      },
+      {
+        "question": "Why might a library add a `pub use` re-export at its crate root?",
+        "answer": "It gives callers a short, deliberate path to an item that lives deep in the module tree. Internal files can then be moved or renamed without forcing every caller to change their paths."
+      }
+    ]
   },
   "illustration": {
     "path": "media/modules.png",

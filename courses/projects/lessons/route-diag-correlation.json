@@ -22,7 +22,17 @@
       "No, it is diagnostic context"
     ],
     "correctAnswer": 2,
-    "feedback": "Correlation identifies related events, not who is allowed to perform an operation."
+    "feedback": "Correlation identifies related events, not who is allowed to perform an operation.",
+    "recall": [
+      {
+        "question": "Why can't thread identity link together the log messages of one async request?",
+        "answer": "Async tasks interleave, so messages from different requests can come from the same thread, and one request can run on several threads. Give the operation one request ID and propagate it through database calls, retries and child work."
+      },
+      {
+        "question": "The request-ID policy accepts only 1 to 64 ASCII letters, digits, `-` and `_`. Why reject an incoming ID containing a line break, and what is it still not?",
+        "answer": "A line break could inject a fake record into line-based logs, so any invalid ID is replaced with the generated fallback. Even a valid ID is client-chosen diagnostic context, not authentication or an idempotency key."
+      }
+    ]
   },
   "depth": {
     "misconception": "Yes, a unique-looking string proves identity",
@@ -70,5 +80,5 @@
     "alt": "Diagram for Propagate One Request Identity: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "The worked implementation exercises validate a bounded correlation id. Its tests demonstrate the stated finite contract."
   },
-  "contentDigest": "92106aa015c1acef3f07b6315a4b22cf09d39d3704ec7a5ebd1c458054d67b30"
+  "contentDigest": "443fc87297190ed17d640d83dc0eb630be565bd43d9a98aa63e5234cfee9c4da"
 }

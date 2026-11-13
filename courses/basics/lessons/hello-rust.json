@@ -1,6 +1,6 @@
 {
   "concept": "Functions and stdout",
-  "contentDigest": "b9729bbd62a3f3bcae411bdb9158567d8b8871376b696ecbfc3a11c4ee84ff83",
+  "contentDigest": "08c246b12baf7c722cc8207cacf6c38f50f9ac3556439e1525fc10e46d1f9b5e",
   "depth": {
     "connections": [
       {
@@ -49,7 +49,19 @@
     "rule": "Execution begins in `fn main()`. `println!` is a compile-time-checked macro that writes a formatted line to stdout when the program runs.",
     "success": "The program exits with code 0 and stdout contains the greeting you predicted. After the deliberately broken placeholder, the compiler identifies the formatting mistake instead of producing new stdout.",
     "summary": "A small Rust program gives you the whole development loop: write a function, let the compiler check it, run it, and inspect what appeared on stdout.",
-    "task": "The starter prints one fixed line. Change the greeting and the name in its string, then write down the exact output you predict. Run the project and compare stdout with your prediction. Try a mismatched format placeholder, such as `{}` with no argument, and notice that compilation stops before a new program runs."
+    "task": "The starter prints one fixed line. Change the greeting and the name in its string, then write down the exact output you predict. Run the project and compare stdout with your prediction. Try a mismatched format placeholder, such as `{}` with no argument, and notice that compilation stops before a new program runs.",
+    "recall": [
+      {
+        "question": "What does the compiler report if you remove the `!` from this `println!` call, and why?",
+        "answer": "It fails with E0423: cannot find function `println` in this scope. Without `!` this is an ordinary function call, and no function named `println` exists; rustc notes that a macro of that name exists and suggests adding `!`.",
+        "code": "fn main() {\n    let name = \"Crabrix\";\n    println(\"Hello, {name}!\");\n}"
+      },
+      {
+        "question": "This program refers to `{nmae}` instead of `{name}`. When is the mistake detected, and does any greeting appear on stdout?",
+        "answer": "It is caught while `println!` expands at compile time: E0425, cannot find value `nmae` in this scope. The build fails, so no new program runs and nothing is printed; the diagnostic is compiler output, not stdout.",
+        "code": "fn main() {\n    let name = \"Crabrix\";\n    println!(\"Hello, {nmae}!\");\n}"
+      }
+    ]
   },
   "illustration": {
     "path": "media/hello-rust.png",

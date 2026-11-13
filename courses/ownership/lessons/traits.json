@@ -1,6 +1,6 @@
 {
   "concept": "Shared behavior and bounds",
-  "contentDigest": "d180e273ff51adfced82624ddd63f4360d3bb3fcd0dd2cbc494d56459d7f6c10",
+  "contentDigest": "00da5c15f31116fdd2c7148566568880643a1e666892cfca9f8ce674ed9d0823",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "Use generics for static dispatch and trait objects for dynamic dispatch; neither choice alone determines performance.",
     "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
     "summary": "Traits define shared behaviour independently of a concrete type.",
-    "task": "Accept a borrowed Display value and format value= followed by its display representation. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise."
+    "task": "Accept a borrowed Display value and format value= followed by its display representation. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise.",
+    "recall": [
+      {
+        "question": "Why does `s.radius()` fail to compile here?",
+        "answer": "Through a trait object you can only call what the trait declares; the concrete type has been erased behind the vtable. `radius` belongs to `Circle`, not `Shape`, so rustc reports E0599 no method named `radius` for `Box<dyn Shape>`.",
+        "code": "trait Shape { fn area(&self) -> f64; }\nstruct Circle { r: f64 }\nimpl Circle { fn radius(&self) -> f64 { self.r } }\nimpl Shape for Circle {\n    fn area(&self) -> f64 { 3.0 * self.r * self.r }\n}\n\nlet s: Box<dyn Shape> = Box::new(Circle { r: 1.0 });\nprintln!(\"{}\", s.radius());"
+      },
+      {
+        "question": "When would you write `fn total(s: &dyn Shape)` instead of `fn total<S: Shape>(s: &S)`, and does the `dyn` version need a heap allocation?",
+        "answer": "Use `dyn` when values of different concrete types must be handled together or the type is only known at runtime; calls go through a vtable and one compiled copy serves all types. It needs no heap allocation: `&dyn Shape` can point at a value on the stack."
+      }
+    ]
   },
   "illustration": {
     "path": "media/traits.png",

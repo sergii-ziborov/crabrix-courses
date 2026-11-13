@@ -1,6 +1,6 @@
 {
   "concept": "Infer shared, mutable, or moved captures",
-  "contentDigest": "130f5fccc3045be4dcfce4176efc4759b85ed1a7c668981eaded4e31b00db0f6",
+  "contentDigest": "2e6b270177e35f90506f8ba86c2a09355f2305fc4c906cf91a6af62c6f905fca",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "A closure borrows, mutably borrows, or moves each captured value according to its body.",
     "success": "You can explain why `move` alone does not make a closure `FnOnce`.",
     "summary": "Infer shared, mutable, or moved captures.",
-    "task": "Say who owns `name` after `move`, and how many times `announce` can be called."
+    "task": "Say who owns `name` after `move`, and how many times `announce` can be called.",
+    "recall": [
+      {
+        "question": "A function calls its callback exactly once. Why is `F: FnOnce()` a better bound than `F: Fn()`?",
+        "answer": "Every closure implements `FnOnce`, so that bound accepts the widest set, including closures that consume a capture such as `move || drop(name)`. Under `Fn`, that closure is rejected (E0507, cannot move out of a captured variable in an `Fn` closure)."
+      },
+      {
+        "question": "`announce` can be called twice here. Why is the final line rejected?",
+        "answer": "`move` transferred ownership of `name` into the closure, so the outer binding is gone: E0382 borrow of moved value. The body only reads its capture, so the closure itself stays `Fn` and repeatable.",
+        "code": "let name = String::from(\"Ferris\");\nlet announce = move || println!(\"{name}\");\nannounce();\nannounce();\nprintln!(\"{name}\");"
+      }
+    ]
   },
   "illustration": {
     "path": "media/closure-capture-modes.png",

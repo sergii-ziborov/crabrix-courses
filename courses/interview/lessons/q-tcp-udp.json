@@ -1,6 +1,6 @@
 {
   "concept": "Streams, datagrams, and trade-offs",
-  "contentDigest": "ca36ffab02018c2967e1676550bb1125144fa5792f807b2c5ecda1fd0a0b2751",
+  "contentDigest": "fe9e165fb4f2a538601595469348ec884cd15cebe393b2950875564f2a3f67c4",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "TCP: ordered, reliable, head-of-line blocked. UDP: messages, no promises.",
     "success": "Each choice names the guarantee you needed and the one you gave up.",
     "summary": "TCP gives you a reliable ordered stream; UDP gives you datagrams and nothing else.",
-    "task": "Choose a transport for a chat protocol and for live audio, and say why."
+    "task": "Choose a transport for a chat protocol and for live audio, and say why.",
+    "recall": [
+      {
+        "question": "A client sends two messages on a `TcpStream` with two separate writes. What might the server's reads return, and what must the application do about it?",
+        "answer": "TCP is a byte stream with no message boundaries: both messages may arrive in one read, or one message may need several reads. The application must frame messages, for example with a length prefix."
+      },
+      {
+        "question": "A client sends a payment request and then times out. Over either TCP or UDP, what can it conclude about the payment?",
+        "answer": "Nothing about the business outcome: the server may still process the request. Transport reliability is not exactly-once execution, so the caller needs application-level acknowledgements and idempotency to retry safely."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-tcp-udp.png",

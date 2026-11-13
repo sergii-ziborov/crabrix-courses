@@ -1,6 +1,6 @@
 {
   "concept": "Dot syntax and chained transformations",
-  "contentDigest": "64d5f0b156241b508e0736de7fa8c0366359a8ef8f422beb16c2c0c56e7efe8f",
+  "contentDigest": "92712391ae7f2918229e9d3ee3992973e74c6c978894029557ed56f449d9ddd3",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,19 @@
     "rule": "Read a method's `self` parameter to learn its ownership effect.",
     "success": "You can tell whether each receiver is borrowed or consumed.",
     "summary": "Method syntax puts an operation beside the value it acts on.",
-    "task": "Chain two text methods and identify which step allocates a new `String`."
+    "task": "Chain two text methods and identify which step allocates a new `String`.",
+    "recall": [
+      {
+        "question": "What does this print, and which of `name`, the result of `trim()`, and `clean` own their bytes?",
+        "answer": "It prints `[ crab ] [CRAB]`. `name` owns its `String`; `trim()` returns a borrowed `&str` view into it and edits nothing; `to_uppercase()` builds a new owned `String`. The chain is `String` -> `&str` -> `String`.",
+        "code": "let name = String::from(\" crab \");\nlet clean = name.trim().to_uppercase();\nprintln!(\"[{name}] [{clean}]\");"
+      },
+      {
+        "question": "Why is `s` unusable on the last line?",
+        "answer": "`into_bytes` takes `self` by value, so the call consumes `s` and hands its buffer to `b`. Using `s` afterwards is E0382 borrow of moved value. The dot syntax doesn't change this; the `self` receiver decides it.",
+        "code": "let s = String::from(\"a\");\nlet b = s.into_bytes();\nprintln!(\"{s} {b:?}\");"
+      }
+    ]
   },
   "illustration": {
     "path": "media/methods-intro.png",

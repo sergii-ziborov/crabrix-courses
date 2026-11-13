@@ -1,6 +1,6 @@
 {
   "concept": "Lazy transformations",
-  "contentDigest": "fce2a5131aad0d88db81def1990445035c1f51bb763daad80dcc9886253771a8",
+  "contentDigest": "aceb8dff838ce477d9f339792ee9d3d93f92c45eecf98de46295ed7aa639248e",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,19 @@
     "rule": "Adapters are lazy; a consumer is what makes the work happen.",
     "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
     "summary": "Iterators compose lazy transformations before consuming results.",
-    "task": "Sum only even integers with iterator adapters. Inputs and their sum fit i32. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise."
+    "task": "Sum only even integers with iterator adapters. Inputs and their sum fit i32. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise.",
+    "recall": [
+      {
+        "question": "How many `saw` lines does this print, and what is `v`?",
+        "answer": "Four lines, `saw 1` to `saw 4`, then `[2, 4]`. Items are pulled one at a time through the whole chain, and once `take(2)` has two items it stops asking, so `5` and `6` are never produced.",
+        "code": "let v: Vec<u32> = (1..=6)\n    .inspect(|x| println!(\"saw {x}\"))\n    .filter(|x| x % 2 == 0)\n    .take(2)\n    .collect();\nprintln!(\"{v:?}\");"
+      },
+      {
+        "question": "If the lesson's chain ends with `.sum::<u32>()` instead of `.collect()`, what is the result, and how many intermediate vectors are built?",
+        "answer": "`56` (4 + 16 + 36). No intermediate vectors are built: `filter` and `map` are lazy adapters, and `sum` pulls each value through both steps in a single pass.",
+        "code": "(1..=6)\n    .filter(|v| v % 2 == 0)\n    .map(|v| v * v)\n    .sum::<u32>()"
+      }
+    ]
   },
   "illustration": {
     "path": "media/iterators.png",

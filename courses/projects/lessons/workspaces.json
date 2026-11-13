@@ -1,6 +1,6 @@
 {
   "concept": "Many crates, one lockfile",
-  "contentDigest": "9915d16cb99808ef49dc3ceb9cc71d6580148d39f907af8551c146eba37502d2",
+  "contentDigest": "d425c5af7ee15bf3c23051ba9bf3bb23e997280508059f5af9b26d16389bf75b",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "Workspace members share one lockfile, which records every resolved version; incompatible requirements can still select several.",
     "success": "The library holds the logic and the binary only wires it up.",
     "summary": "A workspace builds several crates against one lockfile.",
-    "task": "Describe how you would split a project into a library and a binary."
+    "task": "Describe how you would split a project into a library and a binary.",
+    "recall": [
+      {
+        "question": "`core` and `cli` are members of the same workspace. What must `cli` do before it can call `core`'s functions, and why?",
+        "answer": "Declare an explicit path dependency in `cli/Cargo.toml`, such as `core = { path = \"../core\" }`. Membership in a workspace shares the lockfile and target directory but does not make crates visible to each other."
+      },
+      {
+        "question": "Why is splitting a project into a library plus a thin binary a common first move, and when does splitting further become a mistake?",
+        "answer": "The library holds reusable behaviour that can be tested on its own, while the binary only parses arguments, calls the library and prints. Splitting every file into its own crate adds manifest and versioning overhead without improving the design."
+      }
+    ]
   },
   "illustration": {
     "path": "media/workspaces.png",

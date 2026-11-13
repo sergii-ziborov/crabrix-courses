@@ -1,6 +1,6 @@
 {
   "concept": "Derive, attribute, and function macros",
-  "contentDigest": "9849db798d24ce44dc4c137efd4f90950141c0556809c428b39c5cfcb4887463",
+  "contentDigest": "40eabb24d78d9827f70279689cec73a5a97914740ecceb9cebed839776f6ad7a",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "Proc macros execute at compile time, so they need a host-native build.",
     "success": "You can name the host-compilation requirement as the reason.",
     "summary": "A procedural macro is a compiler plugin written in Rust.",
-    "task": "Explain why a proc macro cannot run inside Crabrix."
+    "task": "Explain why a proc macro cannot run inside Crabrix.",
+    "recall": [
+      {
+        "question": "Why does a derive macro need its own `proc-macro = true` crate, and where does it run when you cross-compile for a phone?",
+        "answer": "A procedural macro is a program the compiler loads and runs during compilation, taking and returning a `TokenStream`, so it has to be built as a host-native artifact in a dedicated crate. When cross-compiling, it runs on the build machine while the emitted code is compiled for the phone."
+      },
+      {
+        "question": "Why should a derive macro emit absolute paths such as `::my_crate::Hello` in its generated `impl`, rather than a bare `Hello`?",
+        "answer": "Generated code is compiled in the caller's crate, where `Hello` may not be imported or may refer to something else. A bare name makes the expansion depend on the caller's `use` statements; an absolute path resolves the same everywhere."
+      }
+    ]
   },
   "illustration": {
     "path": "media/proc-macros.png",

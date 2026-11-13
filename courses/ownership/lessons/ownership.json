@@ -1,6 +1,6 @@
 {
   "concept": "Moves and scope",
-  "contentDigest": "771d904339dcc209b520a1470c72a7de1188d4e5acd2d3279e4e01707b6889f1",
+  "contentDigest": "747f5c2317ea47d5037131fb8f6562d59408f28c5f0d83d3214679432dce9a6e",
   "depth": {
     "connections": [
       {
@@ -49,7 +49,18 @@
     "rule": "One value, one owner; a move ends the previous binding.",
     "success": "You can explain why no double free is possible.",
     "summary": "Ownership gives every value one clear cleanup responsibility.",
-    "task": "Predict which binding still owns a `String` after an assignment."
+    "task": "Predict which binding still owns a `String` after an assignment.",
+    "recall": [
+      {
+        "question": "Why does Rust make `first` unusable after `let second = first;` for a `String`, instead of letting both names share the buffer?",
+        "answer": "A `String` owns a heap buffer that is freed when its owner is dropped. If both bindings stayed valid, both would free the same allocation at the end of the scope, a double free. A move keeps exactly one owner, so the buffer is freed once."
+      },
+      {
+        "question": "Why is the last line rejected?",
+        "answer": "`push` takes its argument by value, so ownership of the `String` moves into the vector: E0382 borrow of moved value. Read it through `v[0]`, or push `name.clone()` if you really need two independent strings.",
+        "code": "let name = String::from(\"crab\");\nlet mut v = Vec::new();\nv.push(name);\nprintln!(\"{name}\");"
+      }
+    ]
   },
   "illustration": {
     "path": "media/ownership.png",

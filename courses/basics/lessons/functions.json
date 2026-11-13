@@ -1,6 +1,6 @@
 {
   "concept": "Returns and expression bodies",
-  "contentDigest": "7fa224f55a08cf953351d8f0d4d9c7b415e0368fc0915e443e1ef347e6574be7",
+  "contentDigest": "f80c0971914e31c3a7e2bcd539d5fa0cac5e96b484ed6b2e864423755277127c",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,19 @@
     "rule": "The last expression without a semicolon is the return value.",
     "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
     "summary": "A function signature is a contract the compiler enforces at every call site.",
-    "task": "Return twice the input without printing it. Inputs are limited so doubling fits i32. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise."
+    "task": "Return twice the input without printing it. Inputs are limited so doubling fits i32. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise.",
+    "recall": [
+      {
+        "question": "Why does this version of `shout` fail to compile, when returning `out` as a `String` works?",
+        "answer": "`out` is a local that is dropped when the function returns, so a reference to it would dangle; rustc reports `cannot return reference to local variable` (E0515). Returning the `String` itself moves ownership to the caller instead.",
+        "code": "fn shout(text: &str) -> &str {\n    let out = text.to_uppercase();\n    &out\n}"
+      },
+      {
+        "question": "Why can't a caller write `let t = total() + 1;` with this function?",
+        "answer": "`total` has no return type, so it returns `()`. The `7` was printed to stdout, not returned, and rustc rejects the addition with E0369 (cannot add an integer to `()`). Declare `-> i32` and end with the expression to return it.",
+        "code": "fn total() {\n    println!(\"{}\", 3 + 4);\n}"
+      }
+    ]
   },
   "illustration": {
     "path": "media/functions.png",

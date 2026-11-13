@@ -14,7 +14,7 @@
     "visibleInput": "[2,3,7,8,10]"
   },
   "concept": "Track reachable totals and update backward so every item is used at most once.",
-  "contentDigest": "a25876f59c113e816799511d59ff663bbf6c9b485f4347bb9cb7947f00a698c3",
+  "contentDigest": "bb51c1bbc07f5eaca14f5b534ce8904f58896e87d17fd1a449ff284760b26180",
   "depth": {
     "connections": [
       {
@@ -68,7 +68,14 @@
     "rule": "Track reachable totals and update backward so every item is used at most once. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n*target) time · O(target) space bound without looking at the code.",
     "summary": "Track reachable totals and update backward so every item is used at most once.",
-    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output.",
+    "recall": [
+      {
+        "question": "This variant scans sums upward. What does `subset_sum(&[5], 10)` return, and why is that wrong?",
+        "answer": "`true`. After `reachable[5]` becomes true in the same pass, sum 10 reads it and adds the same 5 again, so one item is used twice. Scanning downward only reads states built from earlier items.",
+        "code": "fn subset_sum(values: &[usize], target: usize) -> bool {\n    let mut reachable = vec![false; target + 1];\n    reachable[0] = true;\n    for &x in values {\n        for sum in x..=target {\n            reachable[sum] |= reachable[sum - x];\n        }\n    }\n    reachable[target]\n}"
+      }
+    ]
   },
   "illustration": {
     "path": "media/algorithms-dynamic-2d-a.png",

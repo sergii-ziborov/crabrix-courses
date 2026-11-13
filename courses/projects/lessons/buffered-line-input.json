@@ -22,7 +22,17 @@
       "It forces all numbers to zero"
     ],
     "correctAnswer": 1,
-    "feedback": "Dropping errors can produce a believable total from only part of the input. Propagate read failures and identify malformed records."
+    "feedback": "Dropping errors can produce a believable total from only part of the input. Propagate read failures and identify malformed records.",
+    "recall": [
+      {
+        "question": "Why give a line-based report parser a generic `R: BufRead` parameter instead of a file path?",
+        "answer": "The same function then accepts a `BufReader<File>`, locked stdin or an in-memory `Cursor`. The transformation stays separate from paths, permissions and device I/O, and it can be tested without creating a file."
+      },
+      {
+        "question": "The parser trims lines, skips blank ones and parses the rest as `i64`. For the input `\"12\\n\\nx\\n\"`, what should it return?",
+        "answer": "An error naming line 3, because `x` is not a valid `i64`. Line numbers are one-based physical lines, so the skipped blank line still counts, and a malformed line is never turned into zero or dropped."
+      }
+    ]
   },
   "depth": {
     "misconception": "A buffered reader has already validated every record.",
@@ -55,5 +65,5 @@
     "alt": "Diagram for Buffered Line Input: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "BufRead, Cursor, and fallible iteration"
   },
-  "contentDigest": "3f3939493c927b561b17ee1c31fe59d43b2afc4170832d2b8299e3fcd89c63fe"
+  "contentDigest": "9a639d9e4cf208e5609c57f92b30df00c7bdfc847db3acb4ab441aa1f7ac4376"
 }

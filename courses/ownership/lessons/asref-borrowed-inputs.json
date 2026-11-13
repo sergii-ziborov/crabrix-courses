@@ -22,7 +22,18 @@
       "Only when the text is ASCII"
     ],
     "correctAnswer": 1,
-    "feedback": "AsRef supplies a borrowed view inside the function. Passing the owned argument by value still moves it."
+    "feedback": "AsRef supplies a borrowed view inside the function. Passing the owned argument by value still moves it.",
+    "recall": [
+      {
+        "question": "What does this print, and why do the two numbers differ?",
+        "answer": "`2 8`: after trimming, `É` and the crab are two Unicode scalar values. `len()` counts UTF-8 bytes of the untrimmed string: two spaces, two bytes for `É`, and four for the crab. Passing `&owned` leaves the `String` usable.",
+        "code": "fn scalar_count(text: impl AsRef<str>) -> usize {\n    text.as_ref().trim().chars().count()\n}\nlet owned = String::from(\" É🦀 \");\nprintln!(\"{} {}\", scalar_count(&owned), owned.len());"
+      },
+      {
+        "question": "Why doesn't accepting `impl AsRef<str>` remove the need for a validating constructor such as `Port::from_str`?",
+        "answer": "`AsRef<str>` is only a cheap reference conversion that gives you a `&str` view; it says nothing about the text's contents. Whether the string is a valid port, URL or record still has to be checked by a separate, fallible operation."
+      }
+    ]
   },
   "depth": {
     "misconception": "AsRef means arguments can never be moved.",
@@ -55,5 +66,5 @@
     "alt": "Diagram for Flexible Borrowed Inputs: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "AsRef without unnecessary ownership"
   },
-  "contentDigest": "679ba8a1bd46c34c386a8b392075abb527339912eb2818917309b2001fb6a566"
+  "contentDigest": "30246b22bc9e89543a8196aadb47fcfaabd50d9574674d5edfc6c51a0ab96d48"
 }

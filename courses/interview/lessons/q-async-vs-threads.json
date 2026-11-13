@@ -1,6 +1,6 @@
 {
   "concept": "Waiting versus computing",
-  "contentDigest": "2eb4f362460e6007cd44d49511cabcfc148fb521a3760ca4959dc2648a1b0562",
+  "contentDigest": "d3d6e2559c4b7b07d51eb9a2e224594db6af09d4f31ceb1248dacd7d6d8ac838",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "Choose concurrency and parallelism from the workload; async tasks still execute on threads.",
     "success": "You separate waiting from computing rather than picking by fashion.",
     "summary": "Async makes waiting cheap and threads run work in parallel; neither owns all I/O or all CPU.",
-    "task": "Decide between threads and async for two workloads and justify each."
+    "task": "Decide between threads and async for two workloads and justify each.",
+    "recall": [
+      {
+        "question": "Why can an async runtime serve ten thousand mostly idle connections more cheaply than one OS thread per connection?",
+        "answer": "Each thread reserves a stack and is scheduled by the OS, whereas an async task stores its wait as compact state machine data and is polled only when woken. Idle waits therefore cost little, though the tasks still run on a small pool of threads."
+      },
+      {
+        "question": "Why is \"async for all I/O, threads for all CPU\" an oversimplification?",
+        "answer": "Async tasks still execute on threads, and small systems can do I/O on threads perfectly well. The real question is whether the work mostly waits (async scales the waiting) or computes (threads or a bounded compute pool give parallelism on available cores)."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-async-vs-threads.png",

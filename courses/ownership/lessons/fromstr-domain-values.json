@@ -22,7 +22,17 @@
       "TryFrom, with an error result"
     ],
     "correctAnswer": 2,
-    "feedback": "TryFrom communicates a fallible conversion in its type. FromStr is the corresponding idiom for parsing text."
+    "feedback": "TryFrom communicates a fallible conversion in its type. FromStr is the corresponding idiom for parsing text.",
+    "recall": [
+      {
+        "question": "With the lesson's `FromStr for Port` (trim, parse as `u16`, reject zero), what do `\"0\"`, `\"70000\"`, `\" 8080 \"` and `\"\"` parse to?",
+        "answer": "`Err(\"zero\")`, `Err(\"invalid\")`, `Ok(Port(8080))`, `Err(\"invalid\")`. 70000 overflows `u16` and empty text is malformed, both syntax failures, while zero is a well-formed number that breaks the domain rule."
+      },
+      {
+        "question": "Why keep `Port`'s field private and make `FromStr`, `TryFrom` and any constructor all call one checked function?",
+        "answer": "A private field means safe code outside the module cannot write `Port(0)`, so every `Port` that exists is valid. Routing all creation paths through one check stops, say, the JSON and command-line adapters from drifting to different rules."
+      }
+    ]
   },
   "depth": {
     "misconception": "A conversion trait should silently choose a default on bad input.",
@@ -55,5 +65,5 @@
     "alt": "Diagram for FromStr & Domain Values: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "A validated constructor behind a parsing trait"
   },
-  "contentDigest": "174abca1d892aaf8050ef906546749e14f6502e4d1ec8d86a39b21230480be63"
+  "contentDigest": "05c54a94afbcf4c6583e54be94f0f7c6e7681c88c169a1d95d1806e39a23349b"
 }

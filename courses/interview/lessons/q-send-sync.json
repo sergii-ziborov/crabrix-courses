@@ -1,6 +1,6 @@
 {
   "concept": "Thread-safety marker traits",
-  "contentDigest": "c6b9658e28b23be36a7dab9b801c89a3f9b7bf231ca3e285c8e2ca9096369b19",
+  "contentDigest": "0bc6051a3cd7fcdf0d638855f2b72fe1cc3846aeb0bceee7d4ddc750e546507a",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "T is `Sync` exactly when &T is `Send`.",
     "success": "You name the atomic reference count as the deciding detail.",
     "summary": "Two marker traits decide what may cross a thread boundary.",
-    "task": "Explain why `Rc` cannot cross threads and `Arc` can."
+    "task": "Explain why `Rc` cannot cross threads and `Arc` can.",
+    "recall": [
+      {
+        "question": "Why can't worker threads share and mutate a counter through `Arc<RefCell<u32>>`, and what should you use instead?",
+        "answer": "`RefCell` tracks borrows with a non-atomic flag, so it is not `Sync`; the compiler rejects the `thread::spawn` because `RefCell<u32>` cannot be shared between threads (E0277). Use `Arc<Mutex<u32>>` or an `AtomicU32`."
+      },
+      {
+        "question": "Why is adding `unsafe impl Send for MyType {}` a bad way to satisfy a failing `thread::spawn` bound?",
+        "answer": "It is a promise the compiler cannot check that every field is safe to transfer across threads. If the type holds something like an `Rc`, the promise is false and data races become possible; fix the design (move ownership, `Arc`, a lock) instead."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-send-sync.png",

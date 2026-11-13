@@ -1,6 +1,6 @@
 {
   "concept": "Making misuse impossible to express",
-  "contentDigest": "8e3757ed8ac051be47f765d31d6213f831b9381a27cd109f2591037e340b7159",
+  "contentDigest": "0abb48d171b17ef25d6e7a8c021a0223875a36b4c1e87b2d352420af322ba43c",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "Encode the invariant in the type; documentation is not enforcement.",
     "success": "The mistake becomes a compile error rather than a comment.",
     "summary": "A good API makes the wrong call impossible, not merely documented.",
-    "task": "Make one plausible misuse of an API impossible to express."
+    "task": "Make one plausible misuse of an API impossible to express.",
+    "recall": [
+      {
+        "question": "Why does adding a required method to a public trait break downstream crates, and how can a default avoid that?",
+        "answer": "Every downstream `impl` lacks the new method and stops compiling with E0046, not all trait items implemented. Giving the method a default body lets existing implementations keep compiling."
+      },
+      {
+        "question": "How does a typestate API stop a caller from calling `send` before `configure`, and when is it not worth it?",
+        "answer": "The unconfigured and configured request are different types, and only the configured type has `send`, so the wrong order does not compile. Too many states make errors and documentation unwieldy; use it when the ordering rule is stable and misuse is likely."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-api-design.png",

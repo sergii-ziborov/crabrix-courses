@@ -1,6 +1,6 @@
 {
   "concept": "Where values live and what a move copies",
-  "contentDigest": "9a1a0dc38b35481838523c7f1232c11f11de849cb148167a5f40882d4ebf1ce4",
+  "contentDigest": "e8d9093a34aa6a2a1fb9d05ffe8315be3d2c22e366cc5f7ec854e8a9fb17b62b",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "A move transfers ownership; handle placement and optimized instructions are not language guarantees.",
     "success": "You can explain why moving a `String` is cheap but cloning it is not.",
     "summary": "Ownership and storage location are separate questions; draw the handle and the allocation.",
-    "task": "Say where each part of a `Vec<String>` lives and what a move copies."
+    "task": "Say where each part of a `Vec<String>` lives and what a move copies.",
+    "recall": [
+      {
+        "question": "For a `Vec<u8>` named `a`, how do `let b = a;`, `let s = &a[..];` and `let c = a.clone();` differ in what happens to the heap buffer?",
+        "answer": "The move hands the existing buffer to `b` (same `as_ptr`); the borrow creates temporary access without touching the allocation; the clone allocates a new buffer and copies the elements (different `as_ptr`)."
+      },
+      {
+        "question": "Where does a fixed-size array like `[u8; 64]` live in memory?",
+        "answer": "Wherever its owner is stored: in a stack frame when it is a local, in a heap allocation when it sits inside a `Box` or `Vec`, or inline inside another struct. Fixed size does not decide the location; the owner does."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-stack-heap.png",

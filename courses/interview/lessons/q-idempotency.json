@@ -1,6 +1,6 @@
 {
   "concept": "Making at-least-once safe",
-  "contentDigest": "16f510228617eab1821e0969f14fa654a07f864e7190a74d498b868fd9f0d239",
+  "contentDigest": "b41cf5834859bddd28b72665c8a6e791c9500cb17ca09198fab890b7bc2ab2f4",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "An idempotency key needs an enforced request/outcome contract, not just a header.",
     "success": "A duplicate request returns the original result and charges once.",
     "summary": "A retry is only safe if the operation is idempotent.",
-    "task": "Make a non-idempotent endpoint safe to retry."
+    "task": "Make a non-idempotent endpoint safe to retry.",
+    "recall": [
+      {
+        "question": "A payment server charges the card and then, as a separate step, stores the idempotency key and result. What goes wrong if it crashes between those steps?",
+        "answer": "The charge happened but no record exists, so the client's retry with the same key charges again. Record the key and outcome atomically with the effect where possible, or pass a stable key to the provider and reconcile uncertain results."
+      },
+      {
+        "question": "Besides storing each key with its outcome, which rules must an idempotency-key contract define?",
+        "answer": "How long keys are kept (expiry), what happens if the same key is reused with different parameters, and how concurrent duplicates with the same key race so only one performs the effect. A header without these rules gives no exactly-once behaviour."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-idempotency.png",

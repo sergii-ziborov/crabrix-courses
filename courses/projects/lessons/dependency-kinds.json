@@ -1,6 +1,6 @@
 {
   "concept": "Separate runtime, build, and test-only tools",
-  "contentDigest": "58127601b4f8e7962be1f514515b06cbfea5395678c4c1ecae357ce5462c38ed",
+  "contentDigest": "37fc818362c0e0bb2ef89c21a3099785d7ecd59f127bf3a5c63ddb114a060d57",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "Normal dependencies become part of a target graph, build dependencies support build scripts, and dev dependencies exist for tests and examples.",
     "success": "`cargo tree -e normal` no longer lists it, and `cargo test` still compiles the tests.",
     "summary": "Separate runtime, build, and test-only tools.",
-    "task": "`pretty_assertions` is used only by the tests. Move it to the right section, then compare `cargo tree -e normal` before and after."
+    "task": "`pretty_assertions` is used only by the tests. Move it to the right section, then compare `cargo tree -e normal` before and after.",
+    "recall": [
+      {
+        "question": "Production code imports a crate that is listed only under `[dev-dependencies]`. What happens?",
+        "answer": "An ordinary `cargo build` fails because dev dependencies are not available to the library or binary target, even though tests might compile. Crates used by production code belong under `[dependencies]`."
+      },
+      {
+        "question": "What are `[build-dependencies]` for, and who can use them?",
+        "answer": "They are available to the package's `build.rs` script, which runs during the build to do things like generate files or detect native libraries. They are not dependencies of the crate's normal code."
+      }
+    ]
   },
   "illustration": {
     "path": "media/dependency-kinds.png",

@@ -1,6 +1,6 @@
 {
   "concept": "Form a hypothesis and request one discriminating fact",
-  "contentDigest": "120172613ac00b1ca7367d3eadaf4e0ec81ec0cdd141135235acadd3e9ce502f",
+  "contentDigest": "d8584538b3c69307374bdc31d1978381b0ce2bd60ac33dcb042a5633b6d35e97",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "Do not edit randomly during an interview.",
     "success": "You name the zero denominator from evidence, then propose a fix and a regression test for empty input.",
     "summary": "Form a hypothesis and request one discriminating fact.",
-    "task": "Reproduce the panic from `average(&[])`, state one hypothesis, and name the smallest observation that could disprove it."
+    "task": "Reproduce the panic from `average(&[])`, state one hypothesis, and name the smallest observation that could disprove it.",
+    "recall": [
+      {
+        "question": "Apart from empty input, what goes wrong when this function is called with `&[u32::MAX, 1]`?",
+        "code": "fn average(values: &[u32]) -> u32 {\n    let total: u32 = values.iter().sum();\n    total / values.len() as u32\n}",
+        "answer": "The `u32` sum overflows: a debug build panics with \"attempt to add with overflow\" and a release build wraps to a wrong total. Accumulate in a wider type such as `u64` and return `Option<u32>` for the empty case."
+      },
+      {
+        "question": "A function returns an empty list only on its second call. How do you debug it out loud rather than editing at random?",
+        "answer": "Form one hypothesis, such as state or a cache reused between calls, and say what observation would confirm or refute it. Instrument just before and after the suspected state change, update the model if the values disagree, then make a minimal fix with a regression test."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-debugging-session.png",

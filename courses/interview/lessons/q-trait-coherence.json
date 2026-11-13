@@ -6,7 +6,7 @@
   "order": 2,
   "parentID": "interview-api-boundaries",
   "exerciseKind": "planned",
-  "contentDigest": "099f890737e98ce67fe9d9c898a3043a436cdcd597089ad8155bfec799827e83",
+  "contentDigest": "eb2bfe3267bc62b3f2d43dfd9064e1d2d29c7f508124fa4722964a96b91e08ff",
   "writing": {
     "summary": "A local wrapper creates a distinct type whose behaviour your crate can own.",
     "explanation": "Rust’s coherence rules restrict trait implementations so that implementations can be selected consistently across crates. The orphan rules broadly require the trait or a relevant implementing type to be local, with additional rules for generic parameters and fundamental types. A type alias does not create a new local type for this purpose.\n\nThe example wraps `Vec<u8>` in a local `Bytes` type and implements the standard `Display` trait for that wrapper. It does not attempt to implement `Display` directly for `Vec<u8>`. The wrapper also creates an explicit API boundary: you can restrict construction, choose formatting and control which capabilities are exposed. Delegation is a design choice rather than an automatic consequence of wrapping.\n\nIn an interview, contrast a local trait implemented for a foreign type with a foreign trait implemented for a local wrapper. Explain why a type alias cannot make an otherwise conflicting implementation valid. Then discuss what a blanket implementation can prevent downstream crates from adding later. The rule is about which implementations exist and can coexist, not a runtime performance penalty. A newtype’s layout or FFI suitability still requires the relevant representation and ABI contract.",
@@ -23,7 +23,18 @@
       "Bytes is a distinct local implementing type, satisfying the relevant orphan requirement."
     ],
     "correctAnswer": 2,
-    "feedback": "The trait remains foreign; the implementing wrapper is local. Generic coverage and overlap still need to satisfy coherence rules."
+    "feedback": "The trait remains foreign; the implementing wrapper is local. Generic coverage and overlap still need to satisfy coherence rules.",
+    "recall": [
+      {
+        "question": "Why does this fail to compile, and what is the fix?",
+        "code": "use std::fmt;\ntype Bytes = Vec<u8>;\nimpl fmt::Display for Bytes {\n    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {\n        write!(f, \"bytes\")\n    }\n}",
+        "answer": "A type alias is only another name for `Vec<u8>`, so this implements a foreign trait for a foreign type, which the orphan rule forbids (E0117). Use a newtype such as `struct Bytes(Vec<u8>);`, a distinct local type."
+      },
+      {
+        "question": "Which of these does the orphan rule allow: your own trait for `Vec<u8>`, `Display` for your own struct, `Display` for `Vec<u8>`?",
+        "answer": "The first two: either the trait or the implementing type is local to your crate. `Display` for `Vec<u8>` is rejected because both are foreign, which keeps implementations consistent across crates."
+      }
+    ]
   },
   "depth": {
     "misconception": "The wrapper makes the standard Display trait local to this crate.",

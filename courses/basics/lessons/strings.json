@@ -1,6 +1,6 @@
 {
   "concept": "String, &str, chars, and bytes",
-  "contentDigest": "67c51ffcdb554e9e12e2345ec7d9ef212a706c8189dbae1b080aa81e694dfaa4",
+  "contentDigest": "4dc1e61c3d80cad8938a4fc52e926fc7c652dc30f7c86851acc67f9bfade6f1a",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "`len()` counts UTF-8 bytes; `chars().count()` counts Unicode scalar values, not grapheme clusters.",
     "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
     "summary": "Rust strings are UTF-8, so there is no cheap index by character.",
-    "task": "Return the first Unicode scalar of each whitespace-separated word. Preserve case and do not slice text by byte offset. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise."
+    "task": "Return the first Unicode scalar of each whitespace-separated word. Preserve case and do not slice text by byte offset. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise.",
+    "recall": [
+      {
+        "question": "What does this print, and why use `get` here instead of `&text[3..4]`?",
+        "answer": "`Some(\"é\") None`, because `é` takes bytes 3 and 4 and `3..4` ends inside it. `get` returns `None` for a range that is not on a char boundary, while `&text[3..4]` would panic. Prefer `get` when the range comes from input.",
+        "code": "let text = \"café\";\nprintln!(\"{:?} {:?}\", text.get(3..5), text.get(3..4));"
+      },
+      {
+        "question": "Why is calling `text.chars().nth(i)` inside a loop over `i` a poor way to visit every character?",
+        "answer": "UTF-8 characters have variable width, so `nth(i)` decodes from the start of the string on every call. That makes the loop quadratic. Iterate once with `chars()`, or with `char_indices()` if you also need byte offsets."
+      }
+    ]
   },
   "illustration": {
     "path": "media/strings.png",

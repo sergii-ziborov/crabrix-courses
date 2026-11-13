@@ -1,6 +1,6 @@
 {
   "concept": "Arithmetic, overflow, and as",
-  "contentDigest": "9566ca445e733ba57a031a733d02fc8ee86484098fe251ac01b36ce6759023e7",
+  "contentDigest": "2c17c27b63ed11c193e5fa5e29be06a435c18dd551e78d225dd6c0243cbb25fd",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "Numeric operands need compatible types; choose the overflow policy explicitly.",
     "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
     "summary": "Numeric operations have type-dependent bounds. Choose checked, wrapping or saturating behavior explicitly and validate narrowing conversions.",
-    "task": "Return the number of full groups and the leftover count. The group size is always positive. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise."
+    "task": "Return the number of full groups and the leftover count. The group size is always positive. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise.",
+    "recall": [
+      {
+        "question": "What do `-7 / 2` and `-7 % 2` evaluate to for `i32`?",
+        "answer": "`-3` and `-1`. Integer division truncates toward zero rather than rounding down, and `%` gives the remainder that matches that truncation, so it carries the sign of the left operand."
+      },
+      {
+        "question": "`a + b` fails to compile here. Why does `u32::from(a) + b` work, and why is it a better fix than `as`?",
+        "answer": "Rust never promotes mixed operands implicitly. `From<u8>` is implemented for `u32` because widening is lossless, so `u32::from(a) + b` gives `1200` and can never truncate. `as` would also compile here but permits lossy casts silently.",
+        "code": "let a: u8 = 200;\nlet b: u32 = 1000;\nlet total = a + b; // error"
+      }
+    ]
   },
   "illustration": {
     "path": "media/operators.png",

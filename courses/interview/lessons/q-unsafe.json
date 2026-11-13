@@ -1,6 +1,6 @@
 {
   "concept": "Sound abstractions and invariants",
-  "contentDigest": "fd521183f2223aa55284ecdbae8dc7045fccd3d6c60315e2807b0a285d6b635b",
+  "contentDigest": "b92290514e485d1b7098ae56d78f5a1ce3a6ac96761654cd92b8320433044359",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "`unsafe` moves the obligation to you; it never removes it.",
     "success": "Safe callers cannot reach undefined behaviour by any input.",
     "summary": "`unsafe` is a claim about an invariant, not a disabled checker.",
-    "task": "Review a small `unsafe` wrapper and list every invariant its safe API protects."
+    "task": "Review a small `unsafe` wrapper and list every invariant its safe API protects.",
+    "recall": [
+      {
+        "question": "How does an `unsafe fn` differ from a safe function that contains an `unsafe` block?",
+        "answer": "An `unsafe fn` shifts its documented preconditions to the caller, who must uphold them. A safe wrapper keeps the responsibility itself: it must enforce the invariant for every input, so no safe caller can trigger undefined behaviour."
+      },
+      {
+        "question": "What happens when you write two `&mut x` borrows that overlap inside an `unsafe { }` block?",
+        "answer": "It is still rejected with E0499: `unsafe` does not disable the borrow checker or type checking. It only permits a short list of extra operations, such as dereferencing raw pointers or calling `unsafe` functions."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-unsafe.png",

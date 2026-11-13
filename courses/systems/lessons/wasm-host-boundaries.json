@@ -22,7 +22,18 @@
       "Only when the source was Rust"
     ],
     "correctAnswer": 1,
-    "feedback": "The host supplies imports and authority. WebAssembly support alone does not supply a WASI environment."
+    "feedback": "The host supplies imports and authority. WebAssembly support alone does not supply a WASI environment.",
+    "recall": [
+      {
+        "question": "Why can't a Rust crate compiled to WebAssembly simply call the browser DOM?",
+        "answer": "A WebAssembly module can only call the imports its host supplies. The DOM is a JavaScript API, not part of WebAssembly, so it needs a deliberate JavaScript boundary or adapter that the embedding provides. Rust source alone doesn't bring that capability."
+      },
+      {
+        "question": "What does this expression evaluate to, and what does it model?",
+        "answer": "`true`, because `path_open` is declared but not in the allowlist. It models checking a module's required host imports against what the host is willing to supply. It is only a teaching model; a real runtime must parse the binary's actual imports.",
+        "code": "let declared = [\"fd_write\", \"path_open\"];\nlet allowed = [\"fd_write\"];\ndeclared.iter().any(|name| !allowed.contains(name))"
+      }
+    ]
   },
   "depth": {
     "misconception": "A Rust wasm file can call every browser and operating-system API.",
@@ -55,5 +66,5 @@
     "alt": "Diagram for WASM Is Not the Browser API: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "Targets, host imports, and local execution"
   },
-  "contentDigest": "1c11cc12968941a5fc8d1cac9286aeec6bce41f28e59ad9916f76873a516f91e"
+  "contentDigest": "94960fb4fba7215a3cf5e61f55e91d10bef89fed64671ddd2a447edad0af61ae"
 }

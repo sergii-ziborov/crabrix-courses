@@ -1,6 +1,6 @@
 {
   "concept": "Comparisons and logical operators",
-  "contentDigest": "e22ccbe52695e01e2b23853a230bbab874d30462d0dc541fd579d4ef2e2790ef",
+  "contentDigest": "3a571afeec1ccfd7eee6aa8c25554fa18917c3e242e00ad0a8f820e0dc0dfbf5",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "`if` requires `bool`; Rust has no implicit numeric truthiness.",
     "success": "The branch runs only for the intended combination of values. You can explain why each skipped right-hand expression was unnecessary.",
     "summary": "A comparison produces a `bool`, and a branch requires one. `&&` and `||` can skip their right-hand expression as soon as the result is known.",
-    "task": "Build a clearly named condition from two comparisons. Predict whether the right side of `&&` runs when the left is false, and whether the right side of `||` runs when the left is true."
+    "task": "Build a clearly named condition from two comparisons. Predict whether the right side of `&&` runs when the left is false, and whether the right side of `||` runs when the left is true.",
+    "recall": [
+      {
+        "question": "Given `check` below, what does `main` print?",
+        "answer": "`checking a`, `checking c`, `either`. `&&` skips its right side once the left is `false`, and `||` skips it once the left is `true`, so `b` and `d` are never checked.",
+        "code": "fn check(label: &str, result: bool) -> bool {\n    println!(\"checking {label}\");\n    result\n}\nfn main() {\n    if check(\"a\", false) && check(\"b\", true) { println!(\"both\"); }\n    if check(\"c\", true) || check(\"d\", true) { println!(\"either\"); }\n}"
+      },
+      {
+        "question": "For an empty `items: Vec<i32>`, why is `items.len() > 0 && items[0] == 1` safe while `items[0] == 1 && items.len() > 0` is not?",
+        "answer": "`&&` evaluates left to right and stops at a `false` left side, so the length check guards the index and the result is `false`. Swapped, the index runs first and panics with `index out of bounds: the len is 0 but the index is 0`."
+      }
+    ]
   },
   "illustration": {
     "path": "media/booleans-comparisons.png",

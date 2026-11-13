@@ -1,6 +1,6 @@
 {
   "concept": "Lend access without consuming the original reference",
-  "contentDigest": "9feecc8086bb46f152c6bd91d2178160c4fc0ddc8fdc716439beac01cbe56bb1",
+  "contentDigest": "e5dc3e77897784222a01b3993326594dbbaea7579bfe5dc495f1b49c75fbcc6c",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,19 @@
     "rule": "Passing `&mut *value` creates a shorter reborrow instead of moving the original mutable reference.",
     "success": "You can say why `value` is usable for the second call, and why only one writer is ever active.",
     "summary": "Lend access without consuming the original reference.",
-    "task": "Trace each `bump(&mut *value)` in `twice` and mark where each reborrow ends."
+    "task": "Trace each `bump(&mut *value)` in `twice` and mark where each reborrow ends.",
+    "recall": [
+      {
+        "question": "With a concrete `fn bump(value: &mut i32)`, calling `bump(value)` twice works. Why does it fail with this generic `take`, and what fixes it?",
+        "answer": "Rust inserts an implicit reborrow only where a `&mut` parameter type is known. For generic `T` the `&mut i32` itself is moved, since it is not `Copy`, so the second call is E0382. Write `take(&mut *value)` to reborrow explicitly.",
+        "code": "fn take<T>(_: T) {}\n\nfn twice(value: &mut i32) {\n    take(value);\n    take(value);\n}"
+      },
+      {
+        "question": "Why is `bump(&mut *value)` rejected here?",
+        "answer": "`get` returns a reference tied to the first reborrow, so that reborrow stays active until `r` is last used. A second mutable reborrow for `bump` would overlap it (E0499). Use `r` before calling `bump`.",
+        "code": "fn bump(value: &mut i32) { *value += 1; }\nfn get(v: &mut i32) -> &mut i32 { v }\n\nfn twice(value: &mut i32) {\n    let r = get(&mut *value);\n    bump(&mut *value);\n    *r += 1;\n}"
+      }
+    ]
   },
   "illustration": {
     "path": "media/reborrowing.png",

@@ -1,6 +1,6 @@
 {
   "concept": "Unit and integration tests",
-  "contentDigest": "7c815124b06d0d1ad9666585270fa9d4255aec45cdf6531862345af872e79763",
+  "contentDigest": "9689cfbef025fdfe84b076d37e225e3093e70ba783bc12a4b1d4681c55228cf3",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "`#[cfg(test)]` selects test builds, including `cargo test --release`; ordinary builds exclude that module.",
     "success": "Both are deterministic and fail for a deliberately broken implementation.",
     "summary": "Tests turn behaviour into executable evidence.",
-    "task": "Add one success case and one boundary case for a pure function."
+    "task": "Add one success case and one boundary case for a pure function.",
+    "recall": [
+      {
+        "question": "How do unit tests in a `#[cfg(test)]` module differ from integration tests in `tests/` in what they can reach?",
+        "answer": "Unit tests sit beside the code and, via `use super::*`, can test private helpers. Integration tests compile as separate crates and see only the public API, so they check that an outside consumer can use the package as intended."
+      },
+      {
+        "question": "A test calls `add(u32::MAX, 1)` where `add` returns `a + b`. Why can it behave differently under `cargo test` and `cargo test --release`?",
+        "answer": "The default dev profile enables integer overflow checks, so the addition panics; the release profile normally disables them, so it wraps to `0`. If overflow is part of the contract, use explicit checked arithmetic rather than relying on the profile."
+      }
+    ]
   },
   "illustration": {
     "path": "media/testing.png",

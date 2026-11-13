@@ -1,6 +1,6 @@
 {
   "concept": "Separate host-time generation from target code",
-  "contentDigest": "737e793a455cbdab07e9465b895cfb4239aa7f6eb5c581bcb1ebbbbd2f7ca0a9",
+  "contentDigest": "071b241041255fa51d2c1b6ae48aaa63af54fb8e9b53d59b2d3b0d2e997956f8",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "A procedural macro is compiled for and runs on the build host, then emits tokens for the target crate.",
     "success": "You can say which value belongs to the build host and which to the target.",
     "summary": "Separate host-time generation from target code.",
-    "task": "Predict what `host_os!` prints when `app` is cross-compiled on a Mac for another platform. Then change the macro so the generated code reads `std::env::consts::OS` at run time."
+    "task": "Predict what `host_os!` prints when `app` is cross-compiled on a Mac for another platform. Then change the macro so the generated code reads `std::env::consts::OS` at run time.",
+    "recall": [
+      {
+        "question": "Why is it risky for a derive macro to read an environment variable or a file while expanding?",
+        "answer": "Expansion runs on the build host at compile time, so it reads the build machine's state, not the device the app will run on. Such hidden inputs also make builds hard to reproduce, because the output can change without any source change."
+      },
+      {
+        "question": "A derive supports only structs. Why should it reject an enum by emitting a compile error at the enum's span rather than panicking?",
+        "answer": "A panic produces a generic proc-macro failure that doesn't point at the user's code. A spanned compile error highlights the offending enum or field with a clear message. Diagnostics are part of a macro's public API, so add compile-fail tests for them."
+      }
+    ]
   },
   "illustration": {
     "path": "media/proc-macro-boundaries.png",

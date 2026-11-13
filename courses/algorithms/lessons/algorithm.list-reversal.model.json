@@ -14,7 +14,7 @@
     "visibleInput": "1->2->3->4"
   },
   "concept": "Detach the next link before redirecting the current node toward the reversed prefix.",
-  "contentDigest": "a3d09238858c8ce918f24b48affce239e3f3d78824d1c5dcd3ba2191f1028bf7",
+  "contentDigest": "6cd6fdd71190f7dca0771fbaf843c23adab17b66f10c23b09ca7600cabedf95d",
   "depth": {
     "connections": [
       {
@@ -63,7 +63,14 @@
     "rule": "Detach the next link before redirecting the current node toward the reversed prefix. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(1) links bound without looking at the code.",
     "summary": "Detach the next link before redirecting the current node toward the reversed prefix.",
-    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output.",
+    "recall": [
+      {
+        "question": "In this reversal loop the first two lines were swapped. What does it return for `1->2->3->4`, and why?",
+        "answer": "It returns just `1`. Assigning `node.next = reversed` drops the old suffix `2->3->4`, because that link was its only owner. The `take()` then gets `None`, so the loop ends. Detach the next link first so the unread suffix stays reachable.",
+        "code": "let mut reversed = None;\nwhile let Some(mut node) = head {\n    node.next = reversed;\n    head = node.next.take();\n    reversed = Some(node);\n}"
+      }
+    ]
   },
   "illustration": {
     "path": "media/algorithms-linked-lists-a.png",

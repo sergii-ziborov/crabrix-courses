@@ -1,6 +1,6 @@
 {
   "concept": "Keep API examples checked by the test suite",
-  "contentDigest": "2a11e6101c479022edcf19b5baf2effc49d980329563603dad9b7c86291366cc",
+  "contentDigest": "284c3de604e1740e264c1f1a477475f811dc6be7d206bc60440d37c86d3b8910",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "By default, `cargo test` compiles and runs Rust code fences in library documentation; `no_run` and `ignore` change that behavior.",
     "success": "You can identify a failing doc test, repair its assertion, and explain when `no_run` or `ignore` changes execution.",
     "summary": "Keep API examples checked by the test suite.",
-    "task": "This `add_one` example expects 6. Run `cargo test --doc` and explain the failure."
+    "task": "This `add_one` example expects 6. Run `cargo test --doc` and explain the failure.",
+    "recall": [
+      {
+        "question": "A doc example for `pub fn add_one` in crate `demo` calls `add_one(4)` with no path. Why can it fail even though the function is correct?",
+        "answer": "A doctest is compiled like an outside user's program, so the item is not in scope automatically. The example must use the crate path, such as `demo::add_one(4)`, or import it."
+      },
+      {
+        "question": "Why might a doc example be marked `no_run` or `ignore`, and what does that change?",
+        "answer": "For code that needs network access or another external resource. `no_run` still compiles the block but does not execute it; `ignore` skips it entirely. Either way, not every fenced block is an automatically executed test."
+      }
+    ]
   },
   "illustration": {
     "path": "media/doc-examples.png",

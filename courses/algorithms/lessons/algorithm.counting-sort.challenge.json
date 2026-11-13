@@ -14,7 +14,7 @@
     "visibleInput": "[4,2,2,5,0,1,4]"
   },
   "concept": "Sort values known to be in 0 through 5.",
-  "contentDigest": "24f67fddb56f35d682b47f6193dac8b6979c96480d910f5105ca5c145314dd02",
+  "contentDigest": "2657a8170c60b16d6fb626d9693f776e07c8a4ae924b8d323523c311620fa759",
   "depth": {
     "connections": [
       {
@@ -68,7 +68,14 @@
     "rule": "Every key is an integer from 0 through 5. Sort values known to be in 0 through 5.",
     "success": "The private harness prints PASS counting-sort. It checks at least five distinct semantic inputs plus surrounding-whitespace variants. Explain complexity separately; this harness does not time the algorithm.",
     "summary": "Sort values known to be in 0 through 5.",
-    "task": "Sort values known to be in 0 through 5."
+    "task": "Sort values known to be in 0 through 5.",
+    "recall": [
+      {
+        "question": "What happens if `counting_sort(&[2, 6, 1], 5)` is called on this code?",
+        "answer": "It panics with index out of bounds at `counts[x] += 1`, because there are only counters for 0..=5 and 6 is outside. The range precondition must hold before the algorithm is applied.",
+        "code": "fn counting_sort(values: &[usize], maximum: usize) -> Vec<usize> {\n    let mut counts = vec![0; maximum + 1];\n    for &x in values {\n        counts[x] += 1;\n    }\n    let mut out = Vec::with_capacity(values.len());\n    for (x, &count) in counts.iter().enumerate() {\n        out.extend(std::iter::repeat_n(x, count));\n    }\n    out\n}"
+      }
+    ]
   },
   "illustration": {
     "path": "media/algorithms-sorting-selection-b.png",

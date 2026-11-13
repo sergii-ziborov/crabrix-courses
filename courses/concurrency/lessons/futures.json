@@ -1,6 +1,6 @@
 {
   "concept": "async fn, await, and laziness",
-  "contentDigest": "05f5376597cf000a6b43647b1b52521d3375d5359c3a68bbbb12493e2ec86899",
+  "contentDigest": "273c9dbf8aae5e3f8fd498d8cc002187c82086fd9e7efe4d83e2671b8728bc0c",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "Futures are lazy: no poll, no progress.",
     "success": "You can say why the body has not executed at that point.",
     "summary": "An `async` function returns a future that has not run yet.",
-    "task": "Explain what a call to an `async fn` actually produces."
+    "task": "Explain what a call to an `async fn` actually produces.",
+    "recall": [
+      {
+        "question": "Why do these two futures differ so much in size (1026 bytes vs 2 bytes)?",
+        "answer": "In `a`, `buf` is needed after the `.await`, so it must be stored in the future's state while the task is suspended. In `b`, `buf` is gone before the await point, so the state machine doesn't keep it.",
+        "code": "async fn noop() {}\nasync fn a() {\n    let buf = [0u8; 1024];\n    noop().await;\n    println!(\"{}\", buf[0]);\n}\nasync fn b() {\n    { let buf = [0u8; 1024]; println!(\"{}\", buf[0]); }\n    noop().await;\n}"
+      },
+      {
+        "question": "An `async fn` runs a long CPU-bound loop with no `.await` inside. What does that do to other tasks on the same executor worker?",
+        "answer": "Code between await points runs synchronously, so the loop holds the worker thread until it finishes; other tasks scheduled there can't be polled. Being `async` doesn't make the computation yield. Move heavy work to a blocking or compute thread."
+      }
+    ]
   },
   "illustration": {
     "path": "media/futures.png",

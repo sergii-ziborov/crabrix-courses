@@ -22,7 +22,17 @@
       "Always retry forever until success"
     ],
     "correctAnswer": 0,
-    "feedback": "Timeouts and budgets do not prove the previous attempt had no external effect."
+    "feedback": "Timeouts and budgets do not prove the previous attempt had no external effect.",
+    "recall": [
+      {
+        "question": "Why do `retry(true, 1, 3, 10, 20, 29)` and `retry(true, 1, 3, u64::MAX, 1, u64::MAX)` both return false? (Arguments: transient, failed attempts, maximum, delay, operation budget, remaining.)",
+        "answer": "In the first, delay plus budget is 30, more than the 29 remaining. In the second, `checked_add` overflows to `None`, so no retry; plain wrapping addition would give 0 and falsely look like it fits the deadline."
+      },
+      {
+        "question": "Which failures should never be retried, and why does a retry budget matter when a dependency is already failing?",
+        "answer": "Authentication failures and malformed input: retrying cannot fix them. Retries multiply load on a struggling dependency, so cap the attempts, respect the deadline, and require an idempotency contract before retrying a write."
+      }
+    ]
   },
   "depth": {
     "misconception": "Only a longer timeout",
@@ -70,5 +80,5 @@
     "alt": "Diagram for Bound the Retry Budget: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "The worked implementation exercises retry transient failures within attempt and time limits. Its tests demonstrate the stated finite contract."
   },
-  "contentDigest": "3df76270da76b97c1cbfc0b391a68547a398b287c1d0dd1d35efe75d94c42244"
+  "contentDigest": "49edc9de5fb1b4913488ff3b8016cc325260487cbcfc9dcfc35f4c69426fd7b4"
 }

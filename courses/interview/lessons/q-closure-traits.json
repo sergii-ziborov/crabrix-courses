@@ -6,7 +6,7 @@
   "order": 0,
   "parentID": "interview-async-contracts",
   "exerciseKind": "planned",
-  "contentDigest": "fc25dc59293432a6b09adf44b9dad626794630649123f185d791a55ba165031c",
+  "contentDigest": "31e55aebc72cea31eb86094a9502536de662c3a0ec98a431671d8d93a6b98a35",
   "writing": {
     "summary": "The call trait follows what the closure does with captures, not just whether `move` appears.",
     "explanation": "`Fn` closures can be called through a shared reference, `FnMut` permits a mutable receiver, and `FnOnce` consumes its receiver. The traits form a hierarchy: a closure that implements `Fn` also works where `FnMut` or `FnOnce` is required. Every closure supports at least `FnOnce`, but consuming a captured non-`Copy` value can make a closure callable only once.\n\nThe `move` keyword determines how captures enter the closure. It does not alone make the closure `FnOnce`-only. A `move` closure that merely reads owned data may still implement `Fn`. Conversely, mutating captured state generally requires `FnMut`. The example borrows a counter mutably, calls the closure twice, then ends its scope before reading the counter directly.\n\nRead the implementation and the caller’s intended use together. A callback stored for repeated notifications needs a repeated-call contract, while a one-shot cleanup callback can accept `FnOnce`. If the callback crosses a thread or task boundary, `Send` and lifetime bounds are additional questions. In an interview, expect to change only the closure body from reading a `String` to returning the owned `String` and explain which call capability is lost.",
@@ -23,7 +23,18 @@
       "The body reads the owned capture without consuming it."
     ],
     "correctAnswer": 2,
-    "feedback": "The closure owns `text` but only borrows it during each call. Returning `text` by value instead would consume that capture."
+    "feedback": "The closure owns `text` but only borrows it during each call. Returning `text` by value instead would consume that capture.",
+    "recall": [
+      {
+        "question": "Why does the second call to `give` fail to compile?",
+        "code": "let text = String::from(\"crab\");\nlet give = move || text;\ngive();\ngive();",
+        "answer": "The body returns the captured `String` by value, which consumes the capture, so the closure implements only `FnOnce`. The first call moves `give` itself; the second is E0382, use of moved value: `give`."
+      },
+      {
+        "question": "What happens when `|| count += 1` is passed to `fn call(f: impl Fn())`?",
+        "answer": "It is rejected (E0594, cannot assign to `count` in a `Fn` closure). Mutating captured state makes the closure `FnMut`, not `Fn`; the function must accept `impl FnMut()` (and take `mut f`) instead."
+      }
+    ]
   },
   "depth": {
     "misconception": "move makes every captured String implicitly Copy.",

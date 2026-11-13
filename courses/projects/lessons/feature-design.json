@@ -1,6 +1,6 @@
 {
   "concept": "Make optional capability additive and explicit",
-  "contentDigest": "2afae06350a76d33a7b0d71b280674a74dacd5f88e5c75250ba8521f21d7208a",
+  "contentDigest": "5c0f5b19f6a110d5aa0b9e1a959bc4825118cf410f4949a75e14f5b6a4b5e9d8",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "Cargo features are unified across a dependency graph, so disabling one consumer's feature may not disable it globally.",
     "success": "Every feature combination compiles, including both on together, and you can say why Cargo may ask for that union.",
     "summary": "Make optional capability additive and explicit.",
-    "task": "Declare both features, build with `--features backend_a,backend_b`, and read the error. Then redesign them as additive capabilities that can be on at once."
+    "task": "Declare both features, build with `--features backend_a,backend_b`, and read the error. Then redesign them as additive capabilities that can be on at once.",
+    "recall": [
+      {
+        "question": "A library offers mutually exclusive features `backend-a` and `backend-b`. Why is that design fragile?",
+        "answer": "Cargo unifies feature requests for one package across the dependency graph, so if two dependents ask for different backends, the library is built with both. Prefer additive features; if two options truly cannot coexist, document and enforce that explicitly."
+      },
+      {
+        "question": "How does a Cargo feature such as `color` differ from a runtime configuration switch?",
+        "answer": "It selects code at compile time through `#[cfg(feature = \"color\")]`; a built binary contains only one branch and cannot toggle it later. Each supported feature combination therefore has to be built and tested separately."
+      }
+    ]
   },
   "illustration": {
     "path": "media/feature-design.png",

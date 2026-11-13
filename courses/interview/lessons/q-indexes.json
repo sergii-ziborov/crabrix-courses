@@ -1,6 +1,6 @@
 {
   "concept": "Composite index selectivity, planner choices, skip scans and write cost",
-  "contentDigest": "37950ca9fc73ea4daaa8107a45df59e8f5570b1e00b86e58ff9dc16596413c13",
+  "contentDigest": "e25558886ab9538103a1c7c931c6976c834eb23f134c7ed61f0242fb6ab36276",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "Leading columns often make a composite B-tree scan selective, but later-column predicates can still use an index, including through skip scan. The actual choice depends on the database, statistics and query plan.",
     "success": "You can compare the plans for leading-column and later-column filters, explain selectivity, and name the index maintenance cost.",
     "summary": "An index is a sorted structure that trades write cost for read speed.",
-    "task": "Use EXPLAIN on both a leading-column query and a later-column query in the named database. Compare selectivity, data distribution and actual plans instead of predicting a universal yes or no."
+    "task": "Use EXPLAIN on both a leading-column query and a later-column query in the named database. Compare selectivity, data distribution and actual plans instead of predicting a universal yes or no.",
+    "recall": [
+      {
+        "question": "With a B-tree index on `(account_id, created_at)`, which query shape benefits most, and why is a filter only on `created_at` different?",
+        "answer": "Restricting `account_id` narrows the scan to one range, and ordering by `created_at` within that account can skip a separate sort. A filter only on `created_at` may not use the index efficiently, though PostgreSQL 18 can try a skip scan; check `EXPLAIN`."
+      },
+      {
+        "question": "What does a covering index gain for a query, and what does it cost?",
+        "answer": "If it contains every column the query needs, the database may answer from the index without fetching table rows. The index becomes larger and more expensive to maintain on every insert or update."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-indexes.png",

@@ -1,6 +1,6 @@
 {
   "concept": "Allocation, iterators, and measuring",
-  "contentDigest": "26676fb362ce0714450fb5efdb09e6a4c36b6cec119a2b0c899cef38204ec772",
+  "contentDigest": "7217149b034d33b83f325b13a993fa126e79f55e99136828cadaf32ea4849910",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "Measure representative workloads with the target optimization profile; debug timings do not predict release performance.",
     "success": "Behaviour is unchanged and the allocation count drops.",
     "summary": "Rust is fast by default; the wins left are allocation and algorithm.",
-    "task": "Find one clone or one allocation in a loop and remove it."
+    "task": "Find one clone or one allocation in a loop and remove it.",
+    "recall": [
+      {
+        "question": "What does this print, and what would `v[0]` do right after `with_capacity`?",
+        "answer": "`1000 true`: the reserved buffer was big enough, so pushing never reallocated or moved it. Capacity is not length, though: just after `with_capacity` the length is 0, so `v[0]` would panic with index out of bounds. Each element still has to be pushed.",
+        "code": "let mut v: Vec<usize> = Vec::with_capacity(1_000);\nlet before = v.as_ptr();\nfor i in 0..1_000 { v.push(i * 2); }\nprintln!(\"{} {}\", v.len(), v.as_ptr() == before);"
+      },
+      {
+        "question": "Why are debug-build timings a poor way to decide between an iterator chain and a hand-written loop?",
+        "answer": "Debug builds skip optimisations such as inlining and add overflow checks, which penalise iterator abstractions in particular, so they say little about the optimised code. Compare release builds on representative input and the target you ship, over repeated runs."
+      }
+    ]
   },
   "illustration": {
     "path": "media/performance.png",

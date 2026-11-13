@@ -1,6 +1,6 @@
 {
   "concept": "Resolve generated names without accidental capture",
-  "contentDigest": "fbe1ed5ae0bb88442c808c3379db226be32718149adb4ebec9752dc8d3bd6832",
+  "contentDigest": "eeea9f073c77bbbafd4a0bbc9b687018543f89f88e73bc38df9cfc74579f0943",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,19 @@
     "rule": "Rust macros track syntax context so identifiers introduced by a macro do not casually collide with names at the call site.",
     "success": "You can say why the unqualified call picks the caller's `value` and why `$crate` does not.",
     "summary": "Resolve generated names without accidental capture.",
-    "task": "Predict what `app` prints. Then change `$crate::value()` to plain `value()` in the macro, and predict again."
+    "task": "Predict what `app` prints. Then change `$crate::value()` to plain `value()` in the macro, and predict again.",
+    "recall": [
+      {
+        "question": "What does this print, and why isn't the caller's `x` replaced by the macro's `x`?",
+        "answer": "`12`. The `x` inside `$e` comes from the call site and keeps its own syntax context, so it means the caller's `x` (1), and `x * 2` is 2. The macro's `let x = 10` is a separate, hygienic name, so the result is `2 + 10`.",
+        "code": "macro_rules! with_temp {\n    ($e:expr) => {{ let x = 10; $e + x }};\n}\nlet x = 1;\nprintln!(\"{}\", with_temp!(x * 2));"
+      },
+      {
+        "question": "Why does `println!(\"{y}\")` fail after `make!()`, and how can the caller choose the name instead?",
+        "answer": "A local `y` introduced by the macro body is hygienic: it is not visible to identifiers written at the call site, so rustc reports E0425 cannot find value `y`. Have the caller pass the name, for example `($name:ident) => { let $name = 5; }` and `make!(y)`.",
+        "code": "macro_rules! make {\n    () => { let y = 5; };\n}\nmake!();\nprintln!(\"{y}\");"
+      }
+    ]
   },
   "illustration": {
     "path": "media/macro-hygiene.png",

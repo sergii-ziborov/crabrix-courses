@@ -6,7 +6,7 @@
   "order": 3,
   "parentID": "interview-async-contracts",
   "exerciseKind": "planned",
-  "contentDigest": "cbe4c69e7404325c38542ac518789f340a2c5b31811b644a90564225a5fa4ede",
+  "contentDigest": "5b8a8dc64ba41dc1e06404b07a63897497a4ef3d1378ecc8ef8c7ec3678ff94a",
   "writing": {
     "summary": "Keep synchronous critical sections short and make suspension while holding a guard an explicit design decision.",
     "explanation": "A standard mutex can be a reasonable choice for a short critical section that does not cross `await`. Acquiring a contended synchronous mutex can block the executor worker. Holding its guard while a future suspends is a separate problem: it keeps the lock unavailable and can violate a `Send` bound or participate in a deadlock.\n\nThe example updates a counter inside a lexical scope, drops the guard and only then awaits. A compile-time `Send` check confirms this particular future does not retain the standard `MutexGuard` across suspension. A plain `drop(guard)` before `await` is not a substitute here: after `*guard += 1` has borrowed the guard, rustc 1.99 still rejects the future, while the block scope passes. The check does not prove absence of every deadlock or that every acquisition is cheap.\n\nAn async mutex can yield while waiting for its lock, but it does not make arbitrary guarded work nonblocking. Avoid awaiting a child task that needs the same lock you hold. For cancellation, define what state is left behind when a task drops after a partial update; lock release is not a business transaction rollback. In an interview, draw lock acquisition, state update, guard drop and each suspension point before arguing about mutex brands.\n\nExecution detail: `require_send` consumes and drops this unpolled future after checking its type. This program does not execute the async body. Polling the future in a suitable executor is a separate operation; an `await` expression is not itself proof that polling happened.",
@@ -23,7 +23,17 @@
       "The guard’s scope still spans await, so its non-Send state stays in the future."
     ],
     "correctAnswer": 2,
-    "feedback": "`guard` stays in scope across the `await`, so the lock and its non-`Send` guard are part of the future’s state. Moving the later use before the `await` is not enough; end the guard’s scope first when the design permits it."
+    "feedback": "`guard` stays in scope across the `await`, so the lock and its non-`Send` guard are part of the future’s state. Moving the later use before the `await` is not enough; end the guard’s scope first when the design permits it.",
+    "recall": [
+      {
+        "question": "Why can a task deadlock if it awaits a child task while still holding a mutex guard?",
+        "answer": "The parent suspends while keeping the lock, and the child needs that same lock to finish, so each waits for the other. Release the guard before awaiting work that may need the lock."
+      },
+      {
+        "question": "Compared with `std::sync::Mutex`, what does an async mutex change, and what does it not fix?",
+        "answer": "Waiting for the lock yields to the executor instead of blocking the worker thread. It does not make slow guarded work nonblocking, and if the task is cancelled mid-update, releasing the lock does not roll back the partial state."
+      }
+    ]
   },
   "depth": {
     "misconception": "The standard Mutex is not Send, so any future using it fails this check.",

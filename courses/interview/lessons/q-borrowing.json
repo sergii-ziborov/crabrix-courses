@@ -1,6 +1,6 @@
 {
   "concept": "Aliasing and mutation rules",
-  "contentDigest": "d9af0cd8011e2b4810e643c83501dd009f1827005570a307130edd01e49e867a",
+  "contentDigest": "553cdf36ac27c4af8aaab11d7f757ba8c48ba320dd79492c99e516d94cae4c05",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "Aliasing XOR mutation, checked over the region a borrow is used.",
     "success": "It prints crab, and you can name aliasing, mutation, and where each borrow ends.",
     "summary": "The borrowing answer is about aliasing versus mutation.",
-    "task": "Repair the program so it prints crab while keeping the `items.push(` call and the `println!`. Then state the rule it broke."
+    "task": "Repair the program so it prints crab while keeping the `items.push(` call and the `println!`. Then state the rule it broke.",
+    "recall": [
+      {
+        "question": "Why does this code compile even though `v` is borrowed shared and then mutated in the same scope?",
+        "code": "let mut v = vec![1, 2];\nlet a = &v[0];\nlet b = &v[1];\nprintln!(\"{a} {b}\");\nv.push(3);",
+        "answer": "Rust tracks the region where each borrow is used, not the lexical block. `a` and `b` are last used in `println!`, so the shared borrows have ended before `v.push(3)` needs exclusive access; the reads and the write never overlap."
+      },
+      {
+        "question": "Safe Rust's borrowing rules prevent data races and dangling references. Name things they do not guarantee.",
+        "answer": "They do not prove the program is logically correct, deadlock-free, or free of runtime panics. Interior mutability types such as `RefCell` move some access checks to runtime, where a violation panics."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-borrowing.png",

@@ -1,6 +1,6 @@
 {
   "concept": "Result without panic",
-  "contentDigest": "254ee6efbb78f2e547fcc3b90f247284e0b4f259887118718f95f0974d992161",
+  "contentDigest": "e3bd263028cf11c5c5646ad72ecf928ae1060056f9b98b1457fbbe7656c2b269",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,19 @@
     "rule": "Use `Result` for failure the caller can reasonably respond to.",
     "success": "Bad text produces a normal error value, not a panic.",
     "summary": "`Result` keeps expected failure in the function's type instead of turning it into a crash.",
-    "task": "Return a descriptive `Result` for invalid input and handle it at the caller."
+    "task": "Return a descriptive `Result` for invalid input and handle it at the caller.",
+    "recall": [
+      {
+        "question": "What do `half(\"12\")`, `half(\"7\")` and `half(\"twelve\")` return?",
+        "answer": "`Ok(6)`, `Ok(3)` and `Err(\"not a number\")`. For `\"7\"` integer division truncates; for `\"twelve\"` the `?` returns early with the mapped error, so `value / 2` never runs.",
+        "code": "fn half(raw: &str) -> Result<i32, String> {\n    let value = raw.parse::<i32>()\n        .map_err(|_| \"not a number\".to_string())?;\n    Ok(value / 2)\n}"
+      },
+      {
+        "question": "Why does this fail to compile?",
+        "answer": "`?` returns early with the error, so the enclosing function must return a compatible `Result` (or `Option`). This `main` returns `()`, so rustc reports E0277. Give `main` a `Result` return type or handle the error with `match`.",
+        "code": "fn main() {\n    let n = \"5\".parse::<i32>()?;\n    println!(\"{n}\");\n}"
+      }
+    ]
   },
   "illustration": {
     "path": "media/recoverable-errors.png",

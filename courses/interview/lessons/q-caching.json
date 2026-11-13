@@ -1,6 +1,6 @@
 {
   "concept": "Staleness budgets and stampedes",
-  "contentDigest": "f9abaa0eba3651095ef9b9074c0c03b7ffc271f78e81ad3bd757457f3b2cdad6",
+  "contentDigest": "ad9e42049aa8f74b114bba55db1bc8f6ba1e05c8f28b64c692c5a0844f9a0d9e",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "Every cache needs a bound, an eviction policy, and a stated staleness budget.",
     "success": "Each choice names the staleness it accepts and the eviction policy.",
     "summary": "Caching is easy; deciding when the cache is wrong is not.",
-    "task": "Choose an invalidation strategy for two different kinds of data."
+    "task": "Choose an invalidation strategy for two different kinds of data.",
+    "recall": [
+      {
+        "question": "Why should a cache key include a version for things like an authorisation rule or a schema?",
+        "answer": "When the rule or schema changes, an entry whose key omits that version can return a logically invalid result even before its TTL expires. Versioning the key makes old entries simply stop matching."
+      },
+      {
+        "question": "Compare a TTL, explicit invalidation and write-through as ways to keep a cache correct.",
+        "answer": "A TTL is simple but allows bounded staleness. Explicit invalidation reduces staleness but must cover every writer and failure path. Write-through updates cache and source on each write, costing write latency, and still needs a policy for partial failure and ordering."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-caching.png",

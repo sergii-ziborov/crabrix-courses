@@ -22,7 +22,18 @@
       "Only if its length is even"
     ],
     "correctAnswer": 0,
-    "feedback": "Range validity and text validity are separate contracts. Validate the range, then decode if text is required."
+    "feedback": "Range validity and text validity are separate contracts. Validate the range, then decode if text is required.",
+    "recall": [
+      {
+        "question": "With `window` below, what do `window(b\"crab\", 4, 0)`, `window(b\"crab\", 5, 0)` and `window(b\"crab\", 3, 2)` return?",
+        "answer": "`Some([])`, `None`, `None`. An empty range starting exactly at the length is valid; one starting past the end is not; and `3..5` runs beyond the 4 bytes. `get` returns `None` instead of panicking.",
+        "code": "fn window(memory: &[u8], offset: usize, len: usize) -> Option<&[u8]> {\n    let end = offset.checked_add(len)?;\n    memory.get(offset..end)\n}"
+      },
+      {
+        "question": "Why compute the end with `offset.checked_add(len)?` instead of `offset + len`?",
+        "answer": "With an offset near `usize::MAX`, `+` panics with `attempt to add with overflow` in a debug build and wraps to a small bogus end in release, which a check like `end <= memory.len()` could accept. `checked_add` turns overflow into `None` before any view is made."
+      }
+    ]
   },
   "depth": {
     "misconception": "Checking the start offset alone makes the entire range safe.",
@@ -60,5 +71,5 @@
     "alt": "Diagram for Linear Memory Boundaries: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "Checked offsets, lengths, and borrowed slices"
   },
-  "contentDigest": "605fbb13b61bde6dd4689c707ae014dac05ecaf0bf2aa909a01d3b385f1eb98b"
+  "contentDigest": "61f40cc4bf567c05cb1e71c5fd38e94e07dd0ba91ede0a0e22d9176eadfbbddd"
 }

@@ -22,7 +22,17 @@
       "An enabled feature can supply an item missing from the minimal profile"
     ],
     "correctAnswer": 2,
-    "feedback": "A large feature set can mask missing minimal-profile items. Test that profile independently, then test unions to catch collisions."
+    "feedback": "A large feature set can mask missing minimal-profile items. Test that profile independently, then test unions to catch collisions.",
+    "recall": [
+      {
+        "question": "Features `details` and `trace` each define `pub fn helper()` under their own `#[cfg(feature = ...)]`. Each feature builds alone. What happens when a downstream graph enables both?",
+        "answer": "The union fails to compile with E0428, the name `helper` is defined multiple times. Checking each feature separately misses this, and Cargo can unify both requests from different dependency paths, so supported combinations must be built too."
+      },
+      {
+        "question": "Besides compile failures, what kind of downstream break should a feature matrix catch, and how?",
+        "answer": "A behaviour change in the baseline API that appears only when a feature is enabled, for example `label(7)` no longer returning `core=7` with `details` on. A fixed downstream consumer that asserts the baseline output under every supported feature set catches it."
+      }
+    ]
   },
   "depth": {
     "misconception": "Testing each optional feature separately proves that their union is compatible.",
@@ -65,5 +75,5 @@
       "url": "https://doc.rust-lang.org/cargo/reference/features.html"
     }
   ],
-  "contentDigest": "0e5e33b3c914f06c1b995a6bb0e0a861ed0251d66de4fbd79760c6fd1c7aed7e"
+  "contentDigest": "f2cca8ee8ce46d3acb0b1ffd9b533a1bfc5ef4136f21344effa34abdf2797326"
 }

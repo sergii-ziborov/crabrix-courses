@@ -1,6 +1,6 @@
 {
   "concept": "Five powers and their invariants",
-  "contentDigest": "3f203a43b415377e05b1c8fb8f9ea8121b07124e119be680ab39b4b5323f1dd0",
+  "contentDigest": "d9df93dd8541402122dfb5c3d53b832cafd7d6f08edc2735cc326808fd4287e6",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,19 @@
     "rule": "`unsafe` is a claim about an invariant, not permission to skip the rules.",
     "success": "No safe caller can trigger undefined behaviour.",
     "summary": "`unsafe` unlocks five operations; it does not turn off the borrow checker.",
-    "task": "Wrap an unchecked operation in a safe API that cannot be misused."
+    "task": "Wrap an unchecked operation in a safe API that cannot be misused.",
+    "recall": [
+      {
+        "question": "In this function, what makes `get_unchecked(0)` sound, and what kind of edit would silently break it?",
+        "answer": "The `is_empty` check just above proves index 0 exists. If an edit removes or moves that check, an empty slice causes undefined behaviour with no compile error and maybe no test failure. Here the safe `slice.first().copied()` avoids the risk.",
+        "code": "fn first(slice: &[u32]) -> Option<u32> {\n    if slice.is_empty() {\n        return None;\n    }\n    // SAFETY: the check above guarantees\n    // that index 0 exists.\n    Some(unsafe { *slice.get_unchecked(0) })\n}"
+      },
+      {
+        "question": "Why is this still rejected, even though the push is inside `unsafe`?",
+        "answer": "`unsafe` unlocks only a few extra operations, such as dereferencing raw pointers; it doesn't switch off the borrow checker. The live shared borrow `r` still conflicts with the mutable `push` (E0502), and rustc also warns that the `unsafe` block is unnecessary.",
+        "code": "let mut v = vec![1];\nlet r = &v[0];\nunsafe { v.push(2); }\nprintln!(\"{r}\");"
+      }
+    ]
   },
   "illustration": {
     "path": "media/unsafe.png",

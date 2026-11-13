@@ -22,7 +22,18 @@
       "It is one limit and does not replace separate resource quotas"
     ],
     "correctAnswer": 2,
-    "feedback": "CPU time, memory, output, storage, and concurrency need limits at their own boundaries."
+    "feedback": "CPU time, memory, output, storage, and concurrency need limits at their own boundaries.",
+    "recall": [
+      {
+        "question": "With `reserve` below, what do `reserve(8, 2, 10)`, `reserve(8, 3, 10)`, `reserve(usize::MAX, 1, 10)` and `reserve(10, 0, 10)` return?",
+        "answer": "`Some(10)`, `None`, `None`, `Some(10)`. The limit is inclusive, overflow is refused rather than wrapping, and an empty chunk at exactly the limit is accepted. The chunk is checked before it is accepted, not after.",
+        "code": "fn reserve(used: usize, next: usize, limit: usize) -> Option<usize> {\n    let total = used.checked_add(next)?;\n    (total <= limit).then_some(total)\n}"
+      },
+      {
+        "question": "A guest program can loop forever, allocate without limit, print without end, or fill its writable directory. Which layer should bound each?",
+        "answer": "The interpreter or engine bounds execution with fuel or interruption (plus a deadline); the embedding caps memory pages; the host caps captured output and writable bytes. Each is a separate resource, so one wall-clock timeout cannot protect them all."
+      }
+    ]
   },
   "depth": {
     "misconception": "A program is harmless to local resources because it never runs on the backend.",
@@ -55,5 +66,5 @@
     "alt": "Diagram for Budget a Local Runtime: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "Independent CPU, memory, output, and storage limits"
   },
-  "contentDigest": "f5e9a18353fee65b9419ac861f403dd6f3ebb05ded718e73816d04d5e092d156"
+  "contentDigest": "e690ab0f3c63a2e155a89613769060bf8470adf46a08eb9d769266a326eb8059"
 }

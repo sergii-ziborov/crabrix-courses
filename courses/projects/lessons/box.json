@@ -1,6 +1,6 @@
 {
   "concept": "Heap allocation and recursive types",
-  "contentDigest": "964c1b04e87524260ea0296c3d65597571ec726142908b613c440408f2abb5af",
+  "contentDigest": "d9f8b5cd6083ab59ecebbe321567dda1787ebf244738c93fb3b43ac88a092f95",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "`Box` gives a recursive or unsized value a known-size home.",
     "success": "It compiles, and you can explain why `Box` is required.",
     "summary": "`Box` moves a value to the heap behind a single owner.",
-    "task": "Define a recursive type and total its values."
+    "task": "Define a recursive type and total its values.",
+    "recall": [
+      {
+        "question": "Why does `sum` take `&Tree` rather than `Tree`, and how can it call `sum(l)` when `l` is a `&Box<Tree>`?",
+        "code": "fn sum(tree: &Tree) -> i32 {\n    match tree {\n        Tree::Leaf(value) => *value,\n        Tree::Node(l, r) => sum(l) + sum(r),\n    }\n}",
+        "answer": "Traversal only reads, so borrowing avoids consuming the tree. Matching on `&Tree` binds `l` and `r` as `&Box<Tree>`, and deref coercion turns `&Box<Tree>` into the `&Tree` that `sum` expects."
+      },
+      {
+        "question": "When is giving every node its own `Box` a poor choice of representation?",
+        "answer": "When no recursion or owned dynamic dispatch requires it: allocating each node and following pointers can cost more than a compact flat layout. For a simple fixed set of values, a `Vec<T>` or plain struct is often clearer."
+      }
+    ]
   },
   "illustration": {
     "path": "media/box.png",

@@ -1,6 +1,6 @@
 {
   "concept": "Which anomaly each level allows",
-  "contentDigest": "29de47c8b657b738d20da42a5815a7f10f436bbf5ef6c32f37ef44adeb06b8b0",
+  "contentDigest": "6b21d46bc18f3a65e851e56918b17590ddbfc7571d69d5d20bdc8eec9aefed87",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "Choose transaction boundaries and isolation for a named invariant on a named database.",
     "success": "You can state PostgreSQL’s default level and one anomaly it allows.",
     "summary": "Isolation is the letter in ACID people actually get wrong.",
-    "task": "Name one anomaly that PostgreSQL still permits at Read Committed and one at Repeatable Read, and what Serializable asks of the application."
+    "task": "Name one anomaly that PostgreSQL still permits at Read Committed and one at Repeatable Read, and what Serializable asks of the application.",
+    "recall": [
+      {
+        "question": "Under PostgreSQL's default Read Committed, another transaction commits a balance of 50 at the marked point. What is the final balance, and what would Repeatable Read do?",
+        "code": "BEGIN;\nSELECT balance FROM account WHERE id = 1; -- reads 100\n-- another transaction commits 50 here\nUPDATE account SET balance = 90 WHERE id = 1;\nCOMMIT;",
+        "answer": "The balance ends at 90: the write was computed from the stale 100, so the concurrent update is lost. Under Repeatable Read the `UPDATE` fails with a serialization error instead, and the application must retry."
+      },
+      {
+        "question": "Why does a conditional `UPDATE account SET balance = balance - 10 WHERE id = 1 AND balance >= 10` protect a nonnegative balance better than reading the balance in the app and writing a new value?",
+        "answer": "The check and the change happen in one statement against the current row, so no stale value read earlier is written back. The affected row count tells the app whether the debit happened, protecting the invariant without the strongest isolation level."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-acid.png",

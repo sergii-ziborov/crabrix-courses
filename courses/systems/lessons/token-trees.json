@@ -1,6 +1,6 @@
 {
   "concept": "Match Rust syntax as nested tokens, not raw text",
-  "contentDigest": "8ece97638bd271e3cc86536574c82f517a2c82f5a9bb41b7f2d012aa4eee1134",
+  "contentDigest": "65424b0a07e63b7b505d9e268a6ab39f355d59f54606099b635b4fbbb62ff156",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "`macro_rules!` consumes token trees with balanced delimiters.",
     "success": "You can say which input `:expr` and `:tt` each accept, and why `2 + 3` is one fragment for the first but three token trees for the second.",
     "summary": "Match Rust syntax as nested tokens, not raw text.",
-    "task": "Predict which call the compiler rejects, and say whether the transcriber ever runs for it. Then change `:expr` to `:tt` and predict what happens to `2 + 3`."
+    "task": "Predict which call the compiler rejects, and say whether the transcriber ever runs for it. Then change `:expr` to `:tt` and predict what happens to `2 + 3`.",
+    "recall": [
+      {
+        "question": "How many top-level token trees does a macro receive for the input `a, (b, c), [d]`?",
+        "answer": "Five: `a`, `,`, `(b, c)`, `,` and `[d]`. A balanced delimited group counts as a single token tree however much it contains, which is how macros can match nested syntax without splitting raw text."
+      },
+      {
+        "question": "Why does `list!(1, 2,)` fail with this macro, and how do you accept the trailing comma?",
+        "answer": "The separator `,` only goes between repetitions, so after the last comma the matcher expects another expression and hits the end: unexpected end of macro invocation. Add an optional trailing comma: `($($x:expr),* $(,)?)`.",
+        "code": "macro_rules! list {\n    ($($x:expr),*) => { vec![$($x),*] };\n}\nlet v: Vec<i32> = list!(1, 2,);"
+      }
+    ]
   },
   "illustration": {
     "path": "media/token-trees.png",

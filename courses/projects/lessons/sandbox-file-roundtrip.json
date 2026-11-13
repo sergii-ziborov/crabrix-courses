@@ -22,7 +22,17 @@
       "It guarantees a power-loss-safe transaction"
     ],
     "correctAnswer": 1,
-    "feedback": "The target is created or truncated. Crash-safe replacement and durability are separate design requirements."
+    "feedback": "The target is created or truncated. Crash-safe replacement and durability are separate design requirements.",
+    "recall": [
+      {
+        "question": "Why is calling `fs::write` straight onto an existing report risky, and what is the usual crash-safer pattern?",
+        "answer": "`fs::write` truncates the target first, so a crash mid-write can destroy the old report. Write a sibling temporary file, flush and sync as required, then rename it over the destination; atomic rename and durability still depend on the host filesystem."
+      },
+      {
+        "question": "Reading the saved report back hits invalid UTF-8 or a missing parent directory. Why should the function return that error instead of an empty report?",
+        "answer": "An empty report is a valid result, so substituting it hides a real failure. `fs::read_to_string` on invalid UTF-8 returns an `Err` of kind `InvalidData`; propagating it with `?` lets the caller see what actually went wrong."
+      }
+    ]
   },
   "depth": {
     "misconception": "Writing a file automatically makes the save transactional.",
@@ -60,5 +70,5 @@
     "alt": "Diagram for Save & Read a Text File: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "Fallible filesystem effects in a granted directory"
   },
-  "contentDigest": "cfbc8cc6c940c6ef0b264256f0096608bd01a8e7cad4c1f344b67259fba6c011"
+  "contentDigest": "c939ff395726b2ce7b8440c8390ef10cd87db09ce541be47ee1c6f4c1d77ec9a"
 }

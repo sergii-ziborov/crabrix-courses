@@ -6,7 +6,7 @@
   "order": 3,
   "parentID": "interview-values",
   "exerciseKind": "planned",
-  "contentDigest": "4dca82f2a8f36620999c5ed937d15ad17418582d4e7bec12604379753667ce5b",
+  "contentDigest": "a775795429fcec82317c522f963f3f5fbf10acc700869f2291e1cae52ef818ea",
   "writing": {
     "summary": "An iterator pipeline describes work; the item type and terminal operation determine ownership and execution.",
     "explanation": "For a `Vec<T>`, `iter` normally yields `&T`, `iter_mut` yields `&mut T` and `into_iter` on an owned vector yields `T`. The chosen receiver matters: `into_iter` on a reference can still borrow. Read the actual item type before deciding whether an operation moves, copies or clones values.\n\nMost iterator adapters are lazy. `map` describes a transformation, while a consumer such as `collect` or `sum` drives it. Returning an iterator can avoid collecting an intermediate vector, but keeps any captured input borrows alive for the returned iterator’s lifetime. Calling `cloned` on an iterator of references requests `Clone` on its items; it is not a free conversion for every `T`.\n\nThe example computes lengths by borrowing the strings and then proves the original vector remains usable. A second pipeline consumes it into another collection. Explain both the data flow and when work occurs. In an interview, follow up by returning an `impl Iterator<Item = &str>` tied to the input. That exposes lifetime reasoning more clearly than naming adapter methods from memory.",
@@ -23,7 +23,18 @@
       "Every iterator pipeline automatically returns ownership to its original container."
     ],
     "correctAnswer": 1,
-    "feedback": "The pipeline borrows `&String` values and collects `usize` results. A consuming receiver or a different adapter can change the ownership contract."
+    "feedback": "The pipeline borrows `&String` values and collects `usize` results. A consuming receiver or a different adapter can change the ownership contract.",
+    "recall": [
+      {
+        "question": "For `v: Vec<String>`, what item types do `v.iter()`, `v.iter_mut()`, `v.into_iter()` and `(&v).into_iter()` yield?",
+        "answer": "`&String`, `&mut String`, `String` and `&String`. Only `into_iter` on the owned vector consumes `v`; called on a reference, `into_iter` still just borrows."
+      },
+      {
+        "question": "In what order does this code print, and why?",
+        "code": "let v = vec![1, 2, 3];\nlet it = v.iter().map(|x| {\n    println!(\"visit {x}\");\n    x * 2\n});\nprintln!(\"built\");\nlet s: i32 = it.sum();\nprintln!(\"{s}\");",
+        "answer": "`built` first, then `visit 1`, `visit 2`, `visit 3`, then `12`. `map` is lazy and only describes the work; the `sum` consumer drives the iterator."
+      }
+    ]
   },
   "depth": {
     "misconception": "Every iterator pipeline automatically returns ownership to its original container.",

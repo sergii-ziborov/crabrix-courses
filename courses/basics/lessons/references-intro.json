@@ -1,6 +1,6 @@
 {
   "concept": "Borrowing for read-only access",
-  "contentDigest": "bc548da601de3b5616ec18073570ab61a8126fa69c250919934a1c9f09f4945a",
+  "contentDigest": "c3e01b819ec344eefbe1707752a414abf338b95ec84e1ebd90f5d850d973f488",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,19 @@
     "rule": "`&T` borrows `T` for read-only use without transferring ownership.",
     "success": "The caller retains ownership and no clone is needed.",
     "summary": "A shared reference lets a function read a value while the caller keeps ownership.",
-    "task": "Pass text to a function by reference and use the owner afterward."
+    "task": "Pass text to a function by reference and use the owner afterward.",
+    "recall": [
+      {
+        "question": "Why can this one `length` function be called with both a string literal and a borrowed `String`?",
+        "answer": "A literal already is a `&str`, and `&name` (a `&String`) is coerced to a `&str` view of the same bytes. Both calls only borrow, so it prints `2 7` and `name` is still usable afterwards.",
+        "code": "fn length(text: &str) -> usize { text.len() }\n\nlet name = String::from(\"Crabrix\");\nprintln!(\"{} {}\", length(\"hi\"), length(&name));\nprintln!(\"{name}\");"
+      },
+      {
+        "question": "Why is this function rejected?",
+        "answer": "`&String` is a shared, read-only borrow, and `push_str` needs mutable access, so rustc reports E0596: cannot borrow `*text` as mutable behind a `&` reference. Mutation needs `&mut String`.",
+        "code": "fn add(text: &String) {\n    text.push_str(\"!\");\n}"
+      }
+    ]
   },
   "illustration": {
     "path": "media/references-intro.png",

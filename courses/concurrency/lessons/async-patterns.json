@@ -1,6 +1,6 @@
 {
   "concept": "join, select, and cancellation",
-  "contentDigest": "5ff7a2bd671330cbab95907eb125b5e450fcc2cb9cdf2c171b17adca586cebf1",
+  "contentDigest": "c2eb6d23c2a7e000564b267d0d786cbd9e3cd629a3351c26c439306e4268290d",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "Dropping an owned operation future stops polling it; dropping Tokio’s `JoinHandle` detaches its spawned task.",
     "success": "Total time is the slower of the two, not their sum.",
     "summary": "Concurrency inside one task comes from combinators, not threads.",
-    "task": "Run two independent awaits concurrently rather than in sequence."
+    "task": "Run two independent awaits concurrently rather than in sequence.",
+    "recall": [
+      {
+        "question": "With Tokio, what does this print, and does `slow done` ever appear?",
+        "answer": "`slow started`, `slow dropped`, `timer won`. The timer finishes first, so `select!` drops the losing `slow` future at its suspension point. Its owned values are cleaned up, but the code after the `.await` never runs, so `slow done` never appears.",
+        "code": "struct Guard;\nimpl Drop for Guard { fn drop(&mut self) { println!(\"slow dropped\"); } }\nasync fn slow() {\n    let _g = Guard;\n    println!(\"slow started\");\n    tokio::time::sleep(Duration::from_secs(1)).await;\n    println!(\"slow done\");\n}\ntokio::select! {\n    _ = slow() => println!(\"slow won\"),\n    _ = tokio::time::sleep(Duration::from_millis(10)) => println!(\"timer won\"),\n}"
+      },
+      {
+        "question": "In Tokio, what happens to a spawned task when you drop its `JoinHandle`, and how do you actually stop it?",
+        "answer": "Dropping the handle detaches the task, and it keeps running to completion. To cancel it, keep the handle, call `abort()`, and await the handle: it returns a `JoinError` whose `is_cancelled()` is true. Abort only takes effect at an await point."
+      }
+    ]
   },
   "illustration": {
     "path": "media/async-patterns.png",

@@ -1,6 +1,6 @@
 {
   "concept": "if and match as expressions",
-  "contentDigest": "ba4380bf486a7755e32bdc80c33cce2cb67af658b460270a67d4249be5b87152",
+  "contentDigest": "8207eeb70a53aeb71f3e60c36c6093cbb54164c4e66a0ac6d2062a6f4e3c3d19",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "`if` is an expression; every branch must produce the same type.",
     "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
     "summary": "Expressions and loops model decisions without hidden coercion.",
-    "task": "Return negative, zero, or positive according to the integer's sign. All branches return a string slice. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise."
+    "task": "Return negative, zero, or positive according to the integer's sign. All branches return a string slice. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise.",
+    "recall": [
+      {
+        "question": "Why does this `match` fail to compile?",
+        "answer": "`match` must be exhaustive, and values `10..=255` have no arm, so rustc reports E0004 non-exhaustive patterns: `10_u8..=u8::MAX` not covered. Add an arm such as `_ => \"many\"`.",
+        "code": "let n: u8 = 3;\nlet size = match n {\n    0 => \"none\",\n    1..=9 => \"few\",\n};"
+      },
+      {
+        "question": "Why is `let bonus = if score > 90 { 10 };` rejected?",
+        "answer": "An `if` without `else` evaluates to `()` when the condition is false, which cannot match the integer from the other branch. rustc reports E0317 (`if` may be missing an `else` clause); add `else { 0 }`."
+      }
+    ]
   },
   "illustration": {
     "path": "media/control-flow.png",

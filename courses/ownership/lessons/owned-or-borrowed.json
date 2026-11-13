@@ -1,6 +1,6 @@
 {
   "concept": "Choose a return type that matches the data flow",
-  "contentDigest": "6c2c7bc678004b7502c280b164d8142a2cd7b70fdb622d0d3eb4a676129dcc2b",
+  "contentDigest": "1825e90961c776a5cbb521b99f2814ab666a3f0523511424a0ec4e4372affefe",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "Return a borrow when the result is a view into an input; return an owned value when new data is created or must escape independently.",
     "success": "You can say which result can outlive `input`, and why each return type fits its body.",
     "summary": "Choose a return type that matches the data flow.",
-    "task": "Decide for `label` and `trimmed` who owns the returned bytes."
+    "task": "Decide for `label` and `trimmed` who owns the returned bytes.",
+    "recall": [
+      {
+        "question": "Why can `owned` be printed after the block, but `kept` cannot?",
+        "answer": "`label` builds new text in its own `String`, which is moved out and lives on independently. `trimmed` returns a view into `source`, which is dropped at the brace, so using `kept` afterwards is E0597 (`source` does not live long enough).",
+        "code": "fn label(input: &str) -> String { input.trim().to_uppercase() }\nfn trimmed(input: &str) -> &str { input.trim() }\n\nlet (owned, kept);\n{\n    let source = String::from(\"  crab  \");\n    owned = label(&source);\n    kept = trimmed(&source);\n}\nprintln!(\"{owned} {kept}\");"
+      },
+      {
+        "question": "When is `Cow<'a, str>` a sensible return type instead of always `&str` or always `String`?",
+        "answer": "When a function usually returns the input unchanged, as a borrowed view, but sometimes has to build new text, for example only when escaping is needed. `Cow` holds either `Borrowed(&str)` or `Owned(String)`, so the common path avoids allocating. It adds complexity, so use it when measurements justify it."
+      }
+    ]
   },
   "illustration": {
     "path": "media/owned-or-borrowed.png",

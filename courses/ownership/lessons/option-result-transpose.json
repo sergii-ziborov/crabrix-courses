@@ -22,7 +22,19 @@
       "Result<u16, Option<E>>"
     ],
     "correctAnswer": 0,
-    "feedback": "Transpose preserves absence and errors while moving Result to the outside."
+    "feedback": "Transpose preserves absence and errors while moving Result to the outside.",
+    "recall": [
+      {
+        "question": "What does this print, and why is it not `Ok(None)`?",
+        "answer": "`Err(ParseIntError { kind: Empty })`. The value was supplied, just empty, so the parser runs and fails. `transpose` only produces `Ok(None)` when the option itself is `None`; it never turns a failed parse into absence.",
+        "code": "let blank: Option<&str> = Some(\"\");\nlet r = blank.map(str::parse::<u16>).transpose();\nprintln!(\"{r:?}\");"
+      },
+      {
+        "question": "What is wrong with loading a port like this?",
+        "answer": "`.ok()` turns the parse error into `None`, so the typo silently becomes the default `8080`. Keep `Result<Option<u16>, _>` with `map(...).transpose()`, report `Err`, and apply `unwrap_or` only to real absence.",
+        "code": "let input = Some(\"80a0\");\nlet port = input\n    .and_then(|s| s.parse::<u16>().ok())\n    .unwrap_or(8080);"
+      }
+    ]
   },
   "depth": {
     "misconception": "An invalid supplied value should always become the default.",
@@ -60,5 +72,5 @@
     "alt": "Diagram for Compose Optional Fallible Input: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "map, transpose, and explicit defaults"
   },
-  "contentDigest": "748212f9caeea4114bf9c0c6d04367205aad8743d46c6c00d088bdbf94dd7ef7"
+  "contentDigest": "097022e979eac910b87b5808dad0fe9c78fb154252a9f19a0ee06ee3d0e7156f"
 }

@@ -1,6 +1,6 @@
 {
   "concept": "char, &str, and Unicode",
-  "contentDigest": "73148b46c3a7159f8334228efa33ba184de2db8da1ede90398175beedd3cc5bd",
+  "contentDigest": "215c2c3ab4139a363560fb524e2496b38f74a00b19ee81c2cdfdf0f7b936c096",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,19 @@
     "rule": "`String` indexing by an arbitrary byte is forbidden because UTF-8 boundaries matter.",
     "success": "Your prediction matches the output, and you can say which counting method answers which question without treating bytes as visible characters.",
     "summary": "Rust text has several useful units: bytes for encoding, Unicode scalar values for `char`, and sometimes multiple scalars for one visible symbol.",
-    "task": "Print a `char` and a borrowed string, then compare `len()` with `chars().count()` for ASCII and an emoji. Predict the byte and scalar counts before running."
+    "task": "Print a `char` and a borrowed string, then compare `len()` with `chars().count()` for ASCII and an emoji. Predict the byte and scalar counts before running.",
+    "recall": [
+      {
+        "question": "What does this print, and why are the two numbers different?",
+        "answer": "`6 5`. `len()` counts UTF-8 bytes and `é` takes two bytes, while `chars().count()` counts Unicode scalar values, of which there are five.",
+        "code": "let s = \"héllo\";\nprintln!(\"{} {}\", s.len(), s.chars().count());"
+      },
+      {
+        "question": "What happens when this code runs?",
+        "answer": "It compiles but panics at runtime: byte index 2 is not a char boundary because it falls inside the 4-byte crab. String slicing works on byte positions, and Rust refuses to cut a multibyte UTF-8 sequence.",
+        "code": "let c = \"🦀abc\";\nprintln!(\"{}\", &c[0..2]);"
+      }
+    ]
   },
   "illustration": {
     "path": "media/chars-and-text.png",

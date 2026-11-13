@@ -1,6 +1,6 @@
 {
   "concept": "References and E0502",
-  "contentDigest": "6e59c9397aad2aa1c9c1bffb83996ede84dece39ea80a562056dc1ca85ab32cd",
+  "contentDigest": "e266d21db9f0a96e4b1f6805280ae57f0fcf921a871857b37b78ad1b3cb0c61c",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "Many shared borrows or one mutable borrow, never both at once.",
     "success": "Check passes, Run prints `crab`, and the `Vec` is still extended.",
     "summary": "Borrowing lets code use a value without taking ownership.",
-    "task": "Repair E0502 with the smallest edit that keeps the push and the printed value."
+    "task": "Repair E0502 with the smallest edit that keeps the push and the printed value.",
+    "recall": [
+      {
+        "question": "Why does Rust forbid `items.push(...)` while a reference such as `&items[0]` is still going to be used?",
+        "answer": "`push` may need to grow the vector, which can move its elements to a new buffer and free the old one. A live reference into the old buffer would then dangle. Forbidding mutation during a shared borrow rules that out at compile time."
+      },
+      {
+        "question": "Why does this fail, and why does it compile if `r1.push('b');` is moved above `let r2`?",
+        "answer": "`r1` is used after `r2` is created, so two mutable borrows overlap: E0499. A borrow ends at its last use, so once `r1.push('b')` comes before `let r2`, the borrows no longer overlap and the code compiles.",
+        "code": "let mut s = String::from(\"a\");\nlet r1 = &mut s;\nlet r2 = &mut s;\nr1.push('b');\nr2.push('c');"
+      }
+    ]
   },
   "illustration": {
     "path": "media/borrowing.png",

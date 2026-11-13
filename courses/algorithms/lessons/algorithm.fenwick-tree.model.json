@@ -14,7 +14,7 @@
     "visibleInput": "n=5 adds=(1,5),(3,2),(4,4) query=3"
   },
   "concept": "Store partial sums in power-of-two ranges and move indexes by their lowest set bit.",
-  "contentDigest": "078ce8a05e37e50e4a6b08966930836ab72169930e670f1a039cc99746d834a4",
+  "contentDigest": "8ee0daf409c495c31f1bce5402bf98217b7c041bd79fffc34ed87a46cf225b63",
   "depth": {
     "connections": [
       {
@@ -68,7 +68,14 @@
     "rule": "Store partial sums in power-of-two ranges and move indexes by their lowest set bit. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(log n) update/query · O(n) space bound without looking at the code.",
     "summary": "Store partial sums in power-of-two ranges and move indexes by their lowest set bit.",
-    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output.",
+    "recall": [
+      {
+        "question": "Why are Fenwick tree indexes one-based? What would an update at index 0 do in this loop?",
+        "answer": "For `i = 0`, `i & i.wrapping_neg()` is 0, so `i` never advances and the loop never ends. Index 0 has no lowest set bit and covers no range, so the tree starts at 1 (the lesson asserts `index > 0`).",
+        "code": "let mut i = index;\nwhile i <= n {\n    bit[i] += value;\n    i += i & i.wrapping_neg();\n}"
+      }
+    ]
   },
   "illustration": {
     "path": "media/algorithms-ranges-b.png",

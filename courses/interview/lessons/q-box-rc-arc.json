@@ -1,6 +1,6 @@
 {
   "concept": "Ownership and allocation choices",
-  "contentDigest": "2e1c1de86b4d1650c6c45be2dc7c34ab009a2c422fe87d2e50b5c6eee6be8d50",
+  "contentDigest": "c9adc05e8113d28563ff19ddcc58b4b2efcca85acc0f8f44216639baead04a75",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "Pick by ownership count first, then by thread boundary.",
     "success": "Every choice names an ownership count and a thread boundary.",
     "summary": "Three pointers, three different ownership questions.",
-    "task": "Match three scenarios to the narrowest pointer that satisfies them."
+    "task": "Match three scenarios to the narrowest pointer that satisfies them.",
+    "recall": [
+      {
+        "question": "Two `Rc` nodes hold strong references to each other. What happens when the outside handles are dropped, and how do you fix it?",
+        "answer": "Each count stays at least 1, so neither node is ever dropped and the memory leaks; that is not undefined behaviour, so safe Rust allows it. Make the back-reference a `Weak` so it does not keep the node alive."
+      },
+      {
+        "question": "A parser builds a tree and hands it to exactly one consumer. Which pointer type fits, and why not `Rc` or `Arc`?",
+        "answer": "`Box`: there is a single owner, so shared ownership is unnecessary. `Rc` and `Arc` add count updates on every clone and drop and make shutdown and ownership harder to reason about; pick the narrowest pointer that expresses the lifetime."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-box-rc-arc.png",

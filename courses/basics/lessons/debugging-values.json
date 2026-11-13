@@ -1,6 +1,6 @@
 {
   "concept": "Debug, dbg!, and stderr",
-  "contentDigest": "bf05624e1d680b8a755c2791b1d1d19c5138ac87b1fe837869f15f04b0eddd60",
+  "contentDigest": "41fb5c7bb016e80d42a340ed4f615dcd19a45c175fab735c13fba252f5c085d2",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "`dbg!` returns its argument and writes diagnostic output to stderr.",
     "success": "The debug probe appears on stderr and the value remains usable.",
     "summary": "`Debug` output is evidence for development, not part of the program's user-facing result.",
-    "task": "Inspect an intermediate value and keep the program's stdout stable."
+    "task": "Inspect an intermediate value and keep the program's stdout stable.",
+    "recall": [
+      {
+        "question": "What value does `x` get, and what does `dbg!` write, and to which stream?",
+        "answer": "`dbg!` returns its argument unchanged, so `x` is `7`, and stdout gets `7`. To stderr it writes the source location, the expression and its value, for example `[src/main.rs:2:13] 2 * 3 = 6`.",
+        "code": "let x = dbg!(2 * 3) + 1;\nprintln!(\"{x}\");"
+      },
+      {
+        "question": "Your program's stdout is piped into another tool. Why is `dbg!` a safer temporary probe than an extra `println!`?",
+        "answer": "`println!` writes to stdout, so the probe would become part of the data the other tool reads. `dbg!` writes to stderr and labels the expression and location, which keeps the program's real output clean. Remove the probe once you understand the bug."
+      }
+    ]
   },
   "illustration": {
     "path": "media/debugging-values.png",

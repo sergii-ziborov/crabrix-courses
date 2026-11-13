@@ -1,6 +1,6 @@
 {
   "concept": "Map Cargo targets to predictable source paths",
-  "contentDigest": "5715d3284390bd69e3223215e490eb89fd07f0b0fe25dc2c5df18c135c4cbf4d",
+  "contentDigest": "651655c68c03f13cc66058e80b1384562732a427b4660352d03289daf0d0e875",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "`src/main.rs` defines the default binary and `src/lib.rs` defines the library target.",
     "success": "You can say which file defines each target and why `main` reaches the library only through `pub` items.",
     "summary": "Map Cargo targets to predictable source paths.",
-    "task": "Predict which call in `src/main.rs` fails to compile. Then fix it with a one-word change in `src/lib.rs` and say what that change adds to the library's API."
+    "task": "Predict which call in `src/main.rs` fails to compile. Then fix it with a one-word change in `src/lib.rs` and say what that change adds to the library's API.",
+    "recall": [
+      {
+        "question": "In a package named `demo`, how does `src/main.rs` call `pub fn answer()` defined in `src/lib.rs`, and what can it not reach?",
+        "answer": "It writes `demo::answer()`, using the library crate name derived from the package name. The binary uses the library like any other caller, so private helpers in the library stay inaccessible."
+      },
+      {
+        "question": "Where do extra binaries and integration tests go by convention, and why is a new `src/helpers.rs` not compiled just because it exists?",
+        "answer": "Extra binaries go in `src/bin/` and integration tests in `tests/`. A source file is compiled only when it is a recognised target or is declared with `mod` from the module tree."
+      }
+    ]
   },
   "illustration": {
     "path": "media/package-layout.png",

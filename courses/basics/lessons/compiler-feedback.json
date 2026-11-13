@@ -1,6 +1,6 @@
 {
   "concept": "Expected, found, spans, and help",
-  "contentDigest": "c6926b19ca70423ead7a91c60e14456045b708ac5aad7063373d633e830a143a",
+  "contentDigest": "2ea5639adc4ca9dee3f98debdb16b4856f6dba701be65016e9b9103c6a6028b9",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "Repair the first causal error before chasing its downstream messages.",
     "success": "You can explain the mismatch in one sentence and show that the chosen change matches the program’s meaning, not merely that the compiler message disappeared.",
     "summary": "A compiler diagnostic is a map back to the source: find its primary span, compare expected with found, and make one intentional fix before reading follow-up errors.",
-    "task": "Read the highlighted span, expected `bool`, and found integer before editing. Decide whether `enabled` should be a fixed `true` or `false`, or the result of a comparison; implement the smallest fix for that intent and recompile."
+    "task": "Read the highlighted span, expected `bool`, and found integer before editing. Decide whether `enabled` should be a fixed `true` or `false`, or the result of a comparison; implement the smallest fix for that intent and recompile.",
+    "recall": [
+      {
+        "question": "For this code, what expected and found types does rustc report, and what established the expectation?",
+        "answer": "E0308 mismatched types: expected `u32`, found `&str`. The primary span is `\"four\"`, and a secondary label points at the `: u32` annotation as the reason (\"expected due to this\").",
+        "code": "fn main() {\n    let count: u32 = \"four\";\n    println!(\"{count}\");\n}"
+      },
+      {
+        "question": "Why is changing that line to `let count: u32 = \"four\".parse().unwrap();` a poor way to silence the error?",
+        "answer": "It compiles, but parsing is fallible: `\"four\"` is not digits, so `parse` returns `Err` and `unwrap` panics at runtime. If the value is known to be four, write `4`; if text really comes from a user, handle the `Result`."
+      }
+    ]
   },
   "illustration": {
     "path": "media/compiler-feedback.png",

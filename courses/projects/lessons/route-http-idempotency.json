@@ -22,7 +22,17 @@
       "Reject the conflict"
     ],
     "correctAnswer": 2,
-    "feedback": "An idempotency key identifies the original operation, not permission to change its payload."
+    "feedback": "An idempotency key identifies the original operation, not permission to change its payload.",
+    "recall": [
+      {
+        "question": "What do `retry_decision(\"k\", \"title\", Some((\"k\", \"title\")))`, `retry_decision(\"new\", \"x\", Some((\"old\", \"x\")))` and `retry_decision(\" \", \"x\", None)` return?",
+        "answer": "200, 201 and 400. The same key with the same payload replays the stored result; a key not seen before creates the task; a blank key, even just a space, is invalid."
+      },
+      {
+        "question": "Why must production storage record the idempotency key in the same transaction as the task insert?",
+        "answer": "If they commit separately, a crash in between can leave a task with no key record, so a retry creates a duplicate. One transaction with a uniqueness constraint keeps the dedupe record beside the committed task."
+      }
+    ]
   },
   "depth": {
     "misconception": "Return a successful response for the unrelated original request",
@@ -70,5 +80,5 @@
     "alt": "Diagram for Retry Without Duplicating Tasks: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "The worked implementation exercises bind an idempotency key to one request payload. Its tests demonstrate the stated finite contract."
   },
-  "contentDigest": "59b307a159554a520264dd7b7e0f86740724eceab4d55427b3951fe8040f194e"
+  "contentDigest": "84ee72b892ed90d19805cdf36962193a5f840e49d7a73f7cd7f5ccf93d85e0ee"
 }

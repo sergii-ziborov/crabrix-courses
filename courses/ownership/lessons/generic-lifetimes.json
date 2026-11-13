@@ -1,6 +1,6 @@
 {
   "concept": "Combine type bounds with borrow relationships",
-  "contentDigest": "431b8d471e41e5a5da3771e28a024df747736ec92f4fc690dea9fde4828598bc",
+  "contentDigest": "d6dc4b545f9bd85839b999089b8467aeb79cf43501a3450c9e10bfc0fd74187c",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,19 @@
     "rule": "A function may be generic over both a data type and a lifetime.",
     "success": "You can call `choose` with two types, and show when its result stops being usable.",
     "summary": "Combine type bounds with borrow relationships.",
-    "task": "Say what `T: PartialOrd` and `'a` each promise in `choose`."
+    "task": "Say what `T: PartialOrd` and `'a` each promise in `choose`.",
+    "recall": [
+      {
+        "question": "What error does this give, and which part of the signature fixes it?",
+        "answer": "E0369: binary operation `>` cannot be applied to `&T`. The body compares values, so it needs the bound `T: PartialOrd`. The lifetime `'a` is about how long the references are valid and can't supply the comparison.",
+        "code": "fn choose<'a, T>(left: &'a T, right: &'a T) -> &'a T {\n    if left > right { left } else { right }\n}"
+      },
+      {
+        "question": "What does this call return, and why?",
+        "answer": "`Version(2, 0)`. Derived `PartialOrd` compares fields in declaration order, so `2 > 1` on the first field decides before `9` vs `0` is examined. `choose` returns a reference to that input, valid for `'a`.",
+        "code": "#[derive(Debug, PartialEq, PartialOrd)]\nstruct Version(u32, u32);\n\nprintln!(\"{:?}\", choose(&Version(1, 9), &Version(2, 0)));"
+      }
+    ]
   },
   "illustration": {
     "path": "media/generic-lifetimes.png",

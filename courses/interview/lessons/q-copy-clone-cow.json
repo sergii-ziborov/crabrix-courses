@@ -6,7 +6,7 @@
   "order": 1,
   "parentID": "interview-values",
   "exerciseKind": "planned",
-  "contentDigest": "56ff268e40e6a4223d6df90b71ad5e468e2c36855511697e7c93af4f81704866",
+  "contentDigest": "76bf94f0bef47ba630c6291961b949e5ace58c5d6956bc1370dc8d050675ca98",
   "writing": {
     "summary": "Ask which bytes are shared, copied or allocated before choosing an ownership conversion.",
     "explanation": "`Copy` permits implicit duplication of a value. `Clone` is an explicit operation whose cost and semantics depend on its implementation. Cloning an `Rc` or `Arc` normally creates another owner of the same allocation; cloning a `String` normally creates owned string storage. The word `clone` alone does not tell you which one happened.\n\n`Cow` stores either borrowed or owned data behind one interface. A borrowed `Cow<str>` can read a caller’s string without making an owned `String`. Requesting mutable access through `to_mut` converts the borrowed form into owned storage when needed. The original borrowed string is not changed. If the `Cow` already owns a `String`, obtaining mutable access need not clone that `String` again.\n\nThe example starts with borrowed text, requests a modification and checks that the original remains unchanged. This is a useful API when many inputs pass through untouched and some need normalization. It is not a guarantee that every `Cow`-based design is faster: consider how often ownership is required and how long the borrowed source must live. State the input lifetime and resulting ownership clearly rather than advertising zero copies for every path.",
@@ -23,7 +23,17 @@
       "It obtains owned storage and mutates that owned value."
     ],
     "correctAnswer": 2,
-    "feedback": "The borrowed branch becomes owned before mutation. `Cow` does not bypass `str`’s immutability or the lifetime of a borrowed source."
+    "feedback": "The borrowed branch becomes owned before mutation. `Cow` does not bypass `str`’s immutability or the lifetime of a borrowed source.",
+    "recall": [
+      {
+        "question": "What does `.clone()` do for an `Rc<String>` compared with a `String`?",
+        "answer": "Cloning the `Rc` increments its reference count and returns another owner of the same allocation (`Rc::ptr_eq` is true). Cloning a `String` allocates new storage and copies the bytes. The word `clone` alone does not tell you which happened."
+      },
+      {
+        "question": "A `Cow<str>` already holds `Cow::Owned(String)`. What does calling `to_mut()` on it do?",
+        "answer": "It returns a mutable reference to the `String` it already owns, without cloning again. Only a `Cow::Borrowed` value has to copy its text into a new owned `String` on `to_mut`."
+      }
+    ]
   },
   "depth": {
     "misconception": "It mutates the original borrowed str in place.",

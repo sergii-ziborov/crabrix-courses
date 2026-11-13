@@ -1,6 +1,6 @@
 {
   "concept": "Relaxed, Acquire/Release, SeqCst",
-  "contentDigest": "062ea589883af8dd3a5ea8ef75f2c023fb74965ae407a83554ae6a0ee14b72c2",
+  "contentDigest": "c7438eab1827a05d0ee508a7a6bb8e9bd435d23adb23caf44d3fcc59acfc3e9c",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "Atomicity and ordering are separate promises; Relaxed gives only the first.",
     "success": "You can say what each ordering guarantees and what it costs.",
     "summary": "An atomic is a value several threads may touch without a lock.",
-    "task": "Explain Relaxed, Acquire/Release, and SeqCst in one minute each."
+    "task": "Explain Relaxed, Acquire/Release, and SeqCst in one minute each.",
+    "recall": [
+      {
+        "question": "One thread writes a payload and then sets an `AtomicBool` ready flag; another waits for the flag and reads the payload. Which orderings make the payload visible, and why is `Relaxed` not enough?",
+        "answer": "Store the flag with `Release` and load it with `Acquire`: when the acquire load observes that release store, the writes made before the store are visible after the load. `Relaxed` keeps the flag itself atomic but gives no ordering for the unrelated payload write."
+      },
+      {
+        "question": "Each atomic load and store is indivisible. Why can a \"load, check, then store\" sequence on one atomic still lose an update?",
+        "answer": "A sequence of atomic operations is not a transaction: another thread can change the value between the load and the store. Use a single read-modify-write such as `fetch_add` or `compare_exchange`, or a mutex; a stronger ordering such as `SeqCst` does not repair the protocol."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-atomics.png",

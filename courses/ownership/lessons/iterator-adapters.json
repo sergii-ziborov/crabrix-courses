@@ -1,6 +1,6 @@
 {
   "concept": "Transform lazily, then choose one consumer",
-  "contentDigest": "18530cc043859d6a42afa73b80bb3f8aaf73ac2953407b9f98d3b21a5c260603",
+  "contentDigest": "cfdbf9aaa6c89133a2aa780537c4a51c700fac0f9cdcdbf40fb5a5e99b3459ba",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "Adapters such as map and filter describe work but do nothing until a consumer asks for values.",
     "success": "You can say why nothing runs until `sum`, and why the filter needs `**v`.",
     "summary": "Transform lazily, then choose one consumer.",
-    "task": "Mark each stage as adapter or consumer, and write the item type at each stage."
+    "task": "Mark each stage as adapter or consumer, and write the item type at each stage.",
+    "recall": [
+      {
+        "question": "What are `a` and `b`?",
+        "answer": "`a` is `0`: `take(1)` before the filter keeps only the first input, `1`, which is odd. `b` is `2`: `take(1)` after the filter keeps the first even match. Where an adapter sits changes what it limits.",
+        "code": "let values = [1, 2, 3, 4];\nlet a: i32 = values.iter().take(1)\n    .filter(|v| **v % 2 == 0).sum();\nlet b: i32 = values.iter()\n    .filter(|v| **v % 2 == 0).take(1).sum();"
+      },
+      {
+        "question": "In `values.iter().filter(|v| **v % 2 == 0).map(|v| v * v)`, why does the `filter` closure need two stars while the `map` closure uses none?",
+        "answer": "`iter()` yields `&i32`, and `filter` passes its predicate a reference to each item, so `v` is `&&i32`. `map` receives the item itself, a `&i32`, and `v * v` works because multiplication is implemented for references."
+      }
+    ]
   },
   "illustration": {
     "path": "media/iterator-adapters.png",

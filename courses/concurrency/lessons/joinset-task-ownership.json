@@ -22,7 +22,17 @@
       "Always sorted by return value"
     ],
     "correctAnswer": 1,
-    "feedback": "JoinSet yields completed tasks. Preserve an index if the application needs a stable presentation order."
+    "feedback": "JoinSet yields completed tasks. Preserve an index if the application needs a stable presentation order.",
+    "recall": [
+      {
+        "question": "A `JoinSet<Result<u32, String>>` has three tasks: one returns `Ok(1)`, one returns `Err(\"bad input\")`, and one panics. What does `join_next().await` yield for each, and then?",
+        "answer": "`Some(Ok(Ok(1)))`, `Some(Ok(Err(\"bad input\")))`, and `Some(Err(join_error))` with `is_panic()` true, in completion order. Once the set is empty it yields `None`. The outer layer is the task's fate; the inner `Result` is the application's."
+      },
+      {
+        "question": "What happens to a JoinSet's unfinished tasks when the set is dropped, and how does that differ from dropping a single Tokio `JoinHandle`?",
+        "answer": "Dropping a `JoinSet` aborts all its remaining tasks, so ownership of the children is explicit. Dropping a lone `JoinHandle` only detaches its task, which keeps running. Aborting still doesn't roll back effects already performed."
+      }
+    ]
   },
   "depth": {
     "misconception": "Dropping every task handle is a graceful shutdown protocol.",
@@ -55,5 +65,5 @@
     "alt": "Diagram for Own Tasks with JoinSet: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "Completion order, errors, and task lifetime"
   },
-  "contentDigest": "37ff58e84036c5e1adbf192ef243144c25454862de8e958d3af4c74b9a8fe2f3"
+  "contentDigest": "192b27c71c65da79a75c5150164cfe96c05b8c361f65e77895e8224f3b765a7e"
 }

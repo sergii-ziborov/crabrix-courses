@@ -22,7 +22,17 @@
       "A Rust validation function automatically changes the database schema"
     ],
     "correctAnswer": 1,
-    "feedback": "The database must protect its own invariant independently of one application entry point."
+    "feedback": "The database must protect its own invariant independently of one application entry point.",
+    "recall": [
+      {
+        "question": "The column is `done INTEGER NOT NULL DEFAULT 0 CHECK(done IN (0,1))`. What happens to an INSERT that omits `done`, and to one that sends `done = NULL`?",
+        "answer": "Omitting the column stores the default 0. An explicit NULL does not trigger the default, so SQLite rejects it with a NOT NULL constraint failure."
+      },
+      {
+        "question": "Why can a title consisting only of an ideographic space (U+3000) pass `CHECK(length(trim(title)) BETWEEN 1 AND 80)` in SQLite?",
+        "answer": "SQLite's one-argument `trim` removes ordinary spaces only, not every Unicode whitespace character that Rust's `trim` handles. Store canonical titles and state the trimming policy explicitly at both layers."
+      }
+    ]
   },
   "depth": {
     "misconception": "A Rust validation function automatically changes the database schema",
@@ -70,5 +80,5 @@
     "alt": "Diagram for Make Invalid Rows Impossible: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "This Rust reading prints a SQL statement. The independent compiler lab executes it against real SQLite."
   },
-  "contentDigest": "ecdf9ea968f16bac46fae45e075809c625de4c44bdc49825af4ca06b966264f1"
+  "contentDigest": "980666fcee42da5ada6407207e5b506bf9d61591336ff3db758473c28cb6ee68"
 }

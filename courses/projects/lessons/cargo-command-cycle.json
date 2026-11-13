@@ -1,6 +1,6 @@
 {
   "concept": "Choose the cheapest command that proves the next fact",
-  "contentDigest": "0dc62c4438f587771b1d529171bcb6986995b2a7e3e9abc2b97a68db3940f5bb",
+  "contentDigest": "76a749cccf3a46a1782496f39a5c932af52b3135b577a04c1fae01834b9a8ce0",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "`cargo check` proves type correctness without final code generation, build creates artifacts, and run executes a binary after building it.",
     "success": "You can name the fact each command proved and the fact it left untested.",
     "summary": "Choose the cheapest command that proves the next fact.",
-    "task": "Say which of `cargo check`, `cargo build`, and `cargo run` first reveals that `double(4)` gives 6, not 8. Then break the return type and ask the same question."
+    "task": "Say which of `cargo check`, `cargo build`, and `cargo run` first reveals that `double(4)` gives 6, not 8. Then break the return type and ask the same question.",
+    "recall": [
+      {
+        "question": "What evidence does each of `cargo check`, `cargo test` and `cargo run` give you, and what does each leave untested?",
+        "answer": "`cargo check` proves the code parses, type-checks and borrow-checks, but not that it gives right answers. `cargo test` runs your assertions but may not prove CLI arguments are wired correctly. `cargo run` builds and executes the real program."
+      },
+      {
+        "question": "Why might `cargo run` fail to run anything in a library-only package or in a workspace, and how do you fix each?",
+        "answer": "A library-only package has no default binary to execute, so run an example or add a binary target. In a workspace, Cargo may need `-p package_name` to know which member you mean."
+      }
+    ]
   },
   "illustration": {
     "path": "media/cargo-command-cycle.png",

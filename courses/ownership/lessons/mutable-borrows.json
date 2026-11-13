@@ -1,6 +1,6 @@
 {
   "concept": "One temporary writer with exclusive access",
-  "contentDigest": "3320073be1391967a4434125cf24ae1104ec4409bf1f357a7c940ce4f31e89a0",
+  "contentDigest": "ccdd175b65208bec04a63b62ce7e8ef8ffef459cec5f32884c730fb999b0d70d",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,19 @@
     "rule": "An `&mut` reference permits mutation without transferring ownership.",
     "success": "You can say why `score` can be read again on the last line, and what it holds.",
     "summary": "One temporary writer with exclusive access.",
-    "task": "Trace where `&mut score` begins and ends, and what it lets `add_one` do."
+    "task": "Trace where `&mut score` begins and ends, and what it lets `add_one` do.",
+    "recall": [
+      {
+        "question": "Why is the `println!` rejected, and what reordering fixes it?",
+        "answer": "`edit` is an exclusive borrow that is still used after the print, so reading `score` in between conflicts (E0502). Put `*edit += 1;` before the `println!`; once `edit` is last used, `score` can be read and prints `7`.",
+        "code": "let mut score = 6;\nlet edit = &mut score;\nprintln!(\"{score}\");\n*edit += 1;"
+      },
+      {
+        "question": "Why is this call rejected even though `add_both` looks harmless?",
+        "answer": "It would create two simultaneous mutable borrows of `x` (E0499). Inside the function, `a` and `b` are assumed to be distinct exclusive writers; letting them alias would let one write affect what the other sees mid-update.",
+        "code": "fn add_both(a: &mut i32, b: &mut i32) {\n    *a += 1;\n    *b += 1;\n}\n\nlet mut x = 1;\nadd_both(&mut x, &mut x);"
+      }
+    ]
   },
   "illustration": {
     "path": "media/mutable-borrows.png",

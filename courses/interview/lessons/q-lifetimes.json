@@ -1,6 +1,6 @@
 {
   "concept": "Relationships, not object duration",
-  "contentDigest": "74db99c84f02505f2c8131ef0eaae0575019eb90d953c094ef2240d9654dd3b4",
+  "contentDigest": "b3889dd9785f21354828243c88e859ed89df8a702387f5c0a144ddb9aa327324",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "A lifetime constrains borrows; it never keeps anything alive.",
     "success": "You describe a constraint the compiler checks, not runtime behaviour.",
     "summary": "Lifetimes are about relationships, and saying so is the answer.",
-    "task": "Correct the claim that a lifetime extends how long data lives."
+    "task": "Correct the claim that a lifetime extends how long data lives.",
+    "recall": [
+      {
+        "question": "Given `fn pick<'a>(a: &'a str, b: &'a str) -> &'a str`, for how long may a caller use the returned reference?",
+        "answer": "Only while both input owners are still alive: the result is tied to the shortest of the input borrows. If one argument's `String` is dropped first, a later use of the result is rejected with E0597. The annotation relates borrows; it extends no value's life."
+      },
+      {
+        "question": "A function takes two references with unrelated lifetimes but returns data from only the first. Why should you avoid giving both the same lifetime name?",
+        "answer": "A shared name tells callers the result may borrow from both, so it is limited by the shorter input and over-constrains callers. Use the same name only when the return contract truly depends on both inputs."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-lifetimes.png",

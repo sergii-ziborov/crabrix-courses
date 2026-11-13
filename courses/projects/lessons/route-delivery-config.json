@@ -22,7 +22,17 @@
       "That credentials and migrations work"
     ],
     "correctAnswer": 1,
-    "feedback": "Configuration parsing, connectivity and readiness are separate checks."
+    "feedback": "Configuration parsing, connectivity and readiness are separate checks.",
+    "recall": [
+      {
+        "question": "With ports allowed from 1024 to 65535, why are `\"+8080\"`, `\"65536\"` and `\"0\"` all rejected, and why check for ASCII digits before parsing?",
+        "answer": "`\"+8080\".parse::<u16>()` would succeed, so the digit check is what enforces the no-sign grammar; 65536 does not fit `u16`; 0 is below 1024. All return `Err(\"port\")` before any listener opens."
+      },
+      {
+        "question": "How do liveness and readiness endpoints differ, and what does a syntactic database-setting check not prove?",
+        "answer": "Liveness says the process is running; readiness says required initialization has finished and it can take traffic. A syntax check proves nothing about connectivity, credentials or migration compatibility, which need separate startup checks."
+      }
+    ]
   },
   "depth": {
     "misconception": "That credentials and migrations work",
@@ -70,5 +80,5 @@
     "alt": "Diagram for Validate Before Starting the Service: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "The worked implementation exercises reject invalid deployment configuration. Its tests demonstrate the stated finite contract."
   },
-  "contentDigest": "c1a2396f68a274f6a1fa1bc8143d7e9c6d9406ac64b031d85db49b5f9e7c4a27"
+  "contentDigest": "7b63d1997bdf6e15fd618b4bd47f4d96f8383dd9f6926f91a8425e706a659663"
 }

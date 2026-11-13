@@ -22,7 +22,17 @@
       "No; symlink resolution and authority require separate protection"
     ],
     "correctAnswer": 2,
-    "feedback": "The lexical rule rejects obvious traversal but does not establish authority over a changing filesystem."
+    "feedback": "The lexical rule rejects obvious traversal but does not establish authority over a changing filesystem.",
+    "recall": [
+      {
+        "question": "What does `Path::new(\"/srv/root\").join(\"/etc/passwd\")` produce, and what does that mean for validation?",
+        "answer": "`/etc/passwd`: an absolute argument replaces the base entirely. `join` expresses a relationship but never keeps the result under root, so absolute paths and `..` components must be rejected before joining."
+      },
+      {
+        "question": "Why should a validator accept `my report ü.txt` but reject `../notes.txt`, and what does even a correct lexical check not protect against?",
+        "answer": "Spaces and Unicode are legitimate filename content, and no shell is involved; `..` is a parent component that walks above root. Lexical checks do not resolve symlinks or prevent races, so real authority must come from granted directory handles."
+      }
+    ]
   },
   "depth": {
     "misconception": "A root.join call always stays inside root.",
@@ -60,5 +70,5 @@
     "alt": "Diagram for Paths & Boundaries: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "Path, PathBuf, and lexical validation"
   },
-  "contentDigest": "7ae288207c4397ed547df7abfe93e8e19fff98d04dee8558d9ba1c90d6464648"
+  "contentDigest": "1f868b8e4faa76fe18d5cae141e83c94387b6578aafe47488730a521db855936"
 }

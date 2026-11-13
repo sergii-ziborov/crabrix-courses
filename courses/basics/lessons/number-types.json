@@ -1,6 +1,6 @@
 {
   "concept": "Integer and floating-point types",
-  "contentDigest": "51987411e52835a272f2dfdc7851237cdf29daf8548e7ee0d038ae1f45b60387",
+  "contentDigest": "2ff50803f85e7f146940bce233496cfeb26db7150630b8ccd4fe9d21c8d4b65c",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "Numeric conversions are explicit because ranges and precision differ.",
     "success": "The values compile with types that match their jobs. Explain every conversion and show a narrowing cast that is defined Rust behavior but loses information required by the domain.",
     "summary": "Choosing a number type records a promise about range and precision. Rust makes conversions explicit so that promise cannot change silently at an arithmetic boundary.",
-    "task": "Choose types for a file count, a temperature, and one byte of flags. Explain the range or precision each choice needs; then try mixing two types and decide which explicit conversion preserves the intended result."
+    "task": "Choose types for a file count, a temperature, and one byte of flags. Explain the range or precision each choice needs; then try mixing two types and decide which explicit conversion preserves the intended result.",
+    "recall": [
+      {
+        "question": "What do these two lines print, and why do they differ?",
+        "answer": "`5` and `5.5`. With no other constraint the literals default to `i32`, and integer division discards the fractional part. Converting the sum to `f64` first makes it a floating-point division.",
+        "code": "let a = 7;\nlet b = 4;\nprintln!(\"{}\", (a + b) / 2);\nprintln!(\"{}\", (a + b) as f64 / 2.0);"
+      },
+      {
+        "question": "Why is `0.1 + 0.2 == 0.3` a poor test for `f64` values?",
+        "answer": "It is `false`: most decimal fractions are only approximated in binary, and the sum is `0.30000000000000004`. For measured or fractional quantities, compare within a tolerance instead of using exact equality."
+      }
+    ]
   },
   "illustration": {
     "path": "media/number-types.png",

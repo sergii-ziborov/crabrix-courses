@@ -6,7 +6,7 @@
   "order": 2,
   "parentID": "interview-async-contracts",
   "exerciseKind": "planned",
-  "contentDigest": "33a448650c8427413b66a3cf9782483e0546a9f901bca94d4b9d9af34bd9fe40",
+  "contentDigest": "f6ba569d6c1017026a478576217d8e2c993ee060dbde5d7ddfa86005ea5b5be0",
   "writing": {
     "summary": "Inspect which values survive a suspension before deciding whether a future satisfies `Send`.",
     "explanation": "A suspended async computation stores the state needed for a later poll. If that state contains an `Rc` or another non-`Send` value, the future may fail a `Send` bound. A non-`Send` temporary can still be used inside a future when it does not survive a suspension. The example places `Rc` in a lexical scope that ends before `await` and asks the compiler to verify `Send` on the resulting future.\n\n`tokio::spawn` requires a `Send + 'static` future and a `Send + 'static` output even on a current-thread runtime. A separate local-task API supports a different contract; changing the executor’s thread count does not silently change the signature of `spawn`. `'static` on an owned task does not mean it must run forever: it means the value contains no shorter-lived borrows that would make this use invalid.\n\nThe standard-library example checks a type bound without starting Tokio or a network server. It can therefore isolate a compiler error from runtime setup. For an interview follow-up, keep `Rc` in scope across `await`, observe the compiler rejection and identify the retained state. A plain `drop(local)` before `await` is not always enough: once `local` has been borrowed, as `println!` does, rustc 1.99 still rejects the future, while a block scope passes. `async move` can own captured values, but ownership alone does not make every captured type `Send`.\n\nExecution detail: `require_send` consumes and drops this unpolled future after checking its type. This program does not execute the async body. Polling the future in a suitable executor is a separate operation; an `await` expression is not itself proof that polling happened.",
@@ -23,7 +23,18 @@
       "The ready future’s unit output is not Send on any runtime."
     ],
     "correctAnswer": 1,
-    "feedback": "`local` stays in scope across the `await`, so the `Rc` is part of the future’s state even with no later use. End its scope before the `await`, as the example does."
+    "feedback": "`local` stays in scope across the `await`, so the `Rc` is part of the future’s state even with no later use. End its scope before the `await`, as the example does.",
+    "recall": [
+      {
+        "question": "This future still fails a `Send` check, although `local` is dropped before the `.await`. Why, and what does pass?",
+        "code": "let future = async {\n    let local = Rc::new(7);\n    println!(\"{local}\");\n    drop(local);\n    std::future::ready(()).await;\n};\nrequire_send(future);",
+        "answer": "Once `local` has been borrowed (as `println!` does), rustc still treats the `Rc` as possibly held across the `await`, so the future is not `Send`. Putting the `Rc` in a block that ends before the `await` passes the check."
+      },
+      {
+        "question": "`tokio::spawn` requires a `'static` future. What does `'static` mean here, and what does it not mean?",
+        "answer": "The future must contain no borrows shorter-lived than the task, so it owns its data or borrows only `'static` data. It does not mean the task runs forever."
+      }
+    ]
   },
   "depth": {
     "misconception": "The ready future’s unit output is not Send on any runtime.",

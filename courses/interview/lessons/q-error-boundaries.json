@@ -6,7 +6,7 @@
   "order": 1,
   "parentID": "interview-api-boundaries",
   "exerciseKind": "planned",
-  "contentDigest": "0a90cbb76c24a88079434e5a878315834cc3e6e1f17dd34de25e813f1368afaf",
+  "contentDigest": "8c0c71c1c7883ed82373c775f3a8c7e73ca4a6fcfae4f0e746015fa60eb5f292",
   "writing": {
     "summary": "An error type should preserve the distinctions the caller needs to handle.",
     "explanation": "A missing optional value and an invalid supplied value describe different outcomes. `Result<Option<T>, E>` can express success with absence, success with a value, or failure. The example converts `Option<Result<u16, ParseIntError>>` using `transpose`, preserving all three cases without manufacturing a default port.\n\nAt an application boundary you may add contextual information such as a safe field name or a public operation ID. Preserve a useful source error when appropriate and avoid depending on human-readable error strings for control flow. A library can expose typed error cases, while an executable may aggregate errors for reporting. Type erasure through a trait object trades some structured matching for flexibility and may need `Send + Sync` bounds if the value crosses task boundaries.\n\nIn an interview, begin with what the caller can reasonably do: retry, prompt for input, treat absence as normal, or stop. A retry policy also needs to know whether an earlier effect may have committed. Returning `Result` alone does not make a side effect transactional or idempotent. Do not leak credentials or private paths into a shared diagnostic merely because an error type can store them.",
@@ -23,7 +23,17 @@
       "Ok(Some(0)), because Result automatically chooses a numeric default."
     ],
     "correctAnswer": 1,
-    "feedback": "`None` represents absence; malformed supplied input follows the error path. Defaults require a separate documented policy."
+    "feedback": "`None` represents absence; malformed supplied input follows the error path. Defaults require a separate documented policy.",
+    "recall": [
+      {
+        "question": "Why is `fn optional_port(raw: Option<&str>) -> Result<Option<u16>, ParseIntError>` better than returning a default port whenever the value is missing or invalid?",
+        "answer": "It keeps three cases apart: `Ok(None)` means nothing was supplied, so the caller applies its own policy; `Ok(Some(port))` is a valid value; `Err` means the supplied value was invalid, so the caller can report it. A silent default would hide a typo."
+      },
+      {
+        "question": "Why should callers not branch on an error's human-readable message, and what should go into error context at a boundary?",
+        "answer": "Message strings are for people and can change; expose typed error cases for control flow. Context should add safe facts such as a field name or public operation ID, never credentials or private paths."
+      }
+    ]
   },
   "depth": {
     "misconception": "Ok(Some(0)), because Result automatically chooses a numeric default.",

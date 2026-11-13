@@ -1,6 +1,6 @@
 {
   "concept": "Making a type behave like a reference",
-  "contentDigest": "75e4efb845929bdaf19106f04143b39735a98b224de237b541faa8ad24c172bd",
+  "contentDigest": "e92169099911500d6084d40c4bf5502c78f1b47b5e06719051757a1c0e74f3ef",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "Deref coercion applies repeatedly until the types line up.",
     "success": "The call compiles without an explicit conversion.",
     "summary": "Deref makes your type usable like a reference to another one.",
-    "task": "Implement Deref for a wrapper and pass it where the inner type is expected."
+    "task": "Implement Deref for a wrapper and pass it where the inner type is expected.",
+    "recall": [
+      {
+        "question": "`greet` takes `&str`, and `boxed` is a `MyBox<String>` whose `Deref` target is `String`. How does `greet(&boxed)` compile?",
+        "answer": "Deref coercion applies repeatedly until the types match: `&MyBox<String>` becomes `&String` through `MyBox`'s `Deref`, then `&str` through `String`'s `Deref`."
+      },
+      {
+        "question": "In what order does this program print? (`Noisy`'s `Drop` prints `drop <name>`.)",
+        "code": "let a = Noisy(\"a\");\n{ let _b = Noisy(\"b\"); }\nlet _c = Noisy(\"c\");\ndrop(a);\nprintln!(\"end\");",
+        "answer": "`drop b`, `drop a`, `end`, `drop c`. `_b` is dropped at the end of its block, `std::mem::drop(a)` drops `a` early, and `_c` is dropped when `main` ends. Calling `a.drop()` directly would not compile (E0040)."
+      }
+    ]
   },
   "illustration": {
     "path": "media/deref-drop.png",

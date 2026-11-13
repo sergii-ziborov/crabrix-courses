@@ -1,6 +1,6 @@
 {
   "concept": "Compiling different code per target",
-  "contentDigest": "2b15c8ee7c8e8f1c9041a0146615f68cf985baa42019ce429e4117031e692950",
+  "contentDigest": "3c9fe188949fa80fc422cfd78014f8fb93aef8dad5ea7b35a19032056173aec4",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "`#[cfg(...)]` excludes selected code before name and type checking, but source syntax still has to parse. Disabling default features on one dependency edge does not prohibit another edge from enabling them.",
     "success": "The other branch is absent from the build, not merely unused.",
     "summary": "cfg decides which code is compiled at all.",
-    "task": "Gate a function on a target predicate and on a feature."
+    "task": "Gate a function on a target predicate and on a feature.",
+    "recall": [
+      {
+        "question": "Without the `extras` feature, why does this compile even though `undefined_helper` doesn't exist, and what would still break the build?",
+        "answer": "`cfg` removes the item before name resolution and type checking, so the unknown name is never looked up and it prints `ok`. The item still has to parse, so a syntax error such as an unclosed delimiter fails every build. Test with the feature enabled too.",
+        "code": "#[cfg(feature = \"extras\")]\nfn extra() -> u32 { undefined_helper() }\n\nfn main() { println!(\"ok\"); }"
+      },
+      {
+        "question": "Why is it a mistake to design two Cargo features, `small` and `fast`, that change the same function in incompatible ways?",
+        "answer": "Cargo unifies features across the dependency graph, so if one dependent enables `small` and another enables `fast`, the crate is built with both. Features should be additive; for exclusive choices use `compile_error!` or runtime configuration."
+      }
+    ]
   },
   "illustration": {
     "path": "media/cfg-features.png",

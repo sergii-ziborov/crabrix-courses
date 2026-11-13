@@ -22,7 +22,17 @@
       "Exit codes are only decorative"
     ],
     "correctAnswer": 0,
-    "feedback": "Writing stderr does not itself set a nonzero process exit status."
+    "feedback": "Writing stderr does not itself set a nonzero process exit status.",
+    "recall": [
+      {
+        "question": "Under this CLI contract, what (stdout, stderr, status) does `report(Ok(0))` produce, and how does that differ from `report(Err(\"missing input\"))`?",
+        "answer": "`(\"0\\n\", \"\", 0)`: a count of zero is valid data. The error gives `(\"\", \"error: missing input\\n\", 2)`, so automation can tell a failure from an empty result by the status and stream, not by guessing from text."
+      },
+      {
+        "question": "Why should a CLI whose stdout is consumed by another program not print a success banner there?",
+        "answer": "Stdout is the data the next stage parses, so a banner corrupts it. Human-facing diagnostics belong on stderr, and success or failure is signalled by the exit status."
+      }
+    ]
   },
   "depth": {
     "misconception": "Any text on stderr automatically changes the exit status",
@@ -70,5 +80,5 @@
     "alt": "Diagram for Separate Output from Failure: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "The worked implementation exercises return observable stdout, stderr and exit status. Its tests demonstrate the stated finite contract."
   },
-  "contentDigest": "de829d1a2a98d6e9b122952262ca79e2e1dcf376b10bef0fefeb2828cbcd12b4"
+  "contentDigest": "b6f708054b6ec7787ac22024dde053e5c8d89a19c82306bf4ef2caf215f2faa3"
 }

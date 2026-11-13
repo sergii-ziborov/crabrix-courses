@@ -6,7 +6,7 @@
   "order": 0,
   "parentID": "interview-values",
   "exerciseKind": "planned",
-  "contentDigest": "a8b59d8e9c223be9359c4e3c95e3a1433fd525ef08d4533b71c332cd74e28050",
+  "contentDigest": "824c7a2872163de3fbb229a39da296611d3b1b965bf7eb32cd2b559b63501eb6",
   "writing": {
     "summary": "Interior mutability changes how access is checked; it does not remove the safety contract.",
     "explanation": "`Cell<T>` is useful when a value can be read or replaced through a shared reference without handing out a reference to its contents. `RefCell<T>` instead hands out guarded borrows and checks their exclusivity at runtime. `borrow_mut` can panic on a conflict; `try_borrow_mut` lets you handle that conflict as an error. The example retains a reader, observes a rejected writer, then drops the reader and mutates successfully.\n\nNeither type automatically supplies synchronized shared access between threads. `RefCell<T>` can be `Send` when `T` is `Send`, but it is not `Sync`: transferring a uniquely owned cell is different from sharing references to it concurrently. `Arc<RefCell<T>>` therefore does not become a thread-safe mutable container simply because `Arc` has an atomic reference count.\n\nChoose the smallest access contract your data flow needs. An exclusive `&mut T` is often sufficient. Runtime checking can support single-threaded shared ownership, while a mutex or a message protocol can coordinate cross-thread mutation. In an interview, explain the precise conflict, its error behaviour and how long each guard lives. A lexical scope or explicit drop can release a borrow before another operation; merely reading through the guard does not release it.",
@@ -23,7 +23,18 @@
       "Calling try_borrow_mut would automatically end the shared borrow."
     ],
     "correctAnswer": 1,
-    "feedback": "The guard controls the runtime borrow lifetime. `RefCell` is not `Sync`, although an owned `RefCell<T>` can be `Send` when `T` is `Send`."
+    "feedback": "The guard controls the runtime borrow lifetime. `RefCell` is not `Sync`, although an owned `RefCell<T>` can be `Send` when `T` is `Send`.",
+    "recall": [
+      {
+        "question": "What happens when this code runs?",
+        "code": "use std::cell::RefCell;\nfn main() {\n    let cell = RefCell::new(7);\n    let _reader = cell.borrow();\n    let _writer = cell.borrow_mut();\n}",
+        "answer": "It compiles, then panics at runtime (\"RefCell already borrowed\") because the shared guard `_reader` is still alive when `borrow_mut` asks for exclusive access. `RefCell` still enforces exclusivity, just at runtime; `try_borrow_mut` would return `Err` instead."
+      },
+      {
+        "question": "When is `Cell<T>` a better fit than `RefCell<T>`?",
+        "answer": "When you only need to read (copy out) or replace the value through a shared reference and never hand out a reference to its contents. `RefCell` is for cases that need guarded `&T`/`&mut T` borrows, checked at runtime and able to panic on conflict."
+      }
+    ]
   },
   "depth": {
     "misconception": "Calling try_borrow_mut would automatically end the shared borrow.",

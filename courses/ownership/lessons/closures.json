@@ -1,6 +1,6 @@
 {
   "concept": "Fn, FnMut, FnOnce, and capture",
-  "contentDigest": "291d9d9c1798b425e7c2a19c4ce0befa3a86011a336915dda60c74be2aa97de3",
+  "contentDigest": "b7dc5544fe5198c4048b894ced40dd8444c591f57caad0f3e7c56da10d49f6bb",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,19 @@
     "rule": "Call traits depend on how the body uses captures: `Fn` borrows, `FnMut` may mutate, and moving a capture out can require `FnOnce`.",
     "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
     "summary": "A closure is a function that also carries the environment it captured.",
-    "task": "Use a closure that captures minimum to keep strictly greater values in original order, including duplicates. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise."
+    "task": "Use a closure that captures minimum to keep strictly greater values in original order, including duplicates. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise.",
+    "recall": [
+      {
+        "question": "Why is the `println!` rejected here, and how do you fix it?",
+        "answer": "`bump` holds a mutable borrow of `count` for as long as it may be called again, and it is called after the print, so reading `count` conflicts (E0502). Make the last `bump()` come before the `println!`; then the borrow has ended.",
+        "code": "let mut count = 0;\nlet mut bump = || count += 1;\nbump();\nprintln!(\"{count}\");\nbump();"
+      },
+      {
+        "question": "`call_twice` takes `F: FnMut()`. Which of these two closures is accepted, and why?",
+        "answer": "The first: it only reads `total`, so it is `Fn`, and every `Fn` closure is also `FnMut`. The second gives away `name` with `drop`, so it is only `FnOnce` and cannot be called twice; rustc rejects it (E0507, cannot move out of a captured variable in an `FnMut` closure).",
+        "code": "fn call_twice<F: FnMut()>(mut f: F) { f(); f(); }\n\nlet total = 10;\ncall_twice(|| println!(\"{total}\"));\nlet name = String::from(\"crab\");\ncall_twice(move || drop(name));"
+      }
+    ]
   },
   "illustration": {
     "path": "media/closures.png",

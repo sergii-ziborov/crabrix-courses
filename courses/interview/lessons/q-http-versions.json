@@ -1,6 +1,6 @@
 {
   "concept": "Head-of-line blocking per layer",
-  "contentDigest": "39e9d434e2a6fb453860a93a3347b599bfb95d88d644665bbe98dde431079601",
+  "contentDigest": "920a158187896583ce3f16842610fa6f46e89908219e1ded26617909d9dd8d40",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "HTTP/2 shares TCP’s ordered byte delivery; QUIC separates delivery of different streams.",
     "success": "You can say which version fixes which layer, and which one it does not.",
     "summary": "Each HTTP version fixed the blocking problem one layer lower.",
-    "task": "Explain what head-of-line blocking means at each layer."
+    "task": "Explain what head-of-line blocking means at each layer.",
+    "recall": [
+      {
+        "question": "Why did HTTP/1.1 clients often open several connections to the same server?",
+        "answer": "On one connection, responses are constrained by request order and pipelining saw little browser use, so one slow response holds up the ones behind it. Opening extra connections avoided waiting behind it."
+      },
+      {
+        "question": "Under HTTP/3, one QUIC packet is lost. What can still proceed, and what effects remain shared across the connection?",
+        "answer": "Streams whose data was not in the lost packet can deliver independently, unlike HTTP/2 over one TCP byte stream. But one packet can carry frames for several streams, and congestion control can slow the whole connection."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-http-versions.png",

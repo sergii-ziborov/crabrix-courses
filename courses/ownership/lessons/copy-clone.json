@@ -1,6 +1,6 @@
 {
   "concept": "When a value duplicates instead of moving",
-  "contentDigest": "40395f473ca21c24b3236bf116b8959be6d7f631bfec614c3a14c2e80e6c035d",
+  "contentDigest": "95e621b68d938da723ba95a2f4e3ba7499867503bbcb5aa3b1d085a0ff608881",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,19 @@
     "rule": "`Copy` permits implicit bitwise duplication; `Clone` is explicit and has a type-specific cost.",
     "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
     "summary": "Copy duplicates implicitly; Clone duplicates only when you ask.",
-    "task": "Return two independent owned strings containing the borrowed input. The caller keeps its original text. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise."
+    "task": "Return two independent owned strings containing the borrowed input. The caller keeps its original text. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise.",
+    "recall": [
+      {
+        "question": "What does `Arc::clone(&a)` duplicate, and what does it not?",
+        "answer": "It duplicates the handle and increments the reference count. It does not copy the vector, so this prints `2 true`: two owners pointing at the same allocation. `Clone` means another owner, not necessarily a deep copy.",
+        "code": "use std::sync::Arc;\nlet a = Arc::new(vec![1, 2, 3]);\nlet b = Arc::clone(&a);\nprintln!(\"{} {}\", Arc::strong_count(&a), Arc::ptr_eq(&a, &b));"
+      },
+      {
+        "question": "Why does this derive fail?",
+        "answer": "`Copy` needs every field to be `Copy`, and `String` owns a heap buffer that must be freed once, so implicit bitwise copies are not allowed (E0204). Drop `Copy` and keep `Clone`, so duplicating is an explicit `.clone()`.",
+        "code": "#[derive(Clone, Copy)]\nstruct Point {\n    x: u32,\n    y: u32,\n    name: String,\n}"
+      }
+    ]
   },
   "illustration": {
     "path": "media/copy-clone.png",

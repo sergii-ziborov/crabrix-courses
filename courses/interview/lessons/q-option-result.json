@@ -1,6 +1,6 @@
 {
   "concept": "Absence, failure, and propagation",
-  "contentDigest": "d9c35f8641ce0de77479f681106f56ed5715c9d2653a12030481d4f54fb71965",
+  "contentDigest": "122aa3bc6880bb8d572dfc81048def9c2ad58a669669ec5f4d6b77574aa64af2",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "`Option`: absence is normal. `Result`: the caller needs the reason.",
     "success": "Each choice is explained by what the caller needs to know.",
     "summary": "Pick the type that matches what the caller must decide.",
-    "task": "Choose between `Option` and `Result` for two APIs and justify each."
+    "task": "Choose between `Option` and `Result` for two APIs and justify each.",
+    "recall": [
+      {
+        "question": "Why might a database lookup return `Result<Option<Value>, DbError>` rather than just `Option<Value>`?",
+        "answer": "\"Not found\" (`Ok(None)`) and \"database unavailable\" (`Err`) are different outcomes that need different caller actions. Collapsing both into `None` hides the operational failure."
+      },
+      {
+        "question": "What does `transpose` turn `Ok(Some(3))`, `Ok(None)` and `Err(e)` into for a `Result<Option<i32>, E>`?",
+        "answer": "It swaps the nesting to `Option<Result<i32, E>>`: `Ok(Some(3))` becomes `Some(Ok(3))`, `Ok(None)` becomes `None`, and `Err(e)` becomes `Some(Err(e))`."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-option-result.png",

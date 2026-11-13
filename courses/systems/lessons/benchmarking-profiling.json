@@ -1,6 +1,6 @@
 {
   "concept": "Find the real bottleneck before optimizing",
-  "contentDigest": "7e9a1fb2270d5c80a583b2d8ea64f44b308a686363f8ce7562e28aba7a87b460",
+  "contentDigest": "629c863aaf80d9ba6a90ff59b1d0ee775006858d49772360529aa14910922670",
   "depth": {
     "connections": [
       {
@@ -49,7 +49,17 @@
     "rule": "A benchmark measures a stable workload; a profiler explains where its time or allocations go.",
     "success": "You can report sample count, median, and build mode, and say whether the change beats the noise.",
     "summary": "Find the real bottleneck before optimizing.",
-    "task": "Run this in a debug and a release build and compare the medians. Then change `iter().sum()` to a version you think is faster, and report both numbers."
+    "task": "Run this in a debug and a release build and compare the medians. Then change `iter().sum()` to a version you think is faster, and report both numbers.",
+    "recall": [
+      {
+        "question": "In a microbenchmark, what does `std::hint::black_box(answer)` protect against, and what doesn't it fix?",
+        "answer": "It keeps the result observable, so the optimiser can't delete the work as unused and report an impossibly fast time. It doesn't make the workload representative, remove noise, or explain where time goes; that takes realistic input, repeated runs and a profiler."
+      },
+      {
+        "question": "What should a before-and-after performance report contain so others can trust it?",
+        "answer": "The input shape, build mode and what was held constant, the number of samples, the median and slower-tail results rather than one run, the cost of the change in memory or complexity, and an honest note if the difference is within the noise."
+      }
+    ]
   },
   "illustration": {
     "path": "media/benchmarking-profiling.png",

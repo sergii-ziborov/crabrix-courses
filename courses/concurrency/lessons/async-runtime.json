@@ -1,6 +1,6 @@
 {
   "concept": "Why async needs an executor",
-  "contentDigest": "14da458a1510f1b2af2a3d9ef96d797720c78605fa3b35745e66342f13651a4c",
+  "contentDigest": "4603c33b3697f704c148b8b09e348cc7221ba216496edca7b25ad19ece8e3cde",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "std defines `Future`; the executor is a library decision.",
     "success": "You can name polling, waking, and I/O readiness as runtime concerns.",
     "summary": "Rust ships the `async` syntax but not the engine that drives it.",
-    "task": "Describe what the runtime provides that the language does not. Open the supplied local Cargo project, prepare packages, then Run or Debug it. Change inputs and examine the assertions. Answer the lesson question separately."
+    "task": "Describe what the runtime provides that the language does not. Open the supplied local Cargo project, prepare packages, then Run or Debug it. Change inputs and examine the assertions. Answer the lesson question separately.",
+    "recall": [
+      {
+        "question": "This builds a Tokio current-thread runtime with no extra options. What happens when it runs?",
+        "answer": "It panics: a Tokio context was found, but timers are disabled; call `enable_time` on the builder. The executor can poll futures, but timers and I/O readiness are separate runtime services you have to switch on.",
+        "code": "let rt = tokio::runtime::Builder::new_current_thread()\n    .build()\n    .unwrap();\nrt.block_on(async {\n    tokio::time::sleep(std::time::Duration::from_millis(10)).await;\n});"
+      },
+      {
+        "question": "Why might a reusable async library avoid exposing runtime-specific I/O types in its public API?",
+        "answer": "`Future` and `.await` belong to the language, but the executor, timers and sockets come from whichever runtime the application picks. If the library's API uses one runtime's types, every caller is tied to that runtime; runtime-neutral futures let the application decide."
+      }
+    ]
   },
   "illustration": {
     "path": "media/async-runtime.png",

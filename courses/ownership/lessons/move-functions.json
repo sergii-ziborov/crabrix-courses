@@ -1,6 +1,6 @@
 {
   "concept": "Parameters can take, borrow, or copy a value",
-  "contentDigest": "d5acb28a46f391a559b77f7eb04f5b7ef5d5a4dfeaa984e01f87401b5eec2e43",
+  "contentDigest": "3e184e8393fe305c6e9da426f75b7d487ddea49abf310e554ae0e04809069151",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "A parameter of type `String` takes ownership, while `&str` only borrows text.",
     "success": "You can say why `name` stays usable, and what would change if `inspect` took `String`.",
     "summary": "Parameters can take, borrow, or copy a value.",
-    "task": "Trace `name` through `inspect(&name)` and say who owns it at the last `println!`."
+    "task": "Trace `name` through `inspect(&name)` and say who owns it at the last `println!`.",
+    "recall": [
+      {
+        "question": "Both helpers take their argument by value. Why is `count` still usable on the last line but `name` is not?",
+        "answer": "Same syntax, but the type decides: `i32` is `Copy`, so the function gets a copy. `String` is not, so `show_text` takes ownership and the last line fails with E0382 for `name`. Make `show_text` take `&str` if it only reads.",
+        "code": "fn show_num(n: i32) { println!(\"{n}\"); }\nfn show_text(t: String) { println!(\"{t}\"); }\n\nlet count = 3;\nlet name = String::from(\"Ferris\");\nshow_num(count);\nshow_text(name);\nprintln!(\"{count} {name}\");"
+      },
+      {
+        "question": "A helper must append a suffix to the caller's existing `String` in place. Which parameter type fits, and why not `String` or `&str`?",
+        "answer": "`&mut String`: it lends exclusive access so the helper can grow the buffer while the caller keeps ownership. `&str` is a read-only view that cannot grow, and `String` would take the value away unless the helper returned it."
+      }
+    ]
   },
   "illustration": {
     "path": "media/move-functions.png",

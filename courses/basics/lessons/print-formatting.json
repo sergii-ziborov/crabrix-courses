@@ -1,6 +1,6 @@
 {
   "concept": "Format strings and placeholders",
-  "contentDigest": "e7495e4338dbdca2712ef784730aaebd5d460340c8f8018690dfe221a7205557",
+  "contentDigest": "de4983ed871baa1ae879f6b3623d86ba3d7d9b1e0542cddc1dd2c89e91313a47",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,19 @@
     "rule": "Every formatting placeholder must have a value known to `println!`.",
     "success": "stdout contains the expected words and alignment; the malformed positional call fails at compile time. You can explain which placeholder consumed each value.",
     "summary": "A format string is a checked template: each placeholder has a value, and the finished line follows the template exactly, including spaces and alignment.",
-    "task": "Print a name and build count on one line, then right-align the count to width three on the next. Record the exact spaces you expect. Switch one capture to `{}` and deliberately omit its argument once."
+    "task": "Print a name and build count on one line, then right-align the count to width three on the next. Record the exact spaces you expect. Switch one capture to `{}` and deliberately omit its argument once.",
+    "recall": [
+      {
+        "question": "What do these two lines print? Pay attention to the spaces.",
+        "answer": "`[  4]` and `[12345]`. `>3` right-aligns in a field at least three characters wide, padding `4` with two spaces; the width is a minimum, so the longer number is printed in full, not truncated.",
+        "code": "let builds = 4;\nprintln!(\"[{builds:>3}]\");\nlet big = 12345;\nprintln!(\"[{big:>3}]\");"
+      },
+      {
+        "question": "Why do `{word}` and `{word:?}` print different text here?",
+        "answer": "`{}` uses the `Display` trait, a reader-friendly form, so it prints `hi`. `{:?}` uses `Debug`, an inspection view that shows a string with its quotes and escapes, so it prints `\"hi\"`.",
+        "code": "let word = \"hi\";\nprintln!(\"{word}\");\nprintln!(\"{word:?}\");"
+      }
+    ]
   },
   "illustration": {
     "path": "media/print-formatting.png",

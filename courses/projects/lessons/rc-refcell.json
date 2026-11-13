@@ -1,6 +1,6 @@
 {
   "concept": "Shared ownership and interior mutability",
-  "contentDigest": "5abadaef035d4da81ac70470d3ab307611b2a32ce4078399b2fed00d6df1de93",
+  "contentDigest": "843cff7269c12fba0a3da370b38d2e298243994d616d3f57cb2f8bafcc4fcf20",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "`RefCell` moves the borrow rules to runtime; breaking them panics.",
     "success": "Both handles observe the change and the count is correct.",
     "summary": "`Rc` shares ownership; `RefCell` moves the borrow check to runtime.",
-    "task": "Share one vector between two handles and mutate it through both."
+    "task": "Share one vector between two handles and mutate it through both.",
+    "recall": [
+      {
+        "question": "What does this print, and what did `Rc::clone(&shared)` copy?",
+        "code": "let shared = Rc::new(RefCell::new(vec![1, 2, 3]));\nlet second = Rc::clone(&shared);\nsecond.borrow_mut().push(4);\nprintln!(\"{:?}\", shared.borrow());\nprintln!(\"owners {}\", Rc::strong_count(&shared));",
+        "answer": "It prints `[1, 2, 3, 4]` and then `owners 2`. `Rc::clone` copied only a handle and incremented the strong count; both handles reach the same `RefCell`, so the push through `second` is visible through `shared`."
+      },
+      {
+        "question": "When is `Rc<T>` without `RefCell` enough, and what replaces `Rc<RefCell<T>>` when the state is shared across threads?",
+        "answer": "Plain `Rc<T>` suffices when several owners only read the value. Across threads, use `Arc<T>` for shared ownership with a `Mutex<T>` or another synchronisation strategy for mutation; neither `Rc` nor `RefCell` is thread-safe."
+      }
+    ]
   },
   "illustration": {
     "path": "media/rc-refcell.png",

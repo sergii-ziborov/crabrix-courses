@@ -1,6 +1,6 @@
 {
   "concept": "Make an implementation promise other unsafe code relies on",
-  "contentDigest": "56ef71712ec48defe9b11736e2825c19a18b41bc84b5867901706afdd423e14e",
+  "contentDigest": "f2113b94cdc829a93febc24c2c23e4e922249c06f5f63afd2097d60fe6efeb3a",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "An `unsafe` trait means incorrect implementation can cause undefined behavior in code that trusts it.",
     "success": "You can say why `ZeroIsValid` for `Byte` holds and why `StableAddress` for `FixedBuffer` is unsound.",
     "summary": "Make an implementation promise other `unsafe` code relies on.",
-    "task": "Compare the example's proof with this `SAFETY` comment. Move a `FixedBuffer` between two bindings, print its address before and after, and say which claim fails."
+    "task": "Compare the example's proof with this `SAFETY` comment. Move a `FixedBuffer` between two bindings, print its address before and after, and say which claim fails.",
+    "recall": [
+      {
+        "question": "`unsafe impl ZeroIsValid for &'static u8 {}` compiles. Why is it unsound?",
+        "answer": "References must never be null, and the all-zero bit pattern of `&u8` is a null pointer. Code that trusts the `ZeroIsValid` bound could zero-initialise one and create an invalid reference, which is undefined behaviour. `unsafe impl` is the implementor's claim; the compiler doesn't check it."
+      },
+      {
+        "question": "What does `unsafe impl Send for Holder {}` claim about `struct Holder(std::rc::Rc<u8>)`, and why is the claim false?",
+        "answer": "It claims that moving a `Holder` to another thread cannot cause a data race. But `Rc`'s count is non-atomic, so clones of the same `Rc` on two threads could update it at once. The compiler accepts the impl because you asserted the contract."
+      }
+    ]
   },
   "illustration": {
     "path": "media/unsafe-traits.png",

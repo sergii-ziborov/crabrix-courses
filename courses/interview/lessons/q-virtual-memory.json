@@ -1,6 +1,6 @@
 {
   "concept": "Pages, faults, and resident size",
-  "contentDigest": "c51c3f55821e36aea4525cd3eb64dc495a8de6e2934dd5965a0e0ae5d2b91757",
+  "contentDigest": "3894dcd4afd26d84fd0eed78115155871c54ae8574ebf074248c784bfbc83885",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "Virtual size, committed memory and residency are different measurements; inspect the actual platform.",
     "success": "You mention pages, faults, and the difference between virtual and resident.",
     "summary": "Every pointer you see is virtual, and the kernel decides what it means.",
-    "task": "Explain why a huge allocation can succeed and the first write still stall."
+    "task": "Explain why a huge allocation can succeed and the first write still stall.",
+    "recall": [
+      {
+        "question": "A process reports a very large virtual size but a modest resident set size. How can both be true?",
+        "answer": "Virtual size counts reserved and mapped address ranges, including pages never touched or not currently in memory. Resident set size counts only pages physically resident now, and many systems materialise pages lazily on first access."
+      },
+      {
+        "question": "When is a page fault a normal event, and when does it signal a bug?",
+        "answer": "It is normal when the kernel lazily materialises a page on first touch, reads in a file-backed page, or makes a private copy on a write to a copy-on-write page. Accessing an address outside a valid mapping or against its protection bits gives a protection fault instead."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-virtual-memory.png",

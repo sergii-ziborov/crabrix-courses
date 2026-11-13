@@ -1,6 +1,6 @@
 {
   "concept": "Add, Display, From, and Into",
-  "contentDigest": "c25ee8fea227396d9cd26c924728bb8141ce9c77b8fc46419063be458e1b0142",
+  "contentDigest": "7323a18fc42c44ff6fcd1ff5c95e7a73198dfe77c04f985247d8fe4d9a0092c1",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "Implement From, and Into is generated for you — never implement both.",
     "success": "`500_u32.into()` produces a `Money`, and you can say where its `Into` came from.",
     "summary": "Operators and conversions are ordinary traits you can implement.",
-    "task": "Give `Money` a `From<u32>` implementation and convert with `.into()`."
+    "task": "Give `Money` a `From<u32>` implementation and convert with `.into()`.",
+    "recall": [
+      {
+        "question": "With the lesson's `Money` type, what does `println!(\"{}\", Money(100) + Money(250))` print, and what does that reveal about its `Display`?",
+        "answer": "`+` calls `Add::add`, giving `Money(350)`, and `{}` calls `Display::fmt`, which prints `3.5`, not `3.50`. Formatting cents through `f64` drops the trailing zero, so a money formatter should print whole units and two-digit cents explicitly.",
+        "code": "impl fmt::Display for Money {\n    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {\n        write!(f, \"{}\", self.0 as f64 / 100.0)\n    }\n}"
+      },
+      {
+        "question": "Why should converting user-entered text into `Money` be `TryFrom<&str>` rather than `From<&str>`?",
+        "answer": "`From` promises an infallible conversion, so it could only panic or invent a value on bad text. `TryFrom` returns a `Result` and makes failure part of the contract; like `From` gives `Into`, it gives you `try_into()` for free."
+      }
+    ]
   },
   "illustration": {
     "path": "media/operator-traits.png",

@@ -1,6 +1,6 @@
 {
   "concept": "/// doc comments and examples",
-  "contentDigest": "eef4b98582c87736f02f3831b886b66619b3982e5d52844d453f333111398d32",
+  "contentDigest": "b0adbb3b64105745d2eb796344701bb75b6d3f76c0cd9c321bbff3f36afdb325",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "In a library crate, a doc example is a test, so `cargo test` catches an example that has drifted.",
     "success": "The example states the behaviour and would fail if the code changed.",
     "summary": "In a library crate, `cargo test` compiles the code examples in doc comments and runs them as tests.",
-    "task": "Document a public function and include one example."
+    "task": "Document a public function and include one example.",
+    "recall": [
+      {
+        "question": "In library crate `lesson_docs`, why does this doctest fail even though `larger` is correct?",
+        "answer": "Each doctest is compiled separately as its own small program that uses the crate from outside, so `larger` is not in scope: E0425 cannot find function. Add `use lesson_docs::larger;` to the example.",
+        "code": "/// ```\n/// assert_eq!(larger(2, 7), 7);\n/// ```\npub fn larger(a: i32, b: i32) -> i32 {\n    if a > b { a } else { b }\n}"
+      },
+      {
+        "question": "How does `cargo test` treat a `///` code example in a binary-only crate, compared with a library crate?",
+        "answer": "In a binary-only crate, doc examples are not run as doctests, so even a false assertion goes unnoticed. In a library crate, `cargo test` compiles and runs each Rust code block, so an out-of-date example fails the run."
+      }
+    ]
   },
   "illustration": {
     "path": "media/comments-docs.png",

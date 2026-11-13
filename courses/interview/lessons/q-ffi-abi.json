@@ -1,6 +1,6 @@
 {
   "concept": "Ownership across the C boundary",
-  "contentDigest": "e1a9316a23b1643d2312de967c5120ca08bfb0cb2ddd6b286a46f4a22a4572e9",
+  "contentDigest": "1210c4828db23de468f6a85e05212d8795a720e2e30a1f68b764312e5d3a9f3d",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "repr(C) fixes layout; ownership across the boundary is documentation you enforce.",
     "success": "Null, lifetime, and ownership are all handled inside the wrapper.",
     "summary": "FFI needs explicit ABI, layout, ownership and validity contracts; unsafe code must uphold the foreign function requirements.",
-    "task": "Wrap one C function so no safe caller can misuse it."
+    "task": "Wrap one C function so no safe caller can misuse it.",
+    "recall": [
+      {
+        "question": "A C library returns a pointer to a buffer it allocated. Why should Rust not free it with its own allocator, for example via `Box::from_raw`?",
+        "answer": "The buffer must be freed with the allocator the API specifies, usually the library's own free function. Rust's allocator may be a different allocator, so freeing foreign memory with it is undefined behaviour."
+      },
+      {
+        "question": "What does `#[repr(C)]` on a struct guarantee for FFI, and what does it leave unchecked?",
+        "answer": "It gives a C-compatible layout for the target, including field order and padding. It cannot check that the C declaration really matches, nor rules for ownership, nullability or how long pointers stay valid; the safe wrapper must document and enforce those."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-ffi-abi.png",

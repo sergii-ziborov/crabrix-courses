@@ -1,6 +1,6 @@
 {
   "concept": "What the borrow checker does not prevent",
-  "contentDigest": "1d666707d3ac413e1785f8d95059cd6b7e59f29bf6bcc3fc6710e1849c349099",
+  "contentDigest": "c58518e4a1584764c3c86e260cb9548fcbe26a775b289cc7d43608aa5a576a08",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "Data-race freedom is a compile-time guarantee; deadlock freedom is a design one.",
     "success": "Your answer includes a lock order and one lock-free alternative.",
     "summary": "Rust prevents data races, not deadlocks.",
-    "task": "Name three ways to remove a deadlock without changing behaviour."
+    "task": "Name three ways to remove a deadlock without changing behaviour.",
+    "recall": [
+      {
+        "question": "How can a single thread deadlock using only one `Mutex`, and why does a global lock order not prevent it?",
+        "answer": "It holds a guard and then calls a helper that tries to lock the same non-reentrant mutex. Lock ordering only orders different locks; the fix is documenting which helpers expect the lock held and not calling unknown callbacks under a guard."
+      },
+      {
+        "question": "Why is replacing `lock()` with `try_lock` in a retry loop, or adding a timeout, not a complete deadlock fix?",
+        "answer": "A tight `try_lock` retry loop can livelock or burn CPU, and a timeout only detects a long wait; neither makes partial state changes atomic. Breaking the wait cycle needs a design rule such as one lock order or holding one lock at a time."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-deadlock.png",

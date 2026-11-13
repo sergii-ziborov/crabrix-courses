@@ -1,6 +1,6 @@
 {
   "concept": "Constants, cache, and amortised cost",
-  "contentDigest": "59e4aacc4d4e81d993bd974f120fd33c4d40c0b497aca6c3993de5af8f979c51",
+  "contentDigest": "4790d3c1e95aed7b16e3138a6d4392b368903f0f0f9b922ca53a09da559f95dd",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "Complexity predicts growth; constants decide which one is faster today.",
     "success": "Your answer mentions constants and cache behaviour, not only the exponent.",
     "summary": "Big-O tells you how something scales, not how fast it is.",
-    "task": "Compare a linear scan and an ordered-tree lookup for representative input sizes. Explain the different growth rates, then measure constants without claiming a universal crossover size."
+    "task": "Compare a linear scan and an ordered-tree lookup for representative input sizes. Explain the different growth rates, then measure constants without claiming a universal crossover size.",
+    "recall": [
+      {
+        "question": "What is the time complexity of this loop over sorted slices `a` and `b`, and why is it not O(n * m)?",
+        "code": "let mut j = 0;\nfor i in 0..a.len() {\n    while j < b.len() && b[j] < a[i] {\n        j += 1;\n    }\n}",
+        "answer": "O(n + m): `j` only ever increases and never resets, so the inner `while` runs at most `b.len()` times in total across the whole outer loop. Count the repeated operation, not the nesting."
+      },
+      {
+        "question": "A service looks up one item, once, in a list of 20. Why might building a `HashMap` first be slower than a linear scan?",
+        "answer": "Building the map hashes and inserts every item and allocates, all to answer one lookup, while a scan over 20 contiguous items is cheap and cache-friendly. A map pays off for many lookups over large data; measure to find the actual crossover."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-complexity.png",

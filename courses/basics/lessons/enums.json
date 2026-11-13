@@ -1,6 +1,6 @@
 {
   "concept": "Variants and exhaustive handling",
-  "contentDigest": "d58ff28acd118f145678d4382ec29276e8899b5bb6138e95708133086baefb3e",
+  "contentDigest": "a98c14cfb880301ec7aba28e940f7f3a6bfd3fe8f14a18a57b2ed414d637c78e",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "`match` is exhaustive: every variant must be handled.",
     "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
     "summary": "Enums model a value that is exactly one of several variants.",
-    "task": "Match every Signal variant: Red lasts 30 seconds, Amber 5, Green 20. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise."
+    "task": "Match every Signal variant: Red lasts 30 seconds, Amber 5, Green 20. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise.",
+    "recall": [
+      {
+        "question": "Why does the `if let` after this `match` fail to compile, and how do you fix it?",
+        "answer": "Matching by value moves the `String` out into `t`, so `message` is partially moved: E0382. Match on `&message` instead; then `t` is a `&String` and the original value stays usable.",
+        "code": "enum Message { Quit, Move { x: i32, y: i32 }, Write(String) }\n\nlet message = Message::Write(String::from(\"hi\"));\nmatch message {\n    Message::Quit => println!(\"quit\"),\n    Message::Move { x, y } => println!(\"move {x},{y}\"),\n    Message::Write(t) => println!(\"{t}\"),\n}\nif let Message::Quit = message { println!(\"q\"); }"
+      },
+      {
+        "question": "Why model a message as an enum rather than a struct with a `kind` field plus optional `x`, `y` and `text` fields?",
+        "answer": "With an enum, a value is exactly one variant, and each variant carries only its own data, so combinations like a quit message with coordinates cannot be built. A loose struct allows those invalid states, and every reader has to check them."
+      }
+    ]
   },
   "illustration": {
     "path": "media/enums.png",

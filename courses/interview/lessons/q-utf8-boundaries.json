@@ -6,7 +6,7 @@
   "order": 2,
   "parentID": "interview-values",
   "exerciseKind": "planned",
-  "contentDigest": "6395a1a2ce16758f9ce49d4a3f7846afdc7ffc4fa40c2f0395994eca42638ab2",
+  "contentDigest": "abcefb1060a2be66d8830194e969c933e26be15dbcc9c186f7acd0e152b7d6d2",
   "writing": {
     "summary": "Text positions need a declared coordinate system before they can be exchanged or sliced.",
     "explanation": "Rust `str` is valid UTF-8. `len` counts bytes, and `chars` iterates Unicode scalar values. Neither operation counts user-perceived grapheme clusters in general. A decomposed accent can consist of two scalar values while users perceive one letter. Emoji can occupy several UTF-8 bytes and two UTF-16 code units even before considering combined sequences.\n\n`str` slicing uses byte offsets and requires valid UTF-8 boundaries. `get` returns `None` for an invalid range instead of panicking through indexing. `char_indices` supplies byte offsets at scalar boundaries; those positions are still not necessarily grapheme boundaries. The example uses a two-byte accented letter and checks both the valid whole-letter range and an invalid split.\n\nAn editor or collaboration protocol may exchange UTF-16 offsets. Convert explicitly between that coordinate system and Rust byte positions, and bind the coordinates to the same source revision. A valid offset in an earlier revision can point at a different expression after an edit. For a live interview, be ready to trace one accented string and one emoji through the chosen coordinate system. Testing only ASCII conceals these boundary and synchronization errors.",
@@ -23,7 +23,17 @@
       "get interprets the range as UTF-16 positions rather than bytes."
     ],
     "correctAnswer": 0,
-    "feedback": "Byte 1 is a continuation byte, not the start of a scalar. Use checked byte ranges or explicitly convert from the editor’s coordinate system."
+    "feedback": "Byte 1 is a continuation byte, not the start of a scalar. Use checked byte ranges or explicitly convert from the editor’s coordinate system.",
+    "recall": [
+      {
+        "question": "What do `len()`, `chars().count()` and `encode_utf16().count()` return for `\"é🦀\"`, and why do they differ?",
+        "answer": "6, 2 and 3. `len` counts UTF-8 bytes (2 for `é`, 4 for the crab), `chars` counts Unicode scalar values, and UTF-16 needs one code unit for `é` and a surrogate pair for the emoji. None of them counts user-perceived graphemes in general."
+      },
+      {
+        "question": "For `let s = \"é\";`, how do `&s[1..2]` and `s.get(1..2)` behave differently?",
+        "answer": "Byte 1 is inside the two-byte encoding of `é`, so neither can produce a slice. Indexing with `&s[1..2]` panics (\"byte index 1 is not a char boundary\"), while `get(1..2)` returns `None` so the caller can handle it."
+      }
+    ]
   },
   "depth": {
     "misconception": "Rust rejects every string slice containing a non-ASCII value.",

@@ -1,6 +1,6 @@
 {
   "concept": "One output type per implementation",
-  "contentDigest": "818fcf4282292e76d2e3f5584eb3a6d982f07be031917eabb20cf8651661a1f4",
+  "contentDigest": "2f859aa4584fd694237b848dc888e67049b62048ab2f6c3fae73f40b71bf7c9e",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "An associated type is fixed per trait implementation; trait parameters can distinguish implementations for the same type.",
     "success": "`parse` returns that type, and callers never have to name it.",
     "summary": "An associated type fixes one output type per implementation.",
-    "task": "Implement `Parser` once by choosing its `Output` type."
+    "task": "Implement `Parser` once by choosing its `Output` type.",
+    "recall": [
+      {
+        "question": "Why is `total(v.iter())` rejected, and what is a simple fix?",
+        "answer": "`v.iter()` has `Item = &u32`, not `u32`, so the associated-type bound fails (E0271). Pass `v.iter().copied()` to yield `u32` values, or `v.into_iter()` if you no longer need `v`.",
+        "code": "fn total<I: Iterator<Item = u32>>(it: I) -> u32 {\n    it.sum()\n}\n\nlet v = vec![1u32, 2, 3];\nprintln!(\"{}\", total(v.iter()));"
+      },
+      {
+        "question": "If `Iterator` used a type parameter (`Iterator<T>`) instead of `type Item`, what would become worse for code that uses iterators?",
+        "answer": "One type could implement `Iterator<u32>` and `Iterator<String>` at once, so the item type of `it.next()` would be ambiguous and callers would have to name it. With `type Item`, each iterator type has exactly one item type, fixed by its implementation."
+      }
+    ]
   },
   "illustration": {
     "path": "media/associated-types.png",

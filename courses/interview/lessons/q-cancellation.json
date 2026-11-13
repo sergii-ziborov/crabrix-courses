@@ -1,6 +1,6 @@
 {
   "concept": "Dropping a future mid-await",
-  "contentDigest": "b4f195b2e112d62cfbdb781837cbd104525a4a7b9b3019a08aa487bc5501b454",
+  "contentDigest": "589ccb33c259632f4ee3e07d68d04760e7cf34ab637297c9be235848d3c2e672",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "Cancellation is a drop; state between awaits must survive it or not exist.",
     "success": "You can name one operation that is not cancel-safe and why.",
     "summary": "In Rust, an async task is cancelled by dropping its future.",
-    "task": "Explain what cancel-safety means for a function that buffers between awaits."
+    "task": "Explain what cancel-safety means for a function that buffers between awaits.",
+    "recall": [
+      {
+        "question": "An async handler saves an order and then sends a confirmation. What goes wrong if its future is dropped between those steps, and what makes it recoverable?",
+        "answer": "The order is saved without a confirmation, and a caller that retries the whole operation may create a duplicate. An idempotency key, a transaction, or an outbox lets the outcome be recovered instead of repeated."
+      },
+      {
+        "question": "A timeout fires and drops a request future. What has been undone, and what has not?",
+        "answer": "The future's local values are dropped, releasing in-process resources such as a mutex guard. External effects already performed, like an accepted database write or a sent message, are not rolled back, and work running in another task or service may continue."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-cancellation.png",

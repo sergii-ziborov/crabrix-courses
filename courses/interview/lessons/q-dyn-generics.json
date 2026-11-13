@@ -1,6 +1,6 @@
 {
   "concept": "Dispatch and code size tradeoffs",
-  "contentDigest": "013093e342300e6058c5dc7c0d168e3dd068e5c1c493d597f3b17b6cd0b2b4a5",
+  "contentDigest": "b8a7652dea668e64a26e90b7587fad2b4918a9ebd9f5740dd3f0e9e19ec96c52",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "Choose dispatch from API flexibility, ownership and measured performance; neither choice guarantees a smaller or faster program.",
     "success": "You mention monomorphisation, binary size, and the vtable.",
     "summary": "Generics preserve concrete types; trait objects provide a common interface with dynamic dispatch.",
-    "task": "Compare a generic call with a trait object and name the trade-off."
+    "task": "Compare a generic call with a trait object and name the trade-off.",
+    "recall": [
+      {
+        "question": "Why can't this trait be used as `&dyn Shape`?",
+        "code": "trait Shape {\n    fn duplicate(&self) -> Self;\n}\nfn show(_s: &dyn Shape) {}",
+        "answer": "Returning `Self` needs the concrete type's size at the call site, which a trait object erases, so the trait is not dyn compatible (E0038). Such methods must be removed, bounded with `where Self: Sized`, or the API kept generic."
+      },
+      {
+        "question": "Heterogeneous values do not always need `Box<dyn Trait>`. When is an enum the better choice?",
+        "answer": "When the set of alternatives is known and closed: an enum gives exhaustive `match` checking with no vtable. Trait objects suit an open set of implementations that share a runtime interface, such as plugins."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-dyn-generics.png",

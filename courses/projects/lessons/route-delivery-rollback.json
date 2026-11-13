@@ -22,7 +22,17 @@
       "The previous known-good version"
     ],
     "correctAnswer": 2,
-    "feedback": "Upload or build success is insufficient to replace an active service."
+    "feedback": "Upload or build success is insufficient to replace an active service.",
+    "recall": [
+      {
+        "question": "Why does `promote(\"v1\", \"v1\", true, true)` return `(\"v1\", false)` even though checks and readiness passed?",
+        "answer": "An unchanged version is not a promotion, just like a blank candidate or a failed check. Every rejection returns the original active version with `false`, so a partially configured candidate never becomes the active release."
+      },
+      {
+        "question": "The new executable ran a database migration and then failed readiness. Why might switching back to the old executable not fully recover?",
+        "answer": "Reverting an executable is not a schema rollback, and a migration may be irreversible, so the old version may not work with the changed data. Prefer compatible expand/contract migrations and test recovery against real persistent state."
+      }
+    ]
   },
   "depth": {
     "misconception": "The failed candidate because it uploaded successfully",
@@ -65,5 +75,5 @@
     "alt": "Diagram for Release, Observe and Recover: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "The worked implementation exercises keep a known-good version until the candidate is healthy. Its tests demonstrate the stated finite contract."
   },
-  "contentDigest": "345228fb831d05cd467a893b58fe1ff3a40470651bb0f93550390cff0bb822a7"
+  "contentDigest": "0b6c9646f6767cc2d8da226b6a75287440b1c3ee46326c170c5cf7ac675cb222"
 }

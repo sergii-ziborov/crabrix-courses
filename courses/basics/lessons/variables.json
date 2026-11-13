@@ -1,6 +1,6 @@
 {
   "concept": "let, mut, and shadowing",
-  "contentDigest": "eb6e2884d243970b15b9668b9a9159e5c9d8685303297732d60d699d8a789725",
+  "contentDigest": "baa5d43140022015473af1ae6ef0a78d1fe3270b808ae09e87278d5bab91c190",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,19 @@
     "rule": "`mut` permits mutation; shadowing hides the old binding behind a new one.",
     "success": "The final program compiles without an unnecessary-`mut` warning. You can point to the new binding created by shadowing and to the single existing binding updated through `mut`.",
     "summary": "A binding names a value. Rust keeps that binding fixed by default, asks for `mut` when the value must change, and uses a fresh `let` when you want to shadow it.",
-    "task": "Create an immutable value, shadow it with a transformed value, and update one mutable counter. Predict which names can be reassigned before compiling; then remove `mut` once and explain the diagnostic."
+    "task": "Create an immutable value, shadow it with a transformed value, and update one mutable counter. Predict which names can be reassigned before compiling; then remove `mut` once and explain the diagnostic.",
+    "recall": [
+      {
+        "question": "What does this code print, and why does the outer `x` keep its value?",
+        "answer": "It prints `10` then `5`. The inner `let` creates a new binding that shadows the outer `x` only until the block ends; nothing was mutated, so the outer binding is visible again with `5`.",
+        "code": "let x = 5;\n{\n    let x = x * 2;\n    println!(\"{x}\");\n}\nprintln!(\"{x}\");"
+      },
+      {
+        "question": "Why does this assignment fail, when `let count = count.len();` would compile?",
+        "answer": "Assignment keeps the same binding, so the new value must have its type (`&str`), and `usize` gives a mismatched types error (E0308). A second `let` shadows with a brand-new binding, which may have a different type.",
+        "code": "let mut count = \"3\";\ncount = count.len();"
+      }
+    ]
   },
   "illustration": {
     "path": "media/variables.png",

@@ -22,7 +22,17 @@
       "Yes, clients always report an accurate size"
     ],
     "correctAnswer": 1,
-    "feedback": "Clients can lie or disconnect mid-body, so declared size alone is insufficient."
+    "feedback": "Clients can lie or disconnect mid-body, so declared size alone is insufficient.",
+    "recall": [
+      {
+        "question": "What do `body_status(Some(20), 0, 10)`, `body_status(Some(5), 4, 10)` and `body_status(None, 11, 10)` return, given (declared length, actual bytes, maximum)?",
+        "answer": "413, 400 and 413. Any known size above the maximum is a resource error and is checked first; a declared length that disagrees with the actual bytes is a framing error (400); a missing length is still bounded by the actual byte count."
+      },
+      {
+        "question": "Why must request size be checked before parsing the domain object or applying any write?",
+        "answer": "Otherwise an oversized request can consume unbounded memory or CPU, or a write can start and leave partial state before the problem is noticed. Limits on both the declared and the accumulated size come first."
+      }
+    ]
   },
   "depth": {
     "misconception": "Yes, clients always report an accurate size",
@@ -70,5 +80,5 @@
     "alt": "Diagram for Validate Before Applying Effects: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "The worked implementation exercises check declared and actual request size. Its tests demonstrate the stated finite contract."
   },
-  "contentDigest": "d7e0101e95ce15207a3569e2e21b5cd60fa4125765219046012380d0fa881ec2"
+  "contentDigest": "ab2eea250c47f2bfa5fe8ad69ed70ac7dec7f6f9d6bf6361818ba6dcf8286c74"
 }

@@ -1,6 +1,6 @@
 {
   "concept": "Measure, change one thing, measure",
-  "contentDigest": "01beca64a626e366755974f3f013e9a8130ab5cf0ec5c7025662c5f97804700d",
+  "contentDigest": "4b0c3a290a358a11ee4103ec941a76fafa1bb3e72f3e79a50e5c744bb6a69532",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "Profile, change one thing, measure again. Guessing is not optimising.",
     "success": "The change you make is the one the profile pointed at.",
     "summary": "Measure first: the bottleneck is almost never where it feels like it is.",
-    "task": "Profile a slow function and name the top cost before changing anything."
+    "task": "Profile a slow function and name the top cost before changing anything.",
+    "recall": [
+      {
+        "question": "A profile suggests a request handler clones a `Vec` on every call. What is a sound way to act on that?",
+        "answer": "Measure allocation count and bytes, then change the API to borrow a slice if ownership is not needed. Check correctness with tests and rerun the same workload; if the clone was off the hot path, the change may not matter."
+      },
+      {
+        "question": "A profiler shows time spent on a contended lock. Why not immediately replace it with atomics?",
+        "answer": "First check contention, critical-section length, and whether a redesign avoids shared mutation. A change that lowers average latency can still worsen p99 under load, so measure the metric users actually experience."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-perf-profiling.png",

@@ -1,6 +1,6 @@
 {
   "concept": "Typed inputs and arguments",
-  "contentDigest": "e95ceef190a3db7de82d5dd4313da637f928d744ee9865d55a5bb639832a323a",
+  "contentDigest": "ce4b5f57d359f4a6a8ca6450e98345d7095ffbba81982a1ed2a77eb8b9984967",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "Parameters need explicit types; arguments must satisfy them.",
     "success": "The signature communicates exactly which values enter and leave.",
     "summary": "A function signature is a compact contract for every caller.",
-    "task": "Write a two-parameter function and call it with matching arguments."
+    "task": "Write a two-parameter function and call it with matching arguments.",
+    "recall": [
+      {
+        "question": "Why is the second call rejected, and what signature change would fix it?",
+        "answer": "Passing a `String` by value moves ownership into the first call, so the second is `use of moved value: name` (E0382). If the function only reads the text, take `s: &str` and call `consume(&name)` twice.",
+        "code": "fn consume(s: String) { println!(\"{s}\"); }\n\nlet name = String::from(\"Ferris\");\nconsume(name);\nconsume(name);"
+      },
+      {
+        "question": "`fn subtract(left: u32, right: u32)` is called as `subtract(discount, price)` by mistake. Why doesn't the compiler catch this, and what helps?",
+        "answer": "Both arguments are `u32`, so the call satisfies the signature; types cannot detect a swapped meaning. Clear parameter names help readers, and distinct domain types or a small struct with named fields let the compiler reject the mix-up."
+      }
+    ]
   },
   "illustration": {
     "path": "media/function-parameters.png",

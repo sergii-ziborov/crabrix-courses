@@ -1,6 +1,6 @@
 {
   "concept": "spawn, join, and move closures",
-  "contentDigest": "a95857606d1f928766be92a3257206a25ee29aa176fea3faa02e71702632eeb5",
+  "contentDigest": "9d524b357a931191a61f2f912069c2bc28f3ff8445e1ac833912b136f1f16985",
   "depth": {
     "connections": [
       {
@@ -49,7 +49,19 @@
     "rule": "`thread::spawn` requires a `Send + 'static` closure; `move` captures by value and does not extend borrowed lifetimes.",
     "success": "The value is computed off the main thread and joined back.",
     "summary": "Threads run in parallel, and ownership decides what may cross.",
-    "task": "Spawn a thread that owns its data and return a result with join."
+    "task": "Spawn a thread that owns its data and return a result with join.",
+    "recall": [
+      {
+        "question": "Why do these two workers run one after the other instead of overlapping?",
+        "answer": "`join` blocks the main thread until that worker finishes, so `b` is not even spawned until `a` is done. To let them overlap, spawn both first and then join both.",
+        "code": "let a = thread::spawn(|| work(\"a\"));\nlet ra = a.join().unwrap();\nlet b = thread::spawn(|| work(\"b\"));\nlet rb = b.join().unwrap();"
+      },
+      {
+        "question": "What does this print, and why shouldn't you just `unwrap()` a `join()` without thinking?",
+        "answer": "The worker's panic message appears on stderr, then `true`. A panic in a spawned thread doesn't crash `main`; `join` returns `Err` with the panic payload. `unwrap()` would re-panic in `main`, so decide on a policy for it.",
+        "code": "let h = std::thread::spawn(|| -> i32 { panic!(\"boom\") });\nprintln!(\"{}\", h.join().is_err());"
+      }
+    ]
   },
   "illustration": {
     "path": "media/concurrency.png",

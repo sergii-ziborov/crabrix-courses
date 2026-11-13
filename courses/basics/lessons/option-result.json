@@ -1,6 +1,6 @@
 {
   "concept": "Explicit absence and failure",
-  "contentDigest": "1094f8fcaeba51a0e75d33c1e1ca1878c6d345fff48c647c9bcf1da4bd5de619",
+  "contentDigest": "d85188dd6432e5529284990680df2eb76102701bef23198769ae940744c1e698",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "`Option` for absence, `Result` when the caller needs the reason.",
     "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
     "summary": "`Option` models absence; `Result` models failure with a reason.",
-    "task": "Keep missing input distinct from invalid input: None becomes Ok(None), a valid integer becomes Ok(Some(n)), and invalid text becomes Err(invalid). A match is fine; transpose is an optional extension. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise."
+    "task": "Keep missing input distinct from invalid input: None becomes Ok(None), a valid integer becomes Ok(Some(n)), and invalid text becomes Err(invalid). A match is fine; transpose is an optional extension. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise.",
+    "recall": [
+      {
+        "question": "Why doesn't this compile, and what is a minimal fix?",
+        "answer": "`next()` returns an `Option`, and `?` in a function returning `Result` cannot invent an error for `None` (E0277). Decide what absence means: `s.chars().next().ok_or(\"empty input\")?`.",
+        "code": "fn first_char(s: &str) -> Result<char, String> {\n    let c = s.chars().next()?;\n    Ok(c)\n}"
+      },
+      {
+        "question": "When does `Result<Option<T>, E>` fit a lookup better than `Option<T>` or `Result<T, E>` alone?",
+        "answer": "When there are three normal outcomes: found (`Ok(Some(item))`), simply missing (`Ok(None)`), and the lookup itself failing, for example storage unavailable (`Err(e)`). `Option` alone cannot give a reason, and `Result` alone would make missing look like an error."
+      }
+    ]
   },
   "illustration": {
     "path": "media/option-result.png",

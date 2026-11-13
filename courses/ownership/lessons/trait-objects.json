@@ -1,6 +1,6 @@
 {
   "concept": "Choose behavior at runtime with dyn Trait",
-  "contentDigest": "cf1016187ef984639d72e896a397e883b44775a3d2a9c9e2a7029c1927d5272b",
+  "contentDigest": "9f1495524b176d9a3652612f008e6f38797cb8f83e85470c6e8e9ddcdd2f7955",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "A trait object stores a pointer to data and a table of methods.",
     "success": "You can explain why one slice can mix types, and what dynamic dispatch costs.",
     "summary": "Choose behavior at runtime with dyn Trait.",
-    "task": "Say what `render` knows about each item, and where the `draw` call is resolved."
+    "task": "Say what `render` knows about each item, and where the `draw` call is resolved.",
+    "recall": [
+      {
+        "question": "Why does `Box<dyn Draw>` stop compiling once this method is added, and how can you keep `Draw` usable as a trait object?",
+        "answer": "Returning bare `Self` needs the concrete type and its size, which a trait object has erased, so rustc reports E0038: the trait is not dyn compatible. Add `where Self: Sized` to `duplicate` (it is then unavailable on `dyn Draw`), or move it into another trait.",
+        "code": "trait Draw {\n    fn draw(&self);\n    fn duplicate(&self) -> Self;\n}"
+      },
+      {
+        "question": "On a 64-bit target, `size_of::<&u8>()` is 8. Why is `size_of::<&dyn Draw>()` 16?",
+        "answer": "A trait-object reference is a fat pointer: one pointer to the data and one to the vtable (method table) for the value's concrete type. `item.draw()` follows that table at runtime. `Box<dyn Draw>` is also 16 bytes for the same reason."
+      }
+    ]
   },
   "illustration": {
     "path": "media/trait-objects.png",

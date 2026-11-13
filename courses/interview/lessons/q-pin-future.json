@@ -6,7 +6,7 @@
   "order": 1,
   "parentID": "interview-async-contracts",
   "exerciseKind": "planned",
-  "contentDigest": "cacc22974f37f1554e68d7dc97b36a50d82e3dca94b1fdea3deea2f6c1af471a",
+  "contentDigest": "fb09d33718cb3057fea45bc1bae856e5f5eba3427ddf3d5e7d7efc447597fe56",
   "writing": {
     "summary": "`Pin` constrains moving a pointee through a pointer; moving that pointer can remain valid.",
     "explanation": "A future’s `poll` method receives `Pin<&mut Self>`. Some futures may have address-sensitive state, so the polling interface must not allow callers to move that state out after pinning. `Unpin` marks types for which the pinning restriction can be relaxed. `Pin` is not a mutex and does not itself provide synchronization or permanent storage.\n\nThe example pins a compiler-generated async future in a `Box`, records the pointee’s address, moves the `Pin<Box<_>>` handle and polls through its pinned mutable reference. Moving the handle does not relocate its heap pointee. A noop waker is adequate only because this particular future completes immediately; it is not a general executor for I/O or pending tasks.\n\nSafe code should use supported pinning constructors and projection APIs instead of inventing unchecked pointer manipulations. A self-referential structure or pinned field needs a careful destruction and projection contract. In an interview, distinguish moving a pointer from moving the pointee, then explain why `get_mut` requires `Unpin`. Do not promise that every future is self-referential or that boxing every future is universally necessary.",
@@ -23,7 +23,17 @@
       "Pin copies the future into a new allocation on every assignment."
     ],
     "correctAnswer": 0,
-    "feedback": "The handle’s move does not move its pointee. The example does not establish `Unpin` for a compiler-generated async future."
+    "feedback": "The handle’s move does not move its pointee. The example does not establish `Unpin` for a compiler-generated async future.",
+    "recall": [
+      {
+        "question": "Why does `Pin::get_mut` require `T: Unpin`, and what happens if you call it on a pinned `async` block?",
+        "answer": "`get_mut` hands out `&mut T`, through which the pointee could be moved, for example with `mem::swap`; that is only safe for types whose address does not matter. An `async` block's future is not `Unpin`, so the call fails to compile (E0277, cannot be unpinned)."
+      },
+      {
+        "question": "What does `Pin` not provide, despite guarding a future's address?",
+        "answer": "It is not a mutex, so it gives no synchronisation, and it does not provide permanent storage. It only constrains moving the pointee through that pointer; moving the `Pin<Box<_>>` handle itself is fine."
+      }
+    ]
   },
   "depth": {
     "misconception": "The future becomes Unpin because its Box handle was moved.",

@@ -22,7 +22,17 @@
       "Only when the jobs return integers"
     ],
     "correctAnswer": 0,
-    "feedback": "Bound production before spawning or use a bounded queue; limiting active work alone does not limit waiting tasks."
+    "feedback": "Bound production before spawning or use a bounded queue; limiting active work alone does not limit waiting tasks.",
+    "recall": [
+      {
+        "question": "In the lesson's six-job example with `Semaphore::new(2)`, each permit is acquired before spawning. What is the most jobs running at once, and what does the producer loop do when both permits are taken?",
+        "answer": "At most two are active at once; the loop's `acquire_owned().await` waits until a running job drops its permit, so the third job is not even spawned until capacity returns. That waiting is the backpressure. Afterwards `available_permits()` is back to 2."
+      },
+      {
+        "question": "Why would `drop(permit);` as the first line of the spawned task defeat the limit?",
+        "answer": "The permit is what limits concurrency, and it must be held for the whole protected operation. Releasing it before the expensive work lets the producer acquire it again straight away, so more than two jobs could be doing that work at once."
+      }
+    ]
   },
   "depth": {
     "misconception": "A semaphore automatically bounds every allocation in a pipeline.",
@@ -60,5 +70,5 @@
     "alt": "Diagram for Bound Work Before Spawning: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "Semaphore permits and bounded queues"
   },
-  "contentDigest": "ec89c613e01467858671a147bdefa0b6e0f889adf3d863b3fbe35aef0c690c97"
+  "contentDigest": "3de86558e826cdeacd43f75c87a7e2a2b08705294216ce3d666c5b69d21bdbde"
 }

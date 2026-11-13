@@ -1,6 +1,6 @@
 {
   "concept": "Expect a future to be dropped at any await point",
-  "contentDigest": "54b39ac96c23de4fcc87f0c73f7183e018ed254532b79171c2efd655d8f6299b",
+  "contentDigest": "6c548f5dda496e392801ec0ddce384d121c75957db6ab1909edc23e66ee88b41",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "Selecting or timing out a future may drop it before completion.",
     "success": "You can point to where each flag is set and say why a retry must be idempotent after a drop.",
     "summary": "Expect a future to be dropped at any `await` point.",
-    "task": "Run the complete example and predict saved=true acknowledged=false. Then remove the poll line, change `assert!(saved.get())` to `assert!(!saved.get())`, and predict that neither effect occurs. Relate this local demonstration to idempotent external operations."
+    "task": "Run the complete example and predict saved=true acknowledged=false. Then remove the poll line, change `assert!(saved.get())` to `assert!(!saved.get())`, and predict that neither effect occurs. Relate this local demonstration to idempotent external operations.",
+    "recall": [
+      {
+        "question": "What does this print? And what would it print if `drop(op)` ran before the `poll` call?",
+        "answer": "`saved=true acked=false`: the first poll runs up to the pending await, and dropping the future then cancels it, so the rest never runs. Dropped before any poll, the body never starts, so it prints `saved=false acked=false`.",
+        "code": "use std::{cell::Cell, future::Future, task::{Context, Poll, Waker}};\nlet saved = Cell::new(false);\nlet acked = Cell::new(false);\nlet mut op = Box::pin(async {\n    saved.set(true);\n    std::future::pending::<()>().await;\n    acked.set(true);\n});\nlet mut cx = Context::from_waker(Waker::noop());\nlet _ = op.as_mut().poll(&mut cx);\ndrop(op);\nprintln!(\"saved={} acked={}\", saved.get(), acked.get());"
+      },
+      {
+        "question": "A task runs `save_record().await` then `send_ack().await` and may be cancelled between them. Why is a plain retry dangerous, and what helps?",
+        "answer": "The record may already be saved without an ack, and dropping the future doesn't undo it, so retrying the whole operation can create a duplicate. Give each request a stable ID and make the save idempotent, or use a transaction or outbox pattern."
+      }
+    ]
   },
   "illustration": {
     "path": "media/async-cancellation.png",

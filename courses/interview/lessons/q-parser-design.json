@@ -1,6 +1,6 @@
 {
   "concept": "Separate tokenization, grammar, and diagnostics",
-  "contentDigest": "a4383d001005caad6cc5761adb8c0609f6ad8fff41e090a4107102b620a6edcf",
+  "contentDigest": "998c9b0f4b6ff48806249005b2f73921e3f72c750f6d8a426cafa6175b94ef93",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "A strong answer defines input ownership, source spans, recovery strategy, and whether the parser returns a tree or events.",
     "success": "You state the UTF-8 boundary check and explain why a `Span` owns nothing.",
     "summary": "Separate tokenization, grammar, and diagnostics.",
-    "task": "Trace `Span { start: 3, end: 5 }` over `café`, then say which ranges `get` rejects and who must keep the source alive."
+    "task": "Trace `Span { start: 3, end: 5 }` over `café`, then say which ranges `get` rejects and who must keep the source alive.",
+    "recall": [
+      {
+        "question": "What is the tradeoff between parser tokens that own `String`s and tokens that borrow `&str` slices of the source?",
+        "answer": "Borrowing slices avoids copying every token, but ties the parsed result to the input's lifetime. Owning `String`s is simpler to pass around but costs an allocation and copy per token."
+      },
+      {
+        "question": "What should a configuration-file parser's error reporting provide so the user can fix the file?",
+        "answer": "Distinct errors for a missing field, an invalid number and an unexpected token, each pointing to a source span and saying what was expected, plus a recovery point so one bad line does not hide later issues. Malformed input must never cause a panic."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-parser-design.png",

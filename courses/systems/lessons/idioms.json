@@ -1,6 +1,6 @@
 {
   "concept": "Newtype, builder, and typestate",
-  "contentDigest": "bb856a00c412654a0d4e7ca007a95686a2ff7665e40f18ad7074840e883b9410",
+  "contentDigest": "83aadef8e6ff954dd648793d5f3b78156a3e812c9350604ecf746a6a8c35cd0d",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "A newtype costs nothing at runtime and buys a real compile-time guarantee.",
     "success": "Mixing it with another id of the same underlying type fails to compile.",
     "summary": "Rust's patterns push mistakes from runtime to compile time.",
-    "task": "Wrap a primitive in a newtype and pass it through one function."
+    "task": "Wrap a primitive in a newtype and pass it through one function.",
+    "recall": [
+      {
+        "question": "What does the `UserId(u64)` newtype cost at runtime, and where do you still have to convert explicitly?",
+        "answer": "Nothing: `size_of::<UserId>()` is 8, the same as `u64`. The distinction exists only at compile time. At serialisation, database or FFI boundaries you convert deliberately, for example with `id.0` or a `From` impl.",
+        "code": "#[derive(Debug, Clone, Copy, PartialEq)]\nstruct UserId(u64);"
+      },
+      {
+        "question": "How does a typestate API differ from a builder whose `build()` validates the settings?",
+        "answer": "A validating builder catches a missing or invalid setting at runtime, usually by returning a `Result` from `build()`. Typestate encodes each stage as a different type, so a method such as `send()` only exists on the configured type and calling it too early doesn't compile."
+      }
+    ]
   },
   "illustration": {
     "path": "media/idioms.png",

@@ -1,6 +1,6 @@
 {
   "concept": "The common lifetime relationships Rust infers",
-  "contentDigest": "abaa71357effd20a8a5d183ee9acfd03beec4c45d43de0e81b686b35374848a6",
+  "contentDigest": "7980616ba06bcdd5f4175897a299af829410f54f9d0aad6cf8ab13e316511451",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,19 @@
     "rule": "Rust omits obvious lifetime annotations using a small set of rules.",
     "success": "You can show the explicit signature, and say when a second borrowed input would require a name.",
     "summary": "The common lifetime relationships Rust infers.",
-    "task": "Write out the lifetime the compiler infers for `first`, and say why it is unambiguous."
+    "task": "Write out the lifetime the compiler infers for `first`, and say why it is unambiguous.",
+    "recall": [
+      {
+        "question": "Why does this signature need a named lifetime when `fn first(text: &str) -> &str` does not?",
+        "answer": "With two borrowed inputs, elision cannot tell whether the result borrows from `a` or `b`, so rustc reports E0106 missing lifetime specifier. Name the relationship, for example `fn choose<'a>(a: &'a str, b: &'a str) -> &'a str`.",
+        "code": "fn choose(a: &str, b: &str) -> &str {\n    if a.len() > b.len() { a } else { b }\n}"
+      },
+      {
+        "question": "Why is this method rejected under the elision rules?",
+        "answer": "When a method takes `&self`, an elided output lifetime is tied to `self`. Returning `fallback`, which has its own unrelated lifetime, breaks that promise (lifetime may not live long enough). Give `fallback` and the result one named lifetime.",
+        "code": "struct P { n: String }\nimpl P {\n    fn name(&self, fallback: &str) -> &str {\n        if self.n.is_empty() { fallback } else { &self.n }\n    }\n}"
+      }
+    ]
   },
   "illustration": {
     "path": "media/lifetime-elision.png",

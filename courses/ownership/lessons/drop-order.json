@@ -1,6 +1,6 @@
 {
   "concept": "Deterministic cleanup without a GC",
-  "contentDigest": "6a71d7cade56671267f9a7f1f119656abdcbca0d156b19f24dcf7b448be6812a",
+  "contentDigest": "1b496df38072379cb43b3129543a8da06d4ef3db18b731b4ea817ce3aff88355",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,19 @@
     "rule": "At scope end, remaining locals drop in reverse declaration order; struct fields drop in declaration order.",
     "success": "You can explain why `dropping a` prints before `after explicit drop`, and `dropping b` after it.",
     "summary": "Cleanup runs at a place you can point to in the source.",
-    "task": "Predict the printed order before running it."
+    "task": "Predict the printed order before running it.",
+    "recall": [
+      {
+        "question": "What does this print? Note the difference between `_a` and `_`.",
+        "answer": "`drop b`, `end`, `drop a`. `_a` is a real binding that owns its value until the scope ends; the underscore only silences the unused warning. The `_` pattern binds nothing, so `Noisy(\"b\")` is dropped immediately.",
+        "code": "struct Noisy(&'static str);\nimpl Drop for Noisy {\n    fn drop(&mut self) { println!(\"drop {}\", self.0); }\n}\nfn main() {\n    let _a = Noisy(\"a\");\n    let _ = Noisy(\"b\");\n    println!(\"end\");\n}"
+      },
+      {
+        "question": "What does this print, and why does `a` drop before `end`?",
+        "answer": "`in consume`, `drop a`, `end`, `drop b`. Moving `a` into `consume` moves its cleanup too: it drops when the parameter goes out of scope at the end of `consume`. `_b` is still owned by `main` and drops at its closing brace.",
+        "code": "struct Noisy(&'static str);\nimpl Drop for Noisy {\n    fn drop(&mut self) { println!(\"drop {}\", self.0); }\n}\nfn consume(_n: Noisy) { println!(\"in consume\"); }\nfn main() {\n    let a = Noisy(\"a\");\n    let _b = Noisy(\"b\");\n    consume(a);\n    println!(\"end\");\n}"
+      }
+    ]
   },
   "illustration": {
     "path": "media/drop-order.png",

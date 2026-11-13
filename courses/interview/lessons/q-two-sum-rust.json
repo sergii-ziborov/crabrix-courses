@@ -1,6 +1,6 @@
 {
   "concept": "Clarify duplicates, indices, and complexity first",
-  "contentDigest": "4f13ed7cb287b330bdc180ee17d0f77b5737939d15afbe052033187a9768ada5",
+  "contentDigest": "ecdb7b75a0850d05bbb6ef4f8121e2dc183337041c44dccf2904823072388318",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "State the contract before reaching for `HashMap`: may one index be reused, can values repeat, and what should happen when no pair exists? Then explain the O(n) time and O(n) space tradeoff.",
     "success": "You explain why lookup comes before insertion and why the complement is computed in `i64`.",
     "summary": "Clarify duplicates, indices, and complexity first.",
-    "task": "Trace `two_sum` on `[3, 3]` with target 6, then state what it returns with no pair and with several pairs."
+    "task": "Trace `two_sum` on `[3, 3]` with target 6, then state what it returns with no pair and with several pairs.",
+    "recall": [
+      {
+        "question": "With this one-pass `HashMap` scan, what does `two_sum(&[1, 4, 2, 3], 5)` return, given that both (0, 1) and (2, 3) are valid pairs?",
+        "code": "for (j, &value) in values.iter().enumerate() {\n    let needed = i64::from(target) - i64::from(value);\n    if let Some(&i) = seen.get(&needed) { return Some((i, j)); }\n    seen.entry(i64::from(value)).or_insert(j);\n}\nNone",
+        "answer": "`Some((0, 1))`: at index 1 the value 4 finds its complement 1, stored at index 0, and the function returns at the first match. The scan's rule is that the pair with the earliest second index wins; a test should pin that rule."
+      },
+      {
+        "question": "Why does this `two_sum` compute the complement as `i64::from(target) - i64::from(value)` instead of `target - value` in `i32`?",
+        "answer": "In `i32` the subtraction can overflow at the extremes, for example `0 - i32::MIN`: a debug build panics with \"attempt to subtract with overflow\" and a release build wraps to a wrong value. Every difference of two `i32` values fits in `i64`."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-two-sum-rust.png",

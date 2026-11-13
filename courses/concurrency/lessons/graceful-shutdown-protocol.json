@@ -22,7 +22,17 @@
       "It serializes every file on the server"
     ],
     "correctAnswer": 1,
-    "feedback": "Shutdown is persistent state. A late subscriber must inspect the current value instead of waiting for a future change that may never arrive."
+    "feedback": "Shutdown is persistent state. A late subscriber must inspect the current value instead of waiting for a future change that may never arrive.",
+    "recall": [
+      {
+        "question": "Why is a `watch` channel a good fit for broadcasting a shutdown request, compared with sending a message per worker over an mpsc queue?",
+        "answer": "A `watch` channel holds one latest value that any number of receivers can read, including workers that subscribe later. A queue would need exactly one message per worker and could miss workers that start after the messages were sent."
+      },
+      {
+        "question": "What does `rx.changed().await` return once the `watch` sender has been dropped, and why does the lesson's worker break on that?",
+        "answer": "It returns `Err` immediately. With the sender gone, the value can never change again, so waiting would hang forever; treating it as a stop keeps the worker from becoming a stuck task that the owner then waits on."
+      }
+    ]
   },
   "depth": {
     "misconception": "Sending a stop signal proves that every worker has finished.",
@@ -55,5 +65,5 @@
     "alt": "Diagram for A Graceful Shutdown Protocol: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "Stop admission, signal, and wait"
   },
-  "contentDigest": "e09dba188570d37be6445bea058bbe69a578ee3edd05898ab83487fce1847986"
+  "contentDigest": "1f37a85ee292cfd677c874d2789d55bfcc0d7216ac2f24a31f2450318c1be836"
 }

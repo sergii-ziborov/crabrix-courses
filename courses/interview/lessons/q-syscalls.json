@@ -1,6 +1,6 @@
 {
   "concept": "Where the cost of IO actually is",
-  "contentDigest": "ae9c2a78b0faf15476cf32638abb4c1ba5cd865d9da3ba48f39f8b35a806c478",
+  "contentDigest": "03a9911235c351f769cf43d02d73515cb4acd4c70b0a7f1f611bf70a3da745c7",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "Buffering can combine small writes; measure the boundary cost and handle errors explicitly.",
     "success": "Explain the measured request count, flush policy, partial-write handling and latency tradeoff.",
     "summary": "A syscall is a controlled trip into the kernel, and it is not free.",
-    "task": "Count the syscalls in a hot loop and remove the ones that are avoidable."
+    "task": "Count the syscalls in a hot loop and remove the ones that are avoidable.",
+    "recall": [
+      {
+        "question": "Why must a loop around a plain `write` call keep track of how many bytes were written?",
+        "answer": "A write can complete only partially (a short write) or return an error. The loop must count the bytes completed and retry only the rest, without resending data already accepted; `write_all` does this loop for you."
+      },
+      {
+        "question": "Why call `flush()` on a `BufWriter` explicitly instead of relying on drop, and does a successful flush mean the bytes are durable on disk?",
+        "answer": "Errors found while a `BufWriter` is dropped cannot be reported to your caller, so flush and handle the `Result`. A flush only hands the bytes to the underlying writer; durability on storage needs the relevant file and filesystem sync policy."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-syscalls.png",

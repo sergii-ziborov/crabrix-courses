@@ -6,7 +6,7 @@
   "order": 3,
   "parentID": "interview-api-boundaries",
   "exerciseKind": "planned",
-  "contentDigest": "30625af2ac525efcec650a9cb12003b0a0d5edc66c5c4702de0a15c5d7dbbc60",
+  "contentDigest": "4f835eed57d3b9eb10a6070afd61564a94b9c668a0edf11d8a3e05bcbe701e43",
   "writing": {
     "summary": "Input bounds and arithmetic policy are part of the algorithm’s contract.",
     "explanation": "Integer operations need a policy when the mathematical result is outside the destination range. `checked_add` returns `None` on overflow, `wrapping_add` uses modular arithmetic, and `saturating_add` clamps at a boundary. A lossy `as` conversion can discard information; `TryFrom` can reject an out-of-range conversion. Choose behaviour that matches the domain instead of depending on the build’s overflow-check settings.\n\nThe example checks an addition at `u32::MAX` and rejects narrowing 300 to `u8`. It also widens `i32` operands before computing their difference. Widening after an overflowing operation is too late. A wider type is sufficient only when the full input-domain calculation fits it; replacing `u64` arithmetic with `i64` is not a general widening strategy.\n\nIn an interview, ask for the input range, the result range and the required failure behaviour. A sum over many elements may overflow even if each element is valid, while a length cast can truncate on large inputs. Boundary tests should cover both sides of a conversion and the exact maximum or minimum. Explain the correctness argument separately from performance measurements and from memory safety: losing numeric information is not automatically undefined behaviour.",
@@ -23,7 +23,17 @@
       "A compile error, because integers cannot be converted at runtime."
     ],
     "correctAnswer": 0,
-    "feedback": "`TryFrom` checks representability. An `as` cast follows a different conversion contract and can lose numeric information."
+    "feedback": "`TryFrom` checks representability. An `as` cast follows a different conversion contract and can lose numeric information.",
+    "recall": [
+      {
+        "question": "What do `u32::MAX.checked_add(1)`, `u32::MAX.wrapping_add(1)` and `u32::MAX.saturating_add(1)` return?",
+        "answer": "`None`, `0` and `u32::MAX` (4294967295). Each method states an overflow policy explicitly, so the result does not depend on whether the build has overflow checks enabled."
+      },
+      {
+        "question": "With `a` and `b` of type `i32`, why does `i64::from(a + b)` not prevent overflow, while `i64::from(a) + i64::from(b)` does?",
+        "answer": "In the first, the `i32` addition overflows before the conversion: it panics with overflow checks on or wraps without them. Widening must happen before the operation, and only works if the full calculation fits the wider type."
+      }
+    ]
   },
   "depth": {
     "misconception": "Ok(44), because TryFrom always uses modular narrowing.",

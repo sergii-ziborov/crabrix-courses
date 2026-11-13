@@ -1,6 +1,6 @@
 {
   "concept": "The traits behind thread safety",
-  "contentDigest": "d7dc9e211d4dc894ceda1d1567767d736a49050858196ec2405fc39eb3f4e3db",
+  "contentDigest": "3b3ac722ca01d0e4f29a0db605a59cb7bb636f027d9a5c69968624668e3551f8",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "`T` is `Sync` exactly when `&T` is `Send`.",
     "success": "You can explain the difference in terms of the count, not the API.",
     "summary": "Two auto traits decide what may cross a thread boundary.",
-    "task": "Name why one shared pointer crosses threads and the other does not."
+    "task": "Name why one shared pointer crosses threads and the other does not.",
+    "recall": [
+      {
+        "question": "Why is this rejected, while the same code with `Arc::new` is accepted?",
+        "answer": "`Rc` updates its reference count non-atomically, so it is not `Send`; the closure capturing it isn't `Send` either, and the bound fails (E0277, `Rc<String>` cannot be sent between threads safely). `Arc` uses an atomic count.",
+        "code": "fn spawn_it<F>(job: F) -> std::thread::JoinHandle<()>\nwhere F: FnOnce() + Send + 'static {\n    std::thread::spawn(job)\n}\n\nlet value = std::rc::Rc::new(String::from(\"x\"));\nspawn_it(move || println!(\"{value}\")).join().unwrap();"
+      },
+      {
+        "question": "`Arc<T>` lets several threads hold handles to one value. Why does that make `Arc<T>: Send` require `T: Sync`, not just `T: Send`?",
+        "answer": "Moving an `Arc` handle to another thread means both threads can reach the same `T` through shared references at once, and that is what `Sync` permits. So `Arc<RefCell<i32>>` is not `Send`, even though `RefCell<i32>` alone is."
+      }
+    ]
   },
   "illustration": {
     "path": "media/send-sync.png",

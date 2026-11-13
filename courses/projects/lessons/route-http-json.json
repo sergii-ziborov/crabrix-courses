@@ -22,7 +22,18 @@
       "The unescaped input title length"
     ],
     "correctAnswer": 0,
-    "feedback": "Escaping and UTF-8 encoding can both change byte length."
+    "feedback": "Escaping and UTF-8 encoding can both change byte length.",
+    "recall": [
+      {
+        "question": "Why is building the JSON response body like this unsafe for user-supplied titles?",
+        "code": "let body = format!(\"{{\\\"title\\\":\\\"{title}\\\"}}\");",
+        "answer": "A quote in the title ends the JSON string early and a raw newline makes the document invalid, so clients cannot decode it. Escape quotes, backslashes and control characters, or use Serde, which the desktop service does."
+      },
+      {
+        "question": "What does `json_string` produce for a tab, the control character U+0001 and the crab emoji?",
+        "answer": "`\\t`, `\\u0001` and the emoji unchanged, all inside surrounding quotes: control characters are escaped while ordinary Unicode scalar values are kept as they are. Content-Length must then use the encoded byte length."
+      }
+    ]
   },
   "depth": {
     "misconception": "The number of Rust char values",
@@ -70,5 +81,5 @@
     "alt": "Diagram for Encode a Valid JSON Boundary: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "The worked implementation exercises escape json strings without corrupting unicode. Its tests demonstrate the stated finite contract."
   },
-  "contentDigest": "515c44fc071874c27164433be06eaff8bc5259bcf7b5c110f6d6ebab6fc53837"
+  "contentDigest": "41a7bc7d580519fdf8d1fb7e5a92ba9f1969c98bbfa9ad6659f9017f3f2a2cae"
 }

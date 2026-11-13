@@ -1,6 +1,6 @@
 {
   "concept": "Combine lookup speed with recency updates",
-  "contentDigest": "5156035e28629b3bb8b468ea0bae72df527117d4b9c4c1230909d2afa16f97a9",
+  "contentDigest": "9aed786b16785c8443945f0354e6590f24cd69341ca1cc57857d468fb78d629e",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "Explain why a hash map alone cannot evict the least recent key in O(1).",
     "success": "You name B as the eviction and explain how the map and the recency list stay in step.",
     "summary": "Combine lookup speed with recency updates.",
-    "task": "Trace a capacity-two cache through put A, put B, get A, put C. Name the evicted entry and each structure that changes."
+    "task": "Trace a capacity-two cache through put A, put B, get A, put C. Name the evicted entry and each structure that changes.",
+    "recall": [
+      {
+        "question": "An LRU cache has capacity 2. Trace put A, put B, get A, put C. Which key is evicted, and why?",
+        "answer": "B is evicted. The `get A` moved A to the most-recent end, so when C needs room, B is the least recently used entry."
+      },
+      {
+        "question": "An LRU stores nodes in a `Vec` arena and keeps node indices in its map. What can go wrong when a removed slot is reused, and how is it avoided?",
+        "answer": "A stale index still held somewhere can silently target the new node now living in that slot. Validate slot identity (for example with a generation counter), and on eviction remove the map entry and unlink the node together."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-lru-design.png",

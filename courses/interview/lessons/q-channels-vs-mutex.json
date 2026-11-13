@@ -1,6 +1,6 @@
 {
   "concept": "Moving ownership or sharing it",
-  "contentDigest": "022631f7cf6e8764acc551a7503ce0a1435211a0851120ca6021c46ab8f79353",
+  "contentDigest": "025645328c923e18d16570f250693523eba55cf61020bd80edccc8865de26f2b",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "Channels move ownership; a mutex shares it. Pick by data flow.",
     "success": "Each choice names who owns the data and how often it is written.",
     "summary": "Share memory by communicating, or communicate by sharing memory.",
-    "task": "Pick channel or mutex for a metrics counter and for a work queue."
+    "task": "Pick channel or mutex for a metrics counter and for a work queue.",
+    "recall": [
+      {
+        "question": "A consumer runs `for msg in rx { ... }`. All producer threads have finished, but the loop never ends. What is the likely cause?",
+        "answer": "The receiving loop ends only after every `Sender` handle is dropped. An accidentally retained clone, often the original `tx` kept in the spawning thread, keeps the channel open, so `recv` waits forever; `drop(tx)` lets it return an error and end the loop."
+      },
+      {
+        "question": "When does a single owner task receiving commands over a channel suit shared state better than a mutex, and when does the mutex win?",
+        "answer": "An owner task fits when changes can be expressed as commands, such as add and cancel on an order book: updates are serialised in one place, which helps shutdown and audit logging. For a tiny local operation that needs an immediate result, the reply-channel protocol costs more than a short mutex section."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-channels-vs-mutex.png",

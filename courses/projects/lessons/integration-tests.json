@@ -1,6 +1,6 @@
 {
   "concept": "Test the public API as an outside user",
-  "contentDigest": "d8c469d07d6e13c2e5708eaac7b02f23af4778472f594b9b9a7353131c29faeb",
+  "contentDigest": "bf2f8b44cc83df19c390c4be83d5bac0f3a8a256ccd67d50b696a3682d90e537",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "Files under `tests/` compile as separate crates and can only use the library's public API.",
     "success": "The test passes through the public API, and you can say what it no longer depends on.",
     "summary": "Test the public API as an outside user.",
-    "task": "Predict the compiler error for this test. Then rewrite it so it checks the same behaviour through `answer`, leaving `helper` private."
+    "task": "Predict the compiler error for this test. Then rewrite it so it checks the same behaviour through `answer`, leaving `helper` private.",
+    "recall": [
+      {
+        "question": "Why prefer integration tests that use the public API over tests that reach internals through elaborate scaffolding?",
+        "answer": "Tests coupled to internals break when you refactor without changing the external contract. If a black-box test can do a real task through the public interface, downstream callers probably can too; private logic is better covered by unit tests beside the code."
+      },
+      {
+        "question": "Why are integration tests that share mutable files or network state risky, and what is the remedy?",
+        "answer": "They can pass or fail depending on run order or the environment, so they fail intermittently and hide real regressions. Make setup explicit and keep each test independent so order does not matter."
+      }
+    ]
   },
   "illustration": {
     "path": "media/integration-tests.png",

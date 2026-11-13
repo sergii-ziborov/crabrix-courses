@@ -1,6 +1,6 @@
 {
   "concept": "Pattern-based code generation",
-  "contentDigest": "d8e9031a52babd1678d1fc96317df2a2268c58fc76862b6dcfa96121294b1cb7",
+  "contentDigest": "5f6fc37be246cec5956b2b8e0855778821a78baaca414bfcaaa1c87db20d1bbf",
   "depth": {
     "connections": [
       {
@@ -49,7 +49,19 @@
     "rule": "Macros work on tokens before type checking, which is why they can vary in arity.",
     "success": "It expands correctly for one, two, and many arguments.",
     "summary": "macro_rules! matches syntax patterns and expands to code.",
-    "task": "Write a macro that accepts a variable number of expressions."
+    "task": "Write a macro that accepts a variable number of expressions.",
+    "recall": [
+      {
+        "question": "What does this print?",
+        "answer": "`12 4`. The transcriber pastes `$x` twice, so the block runs twice: once producing 3 and once producing 4. Bind the captured expression once with `let` inside the expansion, as `maximum!` does with `first` and `rest`.",
+        "code": "macro_rules! square {\n    ($x:expr) => { $x * $x };\n}\nlet mut n = 2;\nlet r = square!({ n += 1; n });\nprintln!(\"{r} {n}\");"
+      },
+      {
+        "question": "With the lesson's `maximum!` macro, why does `maximum!()` fail to compile?",
+        "answer": "Both arms need at least one expression, so empty input matches no arm, and rustc reports an unexpected end of macro invocation. Matching happens on tokens at compile time, before any types or values exist.",
+        "code": "macro_rules! maximum {\n    ($first:expr) => { $first };\n    ($first:expr, $($rest:expr),+) => {{ /* ... */ }};\n}"
+      }
+    ]
   },
   "illustration": {
     "path": "media/declarative-macros.png",

@@ -1,6 +1,6 @@
 {
   "concept": "Tune optimization without changing source behavior",
-  "contentDigest": "3a995302622a558ca3b87877f9e64ae46e98c2ff7ac7b3e2811e63abf36c25e9",
+  "contentDigest": "1e00b9731cef11fb493fb98ac14e309fd624c92cd63cad7d8ea35c4104f11c32",
   "depth": {
     "connections": [
       {
@@ -49,7 +49,17 @@
     "rule": "Cargo profiles configure optimization, debug information, panic strategy, and more.",
     "success": "You can report before and after numbers for that one change and justify keeping or rejecting it.",
     "summary": "Tune optimization without changing source behavior.",
-    "task": "This profile changes one setting from the example, `opt-level`. Build both with `cargo build --release`, then record binary size and the time of one real workload."
+    "task": "This profile changes one setting from the example, `opt-level`. Build both with `cargo build --release`, then record binary size and the time of one real workload.",
+    "recall": [
+      {
+        "question": "A release profile sets `opt-level = 3`, `lto = \"thin\"` and `debug = 1`. What does each setting trade?",
+        "answer": "`opt-level = 3` asks for strong optimization at the cost of compile time. Thin LTO allows cross-crate optimization for extra link time. `debug = 1` keeps limited debug info so production crashes can be diagnosed, at the cost of a larger artifact."
+      },
+      {
+        "question": "How should you decide whether to keep a change to a release profile?",
+        "answer": "Record a baseline on a representative workload, change one setting, and measure the metric that matters (latency, binary size or debuggability) on the same workload. If the difference is within noise, keep the simpler configuration."
+      }
+    ]
   },
   "illustration": {
     "path": "media/release-profiles.png",

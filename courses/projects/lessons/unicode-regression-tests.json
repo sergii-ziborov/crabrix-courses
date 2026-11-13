@@ -22,7 +22,18 @@
       "The UTF-8 byte length is always the scalar count"
     ],
     "correctAnswer": 1,
-    "feedback": "A scalar value and a grapheme are different units. State and test the intended unit explicitly."
+    "feedback": "A scalar value and a grapheme are different units. State and test the intended unit explicitly.",
+    "recall": [
+      {
+        "question": "What does `prefix(\"e\\u{301}x\", 1)` return, and does it satisfy the contract?",
+        "code": "fn prefix(text: &str, n: usize) -> String {\n    text.chars().take(n).collect()\n}",
+        "answer": "`\"e\"`, without the combining accent. That meets the contract of at most n Unicode scalar values, though it looks surprising; a user-interface preview that must keep whole letters needs a grapheme-aware approach."
+      },
+      {
+        "question": "Which cases belong in the regression set for a `prefix(text, n)` that once panicked on an accented character?",
+        "answer": "The smallest original failure, `n = 0`, empty input, a limit larger than the text, and a neighboring ASCII case. Add a property that the result is a prefix ending on a valid UTF-8 boundary with at most n scalar values."
+      }
+    ]
   },
   "depth": {
     "misconception": "chars().count() always measures visible character width.",
@@ -55,5 +66,5 @@
     "alt": "Diagram for Keep a Unicode Regression: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "A minimal failure that survives a refactor"
   },
-  "contentDigest": "cadbf71a8d670a21143032599262ac64bd05eafbda0f29aaafd5512cfbcf3bac"
+  "contentDigest": "473febd3272d5c2781762ebf75bab816479f3f6636582f939a6542e150e083e0"
 }

@@ -1,6 +1,6 @@
 {
   "concept": "Named data and methods",
-  "contentDigest": "ecd862b0f1febd7d3bc36e813cca0f1a2714e04ded7acfeb7f16bf31d4739e52",
+  "contentDigest": "b1e471c0a80493bc0e3c914c9b4e886b995fc88d0ba937c060dd87af84b9a651",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "`self` consumes, `&self` reads, `&mut self` modifies.",
     "success": "The local compiler accepts the changed solution and the separate verification harness finishes all normal and boundary cases. Printing a success message alone does not complete this lab.",
     "summary": "Structs give related data names and a stable shape.",
-    "task": "Use the supplied Rectangle fields to return its area. Dimensions are at most 1000. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise."
+    "task": "Use the supplied Rectangle fields to return its area. Dimensions are at most 1000. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise.",
+    "recall": [
+      {
+        "question": "Why is `rect.grow()` rejected here?",
+        "answer": "`grow` takes `&mut self`, which needs a mutable borrow of the receiver, but `rect` was declared without `mut`: E0596. Declare `let mut rect`. The receiver in the signature tells you what the call needs.",
+        "code": "struct Rectangle { width: u32, height: u32 }\nimpl Rectangle {\n    fn grow(&mut self) { self.width += 1; }\n}\n\nlet rect = Rectangle { width: 1, height: 2 };\nrect.grow();"
+      },
+      {
+        "question": "Why is a constructor called as `Rectangle::new(3, 4)` but `area` called as `rect.area()`?",
+        "answer": "`new` has no `self` receiver, so it is an associated function of the type, called through the type with `::`; it can also validate the input before a value exists. `area(&self)` is a method that needs an existing instance to borrow."
+      }
+    ]
   },
   "illustration": {
     "path": "media/structs.png",

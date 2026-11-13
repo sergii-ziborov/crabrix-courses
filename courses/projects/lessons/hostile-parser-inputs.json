@@ -22,7 +22,17 @@
       "It makes the parser multithreaded"
     ],
     "correctAnswer": 0,
-    "feedback": "The application's grammar can be narrower than parse::<u8>(). Test the declared syntax as well as the numeric range."
+    "feedback": "The application's grammar can be narrower than parse::<u8>(). Test the declared syntax as well as the numeric range.",
+    "recall": [
+      {
+        "question": "A two-field `a:b` parser collects fields with `filter_map(|f| f.trim().parse::<u8>().ok())`. What does that give for `1:x:2`, and why is it dangerous?",
+        "answer": "It yields `[1, 2]`: the bad field disappears and the extra field makes up the count, so a malformed three-field record looks like a valid pair. Check the field count and fail on any field that does not parse."
+      },
+      {
+        "question": "What should a fuzz target for this parser assert, and what should it not treat as a bug?",
+        "answer": "It should assert that parsing never panics and that every successful parse satisfies the domain properties, such as consuming the whole record. Returning `None` for arbitrary garbage bytes is expected rejection, not a bug."
+      }
+    ]
   },
   "depth": {
     "misconception": "Anything accepted by parse::<u8>() belongs to my format.",
@@ -60,5 +70,5 @@
     "alt": "Diagram for Adversarial Parser Tests: a Rust code example flows to the lesson rule and the key observation.",
     "caption": "Reject malformed data without panic or silent truncation"
   },
-  "contentDigest": "873a27fbcfd098d6643c323cabb53b47550a93b7e6f58c80fc6a817b78b38621"
+  "contentDigest": "3c00f03deb4d4150efe8cb873909e0f2e869552e0f0fb8c0822b90c590317b78"
 }

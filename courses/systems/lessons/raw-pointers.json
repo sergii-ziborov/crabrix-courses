@@ -1,6 +1,6 @@
 {
   "concept": "Represent an address without borrow guarantees",
-  "contentDigest": "3d6910c0faad3f6daa766ed47aa4f97736e7c41914a9278e8ffbf60d705f924c",
+  "contentDigest": "1888d72ec307dc51d3fbe919fa81f5fcd9cf57f0c44bf8c920ade21097e15c50",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "Creating `*const T` or `*mut T` is safe; dereferencing one is `unsafe` because validity, alignment, initialization, and aliasing are now the programmer's proof obligations.",
     "success": "You can name the proof the example has and this snippet lacks: `value` is still alive when the pointer is read.",
     "summary": "Represent an address without borrow guarantees.",
-    "task": "Decide which lines need `unsafe`. Then explain why the commented-out read would be undefined behaviour even if it happened to print 7. Do not run it as proof."
+    "task": "Decide which lines need `unsafe`. Then explain why the commented-out read would be undefined behaviour even if it happened to print 7. Do not run it as proof.",
+    "recall": [
+      {
+        "question": "This compiles. What is wrong with it?",
+        "answer": "A raw pointer carries no lifetime, so the borrow checker doesn't object when it outlives `value`. But `value` is gone, so the dereference is undefined behaviour, even if it happens to print 7. The `unsafe` block claims a validity proof that doesn't hold.",
+        "code": "let pointer: *const u32;\n{\n    let value = 7_u32;\n    pointer = &value;\n}\nlet read = unsafe { *pointer };"
+      },
+      {
+        "question": "Why is `ptr.add(1)` an `unsafe` method even though it reads no memory, while `ptr.wrapping_add(1)` is safe?",
+        "answer": "`add` requires the result to stay within the same allocation (or one past its end); violating that is undefined behaviour at once, so calling it without `unsafe` is E0133. `wrapping_add` makes no such promise and just computes an address; dereferencing either result is still `unsafe`."
+      }
+    ]
   },
   "illustration": {
     "path": "media/raw-pointers.png",

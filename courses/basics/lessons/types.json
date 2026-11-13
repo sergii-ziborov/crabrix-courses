@@ -1,6 +1,6 @@
 {
   "concept": "Tuples, arrays, and annotations",
-  "contentDigest": "11ba2bd0b976111ca8ec32aeec2877396bde59d10286d9ad300f5dd2e443f0a9",
+  "contentDigest": "8102148b875eacc26df8227b0cf8ed92be6b9aec6a5230f7c7e521ffc8d5a862",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "A tuple mixes types by position; an array holds one type with a fixed length.",
     "success": "The output shows both values with no type mismatch.",
     "summary": "Rust checks scalar and compound types before the program runs.",
-    "task": "Build one tuple and one array, then read a value from each."
+    "task": "Build one tuple and one array, then read a value from each.",
+    "recall": [
+      {
+        "question": "Why is this declaration rejected even though every element is a valid `u8`?",
+        "answer": "The length is part of an array's type. `[u8; 4]` promises exactly four elements, but the literal has three, so rustc reports mismatched types (E0308) about the element count, not the element type.",
+        "code": "let scores: [u8; 4] = [90, 75, 60];"
+      },
+      {
+        "question": "Why must a tuple field be accessed as `point.0` and not `point[i]` with a variable index, while an array allows `scores[i]`?",
+        "answer": "Tuple fields can have different types, so the compiler must know the position to know the type; `point[0]` is rejected with E0608. An array holds one element type, so an index computed at runtime still yields a known type."
+      }
+    ]
   },
   "illustration": {
     "path": "media/types.png",

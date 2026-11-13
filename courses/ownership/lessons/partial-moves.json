@@ -1,6 +1,6 @@
 {
   "concept": "Move one field while borrowing another",
-  "contentDigest": "4f22781ab611f3c14ac3ad9e16df7aaeab76d32d5649c051840ebb39cd4d95df",
+  "contentDigest": "11584af287ce092093da1559fadb94644d40457d474c5c9c9ad0815eb6b6e059",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,19 @@
     "rule": "Destructuring can move an owned field and copy or borrow the rest.",
     "success": "You can explain why `user.level` still works and why the whole `user` does not.",
     "summary": "Move one field while borrowing another.",
-    "task": "Predict which of `user.name`, `user.level`, and `user` stay usable after `let name = user.name`."
+    "task": "Predict which of `user.name`, `user.level`, and `user` stay usable after `let name = user.name`.",
+    "recall": [
+      {
+        "question": "Why can't `name` be moved out of `user` here, unlike with a plain struct?",
+        "answer": "`User` implements `Drop`, and its destructor expects a complete value, so moving a field out is rejected (E0509). Borrow or clone the field, or store it as `Option<String>` and `take()` it.",
+        "code": "struct User { name: String, level: u8 }\nimpl Drop for User { fn drop(&mut self) {} }\n\nlet user = User { name: \"Ada\".into(), level: 7 };\nlet name = user.name;"
+      },
+      {
+        "question": "After a partial move, which of the last two statements compile?",
+        "answer": "Both do. `user.level` was never moved and `u8` is `Copy`, so it can still be read, and the moved `name` can be put into a new `User`. Only using `user` as a whole value, such as printing `{user:?}`, is rejected.",
+        "code": "#[derive(Debug)]\nstruct User { name: String, level: u8 }\n\nlet user = User { name: \"Ada\".into(), level: 7 };\nlet name = user.name;\nprintln!(\"{}\", user.level);\nlet again = User { name, level: user.level };"
+      }
+    ]
   },
   "illustration": {
     "path": "media/partial-moves.png",

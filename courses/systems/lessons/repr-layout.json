@@ -1,6 +1,6 @@
 {
   "concept": "Make a data layout contract explicit at a boundary",
-  "contentDigest": "eb04125aeb0d8db193e97da36e5bddddf727698c4c1cdb261b99e3036021e464",
+  "contentDigest": "87543d2e4025c26b4c65d0d46ba197bf3a08921cf0e92e48b022888260b9a087",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "Rust's default layout may change for optimization and is not an FFI contract.",
     "success": "You can locate the two padding bytes and say why the default layout is not an FFI contract.",
     "summary": "Make a data layout contract explicit at a boundary.",
-    "task": "Predict both printed lines before running this. Then remove `#[repr(C)]` and say which of those numbers you may still rely on."
+    "task": "Predict both printed lines before running this. Then remove `#[repr(C)]` and say which of those numbers you may still rely on.",
+    "recall": [
+      {
+        "question": "With today's rustc this prints `8 12`. Why are the sizes different?",
+        "answer": "`repr(C)` keeps declaration order, so `B` pads 3 bytes before the aligned `u32` and 3 after `c` (1+3+4+1+3). The default layout is unspecified and may reorder fields to reduce padding, which is why `A` fits in 8 and why it's no FFI contract.",
+        "code": "use std::mem::size_of;\nstruct A { a: u8, b: u32, c: u8 }\n#[repr(C)]\nstruct B { a: u8, b: u32, c: u8 }\nprintln!(\"{} {}\", size_of::<A>(), size_of::<B>());"
+      },
+      {
+        "question": "Why shouldn't you send a `#[repr(C)]` struct over the network by copying its raw bytes?",
+        "answer": "Its padding bytes may be uninitialised, and its size, alignment and byte order depend on the target, so another machine may read it differently. Define a wire format with explicit field widths and endianness, for example with `to_le_bytes`."
+      }
+    ]
   },
   "illustration": {
     "path": "media/repr-layout.png",

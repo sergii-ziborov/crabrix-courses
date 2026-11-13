@@ -1,6 +1,6 @@
 {
   "concept": "crates.io, SemVer, and features",
-  "contentDigest": "2f38f69dfe71534a1183a893bd4d439c97143e09384f0107e579f40604a9a448",
+  "contentDigest": "6e62fe99b63989a8bb5fb78178d09ef4f870df441bd60e566965bff3f4ab6746",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "\"1.2\" means >=1.2.0 and <2.0.0; the lockfile records what was actually chosen.",
     "success": "`Cargo.lock` pins an exact version that satisfies the requirement.",
     "summary": "A dependency is a version requirement, not a fixed version.",
-    "task": "Add a dependency with an explicit feature and resolve it."
+    "task": "Add a dependency with an explicit feature and resolve it.",
+    "recall": [
+      {
+        "question": "Which versions can `serde = \"=1.0.229\"` and `smallvec = \"1\"` resolve to?",
+        "answer": "`=1.0.229` allows exactly that version. `\"1\"` is a caret requirement allowing >=1.0.0 and <2.0.0; the resolver picks the highest compatible release and records the exact choice in `Cargo.lock`."
+      },
+      {
+        "question": "You set `default-features = false` on a dependency, yet one of its default features is still enabled in the build. How can that happen?",
+        "answer": "Features are unified when the same package is reached through several paths. `default-features = false` removes only your edge's request, so another dependency can still turn the feature on; inspect the resolved feature graph, for example with `cargo tree`."
+      }
+    ]
   },
   "illustration": {
     "path": "media/dependencies.png",

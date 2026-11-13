@@ -1,6 +1,6 @@
 {
   "concept": "Propagation and custom errors",
-  "contentDigest": "34ea65c5dfb4e2e1d70880207de31c87da40bce675421c33baf36a3290561b81",
+  "contentDigest": "1a1852878dbb5271c5901085c7400c52587da563f66e3f2f6baee85028042b9f",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "Panic for a bug; `Result` for a situation the caller can act on.",
     "success": "The caller handles the failure without losing its cause.",
     "summary": "Good errors preserve context and keep recovery near the caller.",
-    "task": "Replace a panic with a `Result` and propagate it through one caller."
+    "task": "Replace a panic with a `Result` and propagate it through one caller.",
+    "recall": [
+      {
+        "question": "In `let text = std::fs::read_to_string(path)?;` inside `fn load(path: &str) -> Result<String, std::io::Error>`, what does `?` do when the read fails?",
+        "answer": "It returns early from `load` with that `Err`, leaving the success path uncluttered. The error is not hidden: the caller still has to handle or propagate it."
+      },
+      {
+        "question": "When should a reusable library panic instead of returning a `Result`?",
+        "answer": "Only when an internal assumption is violated, a bug, and the program cannot reasonably continue. Ordinary failures such as a missing file or invalid input belong in a `Result`, so the caller can decide to retry, report or exit."
+      }
+    ]
   },
   "illustration": {
     "path": "media/errors.png",

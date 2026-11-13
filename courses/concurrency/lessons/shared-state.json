@@ -1,6 +1,6 @@
 {
   "concept": "Mutex, RwLock, and Arc",
-  "contentDigest": "de10a8f4dd5a478a7467af2886936ebd1a3f13f9b904447c39dedbf1796d104d",
+  "contentDigest": "5f460768e6068f91890bd960369d82e57eaf3dc6c938ba108bc53c161b826d5e",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "The lock guard unlocks on drop, so there is no unlock to forget.",
     "success": "The final total equals the number of increments, every run.",
     "summary": "`Arc` shares the value; `Mutex` makes mutation through it safe.",
-    "task": "Increment one counter from several threads."
+    "task": "Increment one counter from several threads.",
+    "recall": [
+      {
+        "question": "In the lesson's counter, eight threads each run `*counter.lock().unwrap() += 1;`. Why is the lock held only briefly, and what is printed?",
+        "answer": "The `MutexGuard` from `lock()` is a temporary dropped at the end of that statement, which unlocks the mutex straight after the increment. After all eight are joined, the program prints `8`."
+      },
+      {
+        "question": "What happens when this runs?",
+        "answer": "It prints `got guard 0` and then hangs. `guard` keeps the lock until it is dropped, and `std::sync::Mutex` is not re-entrant, so `bump`'s `lock()` on the same thread never succeeds (std only promises it deadlocks or panics). Drop the guard before calling `bump`.",
+        "code": "use std::sync::Mutex;\nfn bump(m: &Mutex<i32>) { *m.lock().unwrap() += 1; }\n\nlet m = Mutex::new(0);\nlet guard = m.lock().unwrap();\nprintln!(\"got guard {}\", *guard);\nbump(&m);"
+      }
+    ]
   },
   "illustration": {
     "path": "media/shared-state.png",

@@ -1,6 +1,6 @@
 {
   "concept": "Share behavior while allowing an override",
-  "contentDigest": "573993cc6a30174c5bb9d8eb5c92a00ca60e8eef25f9a1a56149e64cdd6a6909",
+  "contentDigest": "da51d8f82831d22ba400d1f7cd86d5e816dd5a8b81914fca250a9fa0ea8e7ae2",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "A trait may provide a method body that implementations inherit.",
     "success": "You can write a minimal `impl`, and explain what `summary()` returns for it.",
     "summary": "Share behavior while allowing an override.",
-    "task": "Say which method of `Summary` an `impl` must write, and which it inherits."
+    "task": "Say which method of `Summary` an `impl` must write, and which it inherits.",
+    "recall": [
+      {
+        "question": "What does the last line print?",
+        "answer": "`Title: Rust | Note: memo`. `Post` inherits the default `summary`, which calls its own `title()`; `Note` overrides `summary`, so its version runs instead.",
+        "code": "trait Summary {\n    fn title(&self) -> &str;\n    fn summary(&self) -> String { format!(\"Title: {}\", self.title()) }\n}\nstruct Post;\nstruct Note;\nimpl Summary for Post { fn title(&self) -> &str { \"Rust\" } }\nimpl Summary for Note {\n    fn title(&self) -> &str { \"memo\" }\n    fn summary(&self) -> String { format!(\"Note: {}\", self.title()) }\n}\nprintln!(\"{} | {}\", Post.summary(), Note.summary());"
+      },
+      {
+        "question": "A library adds a method to a public trait that many crates implement. What happens to those implementers if the method has no body, compared with a default body?",
+        "answer": "With no body it is required, so every existing `impl` stops compiling with E0046 (not all trait items implemented). With a default body, existing implementations inherit it and keep compiling, and can still override it."
+      }
+    ]
   },
   "illustration": {
     "path": "media/default-trait-methods.png",

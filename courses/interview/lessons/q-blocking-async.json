@@ -1,6 +1,6 @@
 {
   "concept": "Why one sync call stalls a runtime",
-  "contentDigest": "4906ae9ddde14f5ff88a81a0ac383eeeb6d088630cae816f2d823d506c2b564e",
+  "contentDigest": "28b3a46f7dd1ea68fc92197de8d8e2fb967818aca8f2c20892c83640b251de61",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,17 @@
     "rule": "Never block an executor thread: yield, or move the work off it.",
     "success": "No task holds an executor thread while it waits on something synchronous.",
     "summary": "One blocking call can stall an entire async runtime.",
-    "task": "Find the blocking call in an async handler and move it off the runtime."
+    "task": "Find the blocking call in an async handler and move it off the runtime.",
+    "recall": [
+      {
+        "question": "Why might a task that awaits an already-ready future still prevent other tasks on the same worker from running?",
+        "answer": "An `.await` on a future that is immediately ready returns without suspending, so the task keeps running synchronously. Only a pending await yields the worker back to the executor."
+      },
+      {
+        "question": "When is a synchronous `std::sync::Mutex` acceptable inside async code, and when is it dangerous?",
+        "answer": "It is fine for a tiny critical section that never crosses an `.await`. Holding its guard across an `.await` lets the task suspend while keeping the lock, so other tasks wait, deadlocks become possible, and the future may stop being `Send`."
+      }
+    ]
   },
   "illustration": {
     "path": "media/q-blocking-async.png",

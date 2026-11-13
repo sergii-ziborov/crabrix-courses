@@ -14,7 +14,7 @@
     "visibleInput": "[3,9,20,null,null,15,7]"
   },
   "concept": "Return height normally but propagate a sentinel immediately when a subtree is already unbalanced.",
-  "contentDigest": "01a70041a7f5186b26e136be8414a4cb5ef9204513d139776d2dc2a740f9a723",
+  "contentDigest": "a10253e7bd5b76f74d45cc122e7368ef1eda3be5737c1e95d003bcd4980b4cf6",
   "depth": {
     "connections": [
       {
@@ -68,7 +68,14 @@
     "rule": "Return height normally but propagate a sentinel immediately when a subtree is already unbalanced. State the input preconditions before applying it.",
     "success": "You can explain the invariant, termination condition, and O(n) time · O(h) stack bound without looking at the code.",
     "summary": "Return height normally but propagate a sentinel immediately when a subtree is already unbalanced.",
-    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output."
+    "task": "Follow the concrete trace, then change the typed fixture in the complete worked program and predict its output.",
+    "recall": [
+      {
+        "question": "In this balance check, what do the `?` operators and the `None` result do?",
+        "answer": "`None` is the 'unbalanced' sentinel. If either child returns `None`, `?` returns `None` immediately, without computing the remaining height. A node whose child heights differ by more than one also returns `None`, so one postorder pass both computes heights and detects imbalance.",
+        "code": "fn height(root: &Tree) -> Option<usize> {\n    match root {\n        None => Some(0),\n        Some(n) => {\n            let (l, r) = (height(&n.left)?, height(&n.right)?);\n            (l.abs_diff(r) <= 1).then_some(1 + l.max(r))\n        }\n    }\n}"
+      }
+    ]
   },
   "illustration": {
     "path": "media/algorithms-trees-a.png",

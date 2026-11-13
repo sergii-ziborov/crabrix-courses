@@ -1,6 +1,6 @@
 {
   "concept": "Keep executor threads available to poll other futures",
-  "contentDigest": "73a0ed14110b40215728c26249c512a761496fe7e0fd0b9a7c7c666be0dd992a",
+  "contentDigest": "ab8794902619c24c06c25c2cb9432ecc18445b0d46d621080b003e0e927bd7cc",
   "depth": {
     "connections": [
       {
@@ -49,7 +49,17 @@
     "rule": "A blocking call occupies an executor worker without yielding, so unrelated tasks can stall.",
     "success": "The second task keeps its schedule, and you can say why `sleep` inside an `async fn` delayed it.",
     "summary": "Keep executor threads available to poll other futures.",
-    "task": "Rewrite `handler` so the wait yields, using your runtime's async timer. Then run it beside a second task and compare how late that task's timer fires."
+    "task": "Rewrite `handler` so the wait yields, using your runtime's async timer. Then run it beside a second task and compare how late that task's timer fires.",
+    "recall": [
+      {
+        "question": "On a Tokio current-thread runtime, task A wakes every 50 ms from `tokio::time::sleep`; at about 60 ms task B calls `std::thread::sleep(300 ms)`. What happens to A's ticks?",
+        "answer": "A ticks at about 50 ms, then nothing until B's blocking sleep ends; the next tick comes at roughly 360 ms. The runtime's only worker thread is blocked and can't poll A, even though A's timer is ready."
+      },
+      {
+        "question": "You move blocking work into `tokio::task::spawn_blocking`. What happens if you `abort()` that handle while the closure is running?",
+        "answer": "Nothing stops the closure: it runs to completion on the blocking pool, because abort only works at async await points. The awaited handle simply reports completion. Blocking work needs its own stop mechanism, and it should take owned input since it runs on another thread."
+      }
+    ]
   },
   "illustration": {
     "path": "media/blocking-async.png",

@@ -1,6 +1,6 @@
 {
   "concept": "Relationships between borrows",
-  "contentDigest": "65dad9de2510cc1c3e4f1de5b362d3a1f1a81a406086f2a6004234dc9779ca04",
+  "contentDigest": "b61ae543723bb8be1eee99668072b2095760c7bbded45bdd6851c104bc0a1d8b",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,18 @@
     "rule": "A struct holding a reference is bounded by that reference's lifetime.",
     "success": "You can write the annotated `Holder` and explain why it cannot outlive the data it points into.",
     "summary": "Lifetime annotations connect the borrows in a signature.",
-    "task": "Store a borrowed slice in a struct and explain the annotation."
+    "task": "Store a borrowed slice in a struct and explain the annotation.",
+    "recall": [
+      {
+        "question": "Why is this rejected, and what single signature change makes it compile?",
+        "answer": "By elision the returned `&str` is tied to `&self`, the borrow of `e`, which ends at the inner brace (E0597). The data really comes from `text`, so declare `fn part(&self) -> &'a str`; then `p` may outlive `e` and the program prints `abc`.",
+        "code": "struct Excerpt<'a> { part: &'a str }\nimpl<'a> Excerpt<'a> {\n    fn part(&self) -> &str { self.part }\n}\n\nlet text = String::from(\"abc def\");\nlet p;\n{\n    let e = Excerpt { part: &text[..3] };\n    p = e.part();\n}\nprintln!(\"{p}\");"
+      },
+      {
+        "question": "An `Excerpt<'a>` must be stored after the text it was built from is dropped. Why won't a different lifetime label help, and what is the fix?",
+        "answer": "A lifetime annotation only describes a relationship. It cannot make the borrowed text live longer, and a struct holding `&'a str` can never outlive its source. If the excerpt must outlive the text, make the field an owned `String`."
+      }
+    ]
   },
   "illustration": {
     "path": "media/lifetimes.png",

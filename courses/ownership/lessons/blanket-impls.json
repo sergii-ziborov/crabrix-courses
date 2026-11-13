@@ -1,6 +1,6 @@
 {
   "concept": "Implement behavior for every matching type",
-  "contentDigest": "6cdec0606145942bfe05ffcc69f034e391ee859513f179307503a19bd4510a5f",
+  "contentDigest": "0d3067dadbfb07348d548fb17a8a0f7b9f4e74d5e2bcf41cf44124eae85e3135",
   "depth": {
     "connections": [
       {
@@ -54,7 +54,19 @@
     "rule": "A generic `impl` can grant a trait to all types satisfying a bound.",
     "success": "You can name one type that receives `name()` and one that does not, and say why.",
     "summary": "Implement behavior for every matching type.",
-    "task": "Say which types get `Named` from this `impl`, and which do not."
+    "task": "Say which types get `Named` from this `impl`, and which do not.",
+    "recall": [
+      {
+        "question": "Why is the second `impl` rejected?",
+        "answer": "`i32` implements `Display`, so the blanket impl already covers it, and coherence forbids two overlapping implementations: E0119 conflicting implementations of `Named` for `i32`. Stable Rust has no specialisation to prefer the specific one.",
+        "code": "trait Named { fn name(&self) -> String; }\nimpl<T: std::fmt::Display> Named for T {\n    fn name(&self) -> String { self.to_string() }\n}\nimpl Named for i32 {\n    fn name(&self) -> String { \"int\".into() }\n}"
+      },
+      {
+        "question": "Given only the blanket impl, which of these compile: `5.name()`, `String::from(\"a\").name()`, `vec![1].name()`?",
+        "answer": "The first two: `i32` and `String` implement `Display`, so they receive `Named` automatically. `Vec` has no `Display`, so the bound isn't satisfied and the third is E0599. The rule is checked at compile time; there is no runtime registry.",
+        "code": "trait Named { fn name(&self) -> String; }\nimpl<T: std::fmt::Display> Named for T {\n    fn name(&self) -> String { self.to_string() }\n}"
+      }
+    ]
   },
   "illustration": {
     "path": "media/blanket-impls.png",
