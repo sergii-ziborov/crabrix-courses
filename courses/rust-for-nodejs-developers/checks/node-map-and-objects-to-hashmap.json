@@ -1,0 +1,53 @@
+{
+  "challenge": {
+    "expectedOutput": "PASS node-map-and-objects-to-hashmap\n",
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ],
+    "lessonID": "node-map-and-objects-to-hashmap",
+    "patternID": "node-map-and-objects-to-hashmap",
+    "projectName": "node-map-and-objects-to-hashmap-lab",
+    "requiredSourceFragments": [
+      "pub fn totals_by_customer",
+      ".entry("
+    ],
+    "source": "// JavaScript original:\n// function totalsByCustomer(orders) {\n//   const totals = new Map();\n//   for (const [customer, cents] of orders) {\n//     totals.set(customer, (totals.get(customer) ?? 0) + cents);\n//   }\n//   return totals;\n// }\nuse std::collections::HashMap;\n\npub fn totals_by_customer(orders: &[(&str, u64)]) -> HashMap<String, u64> {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationCases": [
+      {
+        "expectedAnswer": "{ana: 750, bo: 200}",
+        "input": "totals_by_customer(&[(\"ana\", 500), (\"bo\", 200), (\"ana\", 250)])",
+        "kind": "visible"
+      },
+      {
+        "expectedAnswer": "{}",
+        "input": "totals_by_customer(&[])",
+        "kind": "boundary"
+      },
+      {
+        "expectedAnswer": "{constructor: 3}",
+        "input": "totals_by_customer(&[(\"constructor\", 1), (\"constructor\", 2)])",
+        "kind": "semantic"
+      },
+      {
+        "expectedAnswer": "{Ana: 1, ana: 2}",
+        "input": "totals_by_customer(&[(\"Ana\", 1), (\"ana\", 2)])",
+        "kind": "semantic"
+      }
+    ],
+    "verificationSource": "mod solution;\n\nuse std::collections::HashMap;\n\nfn map(pairs: &[(&str, u64)]) -> HashMap<String, u64> {\n    pairs.iter().map(|&(name, cents)| (name.to_string(), cents)).collect()\n}\n\nfn main() {\n    let orders = [(\"ana\", 500), (\"bo\", 200), (\"ana\", 250)];\n    assert_eq!(solution::totals_by_customer(&orders), map(&[(\"ana\", 750), (\"bo\", 200)]), \"case 1\");\n    assert_eq!(solution::totals_by_customer(&[]), map(&[]), \"case 2\");\n    let tricky = [(\"constructor\", 1), (\"constructor\", 2)];\n    assert_eq!(solution::totals_by_customer(&tricky), map(&[(\"constructor\", 3)]), \"case 3\");\n    let cased = [(\"Ana\", 1), (\"ana\", 2)];\n    assert_eq!(solution::totals_by_customer(&cased), map(&[(\"Ana\", 1), (\"ana\", 2)]), \"case 4\");\n\n    println!(\"PASS node-map-and-objects-to-hashmap\");\n}\n"
+  },
+  "evidence": {
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS node-map-and-objects-to-hashmap\n"
+    },
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ],
+    "kind": "algorithmChallenge",
+    "requiredSourceFragments": [
+      "pub fn totals_by_customer",
+      ".entry("
+    ]
+  }
+}

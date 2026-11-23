@@ -1,0 +1,1250 @@
+{
+  "course": "rust-for-c-developers",
+  "rustc": {
+    "1.89.0": "rustc 1.89.0 (29483883e 2025-08-04)",
+    "1.100.0": "rustc 1.100.0 (0ef1bc386 2026-11-09)"
+  },
+  "wasmRustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+  "clang": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
+  "summary": {
+    "lessons": 17,
+    "runnable": 13,
+    "correctAnswerPositions": [
+      2,
+      1,
+      0,
+      3,
+      0,
+      2,
+      1,
+      3,
+      0,
+      2,
+      1,
+      0,
+      3,
+      1,
+      2,
+      0,
+      3
+    ],
+    "credits": 30,
+    "perToolchain": {
+      "1.89.0": {
+        "compiledAndRan": 66,
+        "expectedCompileErrors": 24,
+        "expectedPanics": 3,
+        "wrongPortsRejected": 21
+      },
+      "1.100.0": {
+        "compiledAndRan": 66,
+        "expectedCompileErrors": 24,
+        "expectedPanics": 3,
+        "wrongPortsRejected": 21
+      }
+    },
+    "cPrograms": 17,
+    "sanitizerFindings": 8
+  },
+  "lessons": [
+    {
+      "id": "c-printf-to-println",
+      "exerciseKind": "runnable",
+      "credits": [
+        "basics/hello-rust",
+        "basics/print-formatting"
+      ],
+      "example": {
+        "1.89.0": "compiled without warnings, stdout matched",
+        "1.100.0": "compiled without warnings, stdout matched"
+      },
+      "practice": {
+        "1.89.0": {
+          "message": "2 positional arguments in format string, but there is 1 argument"
+        },
+        "1.100.0": {
+          "message": "2 positional arguments in format string, but there is 1 argument"
+        }
+      },
+      "recall": {
+        "1 1.89.0": {
+          "stdout": "0x0\n0x00ff\n"
+        },
+        "1 1.100.0": {
+          "stdout": "0x0\n0x00ff\n"
+        }
+      },
+      "probes": {},
+      "c": {
+        "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
+        "warnings": [
+          "-Wformat-insufficient-args"
+        ],
+        "exit": 0,
+        "stdout": "    bolt|007|0x00ff\nbolt    |7\n0\n7 items, 7 left\n"
+      },
+      "challenge": {
+        "cases": 4,
+        "stub": {
+          "1.89.0": "compiled, failed",
+          "1.100.0": "compiled, failed"
+        },
+        "reference": {
+          "1.89.0": "passed",
+          "1.100.0": "passed",
+          "1.100.0 release": "passed",
+          "wasm32-wasip1 (rustc 1.99.0)": "compiled to an object file (not linked)"
+        },
+        "wrong": {
+          "c-printf-to-println.1.rs": {
+            "note": "C habit: `{name:8}` for `%8s` left-aligns the name",
+            "rejected": {
+              "1.89.0": "panic",
+              "1.100.0": "panic",
+              "1.100.0 release": "panic"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c-const-by-default",
+      "exerciseKind": "planned",
+      "credits": [
+        "basics/variables"
+      ],
+      "example": {
+        "1.89.0": "compiled without warnings, stdout matched",
+        "1.100.0": "compiled without warnings, stdout matched"
+      },
+      "practice": {
+        "1.89.0": {
+          "errors": [
+            "E0384"
+          ]
+        },
+        "1.100.0": {
+          "errors": [
+            "E0384"
+          ]
+        }
+      },
+      "recall": {
+        "0 1.89.0": {
+          "stdout": "10\n5\n"
+        },
+        "0 1.100.0": {
+          "stdout": "10\n5\n"
+        }
+      },
+      "probes": {
+        "quiz 1.89.0": {
+          "errors": [
+            "E0384"
+          ]
+        },
+        "quiz-without-last-line 1.89.0": {
+          "stdout": "5\n"
+        },
+        "quiz 1.100.0": {
+          "errors": [
+            "E0384"
+          ]
+        },
+        "quiz-without-last-line 1.100.0": {
+          "stdout": "5\n"
+        }
+      },
+      "c": {
+        "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
+        "warnings": [],
+        "exit": 0,
+        "stdout": "limit=3 total=126\n"
+      }
+    },
+    {
+      "id": "c-integer-overflow-and-casts",
+      "exerciseKind": "runnable",
+      "credits": [
+        "basics/number-types",
+        "basics/operators"
+      ],
+      "example": {
+        "1.89.0": "compiled without warnings, stdout matched",
+        "1.100.0": "compiled without warnings, stdout matched"
+      },
+      "practice": {
+        "1.89.0": {
+          "errors": [
+            "E0308"
+          ]
+        },
+        "1.100.0": {
+          "errors": [
+            "E0308"
+          ]
+        }
+      },
+      "recall": {
+        "1 1.89.0": {
+          "stdout": "44 4294967295 2147483647 0\n"
+        },
+        "1 1.100.0": {
+          "stdout": "44 4294967295 2147483647 0\n"
+        }
+      },
+      "probes": {},
+      "c": {
+        "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
+        "warnings": [
+          "-Wsign-compare"
+        ],
+        "exit": 0,
+        "stdout": "bytes=0 byte=44\n-1 < 3u is 0\n-2147483648\n",
+        "sanitizer": {
+          "flags": "undefined",
+          "finding": "from.c:4:53: runtime error: signed integer overflow: 2147483647 + 1 cannot be represented in type 'int32_t' (aka 'int')"
+        }
+      },
+      "challenge": {
+        "cases": 7,
+        "stub": {
+          "1.89.0": "compiled, failed",
+          "1.100.0": "compiled, failed"
+        },
+        "reference": {
+          "1.89.0": "passed",
+          "1.100.0": "passed",
+          "1.100.0 release": "passed",
+          "wasm32-wasip1 (rustc 1.99.0)": "compiled to an object file (not linked)"
+        },
+        "wrong": {
+          "c-integer-overflow-and-casts.1.rs": {
+            "note": "C habit: `wrapping_mul` and `value as u8` keep the silent wrap and truncation",
+            "rejected": {
+              "1.89.0": "panic",
+              "1.100.0": "panic",
+              "1.100.0 release": "panic"
+            }
+          },
+          "c-integer-overflow-and-casts.2.rs": {
+            "note": "plain `count * size` panics in debug builds and wraps in release builds",
+            "rejected": {
+              "1.89.0": "panic",
+              "1.100.0": "panic",
+              "1.100.0 release": "panic"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c-functions-are-expressions",
+      "exerciseKind": "runnable",
+      "credits": [
+        "basics/functions",
+        "basics/block-expressions"
+      ],
+      "example": {
+        "1.89.0": "compiled without warnings, stdout matched",
+        "1.100.0": "compiled without warnings, stdout matched"
+      },
+      "practice": {
+        "1.89.0": {
+          "errors": [
+            "E0308"
+          ]
+        },
+        "1.100.0": {
+          "errors": [
+            "E0308"
+          ]
+        }
+      },
+      "recall": {
+        "0 1.89.0": {
+          "stdout": "()\n"
+        },
+        "1 1.89.0": {
+          "stdout": "false\n"
+        },
+        "0 1.100.0": {
+          "stdout": "()\n"
+        },
+        "1 1.100.0": {
+          "stdout": "false\n"
+        }
+      },
+      "probes": {
+        "quiz-fixed 1.89.0": {
+          "stdout": "29 28\n"
+        },
+        "integer-condition 1.89.0": {
+          "errors": [
+            "E0308"
+          ]
+        },
+        "quiz-fixed 1.100.0": {
+          "stdout": "29 28\n"
+        },
+        "integer-condition 1.100.0": {
+          "errors": [
+            "E0308"
+          ]
+        }
+      },
+      "c": {
+        "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
+        "warnings": [],
+        "exit": 0,
+        "stdout": "0 7 10\n-1 0 1\n4 is even\n"
+      },
+      "challenge": {
+        "cases": 6,
+        "stub": {
+          "1.89.0": "compiled, failed",
+          "1.100.0": "compiled, failed"
+        },
+        "reference": {
+          "1.89.0": "passed",
+          "1.100.0": "passed",
+          "1.100.0 release": "passed",
+          "wasm32-wasip1 (rustc 1.99.0)": "compiled to an object file (not linked)"
+        },
+        "wrong": {
+          "c-functions-are-expressions.1.rs": {
+            "note": "only `year % 4 == 0`: 1900 counted as a leap year",
+            "rejected": {
+              "1.89.0": "panic",
+              "1.100.0": "panic",
+              "1.100.0 release": "panic"
+            }
+          },
+          "c-functions-are-expressions.2.rs": {
+            "note": "C-style trailing semicolon after the tail expression",
+            "rejected": {
+              "1.89.0": "compile error E0308",
+              "1.100.0": "compile error E0308",
+              "1.100.0 release": "compile error E0308"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c-for-loops-to-ranges",
+      "exerciseKind": "runnable",
+      "credits": [
+        "basics/loops",
+        "basics/ranges"
+      ],
+      "example": {
+        "1.89.0": "compiled without warnings, stdout matched",
+        "1.100.0": "compiled without warnings, stdout matched"
+      },
+      "practice": {
+        "1.89.0": {
+          "panic": "attempt to subtract with overflow",
+          "stdout": "15 8 4 "
+        },
+        "1.100.0": {
+          "panic": "attempt to subtract with overflow",
+          "stdout": "15 8 4 "
+        }
+      },
+      "recall": {
+        "1 1.89.0": {
+          "stdout": "Some(2) None\n"
+        },
+        "1 1.100.0": {
+          "stdout": "Some(2) None\n"
+        }
+      },
+      "probes": {
+        "quiz 1.89.0": {
+          "stdout": "18\n"
+        },
+        "inclusive-at-max 1.89.0": {
+          "stdout": "256\n"
+        },
+        "quiz 1.100.0": {
+          "stdout": "18\n"
+        },
+        "inclusive-at-max 1.100.0": {
+          "stdout": "256\n"
+        }
+      },
+      "c": {
+        "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
+        "warnings": [],
+        "exit": 0,
+        "stdout": "42 23 16 15 8 4 \nsum=108 total=55\nfirst_big=4\n"
+      },
+      "challenge": {
+        "cases": 8,
+        "stub": {
+          "1.89.0": "compiled, failed",
+          "1.100.0": "compiled, failed"
+        },
+        "reference": {
+          "1.89.0": "passed",
+          "1.100.0": "passed",
+          "1.100.0 release": "passed",
+          "wasm32-wasip1 (rustc 1.99.0)": "compiled to an object file (not linked)"
+        },
+        "wrong": {
+          "c-for-loops-to-ranges.1.rs": {
+            "note": "`lo..hi + 1` overflows at 255: a panic in debug builds, an empty range in release builds",
+            "rejected": {
+              "1.89.0": "panic",
+              "1.100.0": "panic",
+              "1.100.0 release": "panic"
+            }
+          },
+          "c-for-loops-to-ranges.2.rs": {
+            "note": "`lo..hi` translates `<=` as `<` and misses the last value",
+            "rejected": {
+              "1.89.0": "panic",
+              "1.100.0": "panic",
+              "1.100.0 release": "panic"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c-malloc-free-to-ownership",
+      "exerciseKind": "runnable",
+      "credits": [
+        "ownership/ownership",
+        "ownership/drop-order"
+      ],
+      "example": {
+        "1.89.0": "compiled without warnings, stdout matched",
+        "1.100.0": "compiled without warnings, stdout matched"
+      },
+      "practice": {
+        "1.89.0": {
+          "errors": [
+            "E0382"
+          ]
+        },
+        "1.100.0": {
+          "errors": [
+            "E0382"
+          ]
+        }
+      },
+      "recall": {
+        "1 1.89.0": {
+          "errors": [
+            "E0382"
+          ]
+        },
+        "1 1.100.0": {
+          "errors": [
+            "E0382"
+          ]
+        }
+      },
+      "probes": {
+        "quiz 1.89.0": {
+          "stdout": "file\nlock\nlog\n"
+        },
+        "quiz 1.100.0": {
+          "stdout": "file\nlock\nlog\n"
+        }
+      },
+      "c": {
+        "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
+        "warnings": [],
+        "exit": -5,
+        "stdout": "",
+        "sanitizer": {
+          "flags": "address",
+          "finding": "==74277==ERROR: AddressSanitizer: attempting double-free on 0x… in thread T0:"
+        }
+      },
+      "challenge": {
+        "cases": 4,
+        "stub": {
+          "1.89.0": "compiled, failed",
+          "1.100.0": "compiled, failed"
+        },
+        "reference": {
+          "1.89.0": "passed",
+          "1.100.0": "passed",
+          "1.100.0 release": "passed",
+          "wasm32-wasip1 (rustc 1.99.0)": "compiled to an object file (not linked)"
+        },
+        "wrong": {
+          "c-malloc-free-to-ownership.1.rs": {
+            "note": "copies the winner with `.cloned()`: a second buffer instead of a move",
+            "rejected": {
+              "1.89.0": "panic",
+              "1.100.0": "panic",
+              "1.100.0 release": "panic"
+            }
+          },
+          "c-malloc-free-to-ownership.2.rs": {
+            "note": "`max_by_key` returns the last of equal maxima, so a tie picks the wrong buffer",
+            "rejected": {
+              "1.89.0": "panic",
+              "1.100.0": "panic",
+              "1.100.0 release": "panic"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c-pointers-to-references",
+      "exerciseKind": "runnable",
+      "credits": [
+        "basics/references-intro",
+        "ownership/borrowing"
+      ],
+      "example": {
+        "1.89.0": "compiled without warnings, stdout matched",
+        "1.100.0": "compiled without warnings, stdout matched"
+      },
+      "practice": {
+        "1.89.0": {
+          "errors": [
+            "E0502"
+          ]
+        },
+        "1.100.0": {
+          "errors": [
+            "E0502"
+          ]
+        }
+      },
+      "recall": {
+        "0 1.89.0": {
+          "stdout": "1\n[1, 2, 3]\n"
+        },
+        "0 1.100.0": {
+          "stdout": "1\n[1, 2, 3]\n"
+        }
+      },
+      "probes": {
+        "aliasing-call 1.89.0": {
+          "errors": [
+            "E0502"
+          ]
+        },
+        "aliasing-call 1.100.0": {
+          "errors": [
+            "E0502"
+          ]
+        }
+      },
+      "c": {
+        "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
+        "warnings": [],
+        "exit": 0,
+        "stdout": "1\n",
+        "sanitizer": {
+          "flags": "address",
+          "finding": "==75143==ERROR: AddressSanitizer: heap-use-after-free on address 0x… at pc 0x… bp 0x… sp 0x…"
+        }
+      },
+      "challenge": {
+        "cases": 5,
+        "stub": {
+          "1.89.0": "compiled, failed",
+          "1.100.0": "compiled, failed"
+        },
+        "reference": {
+          "1.89.0": "passed",
+          "1.100.0": "passed",
+          "1.100.0 release": "passed",
+          "wasm32-wasip1 (rustc 1.99.0)": "compiled to an object file (not linked)"
+        },
+        "wrong": {
+          "c-pointers-to-references.1.rs": {
+            "note": "C habit: reserve capacity, then write past `len()` by index",
+            "rejected": {
+              "1.89.0": "panic",
+              "1.100.0": "panic",
+              "1.100.0 release": "panic"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c-pointer-length-to-slices",
+      "exerciseKind": "runnable",
+      "credits": [
+        "ownership/slices"
+      ],
+      "example": {
+        "1.89.0": "compiled without warnings, stdout matched",
+        "1.100.0": "compiled without warnings, stdout matched"
+      },
+      "practice": {
+        "1.89.0": {
+          "panic": "index out of bounds: the len is 3 but the index is 3"
+        },
+        "1.100.0": {
+          "panic": "index out of bounds: the len is 3 but the index is 3"
+        }
+      },
+      "recall": {
+        "0 1.89.0": {
+          "stdout": "0 None Some(10)\n"
+        },
+        "0 1.100.0": {
+          "stdout": "0 None Some(10)\n"
+        }
+      },
+      "probes": {},
+      "c": {
+        "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
+        "warnings": [
+          "-Wsizeof-array-argument"
+        ],
+        "exit": 0,
+        "stdout": "sizeof xs = 8\nmax = 9\n",
+        "sanitizer": {
+          "flags": "address",
+          "finding": "==75790==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x… at pc 0x… bp 0x… sp 0x…"
+        }
+      },
+      "challenge": {
+        "cases": 6,
+        "stub": {
+          "1.89.0": "compiled, failed",
+          "1.100.0": "compiled, failed"
+        },
+        "reference": {
+          "1.89.0": "passed",
+          "1.100.0": "passed",
+          "1.100.0 release": "passed",
+          "wasm32-wasip1 (rustc 1.99.0)": "compiled to an object file (not linked)"
+        },
+        "wrong": {
+          "c-pointer-length-to-slices.1.rs": {
+            "note": "closes a run only when the value changes, so a run at the end is lost",
+            "rejected": {
+              "1.89.0": "panic",
+              "1.100.0": "panic",
+              "1.100.0 release": "panic"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c-dangling-pointers-to-lifetimes",
+      "exerciseKind": "runnable",
+      "credits": [
+        "ownership/lifetimes-intro"
+      ],
+      "example": {
+        "1.89.0": "compiled without warnings, stdout matched",
+        "1.100.0": "compiled without warnings, stdout matched"
+      },
+      "practice": {
+        "1.89.0": {
+          "errors": [
+            "E0597"
+          ]
+        },
+        "1.100.0": {
+          "errors": [
+            "E0597"
+          ]
+        }
+      },
+      "recall": {
+        "0 1.89.0": {
+          "errors": [
+            "E0515"
+          ]
+        },
+        "0 1.100.0": {
+          "errors": [
+            "E0515"
+          ]
+        }
+      },
+      "probes": {
+        "elision 1.89.0": {
+          "errors": [
+            "E0106"
+          ]
+        },
+        "elision 1.100.0": {
+          "errors": [
+            "E0106"
+          ]
+        }
+      },
+      "c": {
+        "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
+        "warnings": [],
+        "exit": 0,
+        "stdout": "\u0004\n",
+        "sanitizer": {
+          "flags": "address",
+          "finding": "==76209==ERROR: AddressSanitizer: heap-use-after-free on address 0x… at pc 0x… bp 0x… sp 0x…"
+        }
+      },
+      "challenge": {
+        "cases": 8,
+        "stub": {
+          "1.89.0": "compiled, failed",
+          "1.100.0": "compiled, failed"
+        },
+        "reference": {
+          "1.89.0": "passed",
+          "1.100.0": "passed",
+          "1.100.0 release": "passed",
+          "wasm32-wasip1 (rustc 1.99.0)": "compiled to an object file (not linked)"
+        },
+        "wrong": {
+          "c-dangling-pointers-to-lifetimes.1.rs": {
+            "note": "ties `prefix` to `'a` as well, so the caller cannot drop `prefix` while using the result",
+            "rejected": {
+              "1.89.0": "compile error E0597",
+              "1.100.0": "compile error E0597",
+              "1.100.0 release": "compile error E0597"
+            }
+          },
+          "c-dangling-pointers-to-lifetimes.2.rs": {
+            "note": "C habit: skips past `prefix.len()` bytes without comparing, as with an unchecked `line + n`",
+            "rejected": {
+              "1.89.0": "panic",
+              "1.100.0": "panic",
+              "1.100.0 release": "panic"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c-struct-copy-to-copy-clone",
+      "exerciseKind": "runnable",
+      "credits": [
+        "ownership/copy-clone"
+      ],
+      "example": {
+        "1.89.0": "compiled without warnings, stdout matched",
+        "1.100.0": "compiled without warnings, stdout matched"
+      },
+      "practice": {
+        "1.89.0": {
+          "errors": [
+            "E0204"
+          ]
+        },
+        "1.100.0": {
+          "errors": [
+            "E0204"
+          ]
+        }
+      },
+      "recall": {
+        "0 1.89.0": {
+          "stdout": "Rgb(1, 2, 3) Rgb(9, 2, 3)\n"
+        },
+        "0 1.100.0": {
+          "stdout": "Rgb(1, 2, 3) Rgb(9, 2, 3)\n"
+        }
+      },
+      "probes": {},
+      "c": {
+        "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
+        "warnings": [],
+        "exit": -5,
+        "stdout": "",
+        "sanitizer": {
+          "flags": "address",
+          "finding": "==77791==ERROR: AddressSanitizer: attempting double-free on 0x… in thread T0:"
+        }
+      },
+      "challenge": {
+        "cases": 5,
+        "stub": {
+          "1.89.0": "compiled, failed",
+          "1.100.0": "compiled, failed"
+        },
+        "reference": {
+          "1.89.0": "passed",
+          "1.100.0": "passed",
+          "1.100.0 release": "passed",
+          "wasm32-wasip1 (rustc 1.99.0)": "compiled to an object file (not linked)"
+        },
+        "wrong": {
+          "c-struct-copy-to-copy-clone.1.rs": {
+            "note": "C habit: a shallow struct copy, moving the borrowed `Vec` out of `path`",
+            "rejected": {
+              "1.89.0": "compile error E0507",
+              "1.100.0": "compile error E0507",
+              "1.100.0 release": "compile error E0507"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c-structs-to-impl",
+      "exerciseKind": "runnable",
+      "credits": [
+        "basics/structs",
+        "basics/methods-intro"
+      ],
+      "example": {
+        "1.89.0": "compiled without warnings, stdout matched",
+        "1.100.0": "compiled without warnings, stdout matched"
+      },
+      "practice": {
+        "1.89.0": {
+          "errors": [
+            "E0382"
+          ]
+        },
+        "1.100.0": {
+          "errors": [
+            "E0382"
+          ]
+        }
+      },
+      "recall": {},
+      "probes": {
+        "quiz-borrowed-close 1.89.0": {
+          "stdout": "3 3\n"
+        },
+        "immutable-binding 1.89.0": {
+          "errors": [
+            "E0596"
+          ]
+        },
+        "quiz-borrowed-close 1.100.0": {
+          "stdout": "3 3\n"
+        },
+        "immutable-binding 1.100.0": {
+          "errors": [
+            "E0596"
+          ]
+        }
+      },
+      "c": {
+        "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
+        "warnings": [],
+        "exit": 0,
+        "stdout": "visits: 2\nfinal: 2\n"
+      },
+      "challenge": {
+        "cases": 6,
+        "stub": {
+          "1.89.0": "compiled, failed",
+          "1.100.0": "compiled, failed"
+        },
+        "reference": {
+          "1.89.0": "passed",
+          "1.100.0": "passed",
+          "1.100.0 release": "passed",
+          "wasm32-wasip1 (rustc 1.99.0)": "compiled to an object file (not linked)"
+        },
+        "wrong": {
+          "c-structs-to-impl.1.rs": {
+            "note": "C original's `spent + amount > limit`: overflows on `u32::MAX` (a panic in debug, a wrapped sum in release)",
+            "rejected": {
+              "1.89.0": "panic",
+              "1.100.0": "panic",
+              "1.100.0 release": "panic"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c-tagged-unions-to-enums",
+      "exerciseKind": "runnable",
+      "credits": [
+        "basics/enums",
+        "basics/pattern-matching"
+      ],
+      "example": {
+        "1.89.0": "compiled without warnings, stdout matched",
+        "1.100.0": "compiled without warnings, stdout matched"
+      },
+      "practice": {
+        "1.89.0": {
+          "errors": [
+            "E0004"
+          ]
+        },
+        "1.100.0": {
+          "errors": [
+            "E0004"
+          ]
+        }
+      },
+      "recall": {
+        "1 1.89.0": {
+          "stdout": "small large huge "
+        },
+        "1 1.100.0": {
+          "stdout": "small large huge "
+        }
+      },
+      "probes": {},
+      "c": {
+        "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
+        "warnings": [],
+        "exit": 0,
+        "stdout": "key q\nclick at 3,4\nignored\n"
+      },
+      "challenge": {
+        "cases": 8,
+        "stub": {
+          "1.89.0": "compiled, failed",
+          "1.100.0": "compiled, failed"
+        },
+        "reference": {
+          "1.89.0": "passed",
+          "1.100.0": "passed",
+          "1.100.0 release": "passed",
+          "wasm32-wasip1 (rustc 1.99.0)": "compiled to an object file (not linked)"
+        },
+        "wrong": {
+          "c-tagged-unions-to-enums.1.rs": {
+            "note": "C habit: multiply in 32 bits and widen afterwards, `(side * side) as u64`",
+            "rejected": {
+              "1.89.0": "panic",
+              "1.100.0": "panic",
+              "1.100.0 release": "panic"
+            }
+          },
+          "c-tagged-unions-to-enums.2.rs": {
+            "note": "keeps the C `default: return 0` as `_ => 0`, so triangles have no area",
+            "rejected": {
+              "1.89.0": "panic",
+              "1.100.0": "panic",
+              "1.100.0 release": "panic"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c-null-and-errno-to-option-result",
+      "exerciseKind": "runnable",
+      "credits": [
+        "basics/option-result",
+        "basics/recoverable-errors"
+      ],
+      "example": {
+        "1.89.0": "compiled without warnings, stdout matched",
+        "1.100.0": "compiled without warnings, stdout matched"
+      },
+      "practice": {
+        "1.89.0": {
+          "errors": [
+            "E0308"
+          ]
+        },
+        "1.100.0": {
+          "errors": [
+            "E0308"
+          ]
+        }
+      },
+      "recall": {
+        "0 1.89.0": {
+          "stdout": "Ok(14) Err(ParseIntError { kind: InvalidDigit })\n"
+        },
+        "1 1.89.0": {
+          "stdout": "8 8\n"
+        },
+        "0 1.100.0": {
+          "stdout": "Ok(14) Err(ParseIntError { kind: InvalidDigit })\n"
+        },
+        "1 1.100.0": {
+          "stdout": "8 8\n"
+        }
+      },
+      "probes": {},
+      "c": {
+        "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
+        "warnings": [],
+        "exit": 0,
+        "stdout": "42 -1(errno=22) -1(errno=0)\n(not set)\n"
+      },
+      "challenge": {
+        "cases": 9,
+        "stub": {
+          "1.89.0": "compiled, failed",
+          "1.100.0": "compiled, failed"
+        },
+        "reference": {
+          "1.89.0": "passed",
+          "1.100.0": "passed",
+          "1.100.0 release": "passed",
+          "wasm32-wasip1 (rustc 1.99.0)": "compiled to an object file (not linked)"
+        },
+        "wrong": {
+          "c-null-and-errno-to-option-result.1.rs": {
+            "note": "`text.parse::<u16>()` with every error mapped to `NotANumber`: accepts `+80` and misreports overflow",
+            "rejected": {
+              "1.89.0": "panic",
+              "1.100.0": "panic",
+              "1.100.0 release": "panic"
+            }
+          },
+          "c-null-and-errno-to-option-result.2.rs": {
+            "note": "digit check, then `parse::<u32>()`: a 20-digit number overflows `u32` and is reported as `NotANumber`",
+            "rejected": {
+              "1.89.0": "panic",
+              "1.100.0": "panic",
+              "1.100.0 release": "panic"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c-char-arrays-to-strings",
+      "exerciseKind": "runnable",
+      "credits": [
+        "basics/strings",
+        "basics/chars-and-text"
+      ],
+      "example": {
+        "1.89.0": "compiled without warnings, stdout matched",
+        "1.100.0": "compiled without warnings, stdout matched"
+      },
+      "practice": {
+        "1.89.0": {
+          "errors": [
+            "E0277"
+          ]
+        },
+        "1.100.0": {
+          "errors": [
+            "E0277"
+          ]
+        }
+      },
+      "recall": {
+        "0 1.89.0": {
+          "panic": "byte index 4 is not a char boundary",
+          "stdout": "None\n"
+        },
+        "0 1.100.0": {
+          "panic": "byte index 4 is not a char boundary",
+          "stdout": "None\n"
+        }
+      },
+      "probes": {},
+      "c": {
+        "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
+        "warnings": [
+          "-Wfortify-source"
+        ],
+        "exit": -5,
+        "stdout": "",
+        "sanitizer": {
+          "flags": "address",
+          "finding": "==80081==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x… at pc 0x… bp 0x… sp 0x…"
+        }
+      },
+      "challenge": {
+        "cases": 9,
+        "stub": {
+          "1.89.0": "compiled, failed",
+          "1.100.0": "compiled, failed"
+        },
+        "reference": {
+          "1.89.0": "passed",
+          "1.100.0": "passed",
+          "1.100.0 release": "passed",
+          "wasm32-wasip1 (rustc 1.99.0)": "compiled to an object file (not linked)"
+        },
+        "wrong": {
+          "c-char-arrays-to-strings.1.rs": {
+            "note": "C habit: cut at the byte budget, `&text[..max_bytes]`, which splits `é`",
+            "rejected": {
+              "1.89.0": "panic",
+              "1.100.0": "panic",
+              "1.100.0 release": "panic"
+            }
+          },
+          "c-char-arrays-to-strings.2.rs": {
+            "note": "`to_ascii_uppercase`, the `toupper` equivalent, leaves `é` lowercase",
+            "rejected": {
+              "1.89.0": "panic",
+              "1.100.0": "panic",
+              "1.100.0 release": "panic"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c-make-and-headers-to-cargo",
+      "exerciseKind": "planned",
+      "credits": [
+        "projects/modules",
+        "projects/package-layout"
+      ],
+      "example": {
+        "1.89.0": "compiled without warnings, stdout matched",
+        "1.100.0": "compiled without warnings, stdout matched"
+      },
+      "practice": {
+        "1.89.0": {
+          "errors": [
+            "E0603"
+          ]
+        },
+        "1.100.0": {
+          "errors": [
+            "E0603"
+          ]
+        }
+      },
+      "recall": {},
+      "probes": {},
+      "cargo": {
+        "package": "shapes",
+        "stdout": "12\n"
+      },
+      "c": {
+        "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
+        "warnings": [],
+        "exit": 0,
+        "stdout": "12 0\n"
+      }
+    },
+    {
+      "id": "c-unsafe-and-ffi",
+      "exerciseKind": "planned",
+      "credits": [
+        "systems/unsafe",
+        "systems/raw-pointers"
+      ],
+      "example": {
+        "1.89.0": "compiled without warnings, stdout matched",
+        "1.100.0": "compiled without warnings, stdout matched"
+      },
+      "practice": {
+        "1.89.0": {
+          "errors": [
+            "E0133"
+          ]
+        },
+        "1.100.0": {
+          "errors": [
+            "E0133"
+          ]
+        }
+      },
+      "recall": {
+        "1 1.89.0": {
+          "compiles": true
+        },
+        "1 1.100.0": {
+          "compiles": true
+        }
+      },
+      "probes": {
+        "quiz-safe-lines 1.89.0": {
+          "stdout": "true\n"
+        },
+        "quiz-deref 1.89.0": {
+          "errors": [
+            "E0133"
+          ]
+        },
+        "repr-c-header-size 1.89.0": {
+          "stdout": "4 1 2\n"
+        },
+        "quiz-safe-lines 1.100.0": {
+          "stdout": "true\n"
+        },
+        "quiz-deref 1.100.0": {
+          "errors": [
+            "E0133"
+          ]
+        },
+        "repr-c-header-size 1.100.0": {
+          "stdout": "4 1 2\n"
+        }
+      },
+      "c": {
+        "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
+        "warnings": [],
+        "exit": 0,
+        "stdout": "6 size=8 tag=7 value=42\n"
+      }
+    },
+    {
+      "id": "c-pthreads-to-threads",
+      "exerciseKind": "planned",
+      "credits": [
+        "concurrency/concurrency",
+        "concurrency/shared-state"
+      ],
+      "example": {
+        "1.89.0": "compiled without warnings, stdout matched",
+        "1.100.0": "compiled without warnings, stdout matched"
+      },
+      "practice": {
+        "1.89.0": {
+          "errors": [
+            "E0373",
+            "E0502"
+          ]
+        },
+        "1.100.0": {
+          "errors": [
+            "E0373",
+            "E0502"
+          ]
+        }
+      },
+      "recall": {
+        "1 1.89.0": {
+          "stdout": "3 7\n"
+        },
+        "1 1.100.0": {
+          "stdout": "3 7\n"
+        }
+      },
+      "probes": {
+        "quiz 1.89.0": {
+          "stdout": "4\n"
+        },
+        "rc-not-send 1.89.0": {
+          "errors": [
+            "E0277"
+          ]
+        },
+        "quiz 1.100.0": {
+          "stdout": "4\n"
+        },
+        "rc-not-send 1.100.0": {
+          "errors": [
+            "E0277"
+          ]
+        }
+      },
+      "c": {
+        "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
+        "warnings": [],
+        "exit": 0,
+        "stdout": "safe_hits=400000 (hits=399458 may be lower)\n",
+        "sanitizer": {
+          "flags": "thread",
+          "finding": "WARNING: ThreadSanitizer: data race (pid=80832)"
+        }
+      }
+    }
+  ]
+}

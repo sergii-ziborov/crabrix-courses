@@ -1,0 +1,98 @@
+{
+  "bridge": {
+    "contrasts": [
+      {
+        "from": "`console.log(\"%s costs %d cents\", \"tea\")` prints `tea costs %d cents`.",
+        "rust": "`println!(\"{} costs {} cents\", item)` does not compile: the format string needs two arguments."
+      },
+      {
+        "from": "A module's top-level statements run when it loads.",
+        "rust": "A binary starts in `fn main()`; other code runs only when it is called."
+      },
+      {
+        "from": "`console.log(obj)` inspects any object.",
+        "rust": "`{:?}` needs a `Debug` implementation, usually `#[derive(Debug)]`."
+      },
+      {
+        "from": "`String(n).padStart(2, \"0\")`",
+        "rust": "`format!(\"{n:02}\")`"
+      }
+    ],
+    "credits": [
+      "basics/hello-rust",
+      "basics/print-formatting"
+    ],
+    "from": "javascript",
+    "fromCaption": "A template literal builds the line, and `console.log` checks nothing: the last call prints a literal `%d`.",
+    "fromCode": "function receiptLine(item, qty, cents) {\n  const dollars = Math.floor(cents / 100);\n  const rest = String(cents % 100).padStart(2, \"0\");\n  return `${item} x${qty} = $${dollars}.${rest}`;\n}\n\nconsole.log(receiptLine(\"tea\", 2, 705));\nconsole.log(receiptLine(\"mint\", 1, 5));\nconsole.log(\"%s costs %d cents\", \"tea\");",
+    "fromLabel": "JavaScript (Node.js)"
+  },
+  "concept": "Compile-time checked formatting",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Immutable bindings, mut and shadowing",
+        "direction": "next",
+        "title": "const and let vs let and let mut"
+      }
+    ],
+    "correction": "`println!` is a macro that rustc expands and checks at compile time. Placeholders must match the arguments, and each argument must implement the trait its placeholder asks for: `Display` for `{}`, `Debug` for `{:?}`.",
+    "misconception": "“`println!` is Rust's `console.log`: it formats whatever it is given at runtime.”",
+    "traceSteps": [
+      {
+        "detail": "There is no top-level code. `main` calls `receipt_line` twice and prints each returned `String` with `{}`.",
+        "title": "Find the entry point"
+      },
+      {
+        "detail": "`{item}` and `{qty}` capture variables by name. `${dollars}` is a literal `$` followed by the `{dollars}` placeholder, and `{rest:02}` pads `5` to `05`.",
+        "title": "Read the placeholders"
+      },
+      {
+        "detail": "Run it: `tea x2 = $7.05`, `mint x1 = $0.05`, then `(\"tea\", 705)` from `{:?}` on a tuple. Remove `:02` and the second line becomes `$0.5`.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Add `#[derive(Debug)] struct Line { item: String, cents: u32 }`, print one value with `{:?}` and then with `{:#?}`. Delete the derive and read which trait rustc says is missing."
+  },
+  "exerciseKind": "runnable",
+  "id": "node-console-log-to-println",
+  "minutes": 9,
+  "order": 0,
+  "parentID": "node-values",
+  "title": "console.log vs println!",
+  "writing": {
+    "answers": [
+      "When that line runs, like a `TypeError`",
+      "During compilation, while the macro expands",
+      "Never: the extra placeholder prints literally, as with `console.log`"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "`{rest:02}` does the work of `padStart(2, \"0\")`, and `{:?}` prints a value through `Debug`.",
+    "exampleCode": "fn receipt_line(item: &str, qty: u32, cents: u32) -> String {\n    let dollars = cents / 100;\n    let rest = cents % 100;\n    format!(\"{item} x{qty} = ${dollars}.{rest:02}\")\n}\n\nfn main() {\n    println!(\"{}\", receipt_line(\"tea\", 2, 705));\n    println!(\"{}\", receipt_line(\"mint\", 1, 5));\n    println!(\"{:?}\", (\"tea\", 705));\n}",
+    "explanation": "A Node.js module runs from top to bottom, so `console.log` can sit anywhere at the top level. A Rust binary has no top-level statements: execution starts in `fn main()`, and everything else is an item, such as a function, a struct or a `use` declaration, that runs only when `main` calls it.\n\n`println!` is a macro, not a function; the `!` marks the call. It expands during compilation, so rustc checks the format string against the arguments before the program exists. A missing argument is a compile error, not a stray `%d` in the output as with `console.log(\"%s costs %d cents\", \"tea\")`. `format!` builds the same text as a `String` instead of printing it, which is the job a template literal does in JavaScript.\n\nPlaceholders replace interpolation. `{}` formats with the `Display` trait, `{name}` captures a variable that is in scope, and `{:?}` formats with `Debug`. Format options cover what you used `padStart` and `toFixed` for: `{rest:02}` pads with zeros to width 2, `{:<8}` left-aligns in 8 columns and `{:.2}` prints two decimals. `console.log` inspects any object; a Rust type prints with `{:?}` only if it implements `Debug`, usually through `#[derive(Debug)]`.\n\n`println!` writes to stdout and `eprintln!` to stderr, the counterparts of `console.log` and `console.error`. Neither is a way to hand data back from a function. Return a `String` and let the caller decide where it goes, which is also what makes the lab's `clock` function testable.",
+    "feedback": "The format string is checked while `println!` expands, so a program with the mismatch is never built.",
+    "practiceCode": "fn main() {\n    let item = \"tea\";\n    println!(\"{} costs {} cents\", item);\n}",
+    "question": "When does rustc report that `println!(\"{} costs {} cents\", item)` is missing an argument?",
+    "recall": [
+      {
+        "answer": "The format string has two `{}` placeholders but only one argument, and `println!` checks that during compilation. Pass a second argument, as in `println!(\"{} costs {} cents\", item, 705)`, or remove the second placeholder.",
+        "code": "let item = \"tea\";\nprintln!(\"{} costs {} cents\", item);",
+        "question": "Why does this not compile, and what are two fixes?"
+      },
+      {
+        "answer": "`{}` requires `Display`, the user-facing format. `{name}` is the same `{}` placeholder, capturing the variable `name` from the surrounding scope. `{:?}` requires `Debug`, the developer format most types get from `#[derive(Debug)]`. Unlike `console.log`, nothing is inspected automatically.",
+        "question": "What do `{}`, `{name}` and `{:?}` each require from the value?"
+      }
+    ],
+    "rule": "Execution starts in `fn main()`; `println!` and `format!` are macros whose placeholders are checked during compilation.",
+    "success": "The local compiler accepts the changed solution and the separate verification harness passes every case, including `0` and single-digit seconds. Printing a success message alone does not complete this lab.",
+    "summary": "`println!` replaces `console.log`, and rustc checks every placeholder against its arguments before the program runs.",
+    "task": "Port the JavaScript `clock` shown at the top of solution.rs: whole seconds become `minutes:seconds`, with the seconds always two digits (`125` becomes `2:05`). Return the `String`; do not print it. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise."
+  },
+  "illustration": {
+    "path": "media/node-console-log-to-println.png",
+    "alt": "Side-by-side comparison: the JavaScript (Node.js) version on the left, the Rust version on the right, then 4 rows naming what changes.",
+    "caption": "console.log vs println!: the same task in JavaScript (Node.js) and in Rust, with the differences that matter."
+  },
+  "contentDigest": "a98bdf58ad5854b9832ddcc165ca75f1a9a424d05f80f941797d1b32b5c978ce"
+}

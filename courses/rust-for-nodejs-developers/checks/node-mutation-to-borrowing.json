@@ -1,0 +1,63 @@
+{
+  "challenge": {
+    "expectedOutput": "PASS node-mutation-to-borrowing\n",
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ],
+    "lessonID": "node-mutation-to-borrowing",
+    "patternID": "node-mutation-to-borrowing",
+    "projectName": "node-mutation-to-borrowing-lab",
+    "requiredSourceFragments": [
+      "pub fn rename_all",
+      "pub fn count_matches"
+    ],
+    "source": "// JavaScript original:\n// function renameAll(names, from, to) {\n//   let changed = 0;\n//   for (let i = 0; i < names.length; i++) {\n//     if (names[i] === from) { names[i] = to; changed++; }\n//   }\n//   return changed;\n// }\n// function countMatches(names, wanted) {\n//   return names.filter((n) => n === wanted).length;\n// }\npub fn rename_all(names: &mut [String], from: &str, to: &str) -> usize {\n    todo!(\"implement the contract\")\n}\n\npub fn count_matches(names: &[String], wanted: &str) -> usize {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationCases": [
+      {
+        "expectedAnswer": "2, and the caller sees [\"eva\", \"bo\", \"eva\"]",
+        "input": "rename_all(&mut [\"ana\", \"bo\", \"ana\"], \"ana\", \"eva\")",
+        "kind": "visible"
+      },
+      {
+        "expectedAnswer": "2",
+        "input": "count_matches(&team, \"eva\")",
+        "kind": "semantic"
+      },
+      {
+        "expectedAnswer": "0",
+        "input": "rename_all(&mut team, \"zed\", \"x\")",
+        "kind": "boundary"
+      },
+      {
+        "expectedAnswer": "1, names unchanged",
+        "input": "rename_all(&mut team, \"bo\", \"bo\")",
+        "kind": "boundary"
+      },
+      {
+        "expectedAnswer": "0",
+        "input": "rename_all(&mut [], \"a\", \"b\")",
+        "kind": "boundary"
+      },
+      {
+        "expectedAnswer": "1",
+        "input": "count_matches(&team[..1], \"eva\")",
+        "kind": "semantic"
+      }
+    ],
+    "verificationSource": "mod solution;\n\nfn names(list: &[&str]) -> Vec<String> {\n    list.iter().map(|name| name.to_string()).collect()\n}\n\nfn main() {\n    let mut team = names(&[\"ana\", \"bo\", \"ana\"]);\n    assert_eq!(solution::rename_all(&mut team, \"ana\", \"eva\"), 2, \"case 1\");\n    assert_eq!(team, names(&[\"eva\", \"bo\", \"eva\"]), \"case 2\");\n    assert_eq!(solution::count_matches(&team, \"eva\"), 2, \"case 3\");\n    assert_eq!(solution::rename_all(&mut team, \"zed\", \"x\"), 0, \"case 4\");\n    assert_eq!(solution::rename_all(&mut team, \"bo\", \"bo\"), 1, \"case 5\");\n    assert_eq!(team, names(&[\"eva\", \"bo\", \"eva\"]), \"case 6\");\n    let mut empty: Vec<String> = Vec::new();\n    assert_eq!(solution::rename_all(&mut empty, \"a\", \"b\"), 0, \"case 7\");\n    assert_eq!(solution::count_matches(&team[..1], \"eva\"), 1, \"case 8\");\n\n    println!(\"PASS node-mutation-to-borrowing\");\n}\n"
+  },
+  "evidence": {
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS node-mutation-to-borrowing\n"
+    },
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ],
+    "kind": "algorithmChallenge",
+    "requiredSourceFragments": [
+      "pub fn rename_all",
+      "pub fn count_matches"
+    ]
+  }
+}

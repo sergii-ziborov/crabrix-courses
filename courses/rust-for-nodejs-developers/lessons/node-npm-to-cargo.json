@@ -1,0 +1,101 @@
+{
+  "bridge": {
+    "contrasts": [
+      {
+        "from": "`\"left-pad\": \"1.3.0\"` pins exactly 1.3.0.",
+        "rust": "`left-pad = \"1.3.0\"` means `^1.3.0`; pin exactly with `\"=1.3.0\"`."
+      },
+      {
+        "from": "`package-lock.json` records the resolved versions.",
+        "rust": "`Cargo.lock` does the same, and Cargo keeps it while it still satisfies `Cargo.toml`."
+      },
+      {
+        "from": "`main`, `bin` and `scripts` are declared in `package.json`.",
+        "rust": "Targets come from paths such as `src/main.rs` and `src/lib.rs`; the commands are built in."
+      },
+      {
+        "from": "`require` can find an undeclared package in a parent `node_modules`.",
+        "rust": "rustc sees only declared dependencies; an undeclared crate is an unresolved import, E0432."
+      }
+    ],
+    "credits": [
+      "projects/dependencies"
+    ],
+    "from": "javascript",
+    "fromCaption": "A typical manifest: the bare `\"1.3.0\"` pins exactly, `^` allows compatible updates, and scripts name the commands.",
+    "fromCode": "{\n  \"name\": \"invoice\",\n  \"version\": \"0.1.0\",\n  \"main\": \"src/index.js\",\n  \"bin\": { \"invoice\": \"bin/invoice.js\" },\n  \"scripts\": { \"test\": \"node --test\", \"start\": \"node bin/invoice.js\" },\n  \"dependencies\": {\n    \"express\": \"^4.19.2\",\n    \"left-pad\": \"1.3.0\"\n  },\n  \"devDependencies\": { \"prettier\": \"^3.3.0\" }\n}",
+    "fromLabel": "Node.js (package.json)"
+  },
+  "concept": "package.json and npm mapped to Cargo",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Errors as Result values",
+        "direction": "previous",
+        "title": "try/catch vs Result"
+      },
+      {
+        "concept": "Lazy futures and an explicit runtime",
+        "direction": "next",
+        "title": "Promises vs futures"
+      }
+    ],
+    "correction": "A bare version in `Cargo.toml` is a caret requirement. It accepts any later 1.x release, and `Cargo.lock` records the one Cargo actually chose.",
+    "misconception": "“`serde = \"1.0.200\"` pins serde exactly, like a bare version in `package.json`.”",
+    "traceSteps": [
+      {
+        "detail": "`[dependencies]` matches `dependencies` and `[dev-dependencies]` matches `devDependencies`. The name, version and edition live under `[package]`.",
+        "title": "Map the manifest"
+      },
+      {
+        "detail": "`serde = \"1.0.200\"` allows `>=1.0.200, <2.0.0`. `itoa = \"=1.0.11\"` allows only 1.0.11, and `pretty_assertions = \"1\"` any 1.x release.",
+        "title": "Read each requirement"
+      },
+      {
+        "detail": "Compiled with plain rustc, the program prints `invoice outside Cargo`. Built by `cargo run`, Cargo sets `CARGO_PKG_VERSION` and it prints `invoice 0.1.0`.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Create a project with `cargo new invoice` and run `cargo add itoa`. Compare the requirement written to `Cargo.toml` with the exact version recorded in `Cargo.lock`, and explain when `cargo update` would change it."
+  },
+  "exerciseKind": "planned",
+  "id": "node-npm-to-cargo",
+  "minutes": 10,
+  "order": 1,
+  "parentID": "node-runtime",
+  "title": "npm and package.json vs Cargo",
+  "writing": {
+    "answers": [
+      "Exactly 1.3.0, as in npm",
+      "Any version at all; only the lockfile decides",
+      "Any SemVer-compatible version: at least 1.3.0 and below 2.0.0"
+    ],
+    "correctAnswer": 2,
+    "exampleCaption": "The manifest lives in `Cargo.toml`, `src/main.rs` is the binary target, and Cargo sets `CARGO_PKG_VERSION` when it builds.",
+    "exampleCode": "// Cargo.toml\n// [package]\n// name = \"invoice\"\n// version = \"0.1.0\"\n// edition = \"2024\"\n//\n// [dependencies]\n// serde = \"1.0.200\"   # means ^1.0.200, like npm \"^1.0.200\"\n// itoa = \"=1.0.11\"    # an exact pin, like npm's bare \"1.0.11\"\n//\n// [dev-dependencies]\n// pretty_assertions = \"1\"\n//\n// src/main.rs is the default binary: `cargo run` builds and runs it.\nfn main() {\n    let version = option_env!(\"CARGO_PKG_VERSION\").unwrap_or(\"outside Cargo\");\n    println!(\"invoice {version}\");\n}",
+    "explanation": "The files map closely. `Cargo.toml` is the manifest: `[package]` holds the name, version and edition, `[dependencies]` and `[dev-dependencies]` match their npm counterparts, and `[build-dependencies]` serve a `build.rs` script. `Cargo.lock` records the exact resolved versions, like `package-lock.json`; commit it for applications. Downloaded crate sources are cached once per user under `~/.cargo/registry`, and build output goes to `target/`, so there is no `node_modules` directory.\n\nThe version trap: in `package.json`, `\"left-pad\": \"1.3.0\"` pins exactly that version, and only `\"^1.3.0\"` allows updates. In `Cargo.toml`, `left-pad = \"1.3.0\"` already means `^1.3.0`, at least 1.3.0 and below 2.0.0. For `0.x` versions the caret is narrower in both tools, so `\"0.4.1\"` allows `>=0.4.1, <0.5.0`. To pin exactly, write `\"=1.3.0\"`; most projects rely on the lockfile instead.\n\nThere is no `scripts` section and no `main` or `bin` field. Cargo finds targets by path: `src/main.rs` is the default binary, `src/lib.rs` the library, and each file in `src/bin/` an extra binary. `cargo build`, `cargo run`, `cargo test`, `cargo check` and `cargo fmt` are built in; project-specific tasks usually become a small binary or an `xtask` crate.\n\nDependencies must be declared to be visible. Node resolves `require(\"serde\")` by walking up the directory tree to any `node_modules`, so an undeclared package can work by accident. Cargo passes only the declared crates to rustc, which is why the practice code fails with E0432 instead of finding a crate that happens to be on disk. Optional functionality is chosen with features, as in `serde = { version = \"1\", features = [\"derive\"] }`.",
+    "feedback": "Cargo's default requirement is the caret, so `\"1.3.0\"` means `^1.3.0`. Write `\"=1.3.0\"` for an exact pin.",
+    "practiceCode": "use serde::Serialize;\n\n#[derive(Serialize)]\nstruct Invoice {\n    total_cents: u64,\n}\n\nfn main() {\n    let invoice = Invoice { total_cents: 1200 };\n    println!(\"{}\", invoice.total_cents);\n}",
+    "question": "In `package.json`, a bare `\"1.3.0\"` pins exactly that version. What does `left-pad = \"1.3.0\"` mean in `Cargo.toml`?",
+    "recall": [
+      {
+        "answer": "`a`: `>=0.4.1, <0.5.0`, because the caret treats the first non-zero component as the breaking one. `b`: `>=1.2.0, <2.0.0`. `c`: exactly 2.0.3. npm's `^0.4.1` and `^1.2` allow the same ranges as the first two.",
+        "question": "Which versions can each requirement select: `a = \"0.4.1\"`, `b = \"1.2\"` and `c = \"=2.0.3\"`?"
+      },
+      {
+        "answer": "`src/main.rs` is the default binary and `src/lib.rs` the library; extra binaries go in `src/bin/`. `cargo test` builds the test targets and runs unit tests, integration tests in `tests/` and documentation examples, with no script entry needed.",
+        "question": "Which files define the default binary and the library target, and what replaces `npm test`?"
+      }
+    ],
+    "rule": "In `Cargo.toml` a bare version such as `\"1.3.0\"` is a caret requirement, `>=1.3.0, <2.0.0`; pin exactly with `\"=1.3.0\"`, and let `Cargo.lock` record what was resolved.",
+    "success": "Your manifest uses `=` only where an exact pin is intended, and you can name the default binary and library paths without looking them up.",
+    "summary": "`package.json` becomes `Cargo.toml`, `package-lock.json` becomes `Cargo.lock`, and npm scripts become built-in Cargo commands, but a bare version number means something different.",
+    "task": "Write the `Cargo.toml` for an equivalent Rust project: one dependency with a compatible range, one pinned exactly, one dev-dependency, and the paths that replace `main`, `bin` and `scripts.test`. Then check each version requirement against the rules above."
+  },
+  "illustration": {
+    "path": "media/node-npm-to-cargo.png",
+    "alt": "Side-by-side comparison: the Node.js (package.json) version on the left, the Rust version on the right, then 4 rows naming what changes.",
+    "caption": "npm and package.json vs Cargo: the same task in Node.js (package.json) and in Rust, with the differences that matter."
+  },
+  "contentDigest": "f83172d6433401bc55357266369d965ad08114bdc9e4691498084b95f226107f"
+}

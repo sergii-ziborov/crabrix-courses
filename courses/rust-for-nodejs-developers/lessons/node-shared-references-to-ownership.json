@@ -1,0 +1,103 @@
+{
+  "bridge": {
+    "contrasts": [
+      {
+        "from": "`const b = a` makes a second reference to the same object.",
+        "rust": "`let b = a;` moves a `String` or `Vec`; using `a` afterwards is E0382."
+      },
+      {
+        "from": "Passing an object to a function shares it with the caller.",
+        "rust": "A `String` parameter takes ownership; take `&str` so the caller keeps it."
+      },
+      {
+        "from": "`{ ...a }` copies the outer object and shares nested arrays.",
+        "rust": "`a.clone()` follows each type's `Clone`; for a `Vec<String>` it copies every `String`."
+      },
+      {
+        "from": "The garbage collector frees unreachable objects at some later point.",
+        "rust": "The owner frees the value when its scope ends, deterministically."
+      }
+    ],
+    "credits": [
+      "ownership/ownership",
+      "ownership/move-functions"
+    ],
+    "from": "javascript",
+    "fromCaption": "Three names reach one object; spread copies only the top level, while `structuredClone` also copies the nested array.",
+    "fromCode": "const a = { name: \"crab\", tags: [\"rust\"] };\nconst b = a;               // a second name for the same object\nb.name = \"ferris\";\n\nconst shallow = { ...a };  // new outer object, same tags array\nshallow.tags.push(\"cargo\");\n\nconst deep = structuredClone(a);\ndeep.tags.push(\"tokio\");\n\nconsole.log(a.name, a.tags, deep.tags);",
+    "fromLabel": "JavaScript (Node.js)"
+  },
+  "concept": "Moves instead of shared references",
+  "depth": {
+    "connections": [
+      {
+        "concept": "UTF-8 bytes, chars and lengths",
+        "direction": "previous",
+        "title": "UTF-16 strings vs UTF-8 String"
+      },
+      {
+        "concept": "Shared and mutable borrows",
+        "direction": "next",
+        "title": "Mutating arguments vs borrowing"
+      }
+    ],
+    "correction": "For a `String`, `let b = a;` moves ownership, and `a` can no longer be used. Share it with a borrow `&a`, or copy it with `a.clone()`.",
+    "misconception": "“`let b = a;` gives the same `String` a second name, like a JavaScript reference.”",
+    "traceSteps": [
+      {
+        "detail": "`a` owns the `Crab`. After `let b = a;`, `b` is the only owner and `a` cannot be used.",
+        "title": "Follow the owner"
+      },
+      {
+        "detail": "`b.clone()` builds a new `Crab` with its own `Vec`. Pushing `cargo` into `copy.tags` cannot affect `b`.",
+        "title": "Separate the copy"
+      },
+      {
+        "detail": "Run it: `Crab { name: \"ferris\", tags: [\"rust\"] }`, then `[\"rust\", \"cargo\"]`. Add `println!(\"{a:?}\");` at the end and read E0382, which points at the move.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Change `rename` to `fn rename(crab: &mut Crab, name: &str)` and call it as `rename(&mut b, \"ferris\")`. Decide which signature you would expose from a library, and why."
+  },
+  "exerciseKind": "planned",
+  "id": "node-shared-references-to-ownership",
+  "minutes": 11,
+  "order": 0,
+  "parentID": "node-ownership",
+  "title": "Shared references vs ownership",
+  "writing": {
+    "answers": [
+      "Make the parameter `text: &str` and call `shout(&name)`",
+      "Declare `let mut name`",
+      "Wrap the call in a block: `{ shout(name) }`"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "`let b = a` moves the crab, `clone` makes an independent copy, and `rename` takes ownership and gives it back.",
+    "exampleCode": "#[derive(Clone, Debug)]\nstruct Crab {\n    name: String,\n    tags: Vec<String>,\n}\n\nfn rename(mut crab: Crab, name: &str) -> Crab {\n    crab.name = name.to_string();\n    crab\n}\n\nfn main() {\n    let a = Crab { name: String::from(\"crab\"), tags: vec![String::from(\"rust\")] };\n    let b = a; // move: `a` can no longer be used\n    let mut copy = b.clone(); // a new Vec and new Strings\n    copy.tags.push(String::from(\"cargo\"));\n    let b = rename(b, \"ferris\"); // ownership goes in and comes back\n    println!(\"{b:?}\");\n    println!(\"{:?}\", copy.tags);\n}",
+    "explanation": "In JavaScript, `const b = a` copies a reference: both names reach the same object, and a change made through `b` is visible through `a`. The garbage collector frees the object once no reference remains. Rust has no garbage collector. Each value has exactly one owner, the owner frees it when it goes out of scope, and `let b = a;` for a `String`, a `Vec` or a struct containing them moves ownership to `b`. Using `a` after the move is E0382.\n\nFunction calls follow the same rule. A parameter of type `String` takes ownership, so `shout(name)` moves `name` into the function and the caller cannot print it afterwards. A parameter of type `&str`, or `&T` in general, borrows instead: the function reads the value while the caller keeps it. Returning a value moves ownership back out, which is why `let b = rename(b, \"ferris\");` works.\n\n`clone()` is the explicit copy. For `Crab` it creates a new `String` and a new `Vec<String>` with new `String`s inside, which is closer to `structuredClone` than to `{ ...a }`: spread copies only the outer object and still shares `tags`. Each type decides what `Clone` means, and cloning an `Rc`, for instance, only increments a reference count. Small plain values such as integers, `bool` and `char` are `Copy`: assignment duplicates them and nothing moves.\n\nMoves are checked at compile time and cost nothing at runtime. Moving a `String` copies its pointer, length and capacity, not the text. The point is that exactly one binding is responsible for freeing the buffer, which rules out double frees and use after free without a collector.",
+    "feedback": "A `&str` parameter only borrows, so ownership of `name` stays with the caller. `mut` does not prevent a move.",
+    "practiceCode": "fn shout(text: String) -> String {\n    text.to_uppercase()\n}\n\nfn main() {\n    let name = String::from(\"ferris\");\n    let loud = shout(name);\n    println!(\"{loud} {name}\");\n}",
+    "question": "In the practice code, what is the smallest change that keeps `name` usable after the call, without cloning?",
+    "recall": [
+      {
+        "answer": "`let all = tags;` moved the vector, so `tags` no longer owns anything: E0382, borrow of moved value. Use `all.len()`, borrow with `let all = &tags;`, or clone if two independent vectors are really needed.",
+        "code": "let tags = vec![String::from(\"rust\")];\nlet all = tags;\nprintln!(\"{}\", tags.len());",
+        "question": "Why is the last line rejected?"
+      },
+      {
+        "answer": "`i32` is `Copy`: assignment duplicates the bits and there is nothing to free. A `String` owns a heap buffer, so assignment moves ownership to keep exactly one owner responsible for freeing it. `Copy` is only implemented for types where a bitwise copy is safe.",
+        "question": "Why does `let y = x;` leave `x` usable when `x` is an `i32`, but not when it is a `String`?"
+      }
+    ],
+    "rule": "Each value has one owner: assignment or a by-value parameter moves it, `&T` lends it, and `clone()` makes an independent copy.",
+    "success": "You predicted E0382 for the original code, and you can explain why borrowing avoids both the move and the copy.",
+    "summary": "Assigning an object in JavaScript shares it; assigning a `String` or `Vec` in Rust moves it, and the old binding can no longer be used.",
+    "task": "Fix the practice code twice: once by borrowing with `&str`, once by cloning. Then decide which fix fits a function that only reads its input, and which fits one that must keep the text after it returns."
+  },
+  "illustration": {
+    "path": "media/node-shared-references-to-ownership.png",
+    "alt": "Side-by-side comparison: the JavaScript (Node.js) version on the left, the Rust version on the right, then 4 rows naming what changes.",
+    "caption": "Shared references vs ownership: the same task in JavaScript (Node.js) and in Rust, with the differences that matter."
+  },
+  "contentDigest": "cae05213334c91a7f3b36560efa22bb3f279dd8df59297147762fd02c5df2ff9"
+}

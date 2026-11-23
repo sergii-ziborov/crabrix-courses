@@ -1,0 +1,73 @@
+{
+  "challenge": {
+    "lessonID": "c-tagged-unions-to-enums",
+    "patternID": "c-tagged-unions-to-enums",
+    "projectName": "c-tagged-unions-to-enums-lab",
+    "source": "// C original:\n// enum kind { SQUARE, RECT, TRIANGLE };\n// struct shape { enum kind kind; uint32_t a, b; };\n// uint64_t area(const struct shape *s) {\n//     switch (s->kind) {\n//     case SQUARE: return s->a * s->a;          /* 32-bit multiply, then widened */\n//     case RECT:   return (uint64_t)s->a * s->b;\n//     default:     return 0;                    /* TRIANGLE was forgotten */\n//     }\n// }\n#[derive(Clone, Copy, Debug, PartialEq)]\npub enum Shape {\n    Square { side: u32 },\n    Rect { w: u32, h: u32 },\n    Triangle { base: u32, height: u32 },\n}\n\n/// The area, rounded down.\npub fn area(shape: &Shape) -> u64 {\n    todo!(\"implement the contract\")\n}\n\n/// True when any dimension is zero.\npub fn is_degenerate(shape: &Shape) -> bool {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationSource": "mod solution;\nuse solution::Shape;\n\nfn main() {\n    assert_eq!(solution::area(&Shape::Square { side: 3 }), 9, \"case 1\");\n    assert_eq!(solution::area(&Shape::Rect { w: 2, h: 5 }), 10, \"case 2\");\n    assert_eq!(solution::area(&Shape::Triangle { base: 3, height: 3 }), 4, \"case 3\");\n    assert_eq!(solution::area(&Shape::Square { side: u32::MAX }), 18_446_744_065_119_617_025, \"case 4\");\n    assert_eq!(solution::area(&Shape::Triangle { base: u32::MAX, height: u32::MAX }), 9_223_372_032_559_808_512, \"case 5\");\n    assert!(solution::is_degenerate(&Shape::Rect { w: 0, h: 5 }), \"case 6\");\n    assert!(solution::is_degenerate(&Shape::Triangle { base: 4, height: 0 }), \"case 7\");\n    assert!(!solution::is_degenerate(&Shape::Square { side: 1 }), \"case 8\");\n\n    println!(\"PASS c-tagged-unions-to-enums\");\n}\n",
+    "verificationCases": [
+      {
+        "kind": "visible",
+        "input": "solution::area(&Shape::Square { side: 3 })",
+        "expectedAnswer": "9"
+      },
+      {
+        "kind": "visible",
+        "input": "solution::area(&Shape::Rect { w: 2, h: 5 })",
+        "expectedAnswer": "10"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::area(&Shape::Triangle { base: 3, height: 3 })",
+        "expectedAnswer": "4"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::area(&Shape::Square { side: u32::MAX })",
+        "expectedAnswer": "18446744065119617025"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::area(&Shape::Triangle { base: u32::MAX, height: u32::MAX })",
+        "expectedAnswer": "9223372032559808512"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::is_degenerate(&Shape::Rect { w: 0, h: 5 })",
+        "expectedAnswer": "true"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::is_degenerate(&Shape::Triangle { base: 4, height: 0 })",
+        "expectedAnswer": "true"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::is_degenerate(&Shape::Square { side: 1 })",
+        "expectedAnswer": "false"
+      }
+    ],
+    "expectedOutput": "PASS c-tagged-unions-to-enums\n",
+    "requiredSourceFragments": [
+      "pub fn area",
+      "pub fn is_degenerate"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  },
+  "evidence": {
+    "kind": "algorithmChallenge",
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS c-tagged-unions-to-enums\n"
+    },
+    "requiredSourceFragments": [
+      "pub fn area",
+      "pub fn is_degenerate"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  }
+}

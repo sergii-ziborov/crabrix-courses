@@ -1,0 +1,56 @@
+{
+  "challenge": {
+    "lessonID": "c-pointers-to-references",
+    "patternID": "c-pointers-to-references",
+    "projectName": "c-pointers-to-references-lab",
+    "source": "// C original:\n// /* Appends 2 * src[i] to dst. With src == dst->data this reads freed memory\n//    as soon as push() reallocates. */\n// void append_doubled(struct ivec *dst, const int *src, size_t n) {\n//     for (size_t i = 0; i < n; i++) push(dst, 2 * src[i]);\n// }\npub fn append_doubled(dst: &mut Vec<i32>, src: &[i32]) {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationSource": "mod solution;\n\nfn main() {\n    let mut dst = vec![10];\n    let src = vec![1, 2, 3];\n    solution::append_doubled(&mut dst, &src);\n    assert_eq!(dst, vec![10, 2, 4, 6], \"case 1\");\n    assert_eq!(src, vec![1, 2, 3], \"case 2: the caller still owns src\");\n    solution::append_doubled(&mut dst, &[]);\n    assert_eq!(dst, vec![10, 2, 4, 6], \"case 3\");\n    let snapshot = dst.clone();\n    solution::append_doubled(&mut dst, &snapshot);\n    assert_eq!(dst, vec![10, 2, 4, 6, 20, 4, 8, 12], \"case 4\");\n    let mut empty = Vec::new();\n    solution::append_doubled(&mut empty, &[-5, 0]);\n    assert_eq!(empty, vec![-10, 0], \"case 5\");\n\n    println!(\"PASS c-pointers-to-references\");\n}\n",
+    "verificationCases": [
+      {
+        "kind": "visible",
+        "input": "append_doubled(&mut vec![10], &[1, 2, 3])",
+        "expectedAnswer": "dst == [10, 2, 4, 6]"
+      },
+      {
+        "kind": "semantic",
+        "input": "src after the call",
+        "expectedAnswer": "[1, 2, 3]"
+      },
+      {
+        "kind": "boundary",
+        "input": "append_doubled(&mut dst, &[])",
+        "expectedAnswer": "dst unchanged"
+      },
+      {
+        "kind": "semantic",
+        "input": "append_doubled(&mut dst, &dst.clone())",
+        "expectedAnswer": "[10, 2, 4, 6, 20, 4, 8, 12]"
+      },
+      {
+        "kind": "boundary",
+        "input": "append_doubled(&mut Vec::new(), &[-5, 0])",
+        "expectedAnswer": "[-10, 0]"
+      }
+    ],
+    "expectedOutput": "PASS c-pointers-to-references\n",
+    "requiredSourceFragments": [
+      "pub fn append_doubled"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  },
+  "evidence": {
+    "kind": "algorithmChallenge",
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS c-pointers-to-references\n"
+    },
+    "requiredSourceFragments": [
+      "pub fn append_doubled"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  }
+}

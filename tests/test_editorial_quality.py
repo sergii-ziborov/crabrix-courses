@@ -37,7 +37,8 @@ class EditorialQualityTests(unittest.TestCase):
 
     def test_all_lessons_have_illustrations_and_balanced_prose_code(self):
         paths = sorted(COURSES.glob("*/lessons/*.json"))
-        self.assertEqual(len(paths), 798)
+        academy = [path for path in paths if not path.parts[-3].startswith("rust-for-")]
+        self.assertEqual(len(academy), 798)
         for path in paths:
             lesson = json.loads(path.read_text(encoding="utf-8"))
             with self.subTest(lesson=lesson["id"]):

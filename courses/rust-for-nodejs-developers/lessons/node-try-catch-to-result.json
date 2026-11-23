@@ -1,0 +1,103 @@
+{
+  "bridge": {
+    "contrasts": [
+      {
+        "from": "Any function may `throw`, and its signature does not say so.",
+        "rust": "`-> Result<u16, PortError>` declares the failure, and callers must handle it."
+      },
+      {
+        "from": "`catch (err)` receives anything, often just a message.",
+        "rust": "A `match` on an error enum tells the cases apart by type."
+      },
+      {
+        "from": "An uncaught exception bubbles up invisibly.",
+        "rust": "`?` propagates an `Err` explicitly, at each call site."
+      },
+      {
+        "from": "`Number(\"\")` is `0`, and `Number(\"0x50\")` is `80`.",
+        "rust": "`\"\".parse::<u32>()` fails with kind `Empty`, and `\"0x50\"` with `InvalidDigit`."
+      }
+    ],
+    "credits": [
+      "basics/recoverable-errors",
+      "projects/errors"
+    ],
+    "from": "javascript",
+    "fromCaption": "`Number` reads `\"\"` as `0` and `\"0x50\"` as `80`, and the only signal of failure is a thrown `Error`.",
+    "fromCode": "function parsePort(text) {\n  const n = Number(text);\n  if (!Number.isInteger(n) || n < 1 || n > 65535) {\n    throw new Error(`invalid port: ${JSON.stringify(text)}`);\n  }\n  return n;\n}\n\nfor (const input of [\"8080\", \"\", \"0x50\", \"70000\"]) {\n  try {\n    console.log(input, \"->\", parsePort(input));\n  } catch (err) {\n    console.log(input, \"->\", err.message);\n  }\n}",
+    "fromLabel": "JavaScript (Node.js)"
+  },
+  "concept": "Errors as Result values",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Nominal traits instead of structural interfaces",
+        "direction": "previous",
+        "title": "TypeScript interfaces vs traits"
+      },
+      {
+        "concept": "package.json and npm mapped to Cargo",
+        "direction": "next",
+        "title": "npm and package.json vs Cargo"
+      }
+    ],
+    "correction": "`unwrap()` panics. To let the caller handle the error, return a `Result` and use `?`, which hands the `Err` back.",
+    "misconception": "“`unwrap()` is like letting the exception propagate to a caller's `try/catch`.”",
+    "traceSteps": [
+      {
+        "detail": "`parse_port` returns `Result<u16, PortError>`. Both kinds of failure are variants a caller can `match` on.",
+        "title": "Read the signature"
+      },
+      {
+        "detail": "`\"\"` and `\"0x50\"` fail in `parse`, and `?` returns them wrapped in `NotANumber`. `\"70000\"` parses as a `u32`, but `u16::try_from` fails, giving `OutOfRange(70000)`.",
+        "title": "Follow each input"
+      },
+      {
+        "detail": "Run it: `8080 -> 8080`, then `NotANumber` with kinds `Empty` and `InvalidDigit`, then `OutOfRange(70000)`. JavaScript accepted `0x50` as port 80.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Implement `std::fmt::Display` for `PortError` so that `main` can print `invalid port: out of range (70000)`. Then write `fn parse_address(text: &str) -> Result<(String, u16), PortError>` that splits `host:port` and uses `?` on `parse_port`."
+  },
+  "exerciseKind": "runnable",
+  "id": "node-try-catch-to-result",
+  "minutes": 12,
+  "order": 0,
+  "parentID": "node-runtime",
+  "title": "try/catch vs Result",
+  "writing": {
+    "answers": [
+      "It panics: the thread unwinds, or the process aborts if panics are configured to abort",
+      "It returns the `Err` to the caller automatically, like an uncaught `throw` bubbling up",
+      "It returns `0`, as `Number` does for bad input"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "`?` returns the wrapped parse error early, the range check produces its own variant, and `main` matches both.",
+    "exampleCode": "use std::num::ParseIntError;\n\n#[derive(Debug)]\nenum PortError {\n    NotANumber(ParseIntError),\n    OutOfRange(u32),\n}\n\nfn parse_port(text: &str) -> Result<u16, PortError> {\n    let n: u32 = text.parse().map_err(PortError::NotANumber)?;\n    match u16::try_from(n) {\n        Ok(port) if port != 0 => Ok(port),\n        _ => Err(PortError::OutOfRange(n)),\n    }\n}\n\nfn main() {\n    for input in [\"8080\", \"\", \"0x50\", \"70000\"] {\n        match parse_port(input) {\n            Ok(port) => println!(\"{input} -> {port}\"),\n            Err(err) => println!(\"{input} -> {err:?}\"),\n        }\n    }\n}",
+    "explanation": "In JavaScript any function may throw anything, and nothing in its signature says so. A caller learns that `parsePort` throws by reading its code or by watching it crash. Rust puts failure in the type: `fn parse_port(text: &str) -> Result<u16, PortError>` returns either `Ok(port)` or `Err(reason)`, and the caller cannot reach the `u16` without deciding what to do about the error.\n\nThe error type is yours to design. An enum such as `PortError { NotANumber(ParseIntError), OutOfRange(u32) }` lets a caller tell the cases apart with `match` instead of comparing message strings, and it can wrap the lower-level error as its cause. `map_err` converts one error type into another, and the `?` operator returns the `Err` early, like an exception propagating, but visibly at every call site and only from a function that itself returns a compatible `Result`.\n\nPanics are not exceptions. `unwrap()`, `expect()`, indexing out of bounds and integer overflow in a debug build panic: the thread unwinds, or the process aborts if the build sets `panic = \"abort\"`. Use them for bugs, where continuing would be wrong, not for invalid user input. A `Result` is for situations the caller can reasonably handle: bad text, a missing file, a refused connection.\n\nParsing stops being lenient as well. `Number(\"\")` is `0` and `Number(\"0x50\")` is `80`, while `\"\".parse::<u32>()` is an `Err` of kind `Empty` and `\"0x50\"` one of kind `InvalidDigit`. One surprise runs the other way: integer `parse` accepts a leading `+`, so validate the exact format first when your contract forbids a sign.",
+    "feedback": "`unwrap` is a deliberate crash on `Err`. Handing the error back to the caller is what `?` does.",
+    "practiceCode": "fn main() {\n    let input = \"70000\";\n    let port: u16 = input.parse().unwrap();\n    println!(\"{port}\");\n}",
+    "question": "In the practice code, what does `unwrap()` do when `parse` returns `Err`?",
+    "recall": [
+      {
+        "answer": "`?` hands the error back to the caller, so the function itself must return a compatible `Result` or `Option`: E0277. Change the signature to `fn port() -> Result<u16, std::num::ParseIntError>` and return `Ok(n)`.",
+        "code": "fn port() -> u16 {\n    let n: u16 = \"8080\".parse()?;\n    n\n}",
+        "question": "Why does `?` not compile here, and how do you fix it?"
+      },
+      {
+        "answer": "When an `Err` would mean a bug in your own program, such as parsing a constant literal or a value an earlier check guaranteed. The message documents the broken invariant. For anything that depends on input, files or the network, return a `Result` so that the caller can respond.",
+        "question": "When is `expect(\"...\")` acceptable instead of returning a `Result`?"
+      }
+    ],
+    "rule": "Return `Result` for a failure the caller can act on, propagate it with `?`, and keep panics such as `unwrap` for bugs and broken invariants.",
+    "success": "The local compiler accepts the changed solution and the separate verification harness passes every case, including `24h`, `+5s` and a number too large for `u32`. Printing a success message alone does not complete this lab.",
+    "summary": "`throw` and `try/catch` become `Result<T, E>`: failure is part of the return type, `?` propagates it, and panics are reserved for bugs.",
+    "task": "Port the JavaScript `parseDuration` shown at the top of solution.rs. Accept ASCII digits followed by `s`, `m` or `h`. Return `DurationError::BadFormat` for anything else, including a missing number or a sign, and `DurationError::TooLong` above 86,400 seconds, even when the number does not fit an integer type. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise."
+  },
+  "illustration": {
+    "path": "media/node-try-catch-to-result.png",
+    "alt": "Side-by-side comparison: the JavaScript (Node.js) version on the left, the Rust version on the right, then 4 rows naming what changes.",
+    "caption": "try/catch vs Result: the same task in JavaScript (Node.js) and in Rust, with the differences that matter."
+  },
+  "contentDigest": "e0545d0c825cd988d4c358baa235777d5651a716b34850a5224820c563cc65d1"
+}

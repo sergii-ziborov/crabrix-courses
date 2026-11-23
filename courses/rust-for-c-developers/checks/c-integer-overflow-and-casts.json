@@ -1,0 +1,68 @@
+{
+  "challenge": {
+    "lessonID": "c-integer-overflow-and-casts",
+    "patternID": "c-integer-overflow-and-casts",
+    "projectName": "c-integer-overflow-and-casts-lab",
+    "source": "// C original:\n// uint32_t total_bytes(uint32_t count, uint32_t size) { return count * size; } /* wraps */\n// uint8_t to_byte(int value) { return (uint8_t)value; }               /* keeps the low byte */\npub fn total_bytes(count: u32, size: u32) -> Option<u32> {\n    todo!(\"implement the contract\")\n}\n\npub fn to_byte(value: i32) -> Option<u8> {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationSource": "mod solution;\n\nfn main() {\n    assert_eq!(solution::total_bytes(3, 4), Some(12), \"case 1\");\n    assert_eq!(solution::total_bytes(0, u32::MAX), Some(0), \"case 2\");\n    assert_eq!(solution::total_bytes(65_536, 65_536), None, \"case 3\");\n    assert_eq!(solution::total_bytes(65_535, 65_537), Some(u32::MAX), \"case 4\");\n    assert_eq!(solution::to_byte(255), Some(255), \"case 5\");\n    assert_eq!(solution::to_byte(300), None, \"case 6\");\n    assert_eq!(solution::to_byte(-1), None, \"case 7\");\n\n    println!(\"PASS c-integer-overflow-and-casts\");\n}\n",
+    "verificationCases": [
+      {
+        "kind": "visible",
+        "input": "solution::total_bytes(3, 4)",
+        "expectedAnswer": "Some(12)"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::total_bytes(0, u32::MAX)",
+        "expectedAnswer": "Some(0)"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::total_bytes(65_536, 65_536)",
+        "expectedAnswer": "None"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::total_bytes(65_535, 65_537)",
+        "expectedAnswer": "Some(u32::MAX)"
+      },
+      {
+        "kind": "visible",
+        "input": "solution::to_byte(255)",
+        "expectedAnswer": "Some(255)"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::to_byte(300)",
+        "expectedAnswer": "None"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::to_byte(-1)",
+        "expectedAnswer": "None"
+      }
+    ],
+    "expectedOutput": "PASS c-integer-overflow-and-casts\n",
+    "requiredSourceFragments": [
+      "pub fn total_bytes",
+      "pub fn to_byte"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  },
+  "evidence": {
+    "kind": "algorithmChallenge",
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS c-integer-overflow-and-casts\n"
+    },
+    "requiredSourceFragments": [
+      "pub fn total_bytes",
+      "pub fn to_byte"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  }
+}

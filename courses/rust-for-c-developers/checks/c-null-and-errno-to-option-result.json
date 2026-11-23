@@ -1,0 +1,76 @@
+{
+  "challenge": {
+    "lessonID": "c-null-and-errno-to-option-result",
+    "patternID": "c-null-and-errno-to-option-result",
+    "projectName": "c-null-and-errno-to-option-result-lab",
+    "source": "// C original:\n// /* 0 on success; -1 with errno = EINVAL or ERANGE on failure. */\n// int parse_port(const char *text, uint16_t *out) {\n//     char *end;\n//     errno = 0;\n//     long v = strtol(text, &end, 10);   /* also accepts spaces and a sign */\n//     if (end == text || *end != '\\0') { errno = EINVAL; return -1; }\n//     if (errno == ERANGE || v < 1 || v > 65535) { errno = ERANGE; return -1; }\n//     *out = (uint16_t)v;\n//     return 0;\n// }\n#[derive(Debug, PartialEq)]\npub enum PortError {\n    Empty,\n    NotANumber,\n    OutOfRange,\n}\n\npub fn parse_port(text: &str) -> Result<u16, PortError> {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationSource": "mod solution;\nuse solution::PortError;\n\nfn main() {\n    assert_eq!(solution::parse_port(\"8080\"), Ok(8080), \"case 1\");\n    assert_eq!(solution::parse_port(\"\"), Err(PortError::Empty), \"case 2\");\n    assert_eq!(solution::parse_port(\"80a\"), Err(PortError::NotANumber), \"case 3\");\n    assert_eq!(solution::parse_port(\"+80\"), Err(PortError::NotANumber), \"case 4\");\n    assert_eq!(solution::parse_port(\" 22\"), Err(PortError::NotANumber), \"case 5\");\n    assert_eq!(solution::parse_port(\"0\"), Err(PortError::OutOfRange), \"case 6\");\n    assert_eq!(solution::parse_port(\"65535\"), Ok(65535), \"case 7\");\n    assert_eq!(solution::parse_port(\"65536\"), Err(PortError::OutOfRange), \"case 8\");\n    assert_eq!(solution::parse_port(\"99999999999999999999\"), Err(PortError::OutOfRange), \"case 9\");\n\n    println!(\"PASS c-null-and-errno-to-option-result\");\n}\n",
+    "verificationCases": [
+      {
+        "kind": "visible",
+        "input": "solution::parse_port(\"8080\")",
+        "expectedAnswer": "Ok(8080)"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::parse_port(\"\")",
+        "expectedAnswer": "Err(PortError::Empty)"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::parse_port(\"80a\")",
+        "expectedAnswer": "Err(PortError::NotANumber)"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::parse_port(\"+80\")",
+        "expectedAnswer": "Err(PortError::NotANumber)"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::parse_port(\" 22\")",
+        "expectedAnswer": "Err(PortError::NotANumber)"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::parse_port(\"0\")",
+        "expectedAnswer": "Err(PortError::OutOfRange)"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::parse_port(\"65535\")",
+        "expectedAnswer": "Ok(65535)"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::parse_port(\"65536\")",
+        "expectedAnswer": "Err(PortError::OutOfRange)"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::parse_port(\"99999999999999999999\")",
+        "expectedAnswer": "Err(PortError::OutOfRange)"
+      }
+    ],
+    "expectedOutput": "PASS c-null-and-errno-to-option-result\n",
+    "requiredSourceFragments": [
+      "pub fn parse_port"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  },
+  "evidence": {
+    "kind": "algorithmChallenge",
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS c-null-and-errno-to-option-result\n"
+    },
+    "requiredSourceFragments": [
+      "pub fn parse_port"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  }
+}

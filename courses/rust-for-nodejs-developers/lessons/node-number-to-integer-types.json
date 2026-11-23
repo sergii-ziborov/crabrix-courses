@@ -1,0 +1,103 @@
+{
+  "bridge": {
+    "contrasts": [
+      {
+        "from": "`stock + delta` works for any two Numbers.",
+        "rust": "`stock + delta` with a `u16` and an `i32` is a type error; widen first with `i32::from(stock)`."
+      },
+      {
+        "from": "`3 - 5` is `-2`.",
+        "rust": "`u32` values 3 minus 5 panic in a debug build and wrap in release; `3_u32.checked_sub(5)` is `None`."
+      },
+      {
+        "from": "Integers above 2^53 − 1 silently lose precision.",
+        "rust": "`u64` and `i64` are exact over their whole range; leaving it is an explicit overflow case."
+      },
+      {
+        "from": "`n | 0` truncates through int32.",
+        "rust": "`as` also truncates silently; prefer `try_from` when a value might not fit."
+      }
+    ],
+    "credits": [
+      "basics/number-types",
+      "basics/operators"
+    ],
+    "from": "javascript",
+    "fromCaption": "One `Number` type: the range check is manual, and the last two lines show f64 rounding.",
+    "fromCode": "function applyAdjustment(stock, delta) {\n  const next = stock + delta;\n  if (!Number.isInteger(next) || next < 0 || next > 65535) return null;\n  return next;\n}\n\nconsole.log(applyAdjustment(10, -3));\nconsole.log(applyAdjustment(2, -5));\nconsole.log(0.1 + 0.2 === 0.3);           // every Number is an f64\nconsole.log(Number.MAX_SAFE_INTEGER + 2); // 9007199254740992, not ...993",
+    "fromLabel": "JavaScript (Node.js)"
+  },
+  "concept": "Explicit numeric types and overflow",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Immutable bindings, mut and shadowing",
+        "direction": "previous",
+        "title": "const and let vs let and let mut"
+      },
+      {
+        "concept": "Typed parameters and tail expressions",
+        "direction": "next",
+        "title": "JavaScript functions vs fn"
+      }
+    ],
+    "correction": "A `u32` has no negative values. Leaving the range panics in debug builds and wraps in release builds unless overflow checks are on; `checked_sub` turns the boundary into `None`.",
+    "misconception": "“An unsigned subtraction below zero just gives a negative number, as in JavaScript.”",
+    "traceSteps": [
+      {
+        "detail": "`stock` is a `u16` and `delta` an `i32`. They cannot be added directly, so `i32::from(stock)` widens the stock without loss.",
+        "title": "Read the types"
+      },
+      {
+        "detail": "`checked_add` returns `None` if the sum leaves `i32`, and `?` returns that `None` early. `u16::try_from(next).ok()` turns a negative or too-large result into `None`.",
+        "title": "Follow each boundary"
+      },
+      {
+        "detail": "Run it: `Some(7)`, `None`, `None`, `false`, then `None 44`. The third call adds `i32::MAX` and would panic in a debug build without `checked_add`.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Replace `checked_add(delta)?` with `+ delta` and call `apply_adjustment(1, i32::MAX)` in a debug build. Rebuild with `rustc -O` and compare. Then try `saturating_add` and decide which behaviour fits a stock counter."
+  },
+  "exerciseKind": "runnable",
+  "id": "node-number-to-integer-types",
+  "minutes": 12,
+  "order": 2,
+  "parentID": "node-values",
+  "title": "Number vs Rust integer types",
+  "writing": {
+    "answers": [
+      "It panics with `attempt to subtract with overflow`",
+      "It returns `-2`, as in JavaScript",
+      "It returns `0`, because unsigned values saturate"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "Widen with `i32::from`, add with `checked_add`, narrow with `u16::try_from`: every boundary is visible.",
+    "exampleCode": "fn apply_adjustment(stock: u16, delta: i32) -> Option<u16> {\n    let next = i32::from(stock).checked_add(delta)?;\n    u16::try_from(next).ok()\n}\n\nfn main() {\n    println!(\"{:?}\", apply_adjustment(10, -3));\n    println!(\"{:?}\", apply_adjustment(2, -5));\n    println!(\"{:?}\", apply_adjustment(1, i32::MAX));\n    println!(\"{}\", 0.1_f64 + 0.2 == 0.3);\n    println!(\"{:?} {}\", 200_u8.checked_add(100), 200_u8.wrapping_add(100));\n}",
+    "explanation": "JavaScript has one `Number`, an IEEE 754 double. Integers are exact only up to `Number.MAX_SAFE_INTEGER` (2^53 − 1), `0.1 + 0.2 === 0.3` is `false`, and the bitwise operators quietly convert to 32-bit integers. `BigInt` exists but does not mix with `Number`. Rust has fixed-size integers from `i8` to `i128` and `u8` to `u128`, the pointer-sized `usize` and `isize`, and `f32` and `f64`. Floating point behaves as it does in JavaScript; integers are where your habits need to change.\n\nRust never converts between numeric types for you. `u16 + i32` does not compile, even when every value would fit. Lossless widening is `i32::from(stock)` or `.into()`. Narrowing that may fail is `u16::try_from(n)`, which returns a `Result`. `as` converts too, but it truncates or wraps silently, so keep it for casts you have proved safe.\n\nOverflow is a decision, not an accident. In a debug build, `u32` arithmetic that leaves the range panics with `attempt to subtract with overflow`; in a release build it wraps unless `overflow-checks` is enabled. Neither gives JavaScript's `-2`. When the boundary is part of the contract, say so: `checked_sub` returns `None`, `saturating_sub` stops at `0` and `wrapping_sub` wraps on purpose.\n\nChoose types from the domain. Counts and lengths are usually `usize` or `u32`, money is an integer number of cents rather than an `f64`, and a value that can be negative needs a signed type. The lab's `seats_left` shows why the choice matters: a `u32` has no negative answer, so the function returns `Option<u32>` and the caller handles the overbooked case.",
+    "feedback": "Debug builds check integer overflow and panic. A release build would wrap to `4294967294` unless overflow checks are enabled; use `checked_sub` when the boundary is expected.",
+    "practiceCode": "fn main() {\n    let stock: u16 = 10;\n    let delta: i32 = -3;\n    let next = stock + delta;\n    println!(\"{next}\");\n}",
+    "question": "`fn left(capacity: u32, booked: u32) -> u32 { capacity - booked }` is called with `3` and `5` in a debug build. What happens?",
+    "recall": [
+      {
+        "answer": "`as` between integer types never fails: it keeps the low 8 bits, so `300` becomes `44`. `u8::try_from(300)` returns an `Err` instead of a silently different number, so the line prints `44 true`. Prefer `try_from` when a value might not fit.",
+        "code": "let big: i32 = 300;\nlet n = big as u8;\nprintln!(\"{n} {:?}\", u8::try_from(big).is_err());",
+        "question": "Why does this compile, and what does it print?"
+      },
+      {
+        "answer": "`u64` represents every integer from 0 to 2^64 − 1 exactly, so `2_u64.pow(53) + 1` is a different value from `2_u64.pow(53)`. Precision loss is a floating-point property. With integers the only boundary is overflow, which debug builds check.",
+        "question": "In JavaScript, `2 ** 53 + 1 === 2 ** 53` is `true`. What happens with `u64` in Rust?"
+      }
+    ],
+    "rule": "Numeric types never mix implicitly: convert with `From` or `try_from`, and choose checked, wrapping or saturating arithmetic where overflow is possible.",
+    "success": "The local compiler accepts the changed solution and the separate verification harness passes every case, including exact capacity and bookings beyond `u32::MAX`. Printing a success message alone does not complete this lab.",
+    "summary": "Every JavaScript `Number` is an f64. Rust makes you pick a numeric type, convert between types explicitly and decide what happens on overflow.",
+    "task": "Port the JavaScript `seatsLeft` shown at the top of solution.rs. Return `Some(left)` when the capacity covers `booked` plus `requested`, otherwise `None`, and never panic or wrap, whatever `u32` values arrive. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise."
+  },
+  "illustration": {
+    "path": "media/node-number-to-integer-types.png",
+    "alt": "Side-by-side comparison: the JavaScript (Node.js) version on the left, the Rust version on the right, then 4 rows naming what changes.",
+    "caption": "Number vs Rust integer types: the same task in JavaScript (Node.js) and in Rust, with the differences that matter."
+  },
+  "contentDigest": "b5fbfdeb78fecb78d7fb1b819353936733d99bce22e8d50f56b9d50cb05be1f4"
+}

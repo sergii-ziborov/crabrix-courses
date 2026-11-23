@@ -1,0 +1,63 @@
+{
+  "challenge": {
+    "expectedOutput": "PASS node-ts-unions-to-enums\n",
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")",
+      "_ =>"
+    ],
+    "lessonID": "node-ts-unions-to-enums",
+    "patternID": "node-ts-unions-to-enums",
+    "projectName": "node-ts-unions-to-enums-lab",
+    "requiredSourceFragments": [
+      "pub fn eta"
+    ],
+    "source": "// TypeScript original:\n// type Shipment =\n//   | { status: \"pending\" }\n//   | { status: \"shipped\"; carrier: string; days: number }\n//   | { status: \"delivered\" }\n//   | { status: \"lost\" };\n// function eta(s: Shipment): string {\n//   switch (s.status) {\n//     case \"pending\": return \"not shipped yet\";\n//     case \"shipped\":\n//       if (s.days === 0) return `arrives today via ${s.carrier}`;\n//       return s.days === 1 ? `1 day via ${s.carrier}` : `${s.days} days via ${s.carrier}`;\n//     case \"delivered\": return \"delivered\";\n//     case \"lost\": return \"lost\";\n//   }\n// }\npub enum Shipment {\n    Pending,\n    Shipped { carrier: String, days: u32 },\n    Delivered,\n    Lost,\n}\n\npub fn eta(s: &Shipment) -> String {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationCases": [
+      {
+        "expectedAnswer": "\"not shipped yet\"",
+        "input": "solution::eta(&Shipment::Pending)",
+        "kind": "visible"
+      },
+      {
+        "expectedAnswer": "\"arrives today via DHL\"",
+        "input": "solution::eta(&Shipment::Shipped { carrier: \"DHL\".into(), days: 0 })",
+        "kind": "boundary"
+      },
+      {
+        "expectedAnswer": "\"1 day via UPS\"",
+        "input": "solution::eta(&Shipment::Shipped { carrier: \"UPS\".into(), days: 1 })",
+        "kind": "boundary"
+      },
+      {
+        "expectedAnswer": "\"3 days via DHL\"",
+        "input": "solution::eta(&Shipment::Shipped { carrier: \"DHL\".into(), days: 3 })",
+        "kind": "semantic"
+      },
+      {
+        "expectedAnswer": "\"delivered\"",
+        "input": "solution::eta(&Shipment::Delivered)",
+        "kind": "semantic"
+      },
+      {
+        "expectedAnswer": "\"lost\"",
+        "input": "solution::eta(&Shipment::Lost)",
+        "kind": "semantic"
+      }
+    ],
+    "verificationSource": "mod solution;\n\nuse solution::Shipment;\n\nfn shipped(carrier: &str, days: u32) -> Shipment {\n    Shipment::Shipped { carrier: carrier.to_string(), days }\n}\n\nfn main() {\n    assert_eq!(solution::eta(&Shipment::Pending), \"not shipped yet\", \"case 1\");\n    assert_eq!(solution::eta(&shipped(\"DHL\", 0)), \"arrives today via DHL\", \"case 2\");\n    assert_eq!(solution::eta(&shipped(\"UPS\", 1)), \"1 day via UPS\", \"case 3\");\n    assert_eq!(solution::eta(&shipped(\"DHL\", 3)), \"3 days via DHL\", \"case 4\");\n    assert_eq!(solution::eta(&Shipment::Delivered), \"delivered\", \"case 5\");\n    assert_eq!(solution::eta(&Shipment::Lost), \"lost\", \"case 6\");\n\n    println!(\"PASS node-ts-unions-to-enums\");\n}\n"
+  },
+  "evidence": {
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS node-ts-unions-to-enums\n"
+    },
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")",
+      "_ =>"
+    ],
+    "kind": "algorithmChallenge",
+    "requiredSourceFragments": [
+      "pub fn eta"
+    ]
+  }
+}

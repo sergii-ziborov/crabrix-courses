@@ -1,0 +1,103 @@
+{
+  "bridge": {
+    "contrasts": [
+      {
+        "from": "`retries?: number` may be missing, `undefined` or `null`.",
+        "rust": "`retries: Option<u32>` is `Some(n)` or `None`, and must be handled before use."
+      },
+      {
+        "from": "`config.network?.retries ?? 3`",
+        "rust": "`config.network.as_ref().and_then(|n| n.retries).unwrap_or(3)`"
+      },
+      {
+        "from": "`retries || 3` turns a configured `0` into `3`.",
+        "rust": "`unwrap_or(3)` replaces only `None`; `Some(0)` stays `0`."
+      },
+      {
+        "from": "`undefined + 1` is `NaN` at runtime.",
+        "rust": "Adding an integer to an `Option<u32>` is E0369 at compile time."
+      }
+    ],
+    "credits": [
+      "basics/option-result"
+    ],
+    "from": "typescript",
+    "fromCaption": "`?.` and `??` keep a configured `0`, while `||` replaces it with the default.",
+    "fromCode": "interface Config {\n  network?: { retries?: number };\n}\n\nfunction retryLimit(config: Config): number {\n  return config.network?.retries ?? 3;\n}\n\nfunction retryLimitBuggy(config: Config): number {\n  return config.network?.retries || 3; // 0 is falsy\n}\n\nconsole.log(retryLimit({}), retryLimit({ network: { retries: 0 } }));\nconsole.log(retryLimitBuggy({ network: { retries: 0 } }));",
+    "fromLabel": "TypeScript"
+  },
+  "concept": "Absence as Option<T>",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Discriminated unions as enums",
+        "direction": "previous",
+        "title": "TypeScript unions vs enums"
+      },
+      {
+        "concept": "Lazy iterator pipelines",
+        "direction": "next",
+        "title": "Array methods vs iterators"
+      }
+    ],
+    "correction": "`unwrap_or` replaces only `None`, like `??`. `Some(0)` and `Some(String::new())` are present values and are returned unchanged.",
+    "misconception": "“`unwrap_or` is Rust's `||`: it replaces any empty-looking value.”",
+    "traceSteps": [
+      {
+        "detail": "`Config.network` is an `Option<Network>` and `Network.retries` an `Option<u32>`: two separate places where data may be missing.",
+        "title": "Read the types"
+      },
+      {
+        "detail": "`as_ref()` borrows the network instead of moving it out of `config`. `and_then(|n| n.retries)` flattens the two options, and `unwrap_or(3)` handles both kinds of `None`.",
+        "title": "Follow the chain"
+      },
+      {
+        "detail": "Run it: `3 0`, so the configured zero survives. Insert `.filter(|&n| n != 0)` before `unwrap_or` and the second number becomes `3`, the `||` behaviour.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Write `fn retries(config: &Config) -> Option<u32>` using `?` on `config.network.as_ref()` instead of `and_then`. Then change the return type to `Result<u32, String>` and use `ok_or` to say which field was missing."
+  },
+  "exerciseKind": "runnable",
+  "id": "node-null-undefined-to-option",
+  "minutes": 11,
+  "order": 2,
+  "parentID": "node-data",
+  "title": "null, undefined and ?? vs Option",
+  "writing": {
+    "answers": [
+      "`Option<T>`",
+      "`Result<Option<T>, E>`",
+      "`T`, using `null` for both cases"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "`and_then` follows the optional chain and `unwrap_or` supplies the `??` default, so `Some(0)` stays `0`.",
+    "exampleCode": "struct Network {\n    retries: Option<u32>,\n}\n\nstruct Config {\n    network: Option<Network>,\n}\n\nfn retry_limit(config: &Config) -> u32 {\n    config.network.as_ref().and_then(|n| n.retries).unwrap_or(3)\n}\n\nfn main() {\n    let empty = Config { network: None };\n    let zero = Config { network: Some(Network { retries: Some(0) }) };\n    println!(\"{} {}\", retry_limit(&empty), retry_limit(&zero));\n}",
+    "explanation": "TypeScript with `strictNullChecks` already marks absence as `T | undefined`, but the value can still be `null`, `undefined` or a missing property, and the checks vanish at runtime. Rust has no null. A value that may be missing has type `Option<T>`, which is either `Some(value)` or `None`, and you cannot use it as a `T` until you decide what absence means. `network.retries + 1` with an `Option<u32>` is a compile error, not `NaN`.\n\nThe operators become methods. `a?.b` is `a.as_ref().and_then(|a| a.b)` when `b` is itself optional, and `.map(...)` when it is not. `x ?? 3` is `x.unwrap_or(3)`, or `unwrap_or_else(|| ...)` when the default is expensive to build. Inside a function that returns `Option`, `let n = config.network.as_ref()?;` returns `None` early, the closest thing to optional chaining across statements.\n\nThere is no `||` default. `retries || 3` turns a configured `0` into `3`, and `title || \"Untitled\"` discards an intentionally empty string. `unwrap_or` only replaces `None`, so `Some(0)` stays `0`. If zero really should count as missing, say so with `.filter(|&n| n != 0)` and a comment.\n\n`Option` answers whether something is there; it does not say why not. When the caller needs a reason, such as \"storage unreachable\" rather than \"no such user\", return `Result<T, E>`, or `Result<Option<T>, E>` when missing is a normal outcome and failure is a separate one. That replaces returning `null` from one path and throwing from another.",
+    "feedback": "`Ok(Some(t))` means found, `Ok(None)` simply missing, and `Err(e)` carries the reason the lookup itself failed.",
+    "practiceCode": "struct Network {\n    retries: Option<u32>,\n}\n\nfn main() {\n    let network = Network { retries: Some(0) };\n    let limit: u32 = network.retries + 1;\n    println!(\"{limit}\");\n}",
+    "question": "A lookup finds nothing when the key is missing, and fails when the storage is unreachable. Which return type gives the caller both facts?",
+    "recall": [
+      {
+        "answer": "`0`, then `5`, then `Some(1)`. `unwrap_or` replaces only `None`, like `??`, so the present zero is kept. `map` transforms the value inside `Some` and would leave a `None` as `None`.",
+        "code": "let a: Option<u32> = Some(0);\nlet b: Option<u32> = None;\nprintln!(\"{}\", a.unwrap_or(5));\nprintln!(\"{}\", b.unwrap_or(5));\nprintln!(\"{:?}\", a.map(|n| n + 1));",
+        "question": "What does each line print?"
+      },
+      {
+        "answer": "`and_then` takes the `Option` by value, which would move `network` out of a struct you only borrowed: E0507. Call `config.network.as_ref()` first to get an `Option<&Network>`; then `n.retries` copies the `Option<u32>` out through the reference.",
+        "code": "struct Network { retries: Option<u32> }\nstruct Config { network: Option<Network> }\nfn retry_limit(config: &Config) -> u32 {\n    config.network.and_then(|n| n.retries).unwrap_or(3)\n}",
+        "question": "Why is this rejected when `config` is a `&Config`, and what fixes it?"
+      }
+    ],
+    "rule": "Use `Option<T>` when a value may be absent and `Result<T, E>` when the caller needs the reason; `unwrap_or` replaces `??`, not `||`.",
+    "success": "The local compiler accepts the changed solution and the separate verification harness passes every case, including a configured `0` and an empty title. Printing a success message alone does not complete this lab.",
+    "summary": "`null` and `undefined` become `Option<T>`: absence is part of the type, and `?.` and `??` become `and_then`, `map` and `unwrap_or`.",
+    "task": "Port the TypeScript `pageSize` and `title` shown at the top of solution.rs. Both take `Option<&Settings>`. A missing settings value or field uses the default (20, `Untitled`), but a configured `0` or an empty title is kept, exactly as `??` does. In the Crabrix app, open the compiler lab and complete the supplied functions in solution.rs. The reading question is a separate exercise."
+  },
+  "illustration": {
+    "path": "media/node-null-undefined-to-option.png",
+    "alt": "Side-by-side comparison: the TypeScript version on the left, the Rust version on the right, then 4 rows naming what changes.",
+    "caption": "null, undefined and ?? vs Option: the same task in TypeScript and in Rust, with the differences that matter."
+  },
+  "contentDigest": "25ed04163960d8aad6ff92d9ba8322deb634fe4c42243554ca46f2c47dc61b97"
+}

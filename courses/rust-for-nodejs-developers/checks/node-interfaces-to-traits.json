@@ -1,0 +1,63 @@
+{
+  "challenge": {
+    "expectedOutput": "PASS node-interfaces-to-traits\n",
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ],
+    "lessonID": "node-interfaces-to-traits",
+    "patternID": "node-interfaces-to-traits",
+    "projectName": "node-interfaces-to-traits-lab",
+    "requiredSourceFragments": [
+      "pub fn cheapest",
+      "impl Priced for Coffee"
+    ],
+    "source": "// TypeScript original:\n// interface Priced { cents(): number; label(): string }\n// function total<T extends Priced>(items: T[]): number {\n//   return items.reduce((sum, item) => sum + item.cents(), 0);\n// }\n// function cheapest(items: Priced[]): string | undefined {\n//   let best: Priced | undefined;\n//   for (const item of items) if (!best || item.cents() < best.cents()) best = item;\n//   return best?.label();\n// }\n// A book costs its own price; a coffee costs 250 cents plus 50 per size step.\npub trait Priced {\n    fn cents(&self) -> u64;\n    fn label(&self) -> String;\n}\n\npub struct Book {\n    pub title: String,\n    pub cents: u64,\n}\n\npub struct Coffee {\n    pub size: u32,\n}\n\nimpl Priced for Book {\n    fn cents(&self) -> u64 {\n        todo!(\"implement the contract\")\n    }\n    fn label(&self) -> String {\n        todo!(\"implement the contract\")\n    }\n}\n\nimpl Priced for Coffee {\n    fn cents(&self) -> u64 {\n        todo!(\"implement the contract\")\n    }\n    fn label(&self) -> String {\n        todo!(\"implement the contract\")\n    }\n}\n\npub fn total<T: Priced>(items: &[T]) -> u64 {\n    todo!(\"implement the contract\")\n}\n\npub fn cheapest(items: &[Box<dyn Priced>]) -> Option<String> {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationCases": [
+      {
+        "expectedAnswer": "6800",
+        "input": "total(&[Book 3900, Book 2900])",
+        "kind": "visible"
+      },
+      {
+        "expectedAnswer": "0",
+        "input": "total::<Coffee>(&[])",
+        "kind": "boundary"
+      },
+      {
+        "expectedAnswer": "600",
+        "input": "total(&[Coffee { size: 0 }, Coffee { size: 2 }])",
+        "kind": "semantic"
+      },
+      {
+        "expectedAnswer": "Some(\"coffee\")",
+        "input": "cheapest(&[Book 400, Coffee 3, Coffee 1])",
+        "kind": "visible"
+      },
+      {
+        "expectedAnswer": "Some(\"A\")",
+        "input": "cheapest(&[Book \"A\" 300, Coffee 1]): a tie keeps the first",
+        "kind": "boundary"
+      },
+      {
+        "expectedAnswer": "None",
+        "input": "cheapest(&[])",
+        "kind": "boundary"
+      }
+    ],
+    "verificationSource": "mod solution;\n\nuse solution::{Book, Coffee, Priced};\n\nfn book(title: &str, cents: u64) -> Book {\n    Book { title: title.to_string(), cents }\n}\n\nfn main() {\n    assert_eq!(solution::total(&[book(\"Rust\", 3900), book(\"Node\", 2900)]), 6800, \"case 1\");\n    assert_eq!(solution::total::<Coffee>(&[]), 0, \"case 2\");\n    assert_eq!(solution::total(&[Coffee { size: 0 }, Coffee { size: 2 }]), 600, \"case 3\");\n    let mixed: Vec<Box<dyn Priced>> = vec![\n        Box::new(book(\"Rust\", 400)),\n        Box::new(Coffee { size: 3 }),\n        Box::new(Coffee { size: 1 }),\n    ];\n    assert_eq!(solution::cheapest(&mixed), Some(String::from(\"coffee\")), \"case 4\");\n    let tie: Vec<Box<dyn Priced>> = vec![Box::new(book(\"A\", 300)), Box::new(Coffee { size: 1 })];\n    assert_eq!(solution::cheapest(&tie), Some(String::from(\"A\")), \"case 5\");\n    assert_eq!(solution::cheapest(&[]), None, \"case 6\");\n\n    println!(\"PASS node-interfaces-to-traits\");\n}\n"
+  },
+  "evidence": {
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS node-interfaces-to-traits\n"
+    },
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ],
+    "kind": "algorithmChallenge",
+    "requiredSourceFragments": [
+      "pub fn cheapest",
+      "impl Priced for Coffee"
+    ]
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "challenge": {
+    "expectedOutput": "PASS node-null-undefined-to-option\n",
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ],
+    "lessonID": "node-null-undefined-to-option",
+    "patternID": "node-null-undefined-to-option",
+    "projectName": "node-null-undefined-to-option-lab",
+    "requiredSourceFragments": [
+      "pub fn page_size",
+      "pub fn title"
+    ],
+    "source": "// TypeScript original:\n// interface Settings { pageSize?: number; title?: string }\n// function pageSize(s?: Settings): number {\n//   return s?.pageSize ?? 20;\n// }\n// function title(s?: Settings): string {\n//   return s?.title ?? \"Untitled\";\n// }\npub struct Settings {\n    pub page_size: Option<u32>,\n    pub title: Option<String>,\n}\n\npub fn page_size(s: Option<&Settings>) -> u32 {\n    todo!(\"implement the contract\")\n}\n\npub fn title(s: Option<&Settings>) -> String {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationCases": [
+      {
+        "expectedAnswer": "20",
+        "input": "solution::page_size(None)",
+        "kind": "visible"
+      },
+      {
+        "expectedAnswer": "20",
+        "input": "page_size of settings without pageSize",
+        "kind": "semantic"
+      },
+      {
+        "expectedAnswer": "0",
+        "input": "page_size of settings with Some(0)",
+        "kind": "boundary"
+      },
+      {
+        "expectedAnswer": "50",
+        "input": "page_size of settings with Some(50)",
+        "kind": "semantic"
+      },
+      {
+        "expectedAnswer": "\"Untitled\"",
+        "input": "solution::title(None)",
+        "kind": "visible"
+      },
+      {
+        "expectedAnswer": "\"\"",
+        "input": "title of settings with Some(\"\")",
+        "kind": "boundary"
+      },
+      {
+        "expectedAnswer": "\"Q4\"",
+        "input": "title of settings with Some(\"Q4\")",
+        "kind": "semantic"
+      }
+    ],
+    "verificationSource": "mod solution;\n\nuse solution::Settings;\n\nfn settings(page_size: Option<u32>, title: Option<&str>) -> Settings {\n    Settings { page_size, title: title.map(String::from) }\n}\n\nfn main() {\n    assert_eq!(solution::page_size(None), 20, \"case 1\");\n    assert_eq!(solution::page_size(Some(&settings(None, None))), 20, \"case 2\");\n    assert_eq!(solution::page_size(Some(&settings(Some(0), None))), 0, \"case 3\");\n    assert_eq!(solution::page_size(Some(&settings(Some(50), None))), 50, \"case 4\");\n    assert_eq!(solution::title(None), \"Untitled\", \"case 5\");\n    assert_eq!(solution::title(Some(&settings(None, Some(\"\")))), \"\", \"case 6\");\n    assert_eq!(solution::title(Some(&settings(None, Some(\"Q4\")))), \"Q4\", \"case 7\");\n    let kept = settings(Some(5), Some(\"kept\"));\n    solution::title(Some(&kept));\n    assert_eq!(kept.title.as_deref(), Some(\"kept\"), \"case 8\");\n\n    println!(\"PASS node-null-undefined-to-option\");\n}\n"
+  },
+  "evidence": {
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS node-null-undefined-to-option\n"
+    },
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ],
+    "kind": "algorithmChallenge",
+    "requiredSourceFragments": [
+      "pub fn page_size",
+      "pub fn title"
+    ]
+  }
+}

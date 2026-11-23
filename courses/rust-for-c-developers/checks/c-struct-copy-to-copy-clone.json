@@ -1,0 +1,58 @@
+{
+  "challenge": {
+    "lessonID": "c-struct-copy-to-copy-clone",
+    "patternID": "c-struct-copy-to-copy-clone",
+    "projectName": "c-struct-copy-to-copy-clone-lab",
+    "source": "// C original:\n// /* Returns a translated deep copy; the caller frees result.pts. The input is unchanged. */\n// struct path translated(const struct path *p, int dx, int dy) {\n//     struct path out = {malloc(p->len * sizeof *p->pts), p->len};\n//     for (size_t i = 0; i < p->len; i++)\n//         out.pts[i] = (struct point){p->pts[i].x + dx, p->pts[i].y + dy};\n//     return out;\n// }\n// /* Copies the first point into *out; returns 0 when the path is empty. */\n// int first_point(const struct path *p, struct point *out);\n#[derive(Clone, Copy, Debug, PartialEq)]\npub struct Point {\n    pub x: i32,\n    pub y: i32,\n}\n\n#[derive(Clone, Debug, PartialEq)]\npub struct Path {\n    pub points: Vec<Point>,\n}\n\npub fn translated(path: &Path, dx: i32, dy: i32) -> Path {\n    todo!(\"implement the contract\")\n}\n\npub fn first_point(path: &Path) -> Option<Point> {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationSource": "mod solution;\nuse solution::{Path, Point};\n\nfn main() {\n    let original = Path { points: vec![Point { x: 1, y: 2 }, Point { x: -3, y: 0 }] };\n    let moved = solution::translated(&original, 10, -1);\n    assert_eq!(moved.points, vec![Point { x: 11, y: 1 }, Point { x: 7, y: -1 }], \"case 1\");\n    assert_eq!(original.points, vec![Point { x: 1, y: 2 }, Point { x: -3, y: 0 }], \"case 2: the input is unchanged\");\n    let empty = Path { points: Vec::new() };\n    assert_eq!(solution::translated(&empty, 5, 5), empty, \"case 3\");\n    assert_eq!(solution::first_point(&original), Some(Point { x: 1, y: 2 }), \"case 4\");\n    assert_eq!(solution::first_point(&empty), None, \"case 5\");\n\n    println!(\"PASS c-struct-copy-to-copy-clone\");\n}\n",
+    "verificationCases": [
+      {
+        "kind": "visible",
+        "input": "solution::translated(&[(1, 2), (-3, 0)], 10, -1)",
+        "expectedAnswer": "[(11, 1), (7, -1)]"
+      },
+      {
+        "kind": "semantic",
+        "input": "original after translated",
+        "expectedAnswer": "unchanged"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::translated(&empty, 5, 5)",
+        "expectedAnswer": "empty"
+      },
+      {
+        "kind": "visible",
+        "input": "solution::first_point(&original)",
+        "expectedAnswer": "Some(Point { x: 1, y: 2 })"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::first_point(&empty)",
+        "expectedAnswer": "None"
+      }
+    ],
+    "expectedOutput": "PASS c-struct-copy-to-copy-clone\n",
+    "requiredSourceFragments": [
+      "pub fn translated",
+      "pub fn first_point"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  },
+  "evidence": {
+    "kind": "algorithmChallenge",
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS c-struct-copy-to-copy-clone\n"
+    },
+    "requiredSourceFragments": [
+      "pub fn translated",
+      "pub fn first_point"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  }
+}
