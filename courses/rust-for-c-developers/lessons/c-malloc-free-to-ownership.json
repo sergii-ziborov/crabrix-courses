@@ -1,0 +1,100 @@
+{
+  "concept": "One owner frees, exactly once",
+  "depth": {
+    "traceSteps": [
+      {
+        "title": "Find each owner",
+        "detail": "For each `String`, `Vec` or `Box`, name the binding that owns it on each line."
+      },
+      {
+        "title": "Mark the moves",
+        "detail": "Every by-value argument, assignment or return moves ownership; after it, the old name is unusable."
+      },
+      {
+        "title": "Place the drops",
+        "detail": "At each closing brace, list the remaining owners in reverse declaration order."
+      }
+    ],
+    "misconception": "“Rust frees memory with a garbage collector, so cleanup happens at some later time.”",
+    "correction": "There is no collector. The compiler inserts the drop at a known point: the end of the final owner's scope, or the call to `drop`. That point is visible in the source, exactly where a careful C programmer would have called `free`.",
+    "transferChallenge": "Change `archive` to take `&str` so the caller keeps `report`, then return a `String` from a helper function and trace which binding finally frees it.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "From for(;;) to Ranges",
+        "concept": "Ranges, iterators and loop with a value"
+      },
+      {
+        "direction": "next",
+        "title": "Pointers to References",
+        "concept": "Shared or exclusive, checked at compile time"
+      }
+    ]
+  },
+  "exerciseKind": "runnable",
+  "id": "c-malloc-free-to-ownership",
+  "minutes": 13,
+  "order": 0,
+  "parentID": "c-memory",
+  "title": "From malloc/free to Ownership",
+  "writing": {
+    "summary": "Every heap value in Rust has exactly one owner; passing it by value moves ownership, and the end of the owner's scope frees it exactly once.",
+    "rule": "One value has one owner; a move transfers ownership and ends the old binding, and the remaining owners drop in reverse declaration order at the end of their scope.",
+    "explanation": "In C, ownership of a `malloc` result is a convention written in comments: who frees it, and when. Getting it wrong has three outcomes: a leak, a use after free or a double free. The example's `archive()` frees its argument and the caller frees it again. Nothing in `void archive(char *)` says the pointer is consumed, so the compiler cannot help; AddressSanitizer reports `attempting double-free`, and a plain macOS build is killed by a trap inside `free`.\n\nRust makes the convention part of the type. `String`, `Vec<T>` and `Box<T>` own their heap memory. A parameter of type `String` takes ownership: after `archive(report)` the value has moved, and any later use of `report` is error `E0382`, borrow of moved value. The value is freed once, by its final owner, when that owner goes out of scope. There is no `free` to call and none to forget on an early return.\n\nA move copies only the handle (pointer, length and capacity) and then treats the source as uninitialised; nothing is deep-copied unless you call `.clone()`. Returning a value moves it out to the caller, which is how a Rust function hands back ownership, like a C function returning a pointer the caller must free.\n\nCleanup order is defined. At the end of a scope, the remaining locals drop in reverse declaration order, the order a careful `goto cleanup` chain releases resources. The `Drop` trait runs code at that point, so the same mechanism closes files and releases locks. `drop(x)` ends a value early by moving it into a function that does nothing with it.",
+    "exampleCode": "struct Noisy(&'static str);\n\nimpl Drop for Noisy {\n    fn drop(&mut self) {\n        println!(\"drop {}\", self.0); // runs once, when the owner goes away\n    }\n}\n\nfn archive(report: String) { // takes ownership; the String is freed here\n    println!(\"archived {report}\");\n}\n\nfn main() {\n    let report = String::from(\"q3-summary\");\n    archive(report);             // moved: `report` can no longer be used\n    let _log = Noisy(\"log\");\n    let _lock = Noisy(\"lock\");\n    let _file = Noisy(\"file\");\n    println!(\"end of main\");\n}                                // drops in reverse: file, lock, log\n",
+    "exampleCaption": "`archive` consumes `report`; the three `Noisy` values drop in reverse order (`file`, `lock`, `log`) after `end of main`.",
+    "practiceCode": "fn archive(report: String) {\n    println!(\"archived {report}\");\n}\n\nfn main() {\n    let report = String::from(\"q3-summary\");\n    archive(report);\n    println!(\"{report}\");\n}\n",
+    "task": "Port the commented C function: `take_largest` returns the longest buffer (the first one on a tie) without copying it, drops all the others, and returns `None` for an empty list.",
+    "success": "The returned `Vec` has the same heap pointer as the buffer it came from, a tie returns the first longest buffer, and an empty list gives `None`.",
+    "question": "A function declares `let _log = Noisy(\"log\"); let _lock = Noisy(\"lock\"); let _file = Noisy(\"file\");`. In which order do their `Drop` implementations run at its closing brace?",
+    "answers": [
+      "`log`, `lock`, `file`: declaration order",
+      "In an unspecified order, as with a garbage collector",
+      "`file`, `lock`, `log`: reverse declaration order",
+      "None of them run there: names starting with `_` are dropped immediately"
+    ],
+    "correctAnswer": 2,
+    "feedback": "Remaining locals drop in reverse declaration order. A leading underscore only silences the unused-variable warning; `_log` still owns its value until the scope ends.",
+    "recall": [
+      {
+        "question": "How does a Rust function return ownership of a heap buffer, the way a C function returns a pointer the caller must free?",
+        "answer": "It returns the owning type by value, such as `Vec<u8>` or `String`. The return moves the handle to the caller, who becomes the owner and frees it by letting it go out of scope. The heap data is not copied."
+      },
+      {
+        "question": "Does this compile? If not, what is the smallest fix?",
+        "code": "fn consume(v: Vec<u8>) -> usize {\n    v.len()\n}\n\nfn main() {\n    let data = vec![1, 2, 3];\n    let n = consume(data);\n    println!(\"{n} {}\", data.len());\n}",
+        "answer": "No: `data` moved into `consume`, so `data.len()` is error `E0382`. Read the length before the call, or change `consume` to borrow (`v: &[u8]`) and call `consume(&data)`."
+      }
+    ]
+  },
+  "bridge": {
+    "from": "c",
+    "fromLabel": "C",
+    "fromCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Takes ownership and frees the report. Only this comment says so. */\nstatic void archive(char *report) {\n    printf(\"archived %s\\n\", report);\n    free(report);\n}\n\nint main(void) {\n    char *report = strdup(\"q3-summary\");\n    archive(report);\n    free(report);                 /* ASan: attempting double-free */\n    return 0;\n}\n",
+    "fromCaption": "`archive()` frees its argument, so the caller's `free` is a double free that AddressSanitizer reports.",
+    "contrasts": [
+      {
+        "from": "Who calls `free` is a comment-level convention.",
+        "rust": "The owner frees; ownership is in the type: `String`, `Vec<T>`, `Box<T>`."
+      },
+      {
+        "from": "Using a pointer after the callee freed it compiles.",
+        "rust": "Using a moved value is error `E0382`."
+      },
+      {
+        "from": "Cleanup on every exit path, often `goto cleanup` in reverse order.",
+        "rust": "Locals drop in reverse declaration order on every exit path."
+      }
+    ],
+    "credits": [
+      "ownership/ownership",
+      "ownership/drop-order"
+    ]
+  },
+  "illustration": {
+    "path": "media/c-malloc-free-to-ownership.png",
+    "alt": "Side-by-side comparison: the C version on the left, the Rust version on the right, then 3 rows naming what changes.",
+    "caption": "From malloc/free to Ownership: the same task in C and in Rust, with the differences that matter."
+  },
+  "contentDigest": "bf0947ec09ee24bfaabd5266a591f5a3e9850801f880ccb44e814c0e0b48c84a"
+}

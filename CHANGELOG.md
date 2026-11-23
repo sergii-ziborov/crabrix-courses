@@ -1,3 +1,17 @@
+## 2026-11-23 — Rust for C Developers and Rust for Node.js Developers
+
+Two new courses, 17 lessons each, put one habit from C or from JavaScript/TypeScript
+next to its Rust equivalent: a `bridge` object holds the other language's code, 2–4
+"what changes" rows and `credits`, the Academy lessons whose rule the lesson teaches
+and checks (30 per course). Finishing a bridge lesson marks those lessons as known in
+the app; it gives no XP or achievements. 26 of the 34 lessons are compiled port
+challenges. Every Rust example, practice program, stub, reference solution and wrong
+port was checked with rustc 1.89.0 and 1.100.0; C with clang and sanitizers (8
+findings the prose relies on); JavaScript on Node.js 22; TypeScript with `tsc --strict`.
+Packs require the `bridge-lessons-v1` capability, so older apps do not list them.
+Each lesson has a deterministic side-by-side diagram (`tools/bridge_illustrations.py`).
+Contract, verification and credit reports: [editorial/bridges_20261123](editorial/bridges_20261123/SPEC.md).
+
 ## 2026-11-13 — recall questions for flashcards
 
 Every lesson now has authored recall questions in `writing.recall`: two per Rust

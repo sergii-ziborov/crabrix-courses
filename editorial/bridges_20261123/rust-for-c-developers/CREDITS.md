@@ -1,0 +1,76 @@
+# Credits — rust-for-c-developers
+
+Each line: credited lesson — its `writing.rule` — where the bridge lesson teaches it and which check tests it.
+Checks are the lesson's quiz (reasoning evidence) and, for runnable lessons, the compiled challenge;
+all compiler claims are verified by `verify.py` (see `verification.json`).
+
+## c-printf-to-println (runnable)
+- `basics/hello-rust` — Execution begins in `fn main()`. `println!` is a compile-time-checked macro that writes a formatted line to stdout when the program runs. — explanation P2/P4 (`!` = macro expanded at compile time; `fn main`); quiz: the two-placeholder program is rejected during macro expansion; challenge builds the label with `format!`
+- `basics/print-formatting` — Every formatting placeholder must have a value known to `println!`. — explanation P2–P3; quiz: a missing argument is a compile error; challenge `label` needs `{:>8}`, `{:03}`, `{:#06x}` (the `{:8}` port is rejected)
+
+## c-const-by-default (planned)
+- `basics/variables` — `mut` permits mutation; shadowing hides the old binding behind a new one. — explanation P1–P3 (`mut`, `E0384`, shadowing); quiz: `let total = 0; let total = total + 5; total += 1;` → the `+=` is rejected because the shadowing binding is not `mut` (probe-verified)
+
+## c-integer-overflow-and-casts (runnable)
+- `basics/number-types` — Numeric conversions are explicit because ranges and precision differ. — explanation P1 (no implicit integer conversions, `From`/`TryFrom`); quiz: `d < u` on `i32`/`u32` is `E0308`; challenge `to_byte` must use a checked conversion
+- `basics/operators` — Numeric operands need compatible types; choose the overflow policy explicitly. — explanation P2–P4 (debug panic vs release wrap, `checked_`/`wrapping_`/`saturating_`, `as`); challenge `total_bytes` must return `None` on overflow — wrapping and plain `*` ports are rejected in debug and release
+
+## c-functions-are-expressions (runnable)
+- `basics/functions` — The last expression without a semicolon is the return value. — explanation P1/P3 (tail expression is the return value); quiz: the trailing `;` after the `if` makes the body `()` (`E0308`); challenge wrong port with a trailing `;` fails to compile
+- `basics/block-expressions` — No semicolon means a tail value; a semicolon turns it into `()`. — explanation P3 (semicolon turns a tail value into `()`); same quiz; recall card 1 (`x * 3;` block evaluates to `()`) is compiler-verified
+
+## c-for-loops-to-ranges (runnable)
+- `basics/loops` — Prefer `for` for iteration; use `loop` when `break` defines the exit. — explanation P1/P3 (`for` over collections/ranges, `loop` with `break value`); quiz computes a `loop { break n }` value; challenge `first_power_at_least` uses a loop with a value
+- `basics/ranges` — `a..b` excludes `b`; `a..=b` includes `b`. — explanation P2 (`..` excludes, `..=` includes, safe at `u8::MAX`); quiz sums `found..=7`; challenge `count_multiples(250, 255, 5)` rejects `lo..hi + 1` and `lo..hi` ports
+
+## c-malloc-free-to-ownership (runnable)
+- `ownership/ownership` — One value, one owner; a move ends the previous binding. — explanation P2–P3 (one owner, moves, `E0382`); practice shows `E0382`; challenge `take_largest` must move the winning buffer (pointer-identity check rejects the `.cloned()` port)
+- `ownership/drop-order` — At scope end, remaining locals drop in reverse declaration order; struct fields drop in declaration order. — explanation P4 (reverse declaration order); quiz: `_log`, `_lock`, `_file` drop as file, lock, log (probe-verified); example prints the order
+
+## c-pointers-to-references (runnable)
+- `basics/references-intro` — `&T` borrows `T` for read-only use without transferring ownership. — explanation P2/P4 (`&T` lends read-only access, caller keeps ownership); challenge `append_doubled(dst, src: &[i32])` — harness reuses `src` after the call
+- `ownership/borrowing` — Many shared borrows or one mutable borrow, never both at once. — explanation P2–P3 (many `&T` or one `&mut T`, `E0502`, borrows end at last use); quiz on `let first = &v[0]; v.push(2)`; practice and aliasing probe both `E0502`
+
+## c-pointer-length-to-slices (runnable)
+- `ownership/slices` — A slice borrows a range; it allocates nothing. — explanation P2–P3 (slice = pointer + length, a view, no allocation); quiz: `-> &[i32]` is a borrowed view tied to the input; challenge `longest_run` returns a subslice (pointer checked)
+
+## c-dangling-pointers-to-lifetimes (runnable)
+- `ownership/lifetimes-intro` — A lifetime annotation relates borrows; it never extends one. — explanation P2–P4 (annotation relates borrows, never extends one; elision; `E0106`, `E0597`); quiz: two reference inputs need an annotation (probe `E0106`); challenge rejects tying `prefix` to `'a` (`E0597`)
+
+## c-struct-copy-to-copy-clone (runnable)
+- `ownership/copy-clone` — `Copy` permits implicit bitwise duplication; `Clone` is explicit and has a type-specific cost. — explanation P2–P4 (`Copy` only for resource-free types, `E0204`, explicit `.clone()`); quiz: why `Path { Vec }` cannot be `Copy`; practice `E0204`; challenge rejects the shallow-copy port (`E0507`)
+
+## c-structs-to-impl (runnable)
+- `basics/structs` — `self` consumes, `&self` reads, `&mut self` modifies. — explanation P2 (`&self` reads, `&mut self` modifies, `self` consumes); quiz: `close` must take `self`; practice `E0382` after `finish(self)`; challenge `Budget` methods
+- `basics/methods-intro` — Read a method's `self` parameter to learn its ownership effect. — explanation P2–P3 (read the receiver for the ownership effect, auto-borrow at `.`); same quiz; recall maps C prototypes to receivers
+
+## c-tagged-unions-to-enums (runnable)
+- `basics/enums` — `match` is exhaustive: every variant must be handled. — explanation P2–P3 (variants with data, exhaustive `match`, `_` hides new variants); quiz + practice `E0004`; challenge rejects the `_ => 0` port that forgets `Triangle`
+- `basics/pattern-matching` — A guard narrows an arm; the compiler still demands the set be exhaustive. — explanation P4 (bindings, guards, guards do not count for exhaustiveness); quiz: the guarded `Click` arm leaves the variant uncovered (`E0004`); recall card 2 is compiler-verified
+
+## c-null-and-errno-to-option-result (runnable)
+- `basics/option-result` — `Option` for absence, `Result` when the caller needs the reason. — explanation P2–P3 (`Option` for absence, `Result` when the reason matters); quiz: `Option<&V>` for a lookup, `Result<Config, ParseError>` for a parser; practice `E0308`
+- `basics/recoverable-errors` — Use `Result` for failure the caller can reasonably respond to. — explanation P3–P4 (`Result` for expected failures, `?`, `unwrap` only for bugs); same quiz; challenge `parse_port` returns `Result<u16, PortError>` for invalid external text
+
+## c-char-arrays-to-strings (runnable)
+- `basics/strings` — `len()` counts UTF-8 bytes; `chars().count()` counts Unicode scalar values, not grapheme clusters. — explanation P2–P3 (`len()` bytes vs `chars().count()` scalar values); quiz: `"café"` → 5 and 4; challenge `initials` must use Unicode `to_uppercase` (the ASCII port is rejected)
+- `basics/chars-and-text` — `String` indexing by an arbitrary byte is forbidden because UTF-8 boundaries matter. — explanation P4 (no integer indexing because of UTF-8 boundaries, `E0277`); practice `E0277`; challenge `truncate_at_boundary` rejects the `&text[..max_bytes]` port that splits `é`
+
+## c-make-and-headers-to-cargo (planned)
+- `projects/modules` — Items are private by default; `pub` is what exposes them. — explanation P2–P3 (private by default, `pub` exports, `E0603`, `mod name;` loads `name.rs`); practice `E0603`; quiz answer verified with a real Cargo package
+- `projects/package-layout` — `src/main.rs` defines the default binary and `src/lib.rs` defines the library target. — explanation P4 (`src/main.rs` binary, `src/lib.rs` library, binary uses the library by package name); quiz: `shapes::geometry::area` — verified with `cargo run` on rustc 1.100.0
+
+## c-unsafe-and-ffi (planned)
+- `systems/unsafe` — `unsafe` is a claim about an invariant, not permission to skip the rules. — explanation P2–P3 (`unsafe` is a claim about invariants, `# Safety` / `// SAFETY:`); quiz: the block claims non-null, aligned, live, initialised
+- `systems/raw-pointers` — Creating `*const T` or `*mut T` is safe; dereferencing one is `unsafe` because validity, alignment, initialization, and aliasing are now the programmer's proof obligations. — explanation P1–P2 (creating raw pointers is safe, dereferencing needs `unsafe`); quiz: only `*p` needs `unsafe` (probes: creating/offsetting compiles, deref is `E0133`); practice `E0133`
+
+## c-pthreads-to-threads (planned)
+- `concurrency/concurrency` — `thread::spawn` requires a `Send + 'static` closure; `move` captures by value and does not extend borrowed lifetimes. — explanation P2 (`spawn` needs `Send + 'static`, `move`, `E0373`, `thread::scope`); quiz: `move` gives the thread its own `Arc`; practice `E0373`
+- `concurrency/shared-state` — The lock guard unlocks on drop, so there is no unlock to forget. — explanation P3 (`Mutex<T>` owns the data, guard unlocks on drop, `Rc` is not `Send`); quiz: the mutex unlocks when guard `n` drops; probe: `Rc` into `spawn` is `E0277`
+
+## Considered and not credited
+
+- `basics/function-parameters` — taught in c-functions-are-expressions, but no check tests the no-implicit-argument-conversion rule.
+- `basics/control-flow` — `if` as an expression is taught, but no check tests that all branches share one type.
+- `systems/ffi` — `repr(C)` and `unsafe extern "C"` are taught and compiled in c-unsafe-and-ffi, but its quiz tests the raw-pointer rule, not the `repr(C)` rule.
+- `ownership/mutable-borrows`, `concurrency/send-sync` — touched in prose only.

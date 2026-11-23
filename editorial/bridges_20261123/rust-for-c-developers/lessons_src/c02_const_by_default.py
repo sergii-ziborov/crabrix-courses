@@ -1,0 +1,126 @@
+ID = "c-const-by-default"
+UNIT = "c-syntax"
+ORDER = 1
+
+FROM_CODE = r'''#include <stdio.h>
+#include <stdlib.h>
+
+int main(void) {
+    const int limit = 3;            /* read-only, but not a constant expression */
+    int total = 0;                  /* writable unless you say otherwise */
+    const char *raw_width = " 42 "; /* each parsing stage needs its own name */
+    long width = strtol(raw_width, NULL, 10);
+    for (int i = 0; i < limit; i++) {
+        total += (int)width;
+    }
+    printf("limit=%d total=%d\n", limit, total);
+    return 0;
+}
+'''
+
+EXAMPLE = r'''const LIMIT: u32 = 3; // a typed compile-time constant
+
+fn main() {
+    let width = " 42 ";
+    let width = width.trim(); // shadowing: a new binding, same name
+    let width: u32 = width.parse().expect("a number"); // and now a u32
+    let mut total = 0; // mutation is opt-in
+    for _ in 0..LIMIT {
+        total += width;
+    }
+    println!("limit={LIMIT} total={total}");
+}
+'''
+
+PRACTICE = r'''fn main() {
+    let count = 0;
+    for word in ["a", "", "c"] {
+        if !word.is_empty() {
+            count += 1;
+        }
+    }
+    println!("{count}");
+}
+'''
+
+LESSON = {
+    "title": "const by Default",
+    "concept": "Immutable bindings, mut and shadowing",
+    "minutes": 8,
+    "exerciseKind": "planned",
+    "writing": {
+        "summary": "In Rust a binding is immutable unless you write `mut`, and a new `let` can reuse a name for a new value or even a new type.",
+        "rule": "`let` bindings are immutable by default; `mut` opts in to mutation, and shadowing with a new `let` creates a new binding instead of changing the old one.",
+        "explanation": (
+            "In C every object is writable unless you add `const`, and `const` means read-only through this name, not constant: `const int limit = 3` is not an integer constant expression, and a `const T *` parameter says nothing about whether someone else changes the object. Rust flips the default. `let total = 0;` can never be reassigned; trying is error `E0384`. Write `let mut total = 0;` when the value really changes.\n\n"
+            "Immutability belongs to the binding, which makes it cheap to check and useful to read: a binding without `mut` names the same value for its whole scope. Mutable state stands out because every mutable binding is marked, and rustc warns when a `mut` turns out to be unnecessary.\n\n"
+            "Shadowing has no C equivalent. `let width = width.trim();` declares a new binding called `width` that hides the previous one, and it may have a different type. C code usually invents a name per stage (`raw_width`, `trimmed`, `width_value`); Rust code often reuses one, because the earlier stage can then no longer be used by mistake. Shadowing is not mutation: the old value is unchanged, and a reference that borrowed it still sees it.\n\n"
+            "Rust's `const LIMIT: u32 = 3;` is what C programmers usually want from `#define` or `enum { LIMIT = 3 }`: a typed compile-time constant, copied into each use. `static` is the item with one fixed address, the closer match to a C global. A mutable `static` needs `unsafe` to access, so shared counters use an atomic or a `Mutex` instead."
+        ),
+        "exampleCode": EXAMPLE,
+        "exampleCaption": "`width` is shadowed twice, from `&str` to a trimmed `&str` to a `u32`; only `total` needs `mut`.",
+        "practiceCode": PRACTICE,
+        "task": "Predict which statement in the quiz rustc rejects, then fix the practice program with the smallest possible change.",
+        "success": "You can explain why a shadowing `let` compiles while `+=` on a binding without `mut` is error `E0384`.",
+        "question": "In `let total = 0; let total = total + 5; total += 1;`, which statement does rustc reject?",
+        "answers": [
+            "`let total = total + 5;`: a name cannot be declared twice",
+            "`total += 1;`: the second `total` is a new binding, and it is not `mut`",
+            "None of them: the second `let` made `total` mutable",
+            "`let total = 0;`: an integer literal needs a type suffix",
+        ],
+        "correctAnswer": 1,
+        "feedback": "Shadowing declared a new immutable `total` with the value 5. `+=` would change it, so rustc reports `E0384` and suggests `let mut total`.",
+        "recall": [
+            {
+                "question": "What does this print?",
+                "code": "let x = 5;\n{\n    let x = x * 2;\n    println!(\"{x}\");\n}\nprintln!(\"{x}\");",
+                "answer": "`10` then `5`. The inner `let` shadows `x` only inside the block. The outer binding was never changed, so it is visible again after the closing brace.",
+            },
+            {
+                "question": "When should a C programmer reach for `const` and when for `static` in Rust?",
+                "answer": "`const` for a typed compile-time value that is copied into each use, like `#define LIMIT 3` with a type. `static` for one item with a fixed address that lives for the whole program, like a C global. Mutable statics need `unsafe`, so shared mutable state usually goes in an atomic or a `Mutex`.",
+            },
+        ],
+    },
+    "depth": {
+        "traceSteps": [
+            {"title": "Find every mut", "detail": "List the bindings marked `mut`; they are the only names whose value may change in this scope."},
+            {"title": "Follow each shadow", "detail": "For each repeated `let`, note the new type: `&str`, then `&str`, then `u32` in the example."},
+            {"title": "Read the error", "detail": "Compile the practice program and find `E0384` and the help line that suggests `let mut count`."},
+        ],
+        "misconception": "“Shadowing is a mutation with extra syntax.”",
+        "correction": "A shadowing `let` creates a second binding and may change the type; the first value is not modified. Anything that already borrowed the first binding still sees the old value.",
+        "transferChallenge": "Parse `\" 7 \"` into a `u8` with three shadowing `let` lines, then add 250 to it in a function and see what a debug build does.",
+        "connections": [
+            {"direction": "previous", "title": "From printf to println!", "concept": "Format strings checked at compile time"},
+            {"direction": "next", "title": "Integer Overflow and Casts", "concept": "Defined overflow policy and explicit conversions"},
+        ],
+    },
+    "bridge": {
+        "from": "c",
+        "fromLabel": "C",
+        "fromCode": FROM_CODE,
+        "fromCaption": "C mutates by default, needs a new name per parsing stage, and its `const` means read-only rather than constant.",
+        "contrasts": [
+            {"from": "Objects are writable unless declared `const`.",
+             "rust": "Bindings are immutable unless declared `mut`; reassignment is error `E0384`."},
+            {"from": "`const int` means read-only, not a compile-time constant.",
+             "rust": "`const` is a typed compile-time constant; `static` has one address."},
+            {"from": "Each processing stage needs a new variable name.",
+             "rust": "A new `let` can shadow the name, even with a different type."},
+        ],
+        "credits": ["basics/variables"],
+    },
+}
+
+EXPECT = {
+    "example": "limit=3 total=126\n",
+    "practice": {"errors": ["E0384"]},
+    "recall": [{"stdout": "10\n5\n"}, None],
+    "probes": {
+        "quiz": {"code": "let total = 0;\nlet total = total + 5;\ntotal += 1;\nprintln!(\"{total}\");", "errors": ["E0384"]},
+        "quiz-without-last-line": {"code": "let total = 0;\nlet total = total + 5;\nprintln!(\"{total}\");", "stdout": "5\n"},
+    },
+    "c": {"warnings": [], "stdout": "limit=3 total=126\n", "exit": 0},
+}

@@ -1,0 +1,104 @@
+{
+  "bridge": {
+    "contrasts": [
+      {
+        "from": "Any function can mutate an array it receives.",
+        "rust": "Only a `&mut` parameter can mutate, and the call site writes `&mut tags`."
+      },
+      {
+        "from": "Appending inside `for...of` over the same array keeps iterating the new items.",
+        "rust": "`push` inside `for n in &queue` is E0502, because a shared borrow is alive."
+      },
+      {
+        "from": "Two variables can change one object at the same time.",
+        "rust": "One `&mut` at a time, and no `&` while it exists."
+      },
+      {
+        "from": "Passing an array never changes who owns it.",
+        "rust": "Borrowing never transfers ownership either; only a by-value parameter does."
+      }
+    ],
+    "credits": [
+      "basics/references-intro",
+      "ownership/borrowing",
+      "ownership/mutable-borrows"
+    ],
+    "from": "javascript",
+    "fromCaption": "`addUnique` silently mutates the caller's array, and `for...of` keeps visiting items pushed during the loop.",
+    "fromCode": "function addUnique(tags, tag) {\n  if (!tags.includes(tag)) tags.push(tag); // mutates the caller's array\n  return tags.length;\n}\n\nconst tags = [\"rust\"];\nconsole.log(addUnique(tags, \"cargo\"), tags);\n\nconst queue = [1];\nfor (const n of queue) {\n  if (n < 4) queue.push(n + 1); // the loop sees the new items\n}\nconsole.log(queue);",
+    "fromLabel": "JavaScript (Node.js)"
+  },
+  "concept": "Shared and mutable borrows",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Moves instead of shared references",
+        "direction": "previous",
+        "title": "Shared references vs ownership"
+      },
+      {
+        "concept": "Nominal traits instead of structural interfaces",
+        "direction": "next",
+        "title": "TypeScript interfaces vs traits"
+      }
+    ],
+    "correction": "`&mut` lends exclusive access for the duration of the call. Ownership stays with the caller, who can use `tags` again once the borrow ends.",
+    "misconception": "“Passing `&mut tags` hands the vector over to the function, like a move.”",
+    "traceSteps": [
+      {
+        "detail": "`add_unique` takes `&mut Vec<String>` because it pushes. `longest` takes `&[String]` because it only reads.",
+        "title": "Read the signatures"
+      },
+      {
+        "detail": "`add_unique(&mut tags, \"cargo\")` borrows exclusively for one call. After it returns, `&tags` can be borrowed shared by `longest` and the `println!`.",
+        "title": "Follow the borrows"
+      },
+      {
+        "detail": "Run it: `2`, `[\"rust\", \"cargo\"] Some(\"cargo\")`, then `[1, 2, 3, 4]`. Replace the `while` loop with `for n in &queue` and read E0502.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Keep a reference with `let first = &tags[0];`, call `add_unique(&mut tags, \"tokio\")`, then print `first`. Predict the error code, then reorder the lines so the program compiles."
+  },
+  "exerciseKind": "runnable",
+  "id": "node-mutation-to-borrowing",
+  "minutes": 12,
+  "order": 1,
+  "parentID": "node-ownership",
+  "title": "Mutating arguments vs borrowing",
+  "writing": {
+    "answers": [
+      "`push` is not allowed inside any loop",
+      "`n` is a moved value",
+      "The loop holds a shared borrow of `queue`, and `push` needs exclusive `&mut` access while that borrow is alive"
+    ],
+    "correctAnswer": 2,
+    "exampleCaption": "`add_unique` borrows mutably, `longest` borrows shared, and the index loop makes the growth explicit.",
+    "exampleCode": "fn add_unique(tags: &mut Vec<String>, tag: &str) -> usize {\n    if !tags.iter().any(|t| t == tag) {\n        tags.push(tag.to_string());\n    }\n    tags.len()\n}\n\nfn longest(tags: &[String]) -> Option<&str> {\n    tags.iter().map(|t| t.as_str()).max_by_key(|t| t.len())\n}\n\nfn main() {\n    let mut tags = vec![String::from(\"rust\")];\n    println!(\"{}\", add_unique(&mut tags, \"cargo\"));\n    println!(\"{tags:?} {:?}\", longest(&tags));\n\n    let mut queue = vec![1];\n    let mut i = 0;\n    while i < queue.len() {\n        if queue[i] < 4 {\n            queue.push(queue[i] + 1);\n        }\n        i += 1;\n    }\n    println!(\"{queue:?}\");\n}",
+    "explanation": "JavaScript passes objects by sharing, so `addUnique(tags, \"cargo\")` silently changes the caller's array. Rust makes the intent part of the signature. `fn add_unique(tags: &mut Vec<String>, tag: &str)` says the function will modify the vector and only read the tag, and the call site repeats it: `add_unique(&mut tags, \"cargo\")`. The caller still owns `tags` afterwards.\n\nBorrows follow one rule: any number of shared references `&T`, or exactly one mutable reference `&mut T`, but not both at the same time. A mutable borrow is exclusive; while it exists, nothing else may read or write the value. That rule is what lets Rust rule out data races and iterator invalidation at compile time.\n\nThe JavaScript loop shows what the rule prevents. `for (const n of queue) queue.push(...)` keeps visiting the items it appends, so a slightly different condition never ends. In Rust, `for n in &queue` holds a shared borrow for the whole loop, and `queue.push` needs `&mut queue`, so rustc reports E0502; pushing could also reallocate the buffer the loop is reading. An index loop that rereads `queue.len()` on every pass makes the growing behaviour explicit.\n\nAsk for the least access a function needs. Take `&[String]` rather than `&Vec<String>` to read, `&mut [String]` to change elements in place, and `&mut Vec<String>` only when the function must push or remove. Assigning through a shared reference is E0594; the fix belongs in the signature, not in the body.",
+    "feedback": "This is E0502. The shared borrow lasts for the whole loop, a mutable borrow cannot overlap it, and the push might reallocate the buffer being read.",
+    "practiceCode": "fn main() {\n    let mut queue = vec![1];\n    for n in &queue {\n        if *n < 4 {\n            queue.push(n + 1);\n        }\n    }\n    println!(\"{queue:?}\");\n}",
+    "question": "Why does rustc reject `queue.push(n + 1)` inside `for n in &queue`?",
+    "recall": [
+      {
+        "answer": "`first` is a shared borrow that is still used after `push`, which needs a mutable borrow: E0502. The push may reallocate and leave `first` dangling. Print `first` before the push, or copy the value with `let first = v[0];`.",
+        "code": "let mut v = vec![1, 2];\nlet first = &v[0];\nv.push(3);\nprintln!(\"{first}\");",
+        "question": "Why is this rejected, and what is the smallest fix?"
+      },
+      {
+        "answer": "`&[String]` accepts a borrowed `Vec`, an array or any slice of either, and promises only read access to the elements. `&Vec<String>` adds nothing a reader can use and rejects arrays and subslices. Use `&mut Vec<String>` only when the function must push or remove.",
+        "question": "Why should a read-only function take `&[String]` instead of `&Vec<String>`?"
+      }
+    ],
+    "rule": "`&T` lends read-only access and `&mut T` lends exclusive write access; neither transfers ownership, and the two never overlap.",
+    "success": "The local compiler accepts the changed solution and the separate verification harness passes every case, including no match and renaming a name to itself. Printing a success message alone does not complete this lab.",
+    "summary": "A function that changes its argument takes `&mut T`, and one that reads takes `&T`. Many shared borrows or one mutable borrow may exist, never both at once.",
+    "task": "Port the JavaScript `renameAll` and `countMatches` shown at the top of solution.rs. `rename_all` changes matching names in place through `&mut [String]` and returns how many matched; `count_matches` only reads through `&[String]`. The caller keeps its vector. In the Crabrix app, open the compiler lab and complete the supplied functions in solution.rs. The reading question is a separate exercise."
+  },
+  "illustration": {
+    "path": "media/node-mutation-to-borrowing.png",
+    "alt": "Side-by-side comparison: the JavaScript (Node.js) version on the left, the Rust version on the right, then 4 rows naming what changes.",
+    "caption": "Mutating arguments vs borrowing: the same task in JavaScript (Node.js) and in Rust, with the differences that matter."
+  },
+  "contentDigest": "64c6554140d376bc1270e9bf4dcee3127ec722d7e03cecb953d18e60d512b5fd"
+}

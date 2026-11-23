@@ -1,0 +1,65 @@
+{
+  "challenge": {
+    "expectedOutput": "PASS node-objects-to-structs\n",
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ],
+    "lessonID": "node-objects-to-structs",
+    "patternID": "node-objects-to-structs",
+    "projectName": "node-objects-to-structs-lab",
+    "requiredSourceFragments": [
+      "pub fn new",
+      "pub fn close(self)",
+      "pub fn balance(&self)"
+    ],
+    "source": "// JavaScript original:\n// class Wallet {\n//   constructor() { this.cents = 0; }\n//   deposit(amount) { this.cents += amount; }\n//   withdraw(amount) {\n//     if (amount > this.cents) return false;\n//     this.cents -= amount;\n//     return true;\n//   }\n//   balance() { return this.cents; }\n//   close() { return this.cents; }  // the wallet must not be used afterwards\n// }\npub struct Wallet {\n    cents: u64,\n}\n\nimpl Wallet {\n    pub fn new() -> Wallet {\n        todo!(\"implement the contract\")\n    }\n\n    pub fn deposit(&mut self, amount: u64) {\n        todo!(\"implement the contract\")\n    }\n\n    pub fn withdraw(&mut self, amount: u64) -> bool {\n        todo!(\"implement the contract\")\n    }\n\n    pub fn balance(&self) -> u64 {\n        todo!(\"implement the contract\")\n    }\n\n    pub fn close(self) -> u64 {\n        todo!(\"implement the contract\")\n    }\n}\n",
+    "verificationCases": [
+      {
+        "expectedAnswer": "0",
+        "input": "Wallet::new().balance()",
+        "kind": "visible"
+      },
+      {
+        "expectedAnswer": "true",
+        "input": "deposit(500), then withdraw(200)",
+        "kind": "visible"
+      },
+      {
+        "expectedAnswer": "false",
+        "input": "withdraw(301) with 300 left",
+        "kind": "semantic"
+      },
+      {
+        "expectedAnswer": "true",
+        "input": "withdraw(300) with exactly 300 left",
+        "kind": "boundary"
+      },
+      {
+        "expectedAnswer": "40",
+        "input": "balance() through a shared reference after deposit(40)",
+        "kind": "semantic"
+      },
+      {
+        "expectedAnswer": "40",
+        "input": "close() consumes the wallet",
+        "kind": "semantic"
+      }
+    ],
+    "verificationSource": "mod solution;\n\nuse solution::Wallet;\n\nfn main() {\n    let mut w = Wallet::new();\n    assert_eq!(w.balance(), 0, \"case 1\");\n    w.deposit(500);\n    assert!(w.withdraw(200), \"case 2\");\n    assert!(!w.withdraw(301), \"case 3\");\n    assert_eq!(w.balance(), 300, \"case 4\");\n    assert!(w.withdraw(300), \"case 5\");\n    w.deposit(40);\n    let reader = &w;\n    assert_eq!(reader.balance(), 40, \"case 6\");\n    assert_eq!(w.close(), 40, \"case 7\");\n\n    println!(\"PASS node-objects-to-structs\");\n}\n"
+  },
+  "evidence": {
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS node-objects-to-structs\n"
+    },
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ],
+    "kind": "algorithmChallenge",
+    "requiredSourceFragments": [
+      "pub fn new",
+      "pub fn close(self)",
+      "pub fn balance(&self)"
+    ]
+  }
+}

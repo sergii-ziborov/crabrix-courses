@@ -1,0 +1,103 @@
+{
+  "bridge": {
+    "contrasts": [
+      {
+        "from": "Each array method runs immediately over every element.",
+        "rust": "Adapters such as `map` and `filter` run only when a consumer pulls items."
+      },
+      {
+        "from": "`arr.map(f).find(p)` calls `f` for every element.",
+        "rust": "`iter.map(f).find(p)` stops calling `f` after the first match."
+      },
+      {
+        "from": "Each stage allocates a new array.",
+        "rust": "No intermediate collection is built unless you call `collect`."
+      },
+      {
+        "from": "`reduce((s, x) => s + x, 0)`",
+        "rust": "`sum()`, or `fold(0, |s, x| s + x)` for a general accumulator."
+      }
+    ],
+    "credits": [
+      "ownership/iterators",
+      "ownership/iterator-adapters"
+    ],
+    "from": "javascript",
+    "fromCaption": "`map` runs eagerly, so the search for the first big order still maps all three orders.",
+    "fromCode": "const orders = [\n  { cents: 1200, paid: true },\n  { cents: 300, paid: false },\n  { cents: 450, paid: true },\n];\n\nlet calls = 0;\nconst paidTotal = orders\n  .filter((o) => o.paid)\n  .map((o) => { calls += 1; return o.cents; }) // runs now, builds an array\n  .reduce((sum, c) => sum + c, 0);\nconsole.log(paidTotal, calls);\n\nconst firstBig = orders.map((o) => { calls += 1; return o.cents; }).find((c) => c > 1000);\nconsole.log(firstBig, calls); // map ran for all three orders",
+    "fromLabel": "JavaScript (Node.js)"
+  },
+  "concept": "Lazy iterator pipelines",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Absence as Option<T>",
+        "direction": "previous",
+        "title": "null, undefined and ?? vs Option"
+      },
+      {
+        "concept": "Keyed data with HashMap and entry",
+        "direction": "next",
+        "title": "Objects and Map vs HashMap"
+      }
+    ],
+    "correction": "`map` returns a lazy adapter. The closure runs only when a consumer pulls an item, and only for the items it pulls.",
+    "misconception": "“`iter().map(...)` works like `Array.prototype.map`: it builds the new values right away.”",
+    "traceSteps": [
+      {
+        "detail": "`orders.iter()` yields `&Order`. `filter` keeps the paid orders, `map` turns each into its cents, and `sum` is the only consumer.",
+        "title": "Read the pipeline"
+      },
+      {
+        "detail": "`sum` pulls items one at a time. Only the two paid orders reach `map`, so `calls` becomes 2; the unpaid order never does.",
+        "title": "Count the work"
+      },
+      {
+        "detail": "Run it: `1650 2`, then `Some(1200) 3`. `find` stopped after the first order, while JavaScript's `map` had already run for all three.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Insert `.inspect(|o| println!(\"saw {}\", o.cents))` right after `orders.iter()` in both pipelines and predict the printed lines. Then add `.collect::<Vec<_>>()` after the second `map`, iterate that vector for the `find`, and count the calls again."
+  },
+  "exerciseKind": "runnable",
+  "id": "node-array-methods-to-iterators",
+  "minutes": 12,
+  "order": 3,
+  "parentID": "node-data",
+  "title": "Array methods vs iterators",
+  "writing": {
+    "answers": [
+      "Nothing: no consumer such as `sum`, `collect` or `for` asked for a value",
+      "It doubled all three prices into a new vector, like `Array.prototype.map`",
+      "It doubled the first price and then paused"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "The closure counter shows the difference: two calls for the total, and the search stops after one more.",
+    "exampleCode": "struct Order {\n    cents: u64,\n    paid: bool,\n}\n\nfn main() {\n    let orders = [\n        Order { cents: 1200, paid: true },\n        Order { cents: 300, paid: false },\n        Order { cents: 450, paid: true },\n    ];\n    let mut calls = 0;\n    let paid_total: u64 = orders\n        .iter()\n        .filter(|o| o.paid)\n        .map(|o| { calls += 1; o.cents })\n        .sum();\n    println!(\"{paid_total} {calls}\");\n\n    let first_big = orders.iter().map(|o| { calls += 1; o.cents }).find(|&c| c > 1000);\n    println!(\"{first_big:?} {calls}\");\n}",
+    "explanation": "`orders.filter(...).map(...).reduce(...)` runs each stage over the whole array and allocates an intermediate array between stages. Rust's `orders.iter().filter(...).map(...).sum()` first builds a description of the work. Nothing happens until `sum` asks for the first item; then each order flows through `filter` and `map` one at a time, with no intermediate `Vec`.\n\nLaziness changes what runs. In the JavaScript example, `map(...).find(...)` calls the mapping function for all three orders before `find` looks at one. The Rust pipeline stops at the first match, so its closure runs once. A pipeline that is never consumed does nothing at all, which is why rustc warns that an unused `Map` must be used in the practice code.\n\nThe names mostly carry over: `map`, `filter` and `find` are the same, `some` is `any`, `every` is `all`, `reduce` with an initial value is `fold`, and `flatMap` is `flat_map`. The length of a filtered result is `count()`, and `collect::<Vec<_>>()` gives you a collection back. There is no index argument; add `.enumerate()` to get `(index, item)` pairs.\n\nWatch what the iterator yields. `iter()` yields references (`&Order`), `iter_mut()` yields `&mut Order`, and `into_iter()` on a `Vec` yields owned values and consumes the vector. That is why the closures read `o.cents` through a reference, and why `find(|&c| c > 1000)` destructures the `&u64` it receives.",
+    "feedback": "An adapter only describes work. Without a consumer the closure never runs, and rustc warns that the `Map` must be used.",
+    "practiceCode": "fn main() {\n    let prices = vec![3, 7, 12];\n    prices.iter().map(|p| {\n        println!(\"checking {p}\");\n        p * 2\n    });\n    println!(\"done\");\n}",
+    "question": "In the practice code, what has `map` done by the time `done` prints?",
+    "recall": [
+      {
+        "answer": "`map 1`, `map 2`, then `Some(20)`. `find` pulls one item at a time and stops at the first match, so the closure never runs for `3`. An array's `map` would have logged all three before searching.",
+        "code": "let v = [1, 2, 3];\nlet first = v.iter()\n    .map(|x| { println!(\"map {x}\"); x * 10 })\n    .find(|x| x % 20 == 0);\nprintln!(\"{first:?}\");",
+        "question": "What does this print, and why not three `map` lines?"
+      },
+      {
+        "answer": "`any`, `all`, `fold(initial, |acc, x| ...)` and `flat_map`. As in JavaScript, `any` and `all` short-circuit. Unlike the array methods, they work on any iterator, and the adapters before them run lazily.",
+        "question": "What are the Rust names for `some`, `every`, `reduce` with an initial value, and `flatMap`?"
+      }
+    ],
+    "rule": "Iterator adapters are lazy: a consumer such as `sum`, `find`, `collect` or a `for` loop drives the work, one item at a time.",
+    "success": "The local compiler accepts the changed solution and the separate verification harness passes every case, including the number of `price_of` calls and an empty slice. Printing a success message alone does not complete this lab.",
+    "summary": "`map` and `filter` on an array run at once and build new arrays; Rust's iterator adapters do nothing until a consumer such as `sum`, `find` or `collect` pulls values.",
+    "task": "Port the JavaScript `firstPriceOver` shown at the top of solution.rs, but keep the Rust version lazy: call `price_of` only until the first price above `limit` is found. The harness counts the calls. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise."
+  },
+  "illustration": {
+    "path": "media/node-array-methods-to-iterators.png",
+    "alt": "Side-by-side comparison: the JavaScript (Node.js) version on the left, the Rust version on the right, then 4 rows naming what changes.",
+    "caption": "Array methods vs iterators: the same task in JavaScript (Node.js) and in Rust, with the differences that matter."
+  },
+  "contentDigest": "564c90246c47aef926752b87aeaa369f0c8e986175321815d15e94f124a077b3"
+}

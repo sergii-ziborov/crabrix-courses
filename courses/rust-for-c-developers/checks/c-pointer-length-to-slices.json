@@ -1,0 +1,61 @@
+{
+  "challenge": {
+    "lessonID": "c-pointer-length-to-slices",
+    "patternID": "c-pointer-length-to-slices",
+    "projectName": "c-pointer-length-to-slices-lab",
+    "source": "// C original:\n// /* Returns the length of the longest run of equal neighbours; *start gets its index. */\n// size_t longest_run(const int *xs, size_t n, size_t *start) {\n//     size_t best = 0, best_start = 0, run = 0;\n//     for (size_t i = 0; i < n; i++) {\n//         run = (i > 0 && xs[i] == xs[i - 1]) ? run + 1 : 1;\n//         if (run > best) { best = run; best_start = i + 1 - run; }\n//     }\n//     *start = best_start;\n//     return best;\n// }\npub fn longest_run(xs: &[i32]) -> &[i32] {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationSource": "mod solution;\n\nfn main() {\n    assert_eq!(solution::longest_run(&[1, 2, 2, 3]), &[2, 2], \"case 1\");\n    let data = [5, 5, 1, 7, 7, 7];\n    let run = solution::longest_run(&data);\n    assert_eq!(run, &[7, 7, 7], \"case 2: a run that ends the slice\");\n    assert_eq!(run.as_ptr(), data[3..].as_ptr(), \"case 3: a view into the input\");\n    assert_eq!(solution::longest_run(&[]), &[] as &[i32], \"case 4\");\n    assert_eq!(solution::longest_run(&[4]), &[4], \"case 5\");\n    assert_eq!(solution::longest_run(&[1, 1, 2, 2]), &[1, 1], \"case 6: the first run wins a tie\");\n\n    println!(\"PASS c-pointer-length-to-slices\");\n}\n",
+    "verificationCases": [
+      {
+        "kind": "visible",
+        "input": "solution::longest_run(&[1, 2, 2, 3])",
+        "expectedAnswer": "&[2, 2]"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::longest_run(&[5, 5, 1, 7, 7, 7])",
+        "expectedAnswer": "&[7, 7, 7]"
+      },
+      {
+        "kind": "semantic",
+        "input": "run.as_ptr() == data[3..].as_ptr()",
+        "expectedAnswer": "true"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::longest_run(&[])",
+        "expectedAnswer": "&[]"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::longest_run(&[4])",
+        "expectedAnswer": "&[4]"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::longest_run(&[1, 1, 2, 2])",
+        "expectedAnswer": "&[1, 1]"
+      }
+    ],
+    "expectedOutput": "PASS c-pointer-length-to-slices\n",
+    "requiredSourceFragments": [
+      "pub fn longest_run"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  },
+  "evidence": {
+    "kind": "algorithmChallenge",
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS c-pointer-length-to-slices\n"
+    },
+    "requiredSourceFragments": [
+      "pub fn longest_run"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  }
+}

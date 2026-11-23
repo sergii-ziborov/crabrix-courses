@@ -1,0 +1,102 @@
+{
+  "bridge": {
+    "contrasts": [
+      {
+        "from": "Any object with `area()` and `name()` is a `Shape`.",
+        "rust": "Only a type with `impl Shape for T` is a `Shape`; a method with the same name is not enough."
+      },
+      {
+        "from": "`function f<T extends Shape>(x: T)`",
+        "rust": "`fn f<T: Shape>(x: &T)`, compiled separately for each concrete `T`."
+      },
+      {
+        "from": "A `Shape[]` can hold any mix of shapes.",
+        "rust": "Mixed values need `Vec<Box<dyn Shape>>`, dispatched at runtime."
+      },
+      {
+        "from": "`implements` is optional documentation.",
+        "rust": "The `impl` block is the implementation; without it the type has none of the trait's methods."
+      }
+    ],
+    "credits": [
+      "ownership/traits"
+    ],
+    "from": "typescript",
+    "fromCaption": "Structural typing: two object literals count as `Shape`s just by having the right members.",
+    "fromCode": "interface Shape {\n  area(): number;\n  name(): string;\n}\n\nfunction largest(shapes: Shape[]): string | undefined {\n  let best: Shape | undefined;\n  for (const s of shapes) if (!best || s.area() > best.area()) best = s;\n  return best?.name();\n}\n\n// No \"implements\" needed: any value with the right members is a Shape.\nconst square = { area: () => 9, name: () => \"square\" };\nconst rect = { w: 2, h: 5, area() { return this.w * this.h; }, name: () => \"rect\" };\nconsole.log(largest([square, rect]), largest([]));",
+    "fromLabel": "TypeScript"
+  },
+  "concept": "Nominal traits instead of structural interfaces",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Shared and mutable borrows",
+        "direction": "previous",
+        "title": "Mutating arguments vs borrowing"
+      },
+      {
+        "concept": "Errors as Result values",
+        "direction": "next",
+        "title": "try/catch vs Result"
+      }
+    ],
+    "correction": "Rust checks trait implementations, not shapes. Write `impl Shape for Square` and put the method inside that block.",
+    "misconception": "“If `Square` has an `area` method, it can be passed wherever a `Shape` is expected, as in TypeScript.”",
+    "traceSteps": [
+      {
+        "detail": "`Square` and `Rect` each get an `impl Shape` block. Without them, neither could be passed to `total_area` or boxed as a `dyn Shape`.",
+        "title": "Find the impls"
+      },
+      {
+        "detail": "`total_area(&[Square { side: 2 }, Square { side: 1 }])` uses one concrete type. `largest(&shapes)` walks boxes that point to different types.",
+        "title": "Compare the two calls"
+      },
+      {
+        "detail": "Run it: `Some(\"rect\") 5`. Try `total_area(&[Square { side: 2 }, Rect { w: 1, h: 1 }])` and read the mismatched types error.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Add a default method `fn describe(&self) -> String { format!(\"{} of area {}\", self.name(), self.area()) }` to `Shape`, call it on both shapes, then override it for `Rect` only."
+  },
+  "exerciseKind": "runnable",
+  "id": "node-interfaces-to-traits",
+  "minutes": 13,
+  "order": 2,
+  "parentID": "node-ownership",
+  "title": "TypeScript interfaces vs traits",
+  "writing": {
+    "answers": [
+      "`fn total<T: Priced>(items: &[T]) -> u64`",
+      "`fn total(items: &[Box<dyn Priced>]) -> u64`",
+      "`fn total(items: &[impl Priced]) -> u64`"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Explicit `impl` blocks make both structs `Shape`s; `total_area` is generic, and `largest` takes trait objects.",
+    "exampleCode": "trait Shape {\n    fn area(&self) -> u32;\n    fn name(&self) -> &str;\n}\n\nstruct Square { side: u32 }\nstruct Rect { w: u32, h: u32 }\n\nimpl Shape for Square {\n    fn area(&self) -> u32 { self.side * self.side }\n    fn name(&self) -> &str { \"square\" }\n}\n\nimpl Shape for Rect {\n    fn area(&self) -> u32 { self.w * self.h }\n    fn name(&self) -> &str { \"rect\" }\n}\n\nfn total_area<T: Shape>(items: &[T]) -> u32 {\n    items.iter().map(|s| s.area()).sum()\n}\n\nfn largest(shapes: &[Box<dyn Shape>]) -> Option<&str> {\n    shapes.iter().max_by_key(|s| s.area()).map(|s| s.name())\n}\n\nfn main() {\n    let shapes: Vec<Box<dyn Shape>> = vec![Box::new(Square { side: 3 }), Box::new(Rect { w: 2, h: 5 })];\n    println!(\"{:?} {}\", largest(&shapes), total_area(&[Square { side: 2 }, Square { side: 1 }]));\n}",
+    "explanation": "TypeScript interfaces are structural. The object literals in the example have no `implements` clause, yet both are `Shape`s because they have `area` and `name`. Rust traits are nominal: `Square` satisfies `Shape` only after `impl Shape for Square { ... }`, and an inherent method with the same name does not count. That is the E0277 in the practice code, the trait bound `Square: Shape` is not satisfied.\n\nA trait bound plays the role of `<T extends Shape>`. `fn total_area<T: Shape>(items: &[T])` is generic: the compiler generates a separate copy for each concrete `T` it is used with, and the calls are dispatched statically. Every item in that slice must be the same `T`, so it cannot hold a square and a rectangle together.\n\nFor a mixed collection, the counterpart of an array of interface values, use trait objects: `Vec<Box<dyn Shape>>`. Each element is a pointer to some type that implements `Shape` plus a table of its methods, and calls are dispatched at runtime, which is how every JavaScript method call works anyway. Neither form is automatically faster: generics can grow code size, and trait objects add an indirection.\n\nTraits cover other TypeScript patterns too. Default methods replace a shared base class, `impl Display for T` replaces `toString`, and implementing a standard trait such as `PartialOrd` plugs your type into existing generic code. You may implement your own trait for a foreign type such as `u32`, but not a foreign trait for a foreign type.",
+    "feedback": "A generic type parameter, written either way, is one concrete type per call. A slice of `Box<dyn Priced>` holds different types behind one trait.",
+    "practiceCode": "trait Shape {\n    fn area(&self) -> u32;\n}\n\nstruct Square {\n    side: u32,\n}\n\nimpl Square {\n    fn area(&self) -> u32 {\n        self.side * self.side\n    }\n}\n\nfn print_area<T: Shape>(shape: &T) {\n    println!(\"{}\", shape.area());\n}\n\nfn main() {\n    print_area(&Square { side: 3 });\n}",
+    "question": "Which signature lets one call handle a list that mixes `Book` and `Coffee` values?",
+    "recall": [
+      {
+        "answer": "`User` has an inherent `name` method but no `impl Named for User`, so the bound is not satisfied: E0277. Traits are nominal. Move the method into `impl Named for User { fn name(&self) -> String { ... } }`.",
+        "code": "trait Named { fn name(&self) -> String; }\nstruct User { login: String }\nimpl User {\n    fn name(&self) -> String { self.login.clone() }\n}\nfn greet<T: Named>(x: &T) { println!(\"hi {}\", x.name()); }\ngreet(&User { login: String::from(\"ana\") });",
+        "question": "Why is the call rejected, and what fixes it?"
+      },
+      {
+        "answer": "When one collection must hold different concrete types, or when the type is only known at runtime. Generics fix one `T` per instantiation and are compiled into a separate copy for each; trait objects store a pointer plus a method table and dispatch at runtime. Measure before assuming either is faster.",
+        "question": "When is `Vec<Box<dyn Shape>>` the right choice over a generic `Vec<T>` with `T: Shape`?"
+      }
+    ],
+    "rule": "A type implements a trait only through an explicit `impl`; use a generic bound for static dispatch over one type and `dyn Trait` for a collection of mixed types.",
+    "success": "The local compiler accepts the changed solution and the separate verification harness passes every case, including an empty list and a tie for the cheapest item. Printing a success message alone does not complete this lab.",
+    "summary": "A TypeScript interface is satisfied by any value with the right shape; a Rust trait is satisfied only by types that explicitly `impl` it.",
+    "task": "Port the TypeScript code shown at the top of solution.rs. Implement `Priced` for `Book` and for `Coffee` (250 cents plus 50 per size step, labelled `coffee`), write the generic `total`, and write `cheapest` over trait objects, returning the label of the first cheapest item as the TypeScript loop does. In the Crabrix app, open the compiler lab and complete the supplied code in solution.rs. The reading question is a separate exercise."
+  },
+  "illustration": {
+    "path": "media/node-interfaces-to-traits.png",
+    "alt": "Side-by-side comparison: the TypeScript version on the left, the Rust version on the right, then 4 rows naming what changes.",
+    "caption": "TypeScript interfaces vs traits: the same task in TypeScript and in Rust, with the differences that matter."
+  },
+  "contentDigest": "3611874dfa74a1e9c6029a53b96cdfd2073d9df6b74510eca8f0ec7486550d67"
+}

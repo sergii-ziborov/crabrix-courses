@@ -180,6 +180,45 @@ def read_course(root: Path) -> dict:
     return course
 
 
+BRIDGE_LANGUAGES = {"c", "javascript", "typescript"}
+BRIDGE_CREDIT_COURSES = {"basics", "ownership", "projects", "concurrency", "systems"}
+
+
+def validate_bridge(lesson: dict) -> list[str]:
+    """Check one bridge lesson; return its credit targets ("courseID/lessonID")."""
+    lid = lesson["id"]
+    bridge = lesson["bridge"]
+    expected = {"from", "fromLabel", "fromCode", "fromCaption", "contrasts", "credits"}
+    if not isinstance(bridge, dict) or set(bridge) != expected:
+        raise ValueError(f"bridge fields: {lid}")
+    if bridge["from"] not in BRIDGE_LANGUAGES:
+        raise ValueError(f"bridge language: {lid}")
+    for key in ("fromLabel", "fromCode", "fromCaption"):
+        if not isinstance(bridge[key], str) or not bridge[key].strip():
+            raise ValueError(f"bridge {key}: {lid}")
+    if len(bridge["fromCode"].splitlines()) > 30:
+        raise ValueError(f"bridge fromCode longer than 30 lines: {lid}")
+    contrasts = bridge["contrasts"]
+    if not isinstance(contrasts, list) or not 2 <= len(contrasts) <= 4:
+        raise ValueError(f"bridge contrasts: {lid}")
+    for row in contrasts:
+        if (not isinstance(row, dict) or set(row) != {"from", "rust"}
+                or any(not isinstance(row[key], str) or not row[key].strip() or len(row[key]) > 160
+                       or row[key].count("`") % 2 for key in ("from", "rust"))):
+            raise ValueError(f"bridge contrast row: {lid}")
+    credits = bridge["credits"]
+    if (not isinstance(credits, list) or not 1 <= len(credits) <= 4
+            or len(set(credits)) != len(credits)):
+        raise ValueError(f"bridge credits: {lid}")
+    for target in credits:
+        if (not isinstance(target, str) or target.count("/") != 1
+                or target.split("/", 1)[0] not in BRIDGE_CREDIT_COURSES):
+            raise ValueError(f"bridge credit target: {lid} -> {target}")
+    if "fn main()" not in lesson["writing"]["exampleCode"]:
+        raise ValueError(f"bridge Rust example must be a complete program: {lid}")
+    return credits
+
+
 def validate(args) -> None:
     for schema_name in ("coursepack-v1.schema.json", "descriptor-v1.schema.json", "catalog-v1.schema.json"):
         schema = load(args.schema / schema_name)
@@ -190,6 +229,8 @@ def validate(args) -> None:
         raise ValueError("no courses")
     ids = set()
     lesson_ids = set()
+    lesson_courses: dict[str, str] = {}
+    bridge_credits: list[tuple[str, str, str]] = []
     for root in roots:
         files = checked_files(root)
         if not files:
@@ -212,6 +253,10 @@ def validate(args) -> None:
                     raise ValueError(f"lesson identity: {lesson['id']}")
                 lesson_ids.add(lesson["id"])
                 lid = lesson["id"]
+                lesson_courses[lid] = course["id"]
+                if "bridge" in lesson:
+                    bridge_credits.extend((course["id"], lid, target)
+                                          for target in validate_bridge(lesson))
                 expected |= {f"lessons/{lid}.json", f"checks/{lid}.json"}
                 writing = lesson["writing"]
                 if not writing["answers"] or not 0 <= writing["correctAnswer"] < len(writing["answers"]):
@@ -300,6 +345,15 @@ def validate(args) -> None:
             expected.update(illustrations)
         if set(files) != expected:
             raise ValueError(f"unreferenced or missing files in {root.name}: {sorted(set(files) ^ expected)[:10]}")
+    credited_by: dict[tuple[str, str], str] = {}
+    for course_id, lid, target in bridge_credits:
+        target_course, target_lesson = target.split("/", 1)
+        if lesson_courses.get(target_lesson) != target_course:
+            raise ValueError(f"bridge credit target does not exist: {lid} -> {target}")
+        if (course_id, target) in credited_by:
+            raise ValueError(f"bridge credit duplicated in {course_id}: {target} "
+                             f"({credited_by[(course_id, target)]}, {lid})")
+        credited_by[(course_id, target)] = lid
     print(f"Validated {len(ids)} courses and {len(lesson_ids)} lessons")
 
 
@@ -341,6 +395,9 @@ def build(args) -> None:
         if any(name.startswith("lessons/") and name.endswith(".json")
                and b'"illustration"' in data for name, data in files.items()):
             capabilities.append("lesson-illustrations-v1")
+        if any(name.startswith("lessons/") and name.endswith(".json")
+               and "bridge" in json.loads(data) for name, data in files.items()):
+            capabilities.append("bridge-lessons-v1")
         descriptor = {"schemaVersion": 1, "courseID": course["id"],
                       "language": course["language"], "contentVersion": course["contentVersion"],
                       "archiveName": archive.name, "archiveBytes": archive.stat().st_size,

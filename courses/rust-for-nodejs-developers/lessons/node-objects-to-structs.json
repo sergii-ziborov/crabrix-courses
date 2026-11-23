@@ -1,0 +1,103 @@
+{
+  "bridge": {
+    "contrasts": [
+      {
+        "from": "Every method gets the same mutable `this`.",
+        "rust": "Each method declares `&self`, `&mut self` or `self`, and the compiler enforces that choice."
+      },
+      {
+        "from": "`constructor(limit)` runs on `new Counter(2)`.",
+        "rust": "`fn new(limit: u32) -> Self` is an ordinary function, called as `Counter::new(2)`."
+      },
+      {
+        "from": "Any caller can write `c.count = 99`.",
+        "rust": "Fields are private outside their module unless they are marked `pub`."
+      },
+      {
+        "from": "A missing property reads as `undefined`.",
+        "rust": "A struct literal must set every field; optional data is `Option<T>`."
+      }
+    ],
+    "credits": [
+      "basics/structs",
+      "basics/methods-intro"
+    ],
+    "from": "javascript",
+    "fromCaption": "Every method shares one mutable `this`, and nothing stops a caller from writing `count` directly.",
+    "fromCode": "class Counter {\n  constructor(limit) { this.count = 0; this.limit = limit; }\n  increment() {\n    if (this.count < this.limit) this.count += 1;\n    return this.count;\n  }\n  isFull() { return this.count === this.limit; }\n}\n\nconst c = new Counter(2);\nc.increment(); c.increment(); c.increment();\nconsole.log(c.count, c.isFull());\nc.count = 99;                 // any caller may write any field\nconsole.log(c.isFull());",
+    "fromLabel": "JavaScript (Node.js)"
+  },
+  "concept": "Data in structs, behaviour in impl blocks",
+  "depth": {
+    "connections": [
+      {
+        "concept": "No truthiness: conditions are bool",
+        "direction": "previous",
+        "title": "Truthiness vs bool, if and match"
+      },
+      {
+        "concept": "Discriminated unions as enums",
+        "direction": "next",
+        "title": "TypeScript unions vs enums"
+      }
+    ],
+    "correction": "Only methods that take `&mut self` or `self` can change it. A `&self` method is read-only, and rustc rejects a field assignment inside it with E0594.",
+    "misconception": "“Every method can change the object, as with `this` in a class.”",
+    "traceSteps": [
+      {
+        "detail": "`new` has no receiver. `increment(&mut self)` changes `count`, and `is_full(&self)` only reads it.",
+        "title": "Read the receivers"
+      },
+      {
+        "detail": "`let mut c` is required because `increment` borrows `c` mutably. `is_full` alone would work on an immutable binding.",
+        "title": "Check the caller"
+      },
+      {
+        "detail": "Run it: `2 true`, because the limit refused the third `increment`. Make `is_full` assign `self.count = 0;` and read E0594.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Add `fn reset(self) -> Counter` that returns a fresh counter with the same limit, and call it as `let c = c.reset();`. Explain why shadowing `c` reads naturally here, and what happens if you use the old value afterwards."
+  },
+  "exerciseKind": "runnable",
+  "id": "node-objects-to-structs",
+  "minutes": 11,
+  "order": 0,
+  "parentID": "node-data",
+  "title": "Classes and objects vs structs",
+  "writing": {
+    "answers": [
+      "The call consumes the value, so it cannot be used afterwards",
+      "The method is static and has no `this`",
+      "The method can be called only once per program"
+    ],
+    "correctAnswer": 0,
+    "exampleCaption": "`increment` borrows mutably, `is_full` only reads, and `new` is a plain associated function.",
+    "exampleCode": "struct Counter {\n    count: u32,\n    limit: u32,\n}\n\nimpl Counter {\n    fn new(limit: u32) -> Self {\n        Counter { count: 0, limit }\n    }\n\n    fn increment(&mut self) -> u32 {\n        if self.count < self.limit {\n            self.count += 1;\n        }\n        self.count\n    }\n\n    fn is_full(&self) -> bool {\n        self.count == self.limit\n    }\n}\n\nfn main() {\n    let mut c = Counter::new(2);\n    c.increment();\n    c.increment();\n    c.increment();\n    println!(\"{} {}\", c.count, c.is_full());\n}",
+    "explanation": "A JavaScript class bundles fields, methods and a prototype chain, and every method receives the same mutable `this`. Rust splits the parts. A `struct` declares the fields and their types, and an `impl` block adds functions. There is no constructor keyword: `new` is an ordinary associated function returning `Self`, called as `Counter::new(2)`. There is no inheritance either; shared behaviour comes from traits.\n\nThe receiver is the part without a JavaScript equivalent. `fn is_full(&self)` only reads, so it works through a shared reference. `fn increment(&mut self)` changes fields, so the caller needs a `mut` binding and exclusive access for the duration of the call. `fn close(self)` takes ownership: after `wallet.close()` the caller can no longer use `wallet`, which is how Rust says \"this object is finished\" without a runtime flag.\n\nFields are private to their module by default. Outside it, `c.count = 99` does not compile unless the field is `pub`, so an invariant such as `count <= limit` is enforced by the methods rather than by convention. Inside the defining module, as in this single-file example, `main` can still read `c.count`.\n\nA struct literal must set every field; there is no `undefined` property. Optional fields are `Option<T>`, and defaults come from `#[derive(Default)]` or an explicit constructor. Printing a struct with `{:?}` needs `#[derive(Debug)]`, and comparing two with `==` needs `PartialEq`.",
+    "feedback": "`self` by value moves the struct into the method. The second `c.finish()` is E0382, use of a moved value.",
+    "practiceCode": "struct Counter {\n    count: u32,\n}\n\nimpl Counter {\n    fn finish(self) -> u32 {\n        self.count\n    }\n}\n\nfn main() {\n    let c = Counter { count: 2 };\n    println!(\"{}\", c.finish());\n    println!(\"{}\", c.finish());\n}",
+    "question": "What does `fn finish(self) -> u32` tell a caller that `fn count(&self) -> u32` does not?",
+    "recall": [
+      {
+        "answer": "`&self` is a shared reference, so the method may only read fields: E0594, cannot assign to `self.count`. Change the receiver to `&mut self`; callers then need a mutable binding.",
+        "code": "struct Counter { count: u32 }\nimpl Counter {\n    fn bump(&self) {\n        self.count += 1;\n    }\n}",
+        "question": "Why is the assignment rejected?"
+      },
+      {
+        "answer": "As an associated function without a receiver in the `impl` block, for example `fn from_text(text: &str) -> Option<Counter>`, called as `Counter::from_text(\"3\")`. `new` is the same kind of function by convention, not a special constructor.",
+        "question": "How does Rust express a JavaScript `static` method such as `Counter.fromText(text)`?"
+      }
+    ],
+    "rule": "`&self` reads, `&mut self` modifies and `self` consumes: the receiver tells the caller what a method does to the value.",
+    "success": "The local compiler accepts the changed solution and the separate verification harness passes every case, including withdrawing the exact balance and reading it through `&Wallet`. Printing a success message alone does not complete this lab.",
+    "summary": "A class becomes a `struct` for the data and an `impl` block for the methods, and each method's receiver says whether it reads, changes or consumes the value.",
+    "task": "Port the JavaScript `Wallet` class shown at the top of solution.rs: `new`, `deposit`, `withdraw` (which refuses more than the balance and returns `false`), `balance` and `close` (which returns the final balance and ends the wallet). Keep the receivers in the starter: `balance` must work through a shared reference and `close` consumes the wallet. In the Crabrix app, open the compiler lab and complete the supplied methods in solution.rs. The reading question is a separate exercise."
+  },
+  "illustration": {
+    "path": "media/node-objects-to-structs.png",
+    "alt": "Side-by-side comparison: the JavaScript (Node.js) version on the left, the Rust version on the right, then 4 rows naming what changes.",
+    "caption": "Classes and objects vs structs: the same task in JavaScript (Node.js) and in Rust, with the differences that matter."
+  },
+  "contentDigest": "372d523c30ba74ddb0901bdf204695c6c1df2c3e42d3092595b002c4e8b52127"
+}

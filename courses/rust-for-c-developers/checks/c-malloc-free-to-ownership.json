@@ -1,0 +1,51 @@
+{
+  "challenge": {
+    "lessonID": "c-malloc-free-to-ownership",
+    "patternID": "c-malloc-free-to-ownership",
+    "projectName": "c-malloc-free-to-ownership-lab",
+    "source": "// C original:\n// /* Returns the longest buffer (the first on a tie) and frees all the others.\n//    The caller owns the result and must free it. */\n// unsigned char *take_largest(unsigned char **bufs, size_t *lens, size_t n, size_t *out_len) {\n//     if (n == 0) return NULL;\n//     size_t best = 0;\n//     for (size_t i = 1; i < n; i++) if (lens[i] > lens[best]) best = i;\n//     for (size_t i = 0; i < n; i++) if (i != best) free(bufs[i]);\n//     *out_len = lens[best];\n//     return bufs[best];\n// }\npub fn take_largest(buffers: Vec<Vec<u8>>) -> Option<Vec<u8>> {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationSource": "mod solution;\n\nfn main() {\n    let big = vec![7u8; 4];\n    let big_ptr = big.as_ptr();\n    let result = solution::take_largest(vec![vec![1], big, vec![2, 2]]).expect(\"case 1\");\n    assert_eq!(result, vec![7, 7, 7, 7], \"case 1\");\n    assert_eq!(result.as_ptr(), big_ptr, \"case 2: the buffer must move, not be copied\");\n    assert_eq!(solution::take_largest(Vec::new()), None, \"case 3\");\n    let first = vec![1u8, 1];\n    let first_ptr = first.as_ptr();\n    let tie = solution::take_largest(vec![first, vec![2, 2]]).expect(\"case 4\");\n    assert_eq!(tie, vec![1, 1], \"case 4: the first longest buffer wins a tie\");\n    assert_eq!(tie.as_ptr(), first_ptr, \"case 5\");\n\n    println!(\"PASS c-malloc-free-to-ownership\");\n}\n",
+    "verificationCases": [
+      {
+        "kind": "visible",
+        "input": "solution::take_largest(vec![vec![1], vec![7; 4], vec![2, 2]])",
+        "expectedAnswer": "Some(vec![7, 7, 7, 7])"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::take_largest(..).as_ptr() == big.as_ptr()",
+        "expectedAnswer": "true"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::take_largest(Vec::new())",
+        "expectedAnswer": "None"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::take_largest(vec![vec![1, 1], vec![2, 2]])",
+        "expectedAnswer": "Some(vec![1, 1])"
+      }
+    ],
+    "expectedOutput": "PASS c-malloc-free-to-ownership\n",
+    "requiredSourceFragments": [
+      "pub fn take_largest"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  },
+  "evidence": {
+    "kind": "algorithmChallenge",
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS c-malloc-free-to-ownership\n"
+    },
+    "requiredSourceFragments": [
+      "pub fn take_largest"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  }
+}

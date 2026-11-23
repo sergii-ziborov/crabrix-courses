@@ -1,0 +1,67 @@
+{
+  "challenge": {
+    "lessonID": "c-structs-to-impl",
+    "patternID": "c-structs-to-impl",
+    "projectName": "c-structs-to-impl-lab",
+    "source": "// C original:\n// struct budget { unsigned limit, spent; };\n// unsigned budget_remaining(const struct budget *b) { return b->limit - b->spent; }\n// int budget_spend(struct budget *b, unsigned amount) {\n//     if (b->spent + amount > b->limit) return -1;  /* the sum can wrap */\n//     b->spent += amount;\n//     return 0;\n// }\n// unsigned budget_close(struct budget b) { return b.spent; }\npub struct Budget {\n    limit: u32,\n    spent: u32,\n}\n\nimpl Budget {\n    pub fn new(limit: u32) -> Self {\n        todo!(\"implement the contract\")\n    }\n\n    pub fn spend(&mut self, amount: u32) -> bool {\n        todo!(\"implement the contract\")\n    }\n\n    pub fn remaining(&self) -> u32 {\n        todo!(\"implement the contract\")\n    }\n\n    pub fn close(self) -> u32 {\n        todo!(\"implement the contract\")\n    }\n}\n",
+    "verificationSource": "mod solution;\nuse solution::Budget;\n\nfn main() {\n    let mut b = Budget::new(100);\n    assert!(b.spend(30), \"case 1\");\n    assert_eq!(b.remaining(), 70, \"case 2\");\n    assert!(!b.spend(80), \"case 3: refused\");\n    assert_eq!(b.remaining(), 70, \"case 4: a refused spend changes nothing\");\n    assert!(!b.spend(u32::MAX), \"case 5: no wrapping sum\");\n    assert!(b.spend(70), \"case 6: exactly the remainder\");\n    assert_eq!(b.remaining(), 0, \"case 7\");\n    assert_eq!(b.close(), 100, \"case 8\");\n\n    println!(\"PASS c-structs-to-impl\");\n}\n",
+    "verificationCases": [
+      {
+        "kind": "visible",
+        "input": "Budget::new(100).spend(30)",
+        "expectedAnswer": "true"
+      },
+      {
+        "kind": "semantic",
+        "input": "remaining() after spending 30",
+        "expectedAnswer": "70"
+      },
+      {
+        "kind": "semantic",
+        "input": "spend(80) with 70 remaining, then remaining()",
+        "expectedAnswer": "false, 70"
+      },
+      {
+        "kind": "boundary",
+        "input": "spend(u32::MAX)",
+        "expectedAnswer": "false"
+      },
+      {
+        "kind": "boundary",
+        "input": "spend(70) with 70 remaining, then remaining()",
+        "expectedAnswer": "true, 0"
+      },
+      {
+        "kind": "visible",
+        "input": "close()",
+        "expectedAnswer": "100"
+      }
+    ],
+    "expectedOutput": "PASS c-structs-to-impl\n",
+    "requiredSourceFragments": [
+      "pub fn new",
+      "pub fn spend",
+      "pub fn remaining",
+      "pub fn close"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  },
+  "evidence": {
+    "kind": "algorithmChallenge",
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS c-structs-to-impl\n"
+    },
+    "requiredSourceFragments": [
+      "pub fn new",
+      "pub fn spend",
+      "pub fn remaining",
+      "pub fn close"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  }
+}

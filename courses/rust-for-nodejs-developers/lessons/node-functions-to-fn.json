@@ -1,0 +1,104 @@
+{
+  "bridge": {
+    "contrasts": [
+      {
+        "from": "`(x) => x * 2` returns its expression; `{ x * 2; }` returns `undefined`.",
+        "rust": "`{ x * 2 }` returns `x * 2`; `{ x * 2; }` evaluates to `()` and fails a `-> i32` signature."
+      },
+      {
+        "from": "`function f(express = false)` has a default.",
+        "rust": "No default parameters: pass `false`, write a second function, or take an `Option<bool>`."
+      },
+      {
+        "from": "`shippingCost(\"3\")` coerces the string and returns `9`.",
+        "rust": "A `&str` argument for a `u32` parameter is E0308 at the call."
+      },
+      {
+        "from": "`cond ? a : b`",
+        "rust": "`if cond { a } else { b }`, an expression with a single type."
+      }
+    ],
+    "credits": [
+      "basics/functions",
+      "basics/function-parameters",
+      "basics/block-expressions"
+    ],
+    "from": "javascript",
+    "fromCaption": "An implicit return in the arrow function, a default parameter, and a string silently coerced to a number.",
+    "fromCode": "const double = (x) => x * 2;      // expression body: implicit return\n\nfunction shippingCost(weightKg, express = false) {\n  const base = weightKg <= 1 ? 5 : 5 + (weightKg - 1) * 2;\n  return express ? base * 2 : base;\n}\n\nconsole.log(double(21));\nconsole.log(shippingCost(3), shippingCost(3, true));\nconsole.log(shippingCost(\"3\"));   // \"3\" - 1 is coerced: prints 9",
+    "fromLabel": "JavaScript (Node.js)"
+  },
+  "concept": "Typed parameters and tail expressions",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Explicit numeric types and overflow",
+        "direction": "previous",
+        "title": "Number vs Rust integer types"
+      },
+      {
+        "concept": "No truthiness: conditions are bool",
+        "direction": "next",
+        "title": "Truthiness vs bool, if and match"
+      }
+    ],
+    "correction": "A Rust block returns its final expression when it has no trailing semicolon. Only a semicolon, or an empty body, makes the value `()`.",
+    "misconception": "“Without `return`, a Rust function returns nothing, like a JavaScript function body without `return`.”",
+    "traceSteps": [
+      {
+        "detail": "`shipping_cost(weight_kg: u32, express: bool) -> u32` names every input type and the output. Both arguments are required.",
+        "title": "Read the signature"
+      },
+      {
+        "detail": "`let base = if ... { 5 } else { ... };` ends with a semicolon because it is a statement. The final `if express { base * 2 } else { base }` has none, so it is the return value.",
+        "title": "Find the tail values"
+      },
+      {
+        "detail": "Run it: `42`, then `9 18`. Add `;` after the final `if` and rustc reports E0308, expected `u32`, found `()`.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Call `shipping_cost(\"3\", false)` and read where rustc places the error. Then rewrite `shipping_cost` with an early `return 5;` for light parcels and decide which version reads better."
+  },
+  "exerciseKind": "runnable",
+  "id": "node-functions-to-fn",
+  "minutes": 10,
+  "order": 3,
+  "parentID": "node-values",
+  "title": "JavaScript functions vs fn",
+  "writing": {
+    "answers": [
+      "Rust needs `return` in every function",
+      "`x * 2` must be wrapped in parentheses",
+      "The semicolon makes the body evaluate to `()`, which is not `i32`"
+    ],
+    "correctAnswer": 2,
+    "exampleCaption": "No `return` keywords: each body ends in an expression, and `if` replaces the ternary.",
+    "exampleCode": "fn double(x: i32) -> i32 {\n    x * 2\n}\n\nfn shipping_cost(weight_kg: u32, express: bool) -> u32 {\n    let base = if weight_kg <= 1 { 5 } else { 5 + (weight_kg - 1) * 2 };\n    if express { base * 2 } else { base }\n}\n\nfn main() {\n    println!(\"{}\", double(21));\n    println!(\"{} {}\", shipping_cost(3, false), shipping_cost(3, true));\n}",
+    "explanation": "Arrow functions taught you expression bodies: `(x) => x * 2` returns without `return`. Rust applies that idea to every block. The last expression of a function body, without a trailing semicolon, is the return value. A semicolon turns it into a statement whose value is `()`, the unit type, so `fn double(x: i32) -> i32 { x * 2; }` is a type error. `return` still exists for early exits.\n\nBecause `if` and `match` are expressions, there is no need for the ternary operator: `let base = if weight_kg <= 1 { 5 } else { 5 + (weight_kg - 1) * 2 };`. A block `{ ... }` is an expression too, which is how a function body produces its value.\n\nParameters always have types, and the compiler never coerces arguments. JavaScript happily computed `shippingCost(\"3\")` as `9` through `\"3\" - 1`; Rust rejects a `&str` where a `u32` is expected, at the call site. There are no default or optional parameters and no overloading. Pass an explicit value, add a second function such as `discounted_default`, take an `Option<T>`, or group options in a struct that implements `Default`.\n\nThe return type is part of the signature and is never inferred from the body. A function's contract stays readable without its body, and rustc can point at the exact semicolon that turned an `i32` into `()`.",
+    "feedback": "With the semicolon, `x * 2` is a statement and the block's value is `()`. rustc reports E0308 and suggests removing the semicolon.",
+    "practiceCode": "fn double(x: i32) -> i32 {\n    x * 2;\n}\n\nfn main() {\n    println!(\"{}\", double(21));\n}",
+    "question": "Why is `fn double(x: i32) -> i32 { x * 2; }` rejected?",
+    "recall": [
+      {
+        "answer": "`()`. The semicolon after `x + 1` makes it a statement, so the block has no tail expression and evaluates to the unit value, and `{:?}` prints `()`. Remove the semicolon and `value` is the integer `4`.",
+        "code": "let value = {\n    let x = 3;\n    x + 1;\n};\nprintln!(\"{:?}\", value);",
+        "question": "What type does `value` have, and why?"
+      },
+      {
+        "answer": "Require the argument and let callers pass `5432`; provide a second function such as `connect_default(host)`; or take `port: Option<u16>` and use `port.unwrap_or(5432)`. For many options, a config struct that implements `Default`, filled in with `..Default::default()`, scales better.",
+        "question": "Rust has no default parameters. What are three idiomatic replacements for `function connect(host, port = 5432)`?"
+      }
+    ],
+    "rule": "Every parameter has a type, arguments must match it exactly, and a block's final expression without a semicolon is its value.",
+    "success": "The local compiler accepts both functions and the separate verification harness passes every case, including a percent above 100 and the default. Printing a success message alone does not complete this lab.",
+    "summary": "A Rust function declares every parameter type and returns its final expression; there are no default parameters and no implicit coercions.",
+    "task": "Port the JavaScript `discounted` shown at the top of solution.rs. Rust has no default parameters, so write `discounted(price_cents, percent)` and a separate `discounted_default(price_cents)` that applies 10 percent. A percent above 100 returns 0; otherwise subtract the discount, rounded down. In the Crabrix app, open the compiler lab and complete the supplied functions in solution.rs. The reading question is a separate exercise."
+  },
+  "illustration": {
+    "path": "media/node-functions-to-fn.png",
+    "alt": "Side-by-side comparison: the JavaScript (Node.js) version on the left, the Rust version on the right, then 4 rows naming what changes.",
+    "caption": "JavaScript functions vs fn: the same task in JavaScript (Node.js) and in Rust, with the differences that matter."
+  },
+  "contentDigest": "c8ff25d3d30dc4895eb08ad72a95d94f48bd45303a5780c46048b59d7c039241"
+}

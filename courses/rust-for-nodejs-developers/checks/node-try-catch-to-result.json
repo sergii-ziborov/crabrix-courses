@@ -1,0 +1,66 @@
+{
+  "challenge": {
+    "expectedOutput": "PASS node-try-catch-to-result\n",
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ],
+    "lessonID": "node-try-catch-to-result",
+    "patternID": "node-try-catch-to-result",
+    "projectName": "node-try-catch-to-result-lab",
+    "requiredSourceFragments": [
+      "pub fn parse_duration"
+    ],
+    "source": "// JavaScript original:\n// function parseDuration(text) {            // \"90s\", \"15m\", \"2h\"\n//   const match = /^(\\d+)([smh])$/.exec(text);\n//   if (!match) throw new Error(\"bad format\");\n//   const seconds = Number(match[1]) * { s: 1, m: 60, h: 3600 }[match[2]];\n//   if (seconds > 86400) throw new Error(\"too long\");\n//   return seconds;\n// }\n#[derive(Debug, PartialEq)]\npub enum DurationError {\n    BadFormat,\n    TooLong,\n}\n\npub fn parse_duration(text: &str) -> Result<u32, DurationError> {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationCases": [
+      {
+        "expectedAnswer": "Ok(90)",
+        "input": "solution::parse_duration(\"90s\")",
+        "kind": "visible"
+      },
+      {
+        "expectedAnswer": "Ok(900)",
+        "input": "solution::parse_duration(\"15m\")",
+        "kind": "semantic"
+      },
+      {
+        "expectedAnswer": "Ok(86400)",
+        "input": "solution::parse_duration(\"24h\")",
+        "kind": "boundary"
+      },
+      {
+        "expectedAnswer": "Err(TooLong)",
+        "input": "solution::parse_duration(\"25h\")",
+        "kind": "boundary"
+      },
+      {
+        "expectedAnswer": "Err(BadFormat)",
+        "input": "solution::parse_duration(\"h\") and (\"\")",
+        "kind": "boundary"
+      },
+      {
+        "expectedAnswer": "Err(BadFormat)",
+        "input": "solution::parse_duration(\"1.5h\"), (\"+5s\"), (\"5d\"), (\"5é\")",
+        "kind": "semantic"
+      },
+      {
+        "expectedAnswer": "Err(TooLong)",
+        "input": "solution::parse_duration(\"99999999999s\")",
+        "kind": "boundary"
+      }
+    ],
+    "verificationSource": "mod solution;\n\nuse solution::DurationError::{BadFormat, TooLong};\n\nfn main() {\n    assert_eq!(solution::parse_duration(\"90s\"), Ok(90), \"case 1\");\n    assert_eq!(solution::parse_duration(\"15m\"), Ok(900), \"case 2\");\n    assert_eq!(solution::parse_duration(\"24h\"), Ok(86_400), \"case 3\");\n    assert_eq!(solution::parse_duration(\"25h\"), Err(TooLong), \"case 4\");\n    assert_eq!(solution::parse_duration(\"h\"), Err(BadFormat), \"case 5\");\n    assert_eq!(solution::parse_duration(\"\"), Err(BadFormat), \"case 6\");\n    assert_eq!(solution::parse_duration(\"1.5h\"), Err(BadFormat), \"case 7\");\n    assert_eq!(solution::parse_duration(\"+5s\"), Err(BadFormat), \"case 8\");\n    assert_eq!(solution::parse_duration(\"5d\"), Err(BadFormat), \"case 9\");\n    assert_eq!(solution::parse_duration(\"99999999999s\"), Err(TooLong), \"case 10\");\n    assert_eq!(solution::parse_duration(\"5é\"), Err(BadFormat), \"case 11\");\n\n    println!(\"PASS node-try-catch-to-result\");\n}\n"
+  },
+  "evidence": {
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS node-try-catch-to-result\n"
+    },
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ],
+    "kind": "algorithmChallenge",
+    "requiredSourceFragments": [
+      "pub fn parse_duration"
+    ]
+  }
+}

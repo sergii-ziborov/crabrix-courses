@@ -1,0 +1,102 @@
+{
+  "bridge": {
+    "contrasts": [
+      {
+        "from": "`fetchPrice()` runs the body up to the first `await` immediately.",
+        "rust": "`fetch_price()` runs nothing; the body starts on the first poll."
+      },
+      {
+        "from": "The event loop is built into Node.js.",
+        "rust": "An executor such as Tokio must poll the top-level future."
+      },
+      {
+        "from": "A promise that nobody awaits still runs to completion.",
+        "rust": "A future that is never polled never runs, and dropping it cancels it."
+      },
+      {
+        "from": "`Promise.all([a, b])` runs promises concurrently.",
+        "rust": "`join!(a, b)` polls both futures concurrently inside one task."
+      }
+    ],
+    "credits": [
+      "concurrency/futures"
+    ],
+    "from": "javascript",
+    "fromCaption": "Each call starts the async body immediately, so `fetching` prints twice even though one promise is never used.",
+    "fromCode": "async function fetchPrice() {\n  console.log(\"fetching\"); // runs as soon as fetchPrice() is called\n  return 42;\n}\n\nconst pending = fetchPrice();\nconsole.log(\"created\");\npending.then((price) => console.log(`price = ${price}`));\n\nconst unused = fetchPrice(); // still runs, although nobody awaits it",
+    "fromLabel": "JavaScript (Node.js)"
+  },
+  "concept": "Lazy futures and an explicit runtime",
+  "depth": {
+    "connections": [
+      {
+        "concept": "package.json and npm mapped to Cargo",
+        "direction": "previous",
+        "title": "npm and package.json vs Cargo"
+      },
+      {
+        "concept": "async fn, await, and laziness",
+        "direction": "next",
+        "title": "Futures"
+      }
+    ],
+    "correction": "Calling an `async fn` only builds a future. Nothing runs until it is polled, normally by `.await` inside a runtime.",
+    "misconception": "“Calling an `async fn` starts it in the background, like calling an async function in Node.js.”",
+    "traceSteps": [
+      {
+        "detail": "`let pending = fetch_price();` stores a future. No line inside `fetch_price` has run yet.",
+        "title": "Create the future"
+      },
+      {
+        "detail": "`block_on(pending)` polls once. The body prints `fetching` and returns `42` without waiting, so the first poll is already `Ready`.",
+        "title": "Poll it"
+      },
+      {
+        "detail": "Run it: `created`, `fetching`, `price = 42`. The `_unused` future is dropped at the end of `main` without printing anything.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Write `async fn total() -> u32` that awaits `fetch_price()` twice and adds the results. Run it with `block_on` and predict how many times `fetching` prints, then compare with a JavaScript version that uses `Promise.all`."
+  },
+  "exerciseKind": "planned",
+  "id": "node-promises-to-futures",
+  "minutes": 12,
+  "order": 2,
+  "parentID": "node-runtime",
+  "title": "Promises vs futures",
+  "writing": {
+    "answers": [
+      "`saved invoice-7` then `done`, like calling an async function in Node.js",
+      "Only `done`: the future returned by `save` is never polled",
+      "Nothing: rustc rejects calling an `async fn` without `.await`"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "`created` prints before `fetching`: the future runs only when `block_on` polls it, and the unused one never runs.",
+    "exampleCode": "use std::future::Future;\nuse std::pin::pin;\nuse std::task::{Context, Poll, Waker};\n\nasync fn fetch_price() -> u32 {\n    println!(\"fetching\");\n    42\n}\n\n// A minimal executor for futures that never wait; real programs use a runtime such as Tokio.\nfn block_on<F: Future>(future: F) -> F::Output {\n    let mut future = pin!(future);\n    let mut cx = Context::from_waker(Waker::noop());\n    loop {\n        if let Poll::Ready(value) = future.as_mut().poll(&mut cx) {\n            return value;\n        }\n    }\n}\n\nfn main() {\n    let pending = fetch_price();\n    println!(\"created\");\n    println!(\"price = {}\", block_on(pending));\n    let _unused = fetch_price();\n}",
+    "explanation": "Calling an async function in JavaScript runs its body synchronously up to the first `await`, and the event loop keeps the rest going. That is why the example prints `fetching` before `created`, and why the unused second call still logs. Calling a Rust `async fn` runs nothing: it returns a value that implements `Future`, a state machine waiting to be polled. Only polling, normally through `.await`, executes the body.\n\nRust has no built-in event loop. Something must poll the top-level future: an executor such as the Tokio runtime behind `#[tokio::main]`, or, in this example, a ten-line `block_on` that polls in a loop. That `block_on` only suits futures that never wait on I/O; a real runtime parks the thread and uses the `Waker` to resume work when a socket or timer is ready. `.await` itself is only allowed inside `async` functions and blocks (E0728).\n\nLaziness has consequences you can use. A future that is dropped before it completes simply stops, which is how timeouts and `select!` cancel work, whereas a JavaScript promise cannot be cancelled from outside; there is only an `AbortSignal` the callee may honour. Writing `let pending = fetch_price();` and awaiting it later starts nothing early. To run several futures concurrently, combine them with `join!` or spawn them as tasks, the counterparts of `Promise.all` and of starting promises without awaiting them.\n\nrustc helps with the most common mistake. A future that is created and never used triggers the `unused_must_use` warning, unused implementer of `Future` that must be used. Treat that warning as an error in async code; it almost always means a missing `.await`.",
+    "feedback": "The call creates a future and drops it at the end of the statement. rustc warns that it must be used, but the program builds and prints only `done`.",
+    "practiceCode": "async fn save(record: &str) {\n    println!(\"saved {record}\");\n}\n\nfn main() {\n    save(\"invoice-7\");\n    println!(\"done\");\n}",
+    "question": "What does the practice program print?",
+    "recall": [
+      {
+        "answer": "Only `end`. Each call creates a future without running it, `drop(a)` destroys one that was never polled, and `let _ = b;` does not poll the other. In JavaScript both calls would have logged immediately.",
+        "code": "async fn log(n: u32) -> u32 {\n    println!(\"log {n}\");\n    n\n}\n\nfn main() {\n    let a = log(1);\n    let b = log(2);\n    drop(a);\n    println!(\"end\");\n    let _ = b;\n}",
+        "question": "What does this print, and why?"
+      },
+      {
+        "answer": "Node.js ships an event loop that runs promise callbacks and I/O. Rust's standard library defines the `Future` trait but no executor, so a library provides one: it polls futures, parks the thread while they are pending, and uses `Waker`s from timers and sockets to resume them. Choosing the runtime is part of the program's design.",
+        "question": "Why does Rust need a runtime such as Tokio when Node.js does not?"
+      }
+    ],
+    "rule": "Futures are lazy: calling an `async fn` only creates a future, and no code inside it runs until something polls it.",
+    "success": "Your predictions match the program: `created` before `fetching`, and the unused future never prints.",
+    "summary": "A Promise starts running when it is created; a Rust future does nothing until it is polled, usually by `.await` inside a runtime such as Tokio.",
+    "task": "Predict the output of the example, then move `println!(\"created\")` after the `block_on` call and predict again. Finally replace `let _unused = fetch_price();` with `fetch_price();` and read the warning."
+  },
+  "illustration": {
+    "path": "media/node-promises-to-futures.png",
+    "alt": "Side-by-side comparison: the JavaScript (Node.js) version on the left, the Rust version on the right, then 4 rows naming what changes.",
+    "caption": "Promises vs futures: the same task in JavaScript (Node.js) and in Rust, with the differences that matter."
+  },
+  "contentDigest": "dccc4004962b22a88ba2aa8ee5c0dfe8e88a24739bd9147a4667d3b02d44cf57"
+}

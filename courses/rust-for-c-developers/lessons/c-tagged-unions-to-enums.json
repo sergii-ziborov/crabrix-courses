@@ -1,0 +1,100 @@
+{
+  "concept": "A tag that cannot disagree with its payload",
+  "depth": {
+    "traceSteps": [
+      {
+        "title": "Map the tags",
+        "detail": "Turn each C tag value into a variant, and move the union member it selects into that variant."
+      },
+      {
+        "title": "Delete the default",
+        "detail": "Replace `default:` with explicit variants, compile, and handle every place that `E0004` reports."
+      },
+      {
+        "title": "Back each guard",
+        "detail": "For every guarded arm, make sure an unguarded arm for the same variant follows it."
+      }
+    ],
+    "misconception": "“A Rust enum is a C `enum` with extra syntax.”",
+    "correction": "A C `enum` is a set of integer constants. A Rust `enum` is a sum type: each variant can carry its own fields, and the compiler stores and checks the tag. Fieldless variants can still be given C-style integer values, with `#[repr(...)]` when the representation matters.",
+    "transferChallenge": "Add a `Circle { r: u32 }` variant to `Shape` and let the compiler list every `match` to update; then decide how `area` should round it.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Structs and Methods",
+        "concept": "The receiver states the pointer contract"
+      },
+      {
+        "direction": "next",
+        "title": "NULL and errno to Option and Result",
+        "concept": "Absence and failure in the return type"
+      }
+    ]
+  },
+  "exerciseKind": "runnable",
+  "id": "c-tagged-unions-to-enums",
+  "minutes": 12,
+  "order": 1,
+  "parentID": "c-data",
+  "title": "Tagged Unions to Enums",
+  "writing": {
+    "summary": "A Rust `enum` is a tagged union whose tag and payload cannot disagree, and `match` must handle every variant.",
+    "rule": "`match` must be exhaustive: every variant has to be handled, and an arm with a guard does not count as covering its pattern.",
+    "explanation": "The C tagged union is a discipline: an `enum` tag next to a `union`, and every reader checks the tag before touching the matching member. Nothing enforces it. `{EV_CLICK, .as.key = 'q'}` compiles, reading the wrong member is not diagnosed, and a `default:` arm silently absorbs kinds added later, with no `-Wswitch` warning because a default exists.\n\nA Rust `enum` makes the pairing part of the type. `Key(char)`, `Click { x, y }` and `Quit` are variants, each with its own data, and the only way to reach that data is to match the variant; you cannot build a `Click` that holds a `char`. The compiler chooses the tag and the layout, and uses invalid bit patterns (niches) where it can, which is why `Option<&T>` is the size of a pointer.\n\n`match` is a `switch` that destructures and is checked for completeness. Leave a variant out and the program does not compile (`E0004`, non-exhaustive patterns), so adding a variant produces a list of every place that must handle it. A `_` arm opts back into C's `default:` behaviour; use it only when new variants really should fall through. Arms never fall through to each other, so there is no `break` to forget.\n\nArms can bind fields (`Event::Click { x, y }`), match literals and ranges, and add a guard such as `if *x < 0`. A guard narrows its arm, but exhaustiveness checking ignores guard conditions, so a guarded arm still needs an unguarded arm, or a wildcard, for the same variant. `match` is also an expression whose arms produce one type, which replaces a `switch` that assigns a variable in every case.",
+    "exampleCode": "enum Event {\n    Key(char),\n    Click { x: i32, y: i32 },\n    Quit,\n}\n\nfn describe(event: &Event) -> String {\n    match event { // must cover every variant\n        Event::Key(c) => format!(\"key {c}\"),\n        Event::Click { x, y } if *x < 0 || *y < 0 => \"click off-screen\".to_string(),\n        Event::Click { x, y } => format!(\"click at {x},{y}\"),\n        Event::Quit => \"quit\".to_string(),\n    }\n}\n\nfn main() {\n    let events = [\n        Event::Key('q'),\n        Event::Click { x: 3, y: 4 },\n        Event::Click { x: -1, y: 0 },\n        Event::Quit,\n    ];\n    for event in &events {\n        println!(\"{}\", describe(event));\n    }\n}\n",
+    "exampleCaption": "Each variant carries only its own data; the guarded `Click` arm is backed by an unguarded one, and the `match` lists every variant.",
+    "practiceCode": "enum Event {\n    Key(char),\n    Click { x: i32, y: i32 },\n    Quit,\n}\n\nfn describe(event: &Event) -> String {\n    match event {\n        Event::Key(c) => format!(\"key {c}\"),\n        Event::Click { x, y } if *x >= 0 && *y >= 0 => format!(\"click at {x},{y}\"),\n        Event::Quit => \"quit\".to_string(),\n    }\n}\n\nfn main() {\n    println!(\"{}\", describe(&Event::Quit));\n}\n",
+    "task": "Port the commented C `area`, including the forgotten triangle: return the area rounded down for every variant without overflowing, and make `is_degenerate` return true when any dimension is zero.",
+    "success": "`Square { side: u32::MAX }` gives the exact `u64` area, a 3 × 3 triangle gives 4, and zero-sized shapes are degenerate.",
+    "question": "In the practice code every variant appears in the `match`. Why does rustc still reject it?",
+    "answers": [
+      "The `Click` arm has a guard, and guards do not count toward exhaustiveness, so a click with a negative coordinate is unhandled",
+      "`match` needs a `default` arm, like a C `switch`",
+      "Struct-like variants cannot have guards",
+      "`Quit` carries no data, so it must be listed first"
+    ],
+    "correctAnswer": 0,
+    "feedback": "Add an unguarded `Event::Click { .. }` arm after the guarded one. The compiler checks patterns, not the conditions in guards.",
+    "recall": [
+      {
+        "question": "Why is a `_ => ...` arm in a `match` over your own enum often a mistake?",
+        "answer": "It turns off the check that makes enums safer than a C `switch`: a variant added later falls into `_` silently instead of producing `E0004` at every `match` that must handle it. List the variants unless falling through really is the intended behaviour."
+      },
+      {
+        "question": "What does this print?",
+        "code": "enum Size { Small, Large(u32) }\nfn main() {\n    let sizes = [Size::Small, Size::Large(3), Size::Large(12)];\n    for s in &sizes {\n        let label = match s {\n            Size::Small => \"small\",\n            Size::Large(n) if *n > 10 => \"huge\",\n            Size::Large(_) => \"large\",\n        };\n        print!(\"{label} \");\n    }\n}",
+        "answer": "`small large huge`. Arms are tried in order: `Large(3)` fails the guard and reaches the unguarded `Large(_)` arm, while `Large(12)` matches the guarded arm first."
+      }
+    ]
+  },
+  "bridge": {
+    "from": "c",
+    "fromLabel": "C",
+    "fromCode": "#include <stdio.h>\n\nenum ev_kind { EV_KEY, EV_CLICK, EV_QUIT };\nstruct event {\n    enum ev_kind kind;                       /* the tag */\n    union { char key; struct { int x, y; } click; } as;\n};\n\nstatic void describe(const struct event *e) {\n    switch (e->kind) {\n    case EV_KEY:   printf(\"key %c\\n\", e->as.key); break;\n    case EV_CLICK: printf(\"click at %d,%d\\n\", e->as.click.x, e->as.click.y); break;\n    default:       printf(\"ignored\\n\");      /* EV_QUIT and any future kind */\n    }\n}\n\nint main(void) {\n    struct event events[] = {\n        {EV_KEY, .as.key = 'q'},\n        {EV_CLICK, .as.click = {3, 4}},\n        {EV_QUIT, .as.key = 0},\n    };\n    for (int i = 0; i < 3; i++) describe(&events[i]);\n    /* Nothing ties tag to member: {EV_CLICK, .as.key = 'q'} also compiles. */\n    return 0;\n}\n",
+    "fromCaption": "The tag and the union member are kept in sync by hand, and `default:` absorbs any kind added later.",
+    "contrasts": [
+      {
+        "from": "Tag and union member can disagree; nothing checks the pairing.",
+        "rust": "A variant and its data are one value; the data is reached only by matching."
+      },
+      {
+        "from": "`default:` silently handles kinds added later.",
+        "rust": "A missing variant is error `E0004`; `_` is an explicit opt-in."
+      },
+      {
+        "from": "Cases fall through unless you write `break`.",
+        "rust": "Arms never fall through, and each `match` arm is an expression."
+      }
+    ],
+    "credits": [
+      "basics/enums",
+      "basics/pattern-matching"
+    ]
+  },
+  "illustration": {
+    "path": "media/c-tagged-unions-to-enums.png",
+    "alt": "Side-by-side comparison: the C version on the left, the Rust version on the right, then 3 rows naming what changes.",
+    "caption": "Tagged Unions to Enums: the same task in C and in Rust, with the differences that matter."
+  },
+  "contentDigest": "3d2684a3777b3404a1f0f5f381ad51b367b02f45f0f1b5b194049aa79928a876"
+}

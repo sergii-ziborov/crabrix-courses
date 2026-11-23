@@ -1,0 +1,103 @@
+{
+  "bridge": {
+    "contrasts": [
+      {
+        "from": "`{ kind: \"card\"; last4: string }` uses a string tag.",
+        "rust": "`Card { last4: String }`: the variant is the tag, and the compiler checks it."
+      },
+      {
+        "from": "Exhaustiveness needs `const unhandled: never = p` in `default`.",
+        "rust": "Every `match` is checked; a missing variant is E0004."
+      },
+      {
+        "from": "JSON at runtime can carry any `kind` despite the type.",
+        "rust": "A `Payment` can only be one of its variants; outside data must be parsed into one first."
+      },
+      {
+        "from": "`case \"cash\": return cents > 50_000 ? ... : ...`",
+        "rust": "`Payment::Cash if cents > 50_000 =>` is a guard; a plain `Payment::Cash =>` arm must follow."
+      }
+    ],
+    "credits": [
+      "basics/enums",
+      "basics/pattern-matching"
+    ],
+    "from": "typescript",
+    "fromCaption": "A string tag narrows the union; the `never` default is TypeScript's opt-in exhaustiveness check.",
+    "fromCode": "type Payment =\n  | { kind: \"card\"; last4: string }\n  | { kind: \"transfer\"; reference: string }\n  | { kind: \"cash\" };\n\nfunction describe(p: Payment, cents: number): string {\n  switch (p.kind) {\n    case \"card\":\n      return `card ending ${p.last4}`;\n    case \"transfer\":\n      return `transfer ${p.reference}`;\n    case \"cash\":\n      return cents > 50_000 ? \"cash, needs approval\" : \"cash\";\n    default: {\n      const unhandled: never = p; // compile error if a kind is added\n      return unhandled;\n    }\n  }\n}\n\nconsole.log(describe({ kind: \"card\", last4: \"4242\" }, 900));\nconsole.log(describe({ kind: \"cash\" }, 60_000));",
+    "fromLabel": "TypeScript"
+  },
+  "concept": "Discriminated unions as enums",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Data in structs, behaviour in impl blocks",
+        "direction": "previous",
+        "title": "Classes and objects vs structs"
+      },
+      {
+        "concept": "Absence as Option<T>",
+        "direction": "next",
+        "title": "null, undefined and ?? vs Option"
+      }
+    ],
+    "correction": "A wildcard turns off the exhaustiveness check for every variant added later; in TypeScript terms it deletes the `never` check. List the variants unless the fallback is really meant for future cases too.",
+    "misconception": "“A `_ =>` arm is the safe default, like `default:` in a `switch`.”",
+    "traceSteps": [
+      {
+        "detail": "`Card` and `Transfer` each carry a `String`, and `Cash` carries nothing. The amount is a separate parameter.",
+        "title": "Read the variants"
+      },
+      {
+        "detail": "The guarded `Payment::Cash if cents > 50_000` arm comes before the plain `Payment::Cash` arm. In the other order the guarded arm could never match, and rustc warns that it is unreachable.",
+        "title": "Order the arms"
+      },
+      {
+        "detail": "Run it: `card ending 4242`, `cash, needs approval`, `transfer INV-7`. Delete the plain `Cash` arm and read E0004: the guard does not cover `Cash`.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Add a `Voucher { code: String }` variant and compile before you touch `describe`. Then return `voucher <code>` for it, and use a guard to reject a voucher whose code is empty."
+  },
+  "exerciseKind": "runnable",
+  "id": "node-ts-unions-to-enums",
+  "minutes": 11,
+  "order": 1,
+  "parentID": "node-data",
+  "title": "TypeScript unions vs enums",
+  "writing": {
+    "answers": [
+      "rustc reports E0004 for the new variant",
+      "The program panics when `Crypto` reaches the `match`",
+      "It compiles, and `Crypto` silently takes the wildcard arm"
+    ],
+    "correctAnswer": 2,
+    "exampleCaption": "Each arm destructures its variant, and the guarded `Cash` arm is followed by an unguarded one.",
+    "exampleCode": "enum Payment {\n    Card { last4: String },\n    Transfer { reference: String },\n    Cash,\n}\n\nfn describe(p: &Payment, cents: u32) -> String {\n    match p {\n        Payment::Card { last4 } => format!(\"card ending {last4}\"),\n        Payment::Transfer { reference } => format!(\"transfer {reference}\"),\n        Payment::Cash if cents > 50_000 => String::from(\"cash, needs approval\"),\n        Payment::Cash => String::from(\"cash\"),\n    }\n}\n\nfn main() {\n    let card = Payment::Card { last4: String::from(\"4242\") };\n    let transfer = Payment::Transfer { reference: String::from(\"INV-7\") };\n    println!(\"{}\", describe(&card, 900));\n    println!(\"{}\", describe(&Payment::Cash, 60_000));\n    println!(\"{}\", describe(&transfer, 100));\n}",
+    "explanation": "A discriminated union is a set of object shapes sharing a tag such as `kind`, narrowed by a `switch`. Rust builds the same idea into the type system: `enum Payment { Card { last4: String }, Transfer { reference: String }, Cash }`. The variant is the tag. There is no string field to misspell, and data that belongs to one variant cannot be read through another.\n\n`match` replaces the `switch` plus the `never` trick. TypeScript checks exhaustiveness only if you add a `default` with `const unhandled: never`, and only at compile time: at runtime a value from JSON can still carry an unknown `kind`. Rust's `match` must cover every variant or the program does not compile (E0004), and a value of type `Payment` cannot hold anything else, because outside data has to be parsed into a variant first.\n\nPatterns destructure while they match. `Payment::Card { last4 } =>` binds the field, and a literal field such as `Shipped { days: 0, .. }` matches one specific value. A guard, `Payment::Cash if cents > 50_000 =>`, adds a condition; when it is false, matching continues with the next arm. Guards do not count toward exhaustiveness, so a plain `Payment::Cash =>` arm must still follow.\n\nBe careful with `_`. A wildcard arm silences E0004 for every variant added later, which is exactly the check you came for. In code that should be revisited whenever the enum grows, list the variants explicitly.",
+    "feedback": "A wildcard covers every variant, including future ones, so the compiler has nothing to report. List the variants where a new one should force a review.",
+    "practiceCode": "enum Payment {\n    Card,\n    Transfer,\n    Cash,\n}\n\nfn fee(p: Payment) -> u32 {\n    match p {\n        Payment::Card => 30,\n        Payment::Transfer => 0,\n    }\n}\n\nfn main() {\n    println!(\"{}\", fee(Payment::Cash));\n}",
+    "question": "A `match` on `Payment` ends with `_ => 0`. Later someone adds `Payment::Crypto`. What happens?",
+    "recall": [
+      {
+        "answer": "The compiler does not reason about guard conditions, so `Cash` still counts as uncovered, and `Transfer` is missing as well: E0004. Make the last `Cash` arm unguarded and add a `Transfer` arm.",
+        "code": "enum Payment { Card, Transfer, Cash }\nlet (p, cents) = (Payment::Cash, 40);\nlet fee = match p {\n    Payment::Card => 1,\n    Payment::Cash if cents > 100 => 2,\n    Payment::Cash if cents <= 100 => 3,\n};",
+        "question": "Why is this `match` rejected, even though both `Cash` amounts seem handled?"
+      },
+      {
+        "answer": "TypeScript types are erased, so the unknown `kind` reaches the `switch` at runtime and falls into the `never` branch. In Rust a `Payment` can only be built as one of its variants; parsing the JSON, for example with Serde, fails on the unknown tag before any `match` runs.",
+        "question": "In TypeScript, JSON with `kind: \"crypto\"` can reach a `switch` typed for three kinds. What happens instead in Rust?"
+      }
+    ],
+    "rule": "An enum variant carries its own data, and `match` must cover every variant; a guard narrows an arm but never excuses a missing case.",
+    "success": "The local compiler accepts the changed solution and the separate verification harness passes every variant, including 0 and 1 days. Printing a success message alone does not complete this lab.",
+    "summary": "A TypeScript discriminated union becomes a Rust `enum` whose variants carry their own data, and `match` must handle every variant.",
+    "task": "Port the TypeScript `eta` shown at the top of solution.rs; the `Shipment` enum is given. Return `not shipped yet`, `arrives today via <carrier>` for 0 days, `1 day via <carrier>`, `<n> days via <carrier>`, `delivered` and `lost`. Cover every variant without a `_` arm. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise."
+  },
+  "illustration": {
+    "path": "media/node-ts-unions-to-enums.png",
+    "alt": "Side-by-side comparison: the TypeScript version on the left, the Rust version on the right, then 4 rows naming what changes.",
+    "caption": "TypeScript unions vs enums: the same task in TypeScript and in Rust, with the differences that matter."
+  },
+  "contentDigest": "79cc65ba2b80ceef89a7a6fdd756cb7e638c19670a0695e8a3fd7b83d718dfe3"
+}

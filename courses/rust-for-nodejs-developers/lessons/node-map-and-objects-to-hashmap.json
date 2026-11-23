@@ -1,0 +1,102 @@
+{
+  "bridge": {
+    "contrasts": [
+      {
+        "from": "Object keys are strings, and `\"constructor\"` already exists on the prototype.",
+        "rust": "A `HashMap<&str, u32>` contains only inserted keys, all of one declared type."
+      },
+      {
+        "from": "`map.set(k, (map.get(k) ?? 0) + 1)` looks the key up twice.",
+        "rust": "`*map.entry(k).or_insert(0) += 1` looks it up once and updates in place."
+      },
+      {
+        "from": "A missing key reads as `undefined`.",
+        "rust": "`get` returns `None`; `map[key]` panics when the key is missing."
+      },
+      {
+        "from": "`Map` iterates in insertion order.",
+        "rust": "`HashMap` order is unspecified; use a `BTreeMap` or sort the keys for stable output."
+      }
+    ],
+    "credits": [
+      "basics/collections"
+    ],
+    "from": "javascript",
+    "fromCaption": "An object used as a dictionary: `\"\"` becomes a key, and `constructor` collides with `Object.prototype`.",
+    "fromCode": "function countWords(text) {\n  const counts = {};\n  for (const word of text.split(\" \")) {\n    counts[word] = (counts[word] || 0) + 1;\n  }\n  return counts;\n}\n\nconsole.log(countWords(\"to be or not to be\"));\nconsole.log(countWords(\"a  b\"));        // \"\" became a key\nconsole.log(countWords(\"constructor\")); // inherited from Object.prototype",
+    "fromLabel": "JavaScript (Node.js)"
+  },
+  "concept": "Keyed data with HashMap and entry",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Lazy iterator pipelines",
+        "direction": "previous",
+        "title": "Array methods vs iterators"
+      },
+      {
+        "concept": "UTF-8 bytes, chars and lengths",
+        "direction": "next",
+        "title": "UTF-16 strings vs UTF-8 String"
+      }
+    ],
+    "correction": "`insert` replaces the old value and returns it as an `Option<V>`, like `Map.set`. Use `entry(key).or_insert(0)` and add through the returned `&mut V`.",
+    "misconception": "“`insert` adds to the existing value, the way the JavaScript counting line does.”",
+    "traceSteps": [
+      {
+        "detail": "`count_words` returns `HashMap<&str, u32>`: the keys borrow slices of `text`, so no `String` is allocated per word.",
+        "title": "Read the key type"
+      },
+      {
+        "detail": "For the second `\"to\"`, `entry` finds the occupied slot, `or_insert(0)` returns a `&mut u32` holding 1, and `+= 1` makes it 2.",
+        "title": "Follow one update"
+      },
+      {
+        "detail": "Run it: `2 1`, `None` for the empty key, and `{\"constructor\": 1}`. Replace `split_whitespace()` with `split(' ')` and `get(\"\")` returns `Some(1)` for `\"a  b\"`.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Make `count_words` return a `BTreeMap` and print the whole map for `\"to be or not to be\"`. Then explain why the `HashMap` version might print the same pairs in a different order on another run."
+  },
+  "exerciseKind": "runnable",
+  "id": "node-map-and-objects-to-hashmap",
+  "minutes": 11,
+  "order": 4,
+  "parentID": "node-data",
+  "title": "Objects and Map vs HashMap",
+  "writing": {
+    "answers": [
+      "It keeps the keys sorted",
+      "It avoids allocating the key",
+      "It looks the key up once and returns a mutable reference whether or not the entry existed"
+    ],
+    "correctAnswer": 2,
+    "exampleCaption": "`split_whitespace` drops empty words, `entry` updates in one lookup, and `constructor` is just another key.",
+    "exampleCode": "use std::collections::HashMap;\n\nfn count_words(text: &str) -> HashMap<&str, u32> {\n    let mut counts = HashMap::new();\n    for word in text.split_whitespace() {\n        *counts.entry(word).or_insert(0) += 1;\n    }\n    counts\n}\n\nfn main() {\n    let counts = count_words(\"to be or not to be\");\n    println!(\"{} {}\", counts[\"to\"], counts.get(\"not\").copied().unwrap_or(0));\n    println!(\"{:?}\", count_words(\"a  b\").get(\"\"));\n    println!(\"{:?}\", count_words(\"constructor\"));\n}",
+    "explanation": "Objects make convenient dictionaries until a key collides with the prototype. In the JavaScript example, `counts[\"constructor\"]` finds `Object.prototype.constructor`, so `(counts[word] || 0) + 1` produces `\"function Object() { [native code] }1\"`. Keys are also converted to strings, so `1` and `\"1\"` are the same key. `Map` fixes both problems, and `HashMap<K, V>` is its Rust counterpart: keys and values have declared types, and only inserted keys exist.\n\nThe counting idiom becomes the `entry` API. `counts.entry(word)` looks the key up once and returns an `Entry`; `or_insert(0)` inserts the default if the slot was vacant and returns `&mut u32` in both cases, so `*... += 1` updates in place. `get` followed by `insert` does two lookups, and `insert` alone overwrites like `Map.set`, which is the classic bug when porting `totals.set(k, (totals.get(k) ?? 0) + v)`.\n\nReading is explicit about absence. `counts.get(\"be\")` returns an `Option<&u32>`. `counts[\"be\"]` also compiles, but it panics when the key is missing instead of returning `undefined`, so use indexing only for keys you know are present.\n\nIteration order is not insertion order. A `Map` preserves insertion order; a `HashMap` uses a randomly seeded hasher, so its order can differ between runs. Sort the keys, or use a `BTreeMap` for key order, when output must be stable. Splitting text differs too: `split(' ')` keeps the empty strings between double spaces in both languages, while `split_whitespace()` skips them.",
+    "feedback": "`or_insert` returns `&mut V` for both the vacant and the occupied case, so one lookup covers the update.",
+    "practiceCode": "use std::collections::HashMap;\n\nfn main() {\n    let mut counts: HashMap<&str, u32> = HashMap::new();\n    counts.insert(\"to\", 2);\n    let be = counts[\"be\"];\n    println!(\"{be}\");\n}",
+    "question": "Why is `*counts.entry(word).or_insert(0) += 1` preferred over `get` followed by `insert`?",
+    "recall": [
+      {
+        "answer": "`Some(5) Some(2)`. `insert` replaces the value, like `Map.set`, and returns the previous one. To add instead, write `*m.entry(\"ana\").or_insert(0) += 2`.",
+        "code": "use std::collections::HashMap;\nlet mut m = HashMap::new();\nm.insert(\"ana\", 5);\nlet old = m.insert(\"ana\", 2);\nprintln!(\"{:?} {:?}\", old, m.get(\"ana\"));",
+        "question": "What does this print?"
+      },
+      {
+        "answer": "`HashMap` uses a randomly seeded hasher to resist collision attacks, and its iteration order is unspecified. Collect the keys into a `Vec` and sort them, or use a `BTreeMap`, which iterates in key order. Insertion order, which a JavaScript `Map` keeps, is promised by neither type.",
+        "question": "Why might two runs of the same program print a `HashMap` in different orders, and what are two fixes?"
+      }
+    ],
+    "rule": "`entry(key).or_insert(default)` looks the key up once and returns a mutable reference to the value, whether or not it was already there.",
+    "success": "The local compiler accepts the changed solution and the separate verification harness passes every case, including repeated customers, an empty list and a `constructor` key. Printing a success message alone does not complete this lab.",
+    "summary": "Plain objects used as dictionaries become `HashMap<K, V>`: typed keys, no prototype keys, and `entry` for update-or-insert in one lookup.",
+    "task": "Port the JavaScript `totalsByCustomer` shown at the top of solution.rs. Add each order's cents to its customer's total, using `entry` for the update, and return the map. Keys are case-sensitive. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise."
+  },
+  "illustration": {
+    "path": "media/node-map-and-objects-to-hashmap.png",
+    "alt": "Side-by-side comparison: the JavaScript (Node.js) version on the left, the Rust version on the right, then 4 rows naming what changes.",
+    "caption": "Objects and Map vs HashMap: the same task in JavaScript (Node.js) and in Rust, with the differences that matter."
+  },
+  "contentDigest": "81f1be6465c163757055004548f03868784d0c3eef7733af6a2804a30bc8d2ec"
+}

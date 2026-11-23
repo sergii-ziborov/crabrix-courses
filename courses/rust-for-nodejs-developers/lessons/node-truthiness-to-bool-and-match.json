@@ -1,0 +1,104 @@
+{
+  "bridge": {
+    "contrasts": [
+      {
+        "from": "`if (!count)` treats `0`, `NaN`, `\"\"`, `null` and `undefined` as false.",
+        "rust": "`if count` is E0308; write `count == 0` or `text.is_empty()`."
+      },
+      {
+        "from": "`0 == \"\"` is `true`, which is why you use `===`.",
+        "rust": "There is one `==` and it never converts: comparing an integer with a `&str` does not compile."
+      },
+      {
+        "from": "`a || b` returns one of its operands.",
+        "rust": "`a || b` takes two `bool` values and returns a `bool`."
+      },
+      {
+        "from": "`switch` falls through and need not cover every case.",
+        "rust": "`match` arms never fall through and must cover every value."
+      }
+    ],
+    "credits": [
+      "basics/booleans-comparisons",
+      "basics/control-flow"
+    ],
+    "from": "javascript",
+    "fromCaption": "Truthiness sends `0` and `NaN` to \"sold out\", and loose equality makes `0 == \"\"` true.",
+    "fromCode": "function stockLabel(count) {\n  if (!count) return \"sold out\";   // 0, NaN, \"\" and undefined land here\n  return count < 5 ? `only ${count} left` : \"in stock\";\n}\n\nconsole.log(stockLabel(0), \"|\", stockLabel(3), \"|\", stockLabel(12));\nconsole.log(stockLabel(NaN), \"|\", stockLabel(\"7\"));\nconsole.log(Boolean(\"0\"), Boolean([]), 0 == \"\", null == undefined);",
+    "fromLabel": "JavaScript (Node.js)"
+  },
+  "concept": "No truthiness: conditions are bool",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Typed parameters and tail expressions",
+        "direction": "previous",
+        "title": "JavaScript functions vs fn"
+      },
+      {
+        "concept": "Data in structs, behaviour in impl blocks",
+        "direction": "next",
+        "title": "Classes and objects vs structs"
+      }
+    ],
+    "correction": "Rust has no truthiness. A condition must have type `bool`, so you compare explicitly, for example `count != 0`.",
+    "misconception": "“`if count` works on numbers; Rust just treats `0` as false, like JavaScript.”",
+    "traceSteps": [
+      {
+        "detail": "`stock_label` asks three exact questions with patterns: is it `0`, is it in `1..=4`, or is it anything else.",
+        "title": "Name each condition"
+      },
+      {
+        "detail": "Every `match` arm yields a `String`. The `urgent` expression yields a `&str` from both branches, so each expression has one type.",
+        "title": "Check the types"
+      },
+      {
+        "detail": "Run it: `sold out | only 3 left | in stock`, then `urgent: yes`. Delete the `_` arm and rustc reports E0004 for the values from 5 up to `u32::MAX`.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Add `fn describe(text: &str) -> &'static str` that returns `\"blank\"` for `\"\"` and for `\"   \"`, and `\"text\"` otherwise. In JavaScript `\"   \"` is truthy; decide which method expresses \"blank\" in Rust and why."
+  },
+  "exerciseKind": "runnable",
+  "id": "node-truthiness-to-bool-and-match",
+  "minutes": 10,
+  "order": 4,
+  "parentID": "node-values",
+  "title": "Truthiness vs bool, if and match",
+  "writing": {
+    "answers": [
+      "`count > 0` is not a valid condition",
+      "The branches produce different types: an integer and a `&str`",
+      "`if` cannot appear on the right-hand side of `let`"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "`match` with a range covers every `u32`, and the `if` expression yields a `&str` from either branch.",
+    "exampleCode": "fn stock_label(count: u32) -> String {\n    match count {\n        0 => String::from(\"sold out\"),\n        1..=4 => format!(\"only {count} left\"),\n        _ => String::from(\"in stock\"),\n    }\n}\n\nfn main() {\n    let count = 3;\n    let urgent = if count > 0 && count < 5 { \"yes\" } else { \"no\" };\n    println!(\"{} | {} | {}\", stock_label(0), stock_label(count), stock_label(12));\n    println!(\"urgent: {urgent}\");\n}",
+    "explanation": "`if (!count)` mixes several questions: is it `0`, `NaN`, `\"\"`, `null` or `undefined`? Rust refuses to guess. `if count` with an integer is E0308, expected `bool`, found integer, so you write the question you mean: `count == 0`, `text.is_empty()`, `value.is_none()`. There is no `==` versus `===` either. `==` compares two values of compatible types through `PartialEq` and never converts, so `0 == \"\"` does not compile.\n\n`if` is an expression, which replaces both the statement form and the ternary. `let urgent = if count > 0 && count < 5 { \"yes\" } else { \"no\" };` works because both branches are `&str`. If one branch yields a number and the other text, the expression has no single type and rustc rejects it. An `if` without `else` has type `()`, so it can only stand as a statement.\n\n`match` is the tool for several cases of one value. Patterns can be literals, ranges such as `1..=4`, or `_` for everything else, and the compiler checks that the arms cover every possible value. For a `u32`, the arms `0`, `1..=4` and `_` are exhaustive, so no input can fall through, unlike a `switch` without `default`.\n\n`&&` and `||` short-circuit as in JavaScript, but they accept and return only `bool`. There is no `a || b` default trick; that job belongs to `Option` methods such as `unwrap_or`, covered in the lesson on `null` and `undefined`.",
+    "feedback": "An `if` expression has one type. Return `count.to_string()` from the first branch and `String::from(\"none\")` from the second, or a number from both.",
+    "practiceCode": "fn main() {\n    let count = 3;\n    if count {\n        println!(\"in stock\");\n    }\n}",
+    "question": "Why does `let label = if count > 0 { count } else { \"none\" };` not compile?",
+    "recall": [
+      {
+        "answer": "E0308: the condition must be a `bool`, and a `String` is not one. Ask the exact question, such as `if !name.is_empty()`. Rust never converts a string, a number or an `Option` to a boolean.",
+        "code": "let name = String::new();\nif name {\n    println!(\"named\");\n}",
+        "question": "What is the error, and what is the fix?"
+      },
+      {
+        "answer": "`100..=255`. rustc rejects the `match` with E0004 and names that range. Add an arm for it or a `_` arm: a `match` must cover every value of the type.",
+        "code": "let n: u8 = 7;\nlet size = match n {\n    0 => \"zero\",\n    1..=9 => \"digit\",\n    10..=99 => \"two digits\",\n};",
+        "question": "Which values of `n: u8` are not covered by this `match`?"
+      }
+    ],
+    "rule": "`if` requires a `bool`, and every branch of an `if` or `match` expression must produce the same type.",
+    "success": "The local compiler accepts the changed solution and the separate verification harness passes every case, including `0` and exactly `100`. Printing a success message alone does not complete this lab.",
+    "summary": "Rust has no truthy or falsy values: a condition must be a `bool`, and `if` and `match` are expressions whose branches share one type.",
+    "task": "Port the JavaScript `fee` shown at the top of solution.rs. A zero amount is free, members pay no fee, and other amounts pay a fee of 2 when the amount is at least 100 and 5 below that. Write every condition as an explicit `bool`. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise."
+  },
+  "illustration": {
+    "path": "media/node-truthiness-to-bool-and-match.png",
+    "alt": "Side-by-side comparison: the JavaScript (Node.js) version on the left, the Rust version on the right, then 4 rows naming what changes.",
+    "caption": "Truthiness vs bool, if and match: the same task in JavaScript (Node.js) and in Rust, with the differences that matter."
+  },
+  "contentDigest": "ae501a522a7d2b0e92bd5b6194720dc7e09160871642916b530db0ca4bde5a4f"
+}

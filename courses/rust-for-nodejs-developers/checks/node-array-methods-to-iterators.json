@@ -1,0 +1,51 @@
+{
+  "challenge": {
+    "expectedOutput": "PASS node-array-methods-to-iterators\n",
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ],
+    "lessonID": "node-array-methods-to-iterators",
+    "patternID": "node-array-methods-to-iterators",
+    "projectName": "node-array-methods-to-iterators-lab",
+    "requiredSourceFragments": [
+      "pub fn first_price_over"
+    ],
+    "source": "// JavaScript original:\n// function firstPriceOver(items, limit, priceOf) {\n//   return items.map(priceOf).find((p) => p > limit);\n// }\n// Array.prototype.map calls priceOf for every item before find runs.\n// Keep the Rust version lazy: stop calling price_of after the first match.\npub fn first_price_over(items: &[u32], limit: u32, price_of: impl FnMut(u32) -> u32) -> Option<u32> {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationCases": [
+      {
+        "expectedAnswer": "(Some(9), 3)",
+        "input": "first_price_over(&[1, 5, 9, 12], 6, identity): result and calls",
+        "kind": "visible"
+      },
+      {
+        "expectedAnswer": "(None, 0)",
+        "input": "first_price_over(&[], 6, identity): result and calls",
+        "kind": "boundary"
+      },
+      {
+        "expectedAnswer": "(None, 3)",
+        "input": "first_price_over(&[2, 6, 4], 6, identity): a price equal to the limit is not over it",
+        "kind": "boundary"
+      },
+      {
+        "expectedAnswer": "(Some(14), 2)",
+        "input": "first_price_over(&[3, 7, 100], 10, double): result and calls",
+        "kind": "semantic"
+      }
+    ],
+    "verificationSource": "mod solution;\n\nfn main() {\n    let mut calls = 0;\n    let found = solution::first_price_over(&[1, 5, 9, 12], 6, |x| { calls += 1; x });\n    assert_eq!((found, calls), (Some(9), 3), \"case 1\");\n\n    let mut calls = 0;\n    let found = solution::first_price_over(&[], 6, |x| { calls += 1; x });\n    assert_eq!((found, calls), (None, 0), \"case 2\");\n\n    let mut calls = 0;\n    let found = solution::first_price_over(&[2, 6, 4], 6, |x| { calls += 1; x });\n    assert_eq!((found, calls), (None, 3), \"case 3\");\n\n    let mut calls = 0;\n    let found = solution::first_price_over(&[3, 7, 100], 10, |x| { calls += 1; x * 2 });\n    assert_eq!((found, calls), (Some(14), 2), \"case 4\");\n\n    println!(\"PASS node-array-methods-to-iterators\");\n}\n"
+  },
+  "evidence": {
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS node-array-methods-to-iterators\n"
+    },
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ],
+    "kind": "algorithmChallenge",
+    "requiredSourceFragments": [
+      "pub fn first_price_over"
+    ]
+  }
+}

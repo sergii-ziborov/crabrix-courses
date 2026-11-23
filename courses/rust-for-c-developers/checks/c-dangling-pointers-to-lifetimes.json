@@ -1,0 +1,73 @@
+{
+  "challenge": {
+    "lessonID": "c-dangling-pointers-to-lifetimes",
+    "patternID": "c-dangling-pointers-to-lifetimes",
+    "projectName": "c-dangling-pointers-to-lifetimes-lab",
+    "source": "// C original:\n// /* Points just past `prefix` inside `line`, or NULL. Never points into `prefix`. */\n// const char *after_prefix(const char *line, const char *prefix) {\n//     size_t n = strlen(prefix);\n//     return strncmp(line, prefix, n) == 0 ? line + n : NULL;\n// }\n// const char *longer(const char *a, const char *b) { return strlen(a) >= strlen(b) ? a : b; }\npub fn after_prefix<'a>(line: &'a str, prefix: &str) -> Option<&'a str> {\n    todo!(\"implement the contract\")\n}\n\npub fn longer<'a>(a: &'a str, b: &'a str) -> &'a str {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationSource": "mod solution;\n\nfn main() {\n    let line = String::from(\"key=value\");\n    let rest = {\n        let prefix = String::from(\"key=\");\n        solution::after_prefix(&line, &prefix)\n    }; // prefix is gone; rest borrows only from line\n    assert_eq!(rest, Some(\"value\"), \"case 1\");\n    assert_eq!(solution::after_prefix(\"key\", \"key=\"), None, \"case 2\");\n    assert_eq!(solution::after_prefix(\"key=\", \"key=\"), Some(\"\"), \"case 3\");\n    assert_eq!(solution::after_prefix(\"café=1\", \"café=\"), Some(\"1\"), \"case 4\");\n    assert_eq!(solution::after_prefix(\"value\", \"key=\"), None, \"case 5\");\n    assert_eq!(solution::longer(\"abc\", \"de\"), \"abc\", \"case 6\");\n    assert_eq!(solution::longer(\"ab\", \"cd\"), \"ab\", \"case 7: a tie returns a\");\n    assert_eq!(solution::longer(\"\", \"x\"), \"x\", \"case 8\");\n\n    println!(\"PASS c-dangling-pointers-to-lifetimes\");\n}\n",
+    "verificationCases": [
+      {
+        "kind": "visible",
+        "input": "solution::after_prefix(\"key=value\", \"key=\") with prefix dropped",
+        "expectedAnswer": "Some(\"value\")"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::after_prefix(\"key\", \"key=\")",
+        "expectedAnswer": "None"
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::after_prefix(\"key=\", \"key=\")",
+        "expectedAnswer": "Some(\"\")"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::after_prefix(\"café=1\", \"café=\")",
+        "expectedAnswer": "Some(\"1\")"
+      },
+      {
+        "kind": "semantic",
+        "input": "solution::after_prefix(\"value\", \"key=\")",
+        "expectedAnswer": "None"
+      },
+      {
+        "kind": "visible",
+        "input": "solution::longer(\"abc\", \"de\")",
+        "expectedAnswer": "\"abc\""
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::longer(\"ab\", \"cd\")",
+        "expectedAnswer": "\"ab\""
+      },
+      {
+        "kind": "boundary",
+        "input": "solution::longer(\"\", \"x\")",
+        "expectedAnswer": "\"x\""
+      }
+    ],
+    "expectedOutput": "PASS c-dangling-pointers-to-lifetimes\n",
+    "requiredSourceFragments": [
+      "pub fn after_prefix",
+      "pub fn longer"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  },
+  "evidence": {
+    "kind": "algorithmChallenge",
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS c-dangling-pointers-to-lifetimes\n"
+    },
+    "requiredSourceFragments": [
+      "pub fn after_prefix",
+      "pub fn longer"
+    ],
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ]
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "bridge": {
+    "contrasts": [
+      {
+        "from": "`\"café\".length` is `4` UTF-16 code units.",
+        "rust": "`\"café\".len()` is `5` UTF-8 bytes, and `chars().count()` is `4`."
+      },
+      {
+        "from": "`\"👍\".length` is `2`: a surrogate pair.",
+        "rust": "`\"👍\".len()` is `4` and `\"👍\".chars().count()` is `1`."
+      },
+      {
+        "from": "`text[0]` returns the first code unit, possibly half a character.",
+        "rust": "`text[0]` does not compile; use `text.chars().next()`."
+      },
+      {
+        "from": "`slice(0, n)` can cut a surrogate pair in half.",
+        "rust": "`&text[..n]` panics off a character boundary, and `text.get(..n)` returns `None`."
+      }
+    ],
+    "credits": [
+      "basics/strings",
+      "basics/chars-and-text"
+    ],
+    "from": "javascript",
+    "fromCaption": "`length` and `slice` count UTF-16 code units, so truncating emoji keeps half a surrogate pair.",
+    "fromCode": "const word = \"café\";\nconst thumbs = \"👍\";\n\nconsole.log(word.length, thumbs.length, [...thumbs].length);\nconsole.log(Buffer.byteLength(word), Buffer.byteLength(thumbs));\n\nfunction truncate(text, max) {\n  return text.length <= max ? text : text.slice(0, max - 1) + \"…\";\n}\nconsole.log(truncate(\"👍👍👍\", 2)); // keeps half a surrogate pair",
+    "fromLabel": "JavaScript (Node.js)"
+  },
+  "concept": "UTF-8 bytes, chars and lengths",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Keyed data with HashMap and entry",
+        "direction": "previous",
+        "title": "Objects and Map vs HashMap"
+      },
+      {
+        "concept": "Moves instead of shared references",
+        "direction": "next",
+        "title": "Shared references vs ownership"
+      }
+    ],
+    "correction": "`len()` counts UTF-8 bytes. Count Unicode scalar values with `chars().count()`, and remember that even that is not a count of user-perceived characters.",
+    "misconception": "“`len()` is the number of characters, like `.length`.”",
+    "traceSteps": [
+      {
+        "detail": "`\"café\"` has 4 scalar values and 5 UTF-8 bytes; JavaScript reports 4 UTF-16 code units. `\"👍\"` has 1 scalar value, 4 bytes and 2 code units.",
+        "title": "Measure three ways"
+      },
+      {
+        "detail": "`word.get(0..4)` asks for bytes 0 to 3. Byte 3 is the first of the two bytes of `é`, so the range would split a character and `get` returns `None`.",
+        "title": "Check the slice"
+      },
+      {
+        "detail": "Run it: `5 4 1`, `None`, then `👍…`. JavaScript's `truncate` printed a replacement character because it kept half a surrogate pair.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Print `\"👍🏽\".len()`, `\"👍🏽\".chars().count()` and the `char`s themselves with `{:?}`. Then predict JavaScript's `\"👍🏽\".length` and `[...\"👍🏽\"].length` before you check them in Node."
+  },
+  "exerciseKind": "runnable",
+  "id": "node-utf16-strings-to-utf8",
+  "minutes": 12,
+  "order": 5,
+  "parentID": "node-data",
+  "title": "UTF-16 strings vs UTF-8 String",
+  "writing": {
+    "answers": [
+      "`4`, the number of characters",
+      "`5`, the number of UTF-8 bytes",
+      "`8`, the number of UTF-16 bytes"
+    ],
+    "correctAnswer": 1,
+    "exampleCaption": "Byte length, scalar count and a checked slice: `get(0..4)` is `None` because byte 4 falls inside `é`.",
+    "exampleCode": "fn truncate(text: &str, max: usize) -> String {\n    if text.chars().count() <= max {\n        return text.to_string();\n    }\n    let kept: String = text.chars().take(max.saturating_sub(1)).collect();\n    kept + \"…\"\n}\n\nfn main() {\n    let word = \"café\";\n    let thumbs = \"👍\";\n    println!(\"{} {} {}\", word.len(), thumbs.len(), thumbs.chars().count());\n    println!(\"{:?}\", word.get(0..4));\n    println!(\"{}\", truncate(\"👍👍👍\", 2));\n}",
+    "explanation": "A JavaScript string is a sequence of UTF-16 code units. `\"café\".length` is `4`, but `\"👍\".length` is `2`, because the emoji needs a surrogate pair, while `[...\"👍\"].length` is `1` because the string iterator walks code points. Indexing and `slice` work on code units, so `\"👍👍👍\".slice(0, 1)` returns half a character and the truncated output prints a replacement character.\n\nA Rust `String`, like a borrowed `&str`, is UTF-8. `len()` is the byte length: `\"café\".len()` is `5` because `é` takes two bytes, and `\"👍\".len()` is `4`. `chars()` yields `char` values, which are Unicode scalar values, so `\"👍\".chars().count()` is `1`. Neither number counts characters as a reader sees them: `\"👍🏽\"` is one grapheme but two scalar values, and grapheme segmentation needs a crate such as `unicode-segmentation`.\n\nBecause a byte offset may fall inside a character, `text[0]` does not compile at all. Slicing by a byte range is allowed but panics if a bound is not on a character boundary, while `text.get(0..4)` returns `None` instead. For the first character use `text.chars().next()`, and for the first n characters `text.chars().take(n).collect::<String>()`.\n\nCase conversion works on characters too. `char::to_uppercase` returns an iterator because one character can become several: `ß` becomes `SS`, the same answer JavaScript's `toUpperCase` gives. `flat_map(char::to_uppercase)` collects them all.",
+    "feedback": "`len()` is the byte length of the UTF-8 encoding. `é` (U+00E9) takes two bytes, so the total is 5.",
+    "practiceCode": "fn main() {\n    let word = String::from(\"café\");\n    let first = word[0];\n    println!(\"{first}\");\n}",
+    "question": "What does `\"café\".len()` return in Rust, where JavaScript's `\"café\".length` is `4`?",
+    "recall": [
+      {
+        "answer": "Byte 1 is inside `é`, which takes two bytes, so the slice would split a character and panics at runtime. Use `name.chars().next()` for the first `char`, or `name.get(..1)`, which returns `None` instead of panicking.",
+        "code": "let name = \"élodie\";\nlet first = &name[..1];\nprintln!(\"{first}\");",
+        "question": "Why does this panic, and what is a safe replacement?"
+      },
+      {
+        "answer": "`4` UTF-8 bytes, `1` Unicode scalar value and `2` UTF-16 code units. None of them counts graphemes: a skin-tone emoji such as `👍🏽` is one grapheme but two scalar values.",
+        "question": "For `s = \"👍\"`, what are `s.len()`, `s.chars().count()` and JavaScript's `s.length`?"
+      }
+    ],
+    "rule": "`len()` counts UTF-8 bytes and `chars().count()` counts Unicode scalar values; neither counts graphemes, and a `String` cannot be indexed by position.",
+    "success": "The local compiler accepts the changed solution and the separate verification harness passes every case, including accented and non-BMP initials, `ß` and extra spaces. Printing a success message alone does not complete this lab.",
+    "summary": "JavaScript strings count UTF-16 code units; a Rust `String` is UTF-8, `len()` counts bytes and `chars()` yields Unicode scalar values.",
+    "task": "Port the JavaScript `initials` shown at the top of solution.rs. Take the first character of each whitespace-separated word and uppercase it, without byte indexing, so names such as `élodie durand` and `𝒜da lovelace` work. In the Crabrix app, open the compiler lab and complete the supplied function in solution.rs. The reading question is a separate exercise."
+  },
+  "illustration": {
+    "path": "media/node-utf16-strings-to-utf8.png",
+    "alt": "Side-by-side comparison: the JavaScript (Node.js) version on the left, the Rust version on the right, then 4 rows naming what changes.",
+    "caption": "UTF-16 strings vs UTF-8 String: the same task in JavaScript (Node.js) and in Rust, with the differences that matter."
+  },
+  "contentDigest": "f79923c2978decc6db6c9bf8c973c98853fc2589d4a1b3f3daadb7b3e409e63a"
+}

@@ -29,6 +29,17 @@ The [Constellation Generator 1.0.4 verification](https://github.com/sergii-zibor
 
 The corrected Printing Values graphic has an editable SVG source at `artwork/print-formatting.svg`; `courses/basics/media/print-formatting.png` is its packaged raster export.
 
+## Language bridges — 23 November 2026
+
+**Rust for C Developers** and **Rust for Node.js Developers** (17 lessons each) show
+the code a C or JavaScript/TypeScript developer writes today next to the Rust
+version, list exactly what changes, and mostly end in a compiled port challenge.
+Each lesson credits the Academy lessons it already taught and checked, so an
+experienced developer can skip them; the app shows them as "Known from C" or
+"Known from Node.js". [Contract](editorial/bridges_20261123/SPEC.md) ·
+[C credits](editorial/bridges_20261123/rust-for-c-developers/CREDITS.md) ·
+[Node.js credits](editorial/bridges_20261123/rust-for-nodejs-developers/CREDITS.md).
+
 ## Engineering workflow route — 7 November 2026
 
 The current authored snapshot has **798 lessons/stages: 198 Rust + 600 Atlas**.

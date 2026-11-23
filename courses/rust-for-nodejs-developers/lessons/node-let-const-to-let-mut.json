@@ -1,0 +1,102 @@
+{
+  "bridge": {
+    "contrasts": [
+      {
+        "from": "`const tags = []; tags.push(\"rust\")` is allowed.",
+        "rust": "`let tags = Vec::new(); tags.push(\"rust\")` is E0596; declare `let mut tags`."
+      },
+      {
+        "from": "`let count = 1; count += 1` reassigns.",
+        "rust": "`count += 1` needs `let mut count`; plain `let` rejects the second assignment with E0384."
+      },
+      {
+        "from": "Redeclaring `let input` in the same scope is a `SyntaxError`.",
+        "rust": "`let input = input.trim();` shadows: a new binding, possibly of a new type."
+      },
+      {
+        "from": "`const` is a runtime binding.",
+        "rust": "Rust's `const` is a typed compile-time constant, such as `const MAX: u32 = 3;`."
+      }
+    ],
+    "credits": [
+      "basics/variables"
+    ],
+    "from": "javascript",
+    "fromCaption": "`const` only stops rebinding, so the array still changes, and `input` turns from a string into a number under the same name.",
+    "fromCode": "const tags = [];\ntags.push(\"rust\");          // allowed: const stops rebinding, not mutation\nlet count = tags.length;\ncount += 1;\n\nlet input = \"  42 \";\ninput = Number(input.trim()); // same name, now a number\nconsole.log(tags, count, input + 1);",
+    "fromLabel": "JavaScript (Node.js)"
+  },
+  "concept": "Immutable bindings, mut and shadowing",
+  "depth": {
+    "connections": [
+      {
+        "concept": "Compile-time checked formatting",
+        "direction": "previous",
+        "title": "console.log vs println!"
+      },
+      {
+        "concept": "Explicit numeric types and overflow",
+        "direction": "next",
+        "title": "Number vs Rust integer types"
+      }
+    ],
+    "correction": "A binding without `mut` cannot change its value at all, including through methods that take `&mut self`. Declare `let mut tags`; types such as `RefCell` that allow change behind a shared reference are a separate, explicit tool.",
+    "misconception": "“Plain `let` is like `const`: the binding is fixed, but the vector inside can still change.”",
+    "traceSteps": [
+      {
+        "detail": "`tags` and `count` are `let mut` because they change. `input` is never mutated: it is declared twice.",
+        "title": "Read the bindings"
+      },
+      {
+        "detail": "The second `let input: i32` reads the first `input`, a `&str`, on its right-hand side and then hides it. From that line on, `input` is an `i32`.",
+        "title": "Follow the shadow"
+      },
+      {
+        "detail": "Run it: `[\"rust\"] 2 43`. Remove `mut` from `tags` and rustc reports E0596 at the `push`, pointing at the declaration.",
+        "title": "Compare with evidence"
+      }
+    ],
+    "transferChallenge": "Write `let x = 5; let x = x * 2; { let x = \"inner\"; println!(\"{x}\"); } println!(\"{x}\");` and predict both lines before running it. Then replace the second `let x = x * 2` with `x = x * 2` and read the error."
+  },
+  "exerciseKind": "planned",
+  "id": "node-let-const-to-let-mut",
+  "minutes": 8,
+  "order": 1,
+  "parentID": "node-values",
+  "title": "const and let vs let and let mut",
+  "writing": {
+    "answers": [
+      "It compiles, but the push panics because the vector is frozen",
+      "It compiles, exactly like `const tags = []; tags.push(\"rust\")`",
+      "rustc rejects the push: without `mut`, the binding cannot be used to change the vector"
+    ],
+    "correctAnswer": 2,
+    "exampleCaption": "`mut` marks what changes, and the second `let input` shadows the text with an `i32`.",
+    "exampleCode": "fn main() {\n    let mut tags = Vec::new();\n    tags.push(\"rust\");\n    let mut count = tags.len();\n    count += 1;\n\n    let input = \"  42 \";\n    let input: i32 = input.trim().parse().expect(\"a literal number\");\n    println!(\"{tags:?} {count} {}\", input + 1);\n}",
+    "explanation": "In JavaScript, `const` protects the binding, not the value: `const tags = []` can still `push`. Rust's `let` protects both. Without `mut` you cannot assign a new value, and you cannot call a method that needs `&mut self`, such as `Vec::push`. `let mut` is the explicit opt-in, so a reader finds every binding that changes by scanning for `mut`.\n\nRust also has `const`, but it means something else: a compile-time constant with a mandatory type, such as `const MAX_RETRIES: u32 = 3;`, which may live at module level. It is closer to a named literal that the compiler inlines than to a JavaScript `const` binding.\n\nShadowing replaces the common `let input = ...; input = Number(input)` pattern. A second `let input` declares a new binding that hides the first one for the rest of the scope, and it may have a different type, so `let input: i32 = input.trim().parse()?` turns text into a number without inventing `inputText` and `inputNumber`. The old value is not mutated; it is simply no longer reachable by that name. In JavaScript, declaring `let input` twice in one scope is a `SyntaxError`.\n\nMutability belongs to the binding, not to the type. Moving a value into a `let mut` binding makes it mutable there, and lending it out as `&mut` requires the owner to be `mut`. That is why the error for the practice code points at the declaration and suggests `let mut tags`.",
+    "feedback": "`push` takes `&mut self`, and a binding declared without `mut` cannot lend that out. rustc reports E0596 at compile time.",
+    "practiceCode": "fn main() {\n    let tags = Vec::new();\n    tags.push(\"rust\");\n    println!(\"{tags:?}\");\n}",
+    "question": "Which statement about `let tags = Vec::new(); tags.push(\"rust\");` is true?",
+    "recall": [
+      {
+        "answer": "`count` was declared without `mut`, so it cannot be assigned a second time: E0384. rustc suggests `let mut count = 1;`. Plain `let` behaves like a `const` binding whose value also cannot change.",
+        "code": "let count = 1;\ncount += 1;",
+        "question": "Why is the second line rejected, and what does rustc suggest?"
+      },
+      {
+        "answer": "The first declares a new binding that shadows the old one; it may have a different type, and the original binding is left untouched. The second assigns into the same mutable binding, so the new value must have the same type as the old one.",
+        "question": "How is `let input = input.trim();` different from `input = input.trim();` on a `let mut input`?"
+      }
+    ],
+    "rule": "`let` is immutable, `let mut` permits change, and a new `let` with the same name shadows the old binding.",
+    "success": "You can tell which bindings change by reading the `let` lines alone, and you predicted E0596 before compiling.",
+    "summary": "Rust's plain `let` is stricter than `const`: without `mut` you can neither reassign the binding nor change the value through it.",
+    "task": "Fix the practice code with one keyword, then add `let tags = tags.len();` after the push and print it. Explain why that shadowing line compiles even though `tags` was a `Vec` a moment earlier."
+  },
+  "illustration": {
+    "path": "media/node-let-const-to-let-mut.png",
+    "alt": "Side-by-side comparison: the JavaScript (Node.js) version on the left, the Rust version on the right, then 4 rows naming what changes.",
+    "caption": "const and let vs let and let mut: the same task in JavaScript (Node.js) and in Rust, with the differences that matter."
+  },
+  "contentDigest": "55006c531945062bd71655ea320a0ab9a30f55240a3b2d93726778d9aec18924"
+}

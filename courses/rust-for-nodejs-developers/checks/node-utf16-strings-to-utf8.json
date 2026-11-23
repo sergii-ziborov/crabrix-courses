@@ -1,0 +1,61 @@
+{
+  "challenge": {
+    "expectedOutput": "PASS node-utf16-strings-to-utf8\n",
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ],
+    "lessonID": "node-utf16-strings-to-utf8",
+    "patternID": "node-utf16-strings-to-utf8",
+    "projectName": "node-utf16-strings-to-utf8-lab",
+    "requiredSourceFragments": [
+      "pub fn initials"
+    ],
+    "source": "// JavaScript original:\n// function initials(name) {\n//   return name.split(\" \").filter(Boolean)\n//     .map((part) => part[0].toUpperCase()).join(\"\");\n// }\n// part[0] is one UTF-16 code unit, so it breaks on characters outside the BMP.\npub fn initials(name: &str) -> String {\n    todo!(\"implement the contract\")\n}\n",
+    "verificationCases": [
+      {
+        "expectedAnswer": "\"AL\"",
+        "input": "solution::initials(\"ada lovelace\")",
+        "kind": "visible"
+      },
+      {
+        "expectedAnswer": "\"GH\"",
+        "input": "solution::initials(\"  grace   hopper \")",
+        "kind": "boundary"
+      },
+      {
+        "expectedAnswer": "\"ÉD\"",
+        "input": "solution::initials(\"élodie durand\")",
+        "kind": "semantic"
+      },
+      {
+        "expectedAnswer": "\"𝒜L\"",
+        "input": "solution::initials(\"𝒜da lovelace\")",
+        "kind": "semantic"
+      },
+      {
+        "expectedAnswer": "\"SSX\"",
+        "input": "solution::initials(\"ßen x\")",
+        "kind": "semantic"
+      },
+      {
+        "expectedAnswer": "\"\"",
+        "input": "solution::initials(\"\")",
+        "kind": "boundary"
+      }
+    ],
+    "verificationSource": "mod solution;\n\nfn main() {\n    assert_eq!(solution::initials(\"ada lovelace\"), \"AL\", \"case 1\");\n    assert_eq!(solution::initials(\"  grace   hopper \"), \"GH\", \"case 2\");\n    assert_eq!(solution::initials(\"élodie durand\"), \"ÉD\", \"case 3\");\n    assert_eq!(solution::initials(\"𝒜da lovelace\"), \"𝒜L\", \"case 4\");\n    assert_eq!(solution::initials(\"ßen x\"), \"SSX\", \"case 5\");\n    assert_eq!(solution::initials(\"\"), \"\", \"case 6\");\n\n    println!(\"PASS node-utf16-strings-to-utf8\");\n}\n"
+  },
+  "evidence": {
+    "expectedOutput": {
+      "kind": "exact",
+      "value": "PASS node-utf16-strings-to-utf8\n"
+    },
+    "forbiddenSourceFragments": [
+      "todo!(\"implement the contract\")"
+    ],
+    "kind": "algorithmChallenge",
+    "requiredSourceFragments": [
+      "pub fn initials"
+    ]
+  }
+}
