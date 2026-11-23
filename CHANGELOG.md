@@ -1,3 +1,13 @@
+## 2026-11-23 — "Rust at a glance" and "What Rust Is"
+
+Both bridge courses (1.0.1) now open with a theory unit on how Rust differs in
+general: compiled ahead of time to a native executable, no garbage collector or
+built-in runtime, what safe Rust rules out and what it does not, and how to read
+rustc diagnostics. Rust Basics 1.0.10 starts with a new lesson, "What Rust Is";
+Foundations lessons move down one place, with IDs, questions and answers unchanged.
+All new code was checked with rustc 1.89.0 and 1.100.0, clang and sanitizers,
+Node.js 22 and `tsc --strict`.
+
 ## 2026-11-23 — Rust for C Developers and Rust for Node.js Developers
 
 Two new courses, 17 lessons each, put one habit from C or from JavaScript/TypeScript

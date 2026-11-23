@@ -7,9 +7,12 @@
   "wasmRustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
   "clang": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
   "summary": {
-    "lessons": 17,
+    "lessons": 20,
     "runnable": 13,
     "correctAnswerPositions": [
+      1,
+      3,
+      0,
       2,
       1,
       0,
@@ -28,25 +31,262 @@
       0,
       3
     ],
-    "credits": 30,
+    "credits": 32,
     "perToolchain": {
       "1.89.0": {
-        "compiledAndRan": 66,
-        "expectedCompileErrors": 24,
+        "compiledAndRan": 73,
+        "expectedCompileErrors": 32,
         "expectedPanics": 3,
         "wrongPortsRejected": 21
       },
       "1.100.0": {
-        "compiledAndRan": 66,
-        "expectedCompileErrors": 24,
+        "compiledAndRan": 73,
+        "expectedCompileErrors": 32,
         "expectedPanics": 3,
         "wrongPortsRejected": 21
       }
     },
-    "cPrograms": 17,
-    "sanitizerFindings": 8
+    "cPrograms": 20,
+    "sanitizerFindings": 9
   },
   "lessons": [
+    {
+      "id": "c-what-rust-is",
+      "exerciseKind": "planned",
+      "credits": [
+        "basics/what-is-rust"
+      ],
+      "example": {
+        "1.89.0": "compiled without warnings, stdout matched",
+        "1.100.0": "compiled without warnings, stdout matched"
+      },
+      "practice": {
+        "1.89.0": {
+          "errors": [
+            "E0505"
+          ]
+        },
+        "1.100.0": {
+          "errors": [
+            "E0505"
+          ]
+        }
+      },
+      "recall": {
+        "1 1.89.0": {
+          "errors": [
+            "E0505"
+          ]
+        },
+        "1 1.100.0": {
+          "errors": [
+            "E0505"
+          ]
+        }
+      },
+      "probes": {},
+      "native": {
+        "exampleBinary": "Mach-O 64-bit executable arm64",
+        "rustcBackend": "LLVM version: 23.1.5"
+      },
+      "c": {
+        "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
+        "warnings": [],
+        "binary": "Mach-O 64-bit executable arm64",
+        "exit": 0,
+        "stdout": "1 10 2 8\n"
+      }
+    },
+    {
+      "id": "c-what-safe-rust-rules-out",
+      "exerciseKind": "planned",
+      "credits": [],
+      "example": {
+        "1.89.0": "compiled without warnings, stdout matched",
+        "1.100.0": "compiled without warnings, stdout matched"
+      },
+      "practice": {
+        "1.89.0": {
+          "errors": [
+            "E0381"
+          ]
+        },
+        "1.100.0": {
+          "errors": [
+            "E0381"
+          ]
+        }
+      },
+      "recall": {
+        "1 1.89.0": {
+          "stdout": "done\n"
+        },
+        "1 1.100.0": {
+          "stdout": "done\n"
+        }
+      },
+      "probes": {
+        "index-panics 1.89.0": {
+          "panic": "index out of bounds: the len is 3 but the index is 3"
+        },
+        "double-owner-rejected 1.89.0": {
+          "errors": [
+            "E0382"
+          ]
+        },
+        "data-race-rejected 1.89.0": {
+          "errors": [
+            "E0373",
+            "E0503"
+          ]
+        },
+        "static-mut-needs-unsafe 1.89.0": {
+          "errors": [
+            "E0133"
+          ]
+        },
+        "index-panics 1.100.0": {
+          "panic": "index out of bounds: the len is 3 but the index is 3"
+        },
+        "double-owner-rejected 1.100.0": {
+          "errors": [
+            "E0382"
+          ]
+        },
+        "data-race-rejected 1.100.0": {
+          "errors": [
+            "E0373",
+            "E0503"
+          ]
+        },
+        "static-mut-needs-unsafe 1.100.0": {
+          "errors": [
+            "E0133"
+          ]
+        }
+      },
+      "c": {
+        "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
+        "warnings": [],
+        "binary": "Mach-O 64-bit executable arm64",
+        "exit": 0,
+        "stdout": "case 0 done\n",
+        "sanitizerRuns": [
+          {
+            "args": [
+              "1"
+            ],
+            "flags": "address,undefined",
+            "finding": "==71849==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x… at pc 0x… bp 0x… sp 0x…"
+          },
+          {
+            "args": [
+              "2"
+            ],
+            "flags": "address,undefined",
+            "finding": "==71913==ERROR: AddressSanitizer: heap-use-after-free on address 0x… at pc 0x… bp 0x… sp 0x…"
+          },
+          {
+            "args": [
+              "3"
+            ],
+            "flags": "address,undefined",
+            "finding": "from.c:15:36: runtime error: load of null pointer of type 'int'"
+          },
+          {
+            "args": [
+              "4"
+            ],
+            "flags": "address,undefined",
+            "finding": "==72667==ERROR: AddressSanitizer: attempting double-free on 0x… in thread T0:"
+          }
+        ]
+      }
+    },
+    {
+      "id": "c-rustc-diagnostics",
+      "exerciseKind": "planned",
+      "credits": [
+        "basics/compiler-feedback"
+      ],
+      "example": {
+        "1.89.0": "compiled without warnings, stdout matched",
+        "1.100.0": "compiled without warnings, stdout matched"
+      },
+      "practice": {
+        "1.89.0": {
+          "errors": [
+            "E0382"
+          ],
+          "messages": [
+            "borrow of moved value: `readings`",
+            "^^^^^^^^ value borrowed here after move",
+            "-------- value moved here",
+            "which does not implement the `Copy` trait",
+            "note: consider changing this parameter type in function `total` to borrow instead",
+            "help: consider cloning the value",
+            "For more information about this error, try `rustc --explain E0382`."
+          ]
+        },
+        "1.100.0": {
+          "errors": [
+            "E0382"
+          ],
+          "messages": [
+            "borrow of moved value: `readings`",
+            "^^^^^^^^ value borrowed here after move",
+            "-------- value moved here",
+            "which does not implement the `Copy` trait",
+            "note: consider changing this parameter type in function `total` to borrow instead",
+            "help: consider cloning the value",
+            "For more information about this error, try `rustc --explain E0382`."
+          ]
+        }
+      },
+      "recall": {
+        "1 1.89.0": {
+          "message": "unused variable: `unused`"
+        },
+        "1 1.100.0": {
+          "message": "unused variable: `unused`"
+        }
+      },
+      "probes": {
+        "uninitialised-is-an-error 1.89.0": {
+          "errors": [
+            "E0381"
+          ]
+        },
+        "warning-does-not-stop-the-build 1.89.0": {
+          "stdout": "ok\n"
+        },
+        "uninitialised-is-an-error 1.100.0": {
+          "errors": [
+            "E0381"
+          ]
+        },
+        "warning-does-not-stop-the-build 1.100.0": {
+          "stdout": "ok\n"
+        }
+      },
+      "explain": {
+        "E0382": "A variable was used after its contents have been moved elsewhere."
+      },
+      "c": {
+        "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
+        "warnings": [
+          "-Wsometimes-uninitialized"
+        ],
+        "binary": "Mach-O 64-bit executable arm64",
+        "exit": 0,
+        "stdout": "12 from 3, first 3\n",
+        "werror": "-Werror rejects the program (-Wsometimes-uninitialized)",
+        "sanitizer": {
+          "flags": "address",
+          "finding": "==72823==ERROR: AddressSanitizer: heap-use-after-free on address 0x… at pc 0x… bp 0x… sp 0x…"
+        }
+      }
+    },
     {
       "id": "c-printf-to-println",
       "exerciseKind": "runnable",
@@ -80,6 +320,7 @@
         "warnings": [
           "-Wformat-insufficient-args"
         ],
+        "binary": "Mach-O 64-bit executable arm64",
         "exit": 0,
         "stdout": "    bolt|007|0x00ff\nbolt    |7\n0\n7 items, 7 left\n"
       },
@@ -158,6 +399,7 @@
       "c": {
         "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
         "warnings": [],
+        "binary": "Mach-O 64-bit executable arm64",
         "exit": 0,
         "stdout": "limit=3 total=126\n"
       }
@@ -199,6 +441,7 @@
         "warnings": [
           "-Wsign-compare"
         ],
+        "binary": "Mach-O 64-bit executable arm64",
         "exit": 0,
         "stdout": "bytes=0 byte=44\n-1 < 3u is 0\n-2147483648\n",
         "sanitizer": {
@@ -296,6 +539,7 @@
       "c": {
         "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
         "warnings": [],
+        "binary": "Mach-O 64-bit executable arm64",
         "exit": 0,
         "stdout": "0 7 10\n-1 0 1\n4 is even\n"
       },
@@ -377,6 +621,7 @@
       "c": {
         "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
         "warnings": [],
+        "binary": "Mach-O 64-bit executable arm64",
         "exit": 0,
         "stdout": "42 23 16 15 8 4 \nsum=108 total=55\nfirst_big=4\n"
       },
@@ -458,11 +703,12 @@
       "c": {
         "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
         "warnings": [],
+        "binary": "Mach-O 64-bit executable arm64",
         "exit": -5,
         "stdout": "",
         "sanitizer": {
           "flags": "address",
-          "finding": "==74277==ERROR: AddressSanitizer: attempting double-free on 0x… in thread T0:"
+          "finding": "==73890==ERROR: AddressSanitizer: attempting double-free on 0x… in thread T0:"
         }
       },
       "challenge": {
@@ -543,11 +789,12 @@
       "c": {
         "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
         "warnings": [],
+        "binary": "Mach-O 64-bit executable arm64",
         "exit": 0,
         "stdout": "1\n",
         "sanitizer": {
           "flags": "address",
-          "finding": "==75143==ERROR: AddressSanitizer: heap-use-after-free on address 0x… at pc 0x… bp 0x… sp 0x…"
+          "finding": "==74780==ERROR: AddressSanitizer: heap-use-after-free on address 0x… at pc 0x… bp 0x… sp 0x…"
         }
       },
       "challenge": {
@@ -606,11 +853,12 @@
         "warnings": [
           "-Wsizeof-array-argument"
         ],
+        "binary": "Mach-O 64-bit executable arm64",
         "exit": 0,
         "stdout": "sizeof xs = 8\nmax = 9\n",
         "sanitizer": {
           "flags": "address",
-          "finding": "==75790==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x… at pc 0x… bp 0x… sp 0x…"
+          "finding": "==75057==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x… at pc 0x… bp 0x… sp 0x…"
         }
       },
       "challenge": {
@@ -686,11 +934,12 @@
       "c": {
         "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
         "warnings": [],
+        "binary": "Mach-O 64-bit executable arm64",
         "exit": 0,
         "stdout": "\u0004\n",
         "sanitizer": {
           "flags": "address",
-          "finding": "==76209==ERROR: AddressSanitizer: heap-use-after-free on address 0x… at pc 0x… bp 0x… sp 0x…"
+          "finding": "==76145==ERROR: AddressSanitizer: heap-use-after-free on address 0x… at pc 0x… bp 0x… sp 0x…"
         }
       },
       "challenge": {
@@ -759,11 +1008,12 @@
       "c": {
         "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
         "warnings": [],
+        "binary": "Mach-O 64-bit executable arm64",
         "exit": -5,
         "stdout": "",
         "sanitizer": {
           "flags": "address",
-          "finding": "==77791==ERROR: AddressSanitizer: attempting double-free on 0x… in thread T0:"
+          "finding": "==77325==ERROR: AddressSanitizer: attempting double-free on 0x… in thread T0:"
         }
       },
       "challenge": {
@@ -835,6 +1085,7 @@
       "c": {
         "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
         "warnings": [],
+        "binary": "Mach-O 64-bit executable arm64",
         "exit": 0,
         "stdout": "visits: 2\nfinal: 2\n"
       },
@@ -897,6 +1148,7 @@
       "c": {
         "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
         "warnings": [],
+        "binary": "Mach-O 64-bit executable arm64",
         "exit": 0,
         "stdout": "key q\nclick at 3,4\nignored\n"
       },
@@ -973,6 +1225,7 @@
       "c": {
         "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
         "warnings": [],
+        "binary": "Mach-O 64-bit executable arm64",
         "exit": 0,
         "stdout": "42 -1(errno=22) -1(errno=0)\n(not set)\n"
       },
@@ -1047,11 +1300,12 @@
         "warnings": [
           "-Wfortify-source"
         ],
+        "binary": "Mach-O 64-bit executable arm64",
         "exit": -5,
         "stdout": "",
         "sanitizer": {
           "flags": "address",
-          "finding": "==80081==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x… at pc 0x… bp 0x… sp 0x…"
+          "finding": "==78854==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x… at pc 0x… bp 0x… sp 0x…"
         }
       },
       "challenge": {
@@ -1118,6 +1372,7 @@
       "c": {
         "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
         "warnings": [],
+        "binary": "Mach-O 64-bit executable arm64",
         "exit": 0,
         "stdout": "12 0\n"
       }
@@ -1180,6 +1435,7 @@
       "c": {
         "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
         "warnings": [],
+        "binary": "Mach-O 64-bit executable arm64",
         "exit": 0,
         "stdout": "6 size=8 tag=7 value=42\n"
       }
@@ -1238,11 +1494,12 @@
       "c": {
         "compiler": "Apple clang version 21.0.0 (clang-2100.3.27.1)",
         "warnings": [],
+        "binary": "Mach-O 64-bit executable arm64",
         "exit": 0,
-        "stdout": "safe_hits=400000 (hits=399458 may be lower)\n",
+        "stdout": "safe_hits=400000 (hits=399248 may be lower)\n",
         "sanitizer": {
           "flags": "thread",
-          "finding": "WARNING: ThreadSanitizer: data race (pid=80832)"
+          "finding": "WARNING: ThreadSanitizer: data race (pid=79371)"
         }
       }
     }

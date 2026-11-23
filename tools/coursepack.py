@@ -207,7 +207,8 @@ def validate_bridge(lesson: dict) -> list[str]:
                        or row[key].count("`") % 2 for key in ("from", "rust"))):
             raise ValueError(f"bridge contrast row: {lid}")
     credits = bridge["credits"]
-    if (not isinstance(credits, list) or not 1 <= len(credits) <= 4
+    # Theory lessons (how Rust differs in general) may credit nothing.
+    if (not isinstance(credits, list) or not 0 <= len(credits) <= 4
             or len(set(credits)) != len(credits)):
         raise ValueError(f"bridge credits: {lid}")
     for target in credits:

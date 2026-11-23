@@ -15,7 +15,11 @@ class PracticalPathTests(unittest.TestCase):
             value = json.loads((ROOT / "courses" / before["course"] / "lessons" / (lid + ".json")).read_text())
             with self.subTest(lesson=lid):
                 self.assertEqual(value["parentID"], before["parentID"])
-                self.assertEqual(value["order"], before["order"])
+                # Basics 1.0.10 (bridges_20261123) inserted "What Rust Is" before
+                # Hello, Rust: Foundations lessons moved down exactly one place.
+                # Progress is keyed by lesson ID, so the shift loses nothing.
+                shift = 1 if before["parentID"] == "foundations" else 0
+                self.assertEqual(value["order"], before["order"] + shift)
                 for field in ["question", "answers", "correctAnswer"]:
                     self.assertEqual(value["writing"][field], before[field])
 

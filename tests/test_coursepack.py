@@ -39,7 +39,7 @@ class CoursePackTests(unittest.TestCase):
                 count += 1
         bridges = sum(len(list((ROOT / "courses" / course / "lessons").glob("*.json")))
                       for course in BRIDGE_COURSES if (ROOT / "courses" / course).is_dir())
-        self.assertEqual(count - bridges, 798)
+        self.assertEqual(count - bridges, 799)
 
     def test_migration_parity_reports_only_authored_constellation_revision(self):
         with tempfile.TemporaryDirectory() as temporary:

@@ -9,7 +9,7 @@ class RecallQuestionTests(unittest.TestCase):
 
     def test_every_lesson_has_its_own_recall_questions(self):
         lessons = [p for p in sorted((ROOT / 'courses').glob('*/lessons/*.json')) if p.parts[-3] != 'examples']
-        self.assertEqual(len([p for p in lessons if not p.parts[-3].startswith('rust-for-')]), 798)
+        self.assertEqual(len([p for p in lessons if not p.parts[-3].startswith('rust-for-')]), 799)
         for path in lessons:
             writing = json.loads(path.read_text())['writing']
             recall = writing.get('recall', [])

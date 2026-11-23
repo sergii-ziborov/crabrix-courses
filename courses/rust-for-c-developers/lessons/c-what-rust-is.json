@@ -1,0 +1,94 @@
+{
+  "concept": "Native code and the same machine, with checks before it runs",
+  "depth": {
+    "traceSteps": [
+      {
+        "title": "Map the toolchain",
+        "detail": "clang → LLVM → linker becomes rustc → LLVM → linker; both produce a native executable you can inspect with `file` or `otool`."
+      },
+      {
+        "title": "Map the memory",
+        "detail": "Stack locals stay stack locals; `malloc`ed objects become `Box`, `Vec` or `String`, each with one owner that frees it."
+      },
+      {
+        "title": "Find the new check",
+        "detail": "Look for the point where the C program relies on a comment or discipline; that is where rustc will ask for a proof."
+      }
+    ],
+    "misconception": "“Rust is safe because it runs in a managed runtime, like Java or C#.”",
+    "correction": "Rust has no managed runtime. Safety comes from compile-time checks of ownership and borrowing; the output is ordinary machine code with C-like performance, and memory is freed at points the compiler inserts, not by a collector.",
+    "transferChallenge": "Build the example with `rustc -O` and the C program with `clang -O2`, then run `file` on both binaries and compare `size_of::<Point>()` with `sizeof(struct point)`.",
+    "connections": [
+      {
+        "direction": "next",
+        "title": "What Safe Rust Rules Out",
+        "concept": "Undefined behaviour excluded, bugs still possible"
+      }
+    ]
+  },
+  "exerciseKind": "planned",
+  "id": "c-what-rust-is",
+  "minutes": 10,
+  "order": 0,
+  "parentID": "c-rust-at-a-glance",
+  "title": "What Rust Is, from C",
+  "writing": {
+    "summary": "Rust compiles to native code like C, with no garbage collector and no virtual machine; what changes is that rustc proves memory safety for safe code before the program runs.",
+    "rule": "Rust is a compiled, statically typed language without a garbage collector: rustc checks types, ownership and borrowing before the program runs, then produces a native executable.",
+    "explanation": "From a C programmer's seat, most of the toolchain looks familiar. `rustc` is an ahead-of-time compiler: it parses and type-checks the program, lowers it to LLVM IR, and LLVM, the same optimiser and code generator family that clang uses, emits machine code that the platform linker turns into an ordinary executable. There is no interpreter, no virtual machine and no garbage collector. The standard library is linked into the binary by default, and its start-up work before `main` is small, comparable to what the C runtime and libc already do; `#![no_std]` code for kernels and microcontrollers drops even that and keeps only `core`.\n\nThe machine model is the same as C's. Locals live in stack frames, `Box`, `Vec` and `String` allocate on the heap through the system allocator, references and raw pointers are addresses, integers have fixed widths, and structs have a size you can ask for: `size_of::<Point>()` is 8, like `sizeof(struct point)`. You reason about performance the way you do in C, and Rust can call C and be called from C.\n\nThe difference is what the compiler checks. Besides static types, rustc tracks ownership (which binding frees each value) and borrowing (which references may read or write it, and for how long). For safe code it proves, before the program runs, that no value is used after it is freed, freed twice, or written while another reference reads it, and that no data race is possible. Those checks happen at compile time and cost nothing at run time; the remaining run-time checks, such as array bounds, are explicit and cheap.\n\nThe price is that rustc rejects programs it cannot prove safe, even some that would happen to work. The C program frees `on_heap` while `alias` still holds its address, and clang accepts any later use of `alias`; the same shape in Rust is error `E0505`, because `on_heap` cannot be moved into `drop` while `alias` still borrows it. When safe Rust cannot express a design, `unsafe` lets you take over specific proofs yourself, as C always required.",
+    "exampleCode": "#[derive(Clone, Copy)]\nstruct Point {\n    x: i32,\n    y: i32,\n}\n\nfn main() {\n    let on_stack = Point { x: 1, y: 2 };  // a stack slot, as in C\n    let mut on_heap = Box::new(on_stack); // heap memory with one owner\n    on_heap.x = 10;\n    let alias = &on_heap;                 // a borrow the compiler tracks\n    println!(\"{} {} {} {}\", on_stack.x, alias.x, alias.y, size_of::<Point>());\n}                                         // the Box is freed here, exactly once\n",
+    "exampleCaption": "The same stack value, heap copy and pointer as in C; the `Box` frees its memory when its owner goes out of scope, and the borrow `alias` is checked.",
+    "practiceCode": "fn main() {\n    let on_heap = Box::new(5);\n    let alias = &on_heap;\n    drop(on_heap); // the C habit: free while a pointer is still in use\n    println!(\"{alias}\");\n}\n",
+    "task": "Compile the practice program, read why rustc refuses it, and say where the equivalent C program would fail instead.",
+    "success": "You can explain that the C version compiles and is undefined at run time, while rustc rejects the Rust version with `E0505` before any code runs.",
+    "question": "Where does Rust's memory safety come from, compared with C?",
+    "answers": [
+      "A garbage collector that frees unreachable memory at run time",
+      "rustc checks types, ownership and borrowing at compile time and then emits a native executable through LLVM",
+      "A virtual machine that checks every pointer access while the program runs",
+      "Every pointer is reference-counted automatically"
+    ],
+    "correctAnswer": 1,
+    "feedback": "The checks are static: rustc proves them while compiling, then produces ordinary machine code. There is no collector, VM or hidden reference counting.",
+    "recall": [
+      {
+        "question": "Does a Rust program need a runtime installed on the target machine, the way Java needs a JVM or JavaScript needs Node.js?",
+        "answer": "No. rustc produces a native executable linked against the platform's C library, as clang does, and the Rust standard library is linked into the binary by default. There is no VM, interpreter or garbage collector to install."
+      },
+      {
+        "question": "Which line does rustc reject, and when?",
+        "code": "fn main() {\n    let v = vec![1, 2, 3];\n    let first = &v[0];\n    drop(v);\n    println!(\"{first}\");\n}",
+        "answer": "`drop(v)`, at compile time: `v` cannot be moved into `drop` while `first` still borrows it (`E0505`). The C equivalent, `free` followed by a read through a stale pointer, compiles and is undefined behaviour at run time."
+      }
+    ]
+  },
+  "bridge": {
+    "from": "c",
+    "fromLabel": "C",
+    "fromCode": "#include <stdio.h>\n#include <stdlib.h>\n\nstruct point { int x, y; };\n\nint main(void) {\n    struct point on_stack = {1, 2};                    /* a stack slot */\n    struct point *on_heap = malloc(sizeof *on_heap);   /* heap, freed by hand */\n    if (!on_heap) return 1;\n    *on_heap = on_stack;\n    on_heap->x = 10;\n    struct point *alias = on_heap;                     /* any pointer may alias */\n    printf(\"%d %d %d %zu\\n\", on_stack.x, alias->x, alias->y, sizeof(struct point));\n    free(on_heap);\n    /* alias still holds the address; nothing stops a later *alias. */\n    return 0;\n}\n",
+    "fromCaption": "Stack value, heap copy and an aliasing pointer; after `free`, nothing stops a later use of `alias`.",
+    "contrasts": [
+      {
+        "from": "clang compiles C ahead of time through LLVM to a native executable.",
+        "rust": "rustc also compiles ahead of time through LLVM to a native executable."
+      },
+      {
+        "from": "No garbage collector; memory is freed by explicit `free` calls.",
+        "rust": "No garbage collector; the compiler inserts the free where the owner goes out of scope."
+      },
+      {
+        "from": "The compiler accepts any pointer use that type-checks.",
+        "rust": "rustc also checks ownership and borrowing, and rejects what it cannot prove safe."
+      }
+    ],
+    "credits": [
+      "basics/what-is-rust"
+    ]
+  },
+  "illustration": {
+    "path": "media/c-what-rust-is.png",
+    "alt": "Side-by-side comparison: the C version on the left, the Rust version on the right, then 3 rows naming what changes.",
+    "caption": "What Rust Is, from C: the same task in C and in Rust, with the differences that matter."
+  },
+  "contentDigest": "d86ba0f7e6d809269bd1dba91161bc3aa77c6c1951d02c0a47346d2e9c24e190"
+}

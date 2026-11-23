@@ -1,0 +1,102 @@
+{
+  "bridge": {
+    "from": "javascript",
+    "fromLabel": "JavaScript (Node.js)",
+    "fromCode": "const registry = new FinalizationRegistry((name) => console.log(`collected ${name}`));\n\nfunction makeBuffers() {\n  const first = { name: \"first\", data: new Array(1000).fill(0) };\n  const second = { name: \"second\", data: new Array(1000).fill(0) };\n  registry.register(first, \"first\");\n  registry.register(second, \"second\");\n  console.log(\"leaving makeBuffers\");\n} // both objects are unreachable now, but nothing is freed yet\n\nmakeBuffers();\nsetTimeout(() => console.log(\"later: the collector decides when, if ever\"), 10);",
+    "fromCaption": "Both objects are unreachable once `makeBuffers` returns, but the collector decides when to free them, and here it never runs before the process exits.",
+    "contrasts": [
+      {
+        "from": "V8 frees an unreachable object whenever its collector runs.",
+        "rust": "A value is dropped at the end of its owner's scope, at a line you can point to."
+      },
+      {
+        "from": "A `FinalizationRegistry` callback may run late or never.",
+        "rust": "`Drop::drop` runs exactly once, when the owner goes away or `drop(value)` is called."
+      },
+      {
+        "from": "Files and sockets need an explicit `close()` or `try/finally`.",
+        "rust": "`File`, `TcpStream` and lock guards release their resource in `Drop`."
+      },
+      {
+        "from": "Collection pauses happen whenever the runtime decides.",
+        "rust": "There is no collector and no collection pause; freeing happens where the scope ends."
+      }
+    ],
+    "credits": [
+      "ownership/drop-order"
+    ]
+  },
+  "concept": "Deterministic drop at the end of scope",
+  "depth": {
+    "misconception": "“Rust frees memory at some later point, like a garbage collector, only faster.”",
+    "correction": "There is no later point. A value is dropped exactly when its owner's scope ends, or when it is passed to `drop`, and the order follows the declarations.",
+    "traceSteps": [
+      {
+        "title": "List the owners",
+        "detail": "`make_buffers` owns `_first`, `_second` and `_pair`, and `_pair` owns two `Noisy` fields. `main` owns `early`."
+      },
+      {
+        "title": "Close the scope",
+        "detail": "At the closing brace of `make_buffers`, `_pair` drops first, `pair.left` and then `pair.right`; then `_second`, then `_first`."
+      },
+      {
+        "title": "Compare with evidence",
+        "detail": "Run it: `leaving make_buffers`, the four drops in that order, `drop early`, then `end of main`. Nothing is left for later."
+      }
+    ],
+    "transferChallenge": "Return `_second` from `make_buffers` and bind it in `main`. Predict where `drop second` moves in the output, and say which owner drops it now.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Node.js runtime vs compiled Rust",
+        "concept": "Ahead-of-time compilation to a native executable"
+      },
+      {
+        "direction": "next",
+        "title": "TypeScript types vs Rust types",
+        "concept": "Types the compiler enforces, and its diagnostics"
+      }
+    ]
+  },
+  "exerciseKind": "planned",
+  "id": "node-no-garbage-collector",
+  "minutes": 10,
+  "order": 1,
+  "parentID": "node-rust-at-a-glance",
+  "title": "Garbage collection vs deterministic drop",
+  "writing": {
+    "summary": "V8's garbage collector frees objects whenever it decides; Rust drops each value at the end of its owner's scope, in an order you can read from the code.",
+    "rule": "At scope end, remaining locals drop in reverse declaration order; struct fields drop in declaration order.",
+    "explanation": "In Node.js, V8's garbage collector frees an object at some point after it becomes unreachable. The language leaves that point open: a `FinalizationRegistry` callback may run late, or not at all before the process exits, which is what the example shows. That is fine for memory, but it is why files, sockets and locks need an explicit `close()`, `try/finally` or `await handle.close()`; a forgotten handle stays open until the collector or the process exit gets to it.\n\nRust has no collector. Every value has one owner, and when the owner goes out of scope the value is dropped right there: its `Drop` implementation runs, then its fields are dropped, then its memory is released. The order is defined. At the end of a scope the remaining locals drop in reverse declaration order, so the last one created is cleaned up first, and inside a struct the fields drop in declaration order. A value that was moved elsewhere is dropped by its new owner instead, exactly once.\n\nBecause cleanup is tied to scope, one mechanism manages every resource. A `File` closes its descriptor in `Drop`, a `MutexGuard` unlocks its mutex, a `TcpStream` closes its socket and a `Vec` frees its buffer. There are no collection pauses and no finalizer threads; the cost of freeing appears at the closing brace where it happens.\n\nTo release something earlier, end its scope or call `drop(value)`, the function `std::mem::drop`, which takes ownership and lets the value go. You never call the `drop` method yourself; rustc rejects that with E0040, because the destructor must run exactly once. Leaks are still possible, for example through `Rc` reference cycles or `std::mem::forget`, but they are explicit choices rather than an accident of the collector's timing.",
+    "exampleCode": "struct Noisy(&'static str);\n\nimpl Drop for Noisy {\n    fn drop(&mut self) {\n        println!(\"drop {}\", self.0);\n    }\n}\n\nstruct Pair {\n    left: Noisy,\n    right: Noisy,\n}\n\nfn make_buffers() {\n    let _first = Noisy(\"first\");\n    let _second = Noisy(\"second\");\n    let _pair = Pair { left: Noisy(\"pair.left\"), right: Noisy(\"pair.right\") };\n    println!(\"leaving make_buffers\");\n}\n\nfn main() {\n    make_buffers();\n    let early = Noisy(\"early\");\n    drop(early);\n    println!(\"end of main\");\n}",
+    "exampleCaption": "The last local drops first, a struct's fields drop in declaration order, and `drop(early)` releases a value before its scope ends.",
+    "task": "Predict the order of all seven lines of the example before running it. Then move `let _second` into an inner block of its own and predict again.",
+    "success": "Your predicted order matches the output, including the two `pair` fields, and you can say where each value's memory is released.",
+    "practiceCode": "struct Connection(&'static str);\n\nimpl Drop for Connection {\n    fn drop(&mut self) {\n        println!(\"closing {}\", self.0);\n    }\n}\n\nfn main() {\n    let conn = Connection(\"db\");\n    conn.drop();\n    println!(\"done\");\n}",
+    "question": "In the example, which message prints right after `leaving make_buffers`?",
+    "answers": [
+      "`drop first`, because `_first` was declared first",
+      "Nothing yet: the memory is freed later, whenever the allocator decides",
+      "`drop pair.left`: the last local drops first, and its fields drop in declaration order"
+    ],
+    "correctAnswer": 2,
+    "feedback": "At the closing brace, `_pair` is the last declared local, so it drops first, `left` before `right`; then `_second` and `_first` follow.",
+    "recall": [
+      {
+        "question": "What does this print, and in what order?",
+        "answer": "`body`, then `drop a`, then `drop b`. Moving `a` into `moved` hands the drop to `moved`, the last declared local, so it drops first, and `b` follows. The original binding `a` runs no destructor of its own.",
+        "code": "struct Tag(&'static str);\nimpl Drop for Tag {\n    fn drop(&mut self) { println!(\"drop {}\", self.0); }\n}\nfn main() {\n    let a = Tag(\"a\");\n    let b = Tag(\"b\");\n    let moved = a;\n    println!(\"body\");\n}"
+      },
+      {
+        "question": "Why does rustc reject `conn.drop()`, and what do you write instead?",
+        "answer": "Calling the destructor method directly would let it run twice, once now and again at the end of the scope, so rustc rejects it with E0040. Write `drop(conn)`: the function takes ownership, the value is dropped inside it, and the binding cannot be used afterwards."
+      }
+    ]
+  },
+  "contentDigest": "b6ccdca6f52a5ae5b2188582919a56b11d68dcd2f5649d2546ab49f788950ad0",
+  "illustration": {
+    "path": "media/node-no-garbage-collector.png",
+    "alt": "Side-by-side comparison: the JavaScript (Node.js) version on the left, the Rust version on the right, then 4 rows naming what changes.",
+    "caption": "Garbage collection vs deterministic drop: the same task in JavaScript (Node.js) and in Rust, with the differences that matter."
+  }
+}

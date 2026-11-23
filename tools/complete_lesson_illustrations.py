@@ -178,7 +178,9 @@ def main() -> None:
     count = 0
     refreshed = 0
     for course in sorted(ROOT.iterdir()):
-        if not (course / "course.json").is_file() or course.name == "examples":
+        # Bridge courses get side-by-side diagrams from tools/bridge_illustrations.py.
+        if (not (course / "course.json").is_file() or course.name == "examples"
+                or course.name.startswith("rust-for-")):
             continue
         if course.name == "algorithms":
             for unit_path in sorted((course / "units").glob("*.json")):
@@ -220,7 +222,8 @@ def main() -> None:
                 path.write_text(json.dumps(lesson, ensure_ascii=False, indent=2) + "\n")
                 count += 1
     lessons = [json.loads(path.read_text()) for path in ROOT.glob("*/lessons/*.json")]
-    if len(lessons) != 798 or any(not lesson.get("illustration") for lesson in lessons):
+    academy = [path for path in ROOT.glob("*/lessons/*.json") if not path.parts[-3].startswith("rust-for-")]
+    if len(academy) != 799 or any(not lesson.get("illustration") for lesson in lessons):
         raise ValueError("Academy illustration coverage is incomplete")
     print(f"Filled {count} missing illustrations; refreshed {refreshed}; covered {len(lessons)} lessons")
 

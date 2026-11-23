@@ -101,13 +101,13 @@ def as_program(code: str) -> str:
 
 
 def outcome_matches(record: dict, expect: dict, what: str) -> None:
-    if "errors" in expect or "message" in expect:
+    if "errors" in expect or "message" in expect or "messages" in expect:
         need(not record["compiled"], f"{what}: expected a compile error, but it compiled")
         if "errors" in expect:
             need(record["errors"] == sorted(expect["errors"]),
                  f"{what}: error codes {record['errors']} != {expect['errors']}")
-        if "message" in expect:
-            need(expect["message"] in record["stderr"], f"{what}: missing message {expect['message']!r}")
+        for message in ([expect["message"]] if "message" in expect else []) + expect.get("messages", []):
+            need(message in record["stderr"], f"{what}: missing message {message!r}")
         return
     need(record["compiled"], f"{what}: did not compile:\n{record.get('stderr', '')[:2500]}")
     if "panic" in expect:
@@ -153,6 +153,8 @@ def check_fields(lesson: dict, check: dict) -> None:
         need("core idea" not in card["question"].lower(), "recall wording")
         need(len(card["answer"]) <= 600, "recall answer length")
         need(len(card.get("code", "").splitlines()) <= 16, "recall code length")
+        if lesson["parentID"] == "c-rust-at-a-glance":
+            need(len(card.get("code", "").splitlines()) <= 12, "theory recall code is at most 12 lines")
     need(set(d) == {"traceSteps", "misconception", "correction", "transferChallenge", "connections"},
          "depth keys")
     need(len(d["traceSteps"]) == 3, "three trace steps")
@@ -165,7 +167,9 @@ def check_fields(lesson: dict, check: dict) -> None:
     need(2 <= len(b["contrasts"]) <= 4, "contrast count")
     for row in b["contrasts"]:
         need(set(row) == {"from", "rust"} and all(len(row[k]) <= 160 for k in row), "contrast row")
-    need(1 <= len(b["credits"]) <= 4, "credit count")
+    need(0 <= len(b["credits"]) <= 4, "credit count")
+    if not b["credits"]:
+        need(lesson["parentID"] == "c-rust-at-a-glance", "only theory lessons may credit nothing")
     for target in b["credits"]:
         course, target_id = target.split("/")
         need(course in ALLOWED_CREDIT_COURSES, f"credit course {target}")
@@ -191,7 +195,8 @@ def check_c(lid: str, code: str, expect: dict, folder: Path) -> dict:
     need(built.returncode == 0, f"{lid}: C did not compile\n{built.stderr}")
     warnings = sorted(set(re.findall(r"\[(-W[a-z0-9-]+)\]", built.stderr)))
     need(warnings == sorted(expect.get("warnings", [])), f"{lid}: C warnings {warnings}")
-    record = {"compiler": run([CLANG, "--version"]).stdout.splitlines()[0], "warnings": warnings}
+    record = {"compiler": run([CLANG, "--version"]).stdout.splitlines()[0], "warnings": warnings,
+              "binary": run(["/usr/bin/file", "-b", str(folder / "from")]).stdout.strip()}
     ran = run([str(folder / "from")], cwd=folder)
     record.update(exit=ran.returncode, stdout=ran.stdout)
     if "stdout" in expect:
@@ -200,6 +205,26 @@ def check_c(lid: str, code: str, expect: dict, folder: Path) -> dict:
         need(ran.stdout.startswith(expect["stdoutPrefix"]), f"{lid}: C stdout {ran.stdout!r}")
     if "exit" in expect:
         need(ran.returncode == expect["exit"], f"{lid}: C exit {ran.returncode}")
+    if "werror" in expect:
+        strict = run([CLANG, "-std=c17", "-Wall", "-Wextra", "-Werror", "-O0", "from.c", "-o", "from-werror"],
+                     cwd=folder)
+        need(strict.returncode != 0 and f"[-Werror,{expect['werror']}]" in strict.stderr,
+             f"{lid}: -Werror should reject the program via {expect['werror']}\n{strict.stderr}")
+        record["werror"] = f"-Werror rejects the program ({expect['werror']})"
+    runs = []
+    for case in expect.get("sanitizeRuns", []):
+        flags = ["-fsanitize=" + case["sanitize"], "-g", "-O0", "-fno-omit-frame-pointer"]
+        built = run([CLANG, "-std=c17", *flags, "from.c", "-o", "from-sanitized"], cwd=folder)
+        need(built.returncode == 0, f"{lid}: sanitizer build failed\n{built.stderr}")
+        result = run([str(folder / "from-sanitized"), *case["args"]], cwd=folder, timeout=120,
+                     env={"ASAN_OPTIONS": "detect_leaks=0"})
+        need(case["finding"] in result.stderr,
+             f"{lid}: args {case['args']}: finding {case['finding']!r} missing\n{result.stderr[:1500]}")
+        line = next(l for l in result.stderr.splitlines() if case["finding"] in l)
+        runs.append({"args": case["args"], "flags": case["sanitize"],
+                     "finding": re.sub(r"0x[0-9a-f]+", "0x…", line.strip())})
+    if runs:
+        record["sanitizerRuns"] = runs
     if "sanitize" in expect:
         flags = ["-fsanitize=" + expect["sanitize"], "-g", "-O0", "-fno-omit-frame-pointer"]
         sanitized = run([CLANG, "-std=c17", *flags, "from.c", "-o", "from-sanitized"], cwd=folder)
@@ -304,6 +329,18 @@ def verify_lesson(module, lesson: dict, check: dict) -> dict:
             record["probes"][f"{name} {version}"] = {k: v for k, v in probe.items() if k != "code"}
     if "cargo" in expect:
         record["cargo"] = check_cargo(lid, expect["cargo"])
+    if expect.get("native"):
+        binary = folder / "example-1.100.0" / "program"
+        kind = run(["/usr/bin/file", "-b", str(binary)]).stdout.strip()
+        need(kind.startswith("Mach-O 64-bit executable arm64"), f"{lid}: example binary is {kind!r}")
+        llvm = next(l for l in run([str(RUSTC["1.100.0"]), "-vV"]).stdout.splitlines() if l.startswith("LLVM"))
+        record["native"] = {"exampleBinary": kind, "rustcBackend": llvm}
+    if "explain" in expect:
+        code, text = expect["explain"]
+        explained = run([str(RUSTC["1.100.0"]), "--explain", code])
+        need(explained.returncode == 0 and explained.stdout.startswith(text),
+             f"{lid}: rustc --explain {code}: {explained.stdout[:200]!r}")
+        record["explain"] = {code: text}
     record["c"] = check_c(lid, lesson["bridge"]["fromCode"], expect["c"], folder / "c")
     if lesson["exerciseKind"] == "runnable":
         record["challenge"] = check_challenge(lid, check, expect)

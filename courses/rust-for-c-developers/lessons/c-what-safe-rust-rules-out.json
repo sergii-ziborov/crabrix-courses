@@ -1,0 +1,101 @@
+{
+  "concept": "Undefined behaviour excluded, bugs still possible",
+  "depth": {
+    "traceSteps": [
+      {
+        "title": "List the undefined cases",
+        "detail": "For a C function, write down every place it relies on a pointer being valid, an index being in range or a variable being set."
+      },
+      {
+        "title": "Match the mechanism",
+        "detail": "Ownership, borrowing, `Option`, initialisation checks, bounds checks and `Send`/`Sync` each exclude one of them in safe Rust."
+      },
+      {
+        "title": "Keep the remaining risks",
+        "detail": "Leaks, deadlocks, panics, overflow policy and logic still need tests and review, as in C."
+      }
+    ],
+    "misconception": "“If it compiles in Rust, it is correct.”",
+    "correction": "If it compiles without `unsafe`, it has no undefined behaviour. It can still leak, deadlock, panic or compute the wrong result; the compiler removes a class of bugs, not the need for tests.",
+    "transferChallenge": "Write a safe Rust program that deadlocks with two `Mutex`es locked in opposite orders by two threads, then fix it with one global lock order.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "What Rust Is, from C",
+        "concept": "Native code and the same machine, with checks before it runs"
+      },
+      {
+        "direction": "next",
+        "title": "Reading rustc Diagnostics",
+        "concept": "Compile-time errors instead of run-time crashes"
+      }
+    ]
+  },
+  "exerciseKind": "planned",
+  "id": "c-what-safe-rust-rules-out",
+  "minutes": 12,
+  "order": 1,
+  "parentID": "c-rust-at-a-glance",
+  "title": "What Safe Rust Rules Out",
+  "writing": {
+    "summary": "Safe Rust rules out the memory and thread bugs that are undefined behaviour in C, but not leaks, deadlocks, panics or wrong logic.",
+    "rule": "Safe Rust has no undefined behaviour: use after free, double free, dangling references, out-of-bounds access, null dereference, uninitialised reads and data races are rejected or checked; leaks, deadlocks, panics, logic errors and wrapping arithmetic in release builds are not.",
+    "explanation": "In C, executing an undefined operation makes the whole program meaningless, and the optimiser is allowed to assume it never happens. The example's four cases compile without a single warning under `-Wall -Wextra`; each one fails only when it runs, and only a sanitizer build says why: `stack-buffer-overflow`, `heap-use-after-free`, a load of a null pointer and `attempting double-free`.\n\nSafe Rust closes each of these by construction. Ownership means one owner frees each value once, so double free and use after free cannot be written. Borrow checking means a reference cannot outlive its value or overlap a writer. References are never null; absence is `Option`. A binding must be initialised on every path before it is read, or the program is rejected with `E0381`. `Send` and `Sync`, together with borrowing, make data races a compile error. Indexing is the one run-time check: `xs[i]` with a bad index panics, and `xs.get(i)` returns `None`, so an out-of-bounds read never touches the neighbouring memory.\n\n\"Safe\" means free of undefined behaviour, not correct. Safe Rust can still leak memory (`Box::leak`, `mem::forget` and `Rc` cycles are all safe), deadlock on two `Mutex`es taken in different orders, compute the wrong answer, run out of memory or stack, and panic. A panic is defined behaviour: the thread unwinds and runs destructors, or the process aborts if it is configured to. Integer overflow is defined too, but in release builds it wraps unless you choose `checked_` or keep `overflow-checks` on.\n\n`unsafe` re-enables specific powers that safe code lacks: dereferencing raw pointers, calling `unsafe` functions including every C function, accessing mutable statics, implementing `unsafe` traits and reading `union` fields. Inside those blocks every C undefined behaviour is possible again, and the guarantee for the whole program rests on each `unsafe` block being right. That is why such blocks are kept small and documented; a later lesson shows how.",
+    "exampleCode": "fn main() {\n    let xs = [1, 2, 3];\n    let i = std::env::args().count() + 2;       // 3 when run without arguments\n    println!(\"{:?}\", xs.get(i));                // checked access: None\n    let heap = Box::new(7);\n    let owner = heap;                           // moved: `heap` is no longer usable\n    println!(\"{owner}\");\n    let missing: Option<&i32> = None;           // no null references, only Option\n    println!(\"{}\", missing.copied().unwrap_or(0));\n    let sum = 200u8.wrapping_add(100);          // wrapping you asked for: 44\n    println!(\"{sum}\");\n    let leaked: &'static mut i32 = Box::leak(Box::new(1)); // a leak is safe\n    *leaked += 1;\n    println!(\"{leaked}\");\n}\n",
+    "exampleCaption": "A checked index, a move instead of a second owner, `Option` instead of null, explicit wrapping, and a leak that is wasteful but safe.",
+    "practiceCode": "fn main() {\n    let total: i32;\n    let ready = std::env::args().count() > 1;\n    if ready {\n        total = 10;\n    }\n    println!(\"{total}\");\n}\n",
+    "task": "Run the C program's cases under a sanitizer in your head, match each one to the Rust rule that excludes it, then decide what the practice program needs before it compiles.",
+    "success": "You can name the Rust mechanism behind each excluded C bug, and list three kinds of bug safe Rust still allows.",
+    "question": "Which of these can a program written entirely in safe Rust still do?",
+    "answers": [
+      "Read a freed heap buffer through a stale reference",
+      "Index one element past the end of an array without being stopped",
+      "Dereference a null reference",
+      "Leak memory with `Box::leak` or deadlock on two `Mutex`es"
+    ],
+    "correctAnswer": 3,
+    "feedback": "Leaks and deadlocks are bugs, not undefined behaviour, so safe Rust allows them. The other three are rejected at compile time or stopped by a bounds-check panic.",
+    "recall": [
+      {
+        "question": "Is a panic in Rust undefined behaviour, like an out-of-bounds read in C?",
+        "answer": "No. A panic is defined: by default the thread unwinds, runs destructors and reports the message, and with `panic = \"abort\"` the process stops immediately. A bad index in safe Rust becomes this defined panic instead of a read of neighbouring memory."
+      },
+      {
+        "question": "Does this compile, and is it safe?",
+        "code": "fn main() {\n    let data = vec![0u8; 1024];\n    std::mem::forget(data);\n    println!(\"done\");\n}",
+        "answer": "Yes and yes: it prints `done`. Leaking is not undefined behaviour, so `mem::forget`, `Box::leak` and `Rc` cycles are all safe. The memory is never returned to the allocator, which wastes it but cannot corrupt anything."
+      }
+    ]
+  },
+  "bridge": {
+    "from": "c",
+    "fromLabel": "C",
+    "fromCode": "#include <stdio.h>\n#include <stdlib.h>\n\n/* Every case compiles cleanly with -Wall -Wextra.\n   Every case except 0 is undefined behaviour when it runs. */\nint main(int argc, char **argv) {\n    int which = argc > 1 ? atoi(argv[1]) : 0;\n    int xs[3] = {1, 2, 3};\n    int *null = NULL;\n    int *heap = malloc(sizeof *heap);\n    if (!heap) return 1;\n    *heap = 7;\n    if (which == 1) printf(\"%d\\n\", xs[which + 2]);           /* out of bounds */\n    if (which == 2) { free(heap); printf(\"%d\\n\", *heap); }   /* use after free */\n    if (which == 3) printf(\"%d\\n\", *null);                   /* null dereference */\n    if (which == 4) free(heap);                              /* the first free... */\n    if (which != 2) free(heap);                              /* ...and a double free */\n    printf(\"case %d done\\n\", which);\n    return 0;\n}\n",
+    "fromCaption": "Four undefined behaviours that compile without a warning; sanitizers report a stack overflow, a use after free, a null load and a double free.",
+    "contrasts": [
+      {
+        "from": "Use after free, double free and dangling pointers compile and are undefined.",
+        "rust": "Ownership and borrow checking reject them at compile time."
+      },
+      {
+        "from": "Out-of-bounds reads and NULL dereferences are undefined.",
+        "rust": "Indexing is bounds-checked (a defined panic); absence is `Option`, never a null reference."
+      },
+      {
+        "from": "Reading an uninitialised variable is at most a warning.",
+        "rust": "Every binding must be initialised on every path before it is read (`E0381`)."
+      },
+      {
+        "from": "Leaks, deadlocks and logic errors are the programmer's problem.",
+        "rust": "They still are: safe Rust excludes undefined behaviour, not bugs."
+      }
+    ],
+    "credits": []
+  },
+  "illustration": {
+    "path": "media/c-what-safe-rust-rules-out.png",
+    "alt": "Side-by-side comparison: the C version on the left, the Rust version on the right, then 4 rows naming what changes.",
+    "caption": "What Safe Rust Rules Out: the same task in C and in Rust, with the differences that matter."
+  },
+  "contentDigest": "d31eee60498f938a9def0663c3ded9dca7e89f04de0f01ecfbc44cfef7f45aae"
+}

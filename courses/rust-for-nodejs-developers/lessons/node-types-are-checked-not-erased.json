@@ -1,0 +1,102 @@
+{
+  "bridge": {
+    "from": "typescript",
+    "fromLabel": "TypeScript",
+    "fromCode": "interface User {\n  id: number;\n  name: string;\n}\n\nconst raw = '{\"id\": \"42\", \"name\": null}';\nconst user = JSON.parse(raw) as User; // the assertion is never checked\nconsole.log(typeof user.id, user.id + 1);\n\nconst anything: any = user.name;\ntry {\n  console.log(anything.toUpperCase()); // compiles, fails at runtime\n} catch (err) {\n  console.log((err as Error).message);\n}",
+    "fromCaption": "The assertion and `any` satisfy `tsc`, and then the runtime adds a string to a number and calls a method on `null`.",
+    "contrasts": [
+      {
+        "from": "`JSON.parse(raw) as User` is never checked at runtime.",
+        "rust": "Text becomes a `User` only through parsing that returns a `Result`."
+      },
+      {
+        "from": "`any` turns type checking off for a value.",
+        "rust": "There is no `any`: every value has one concrete type that the compiler knows."
+      },
+      {
+        "from": "Types are erased before the JavaScript runs.",
+        "rust": "Types shape the compiled code: a `u32` is four bytes, and `+` on it is integer addition."
+      },
+      {
+        "from": "A `tsc` error can be ignored, and the emitted JavaScript still runs.",
+        "rust": "rustc builds nothing until every error is fixed."
+      }
+    ],
+    "credits": [
+      "basics/compiler-feedback"
+    ]
+  },
+  "concept": "Types the compiler enforces, and its diagnostics",
+  "depth": {
+    "misconception": "“`as` in Rust works like a TypeScript assertion: it tells the compiler to treat a value as another type.”",
+    "correction": "Rust's `as` performs a real conversion between compatible primitive types and is rejected for anything else, such as `&str` to `u32` (E0606). Converting outside data is a fallible operation such as `parse`.",
+    "traceSteps": [
+      {
+        "title": "Read the types",
+        "detail": "`User.id` is a `u32`, and `parse_user` receives text. The only way from one to the other is `id.parse()`, which returns a `Result`."
+      },
+      {
+        "title": "Follow the failures",
+        "detail": "`\"4x2\"` fails in `parse`, and the error says why; a missing name fails in `ok_or`. Neither path can produce a half-valid `User`."
+      },
+      {
+        "title": "Compare with evidence",
+        "detail": "Run it: `Ok(User { id: 42, name: \"ana\" })`, then an `Err` naming the invalid digit in `\"4x2\"`, then `Err(\"name is missing\")`."
+      }
+    ],
+    "transferChallenge": "Call `parse_user(\"-1\", Some(\"ana\"))` and `parse_user(\"4294967296\", Some(\"ana\"))`, predict both error messages and check them. Then name the JavaScript expression that would have accepted each value without complaint.",
+    "connections": [
+      {
+        "direction": "previous",
+        "title": "Garbage collection vs deterministic drop",
+        "concept": "Deterministic drop at the end of scope"
+      },
+      {
+        "direction": "next",
+        "title": "console.log vs println!",
+        "concept": "Compile-time checked formatting"
+      }
+    ]
+  },
+  "exerciseKind": "planned",
+  "id": "node-types-are-checked-not-erased",
+  "minutes": 11,
+  "order": 2,
+  "parentID": "node-rust-at-a-glance",
+  "title": "TypeScript types vs Rust types",
+  "writing": {
+    "summary": "TypeScript types are erased and can be bypassed with `any` or `as`; Rust types are enforced by rustc, which builds nothing until its diagnostics are fixed.",
+    "rule": "rustc refuses to build a program with a type error: read each diagnostic's code, span and labels, and repair the first causal error before chasing its downstream messages.",
+    "explanation": "TypeScript checks your code and then erases the types: the JavaScript that runs has no idea a `User` exists. `JSON.parse(raw) as User` is a promise to the compiler that nothing verifies, `any` switches checking off, and a wrong assertion raises no error. In the example, `user.id + 1` type-checks as numeric addition and produces the string `\"421\"` at runtime.\n\nRust has no `any` and no unchecked assertion between unrelated types. A value of type `u32` is a `u32` in the compiled program; text from outside becomes one only through a step that can fail and says so, such as `\"42\".parse::<u32>()`, which returns a `Result`. Serde's `serde_json::from_str::<User>` works the same way: a JSON string where the struct expects a number is an `Err`, not a quietly wrong object. The escape hatches that do exist, `as` between numeric types and `unsafe` code, are narrow and visible.\n\nBecause rustc refuses to build a program with a type error, reading its diagnostics is a daily skill. Each error has a code such as `E0308`, a primary span marked with `^^^` under the offending expression, labels such as `expected u32, found &str`, and often a `help:` line with a suggestion. `rustc --explain E0308` prints a longer explanation with examples. Treat a suggestion as a hint rather than an order: decide first what the program should mean.\n\nRead the errors from the top and repair the first causal one. In the practice code, `id` is text, so both `id + 1` and `User { id }` fail; the root cause is the missing parse, and once `id` is a `u32` both messages disappear. Patching each later message with a cast or an annotation hides the real mistake and can create new errors further down.",
+    "exampleCode": "#[derive(Debug)]\nstruct User {\n    id: u32,\n    name: String,\n}\n\nfn parse_user(id: &str, name: Option<&str>) -> Result<User, String> {\n    let id: u32 = id.parse().map_err(|e| format!(\"id {id:?}: {e}\"))?;\n    let name = name.ok_or(\"name is missing\")?.to_string();\n    Ok(User { id, name })\n}\n\nfn main() {\n    println!(\"{:?}\", parse_user(\"42\", Some(\"ana\")));\n    println!(\"{:?}\", parse_user(\"4x2\", Some(\"ana\")));\n    println!(\"{:?}\", parse_user(\"42\", None));\n}",
+    "exampleCaption": "Outside text becomes a `User` only through parsing, and each failure says what was wrong.",
+    "task": "Compile the practice code and read both errors: the code, the primary span and the labels. Fix only the root cause, compile again and confirm that both messages are gone. Then run `rustc --explain E0369`.",
+    "success": "You fixed both errors with one change, and you can point to the span and label that revealed the root cause.",
+    "practiceCode": "struct User {\n    id: u32,\n}\n\nfn main() {\n    let id = \"42\";\n    let next = id + 1;\n    let user = User { id };\n    println!(\"{} {}\", user.id, next);\n}",
+    "question": "For the practice code, rustc reports E0369 at `id + 1` and E0308 at `User { id }`. What do you fix first?",
+    "answers": [
+      "The `User` struct: change its `id` field to `&str`",
+      "The binding `id`: both errors start where text is used as a number, so parse it once with `\"42\".parse::<u32>()`",
+      "Add `as u32` at both error sites"
+    ],
+    "correctAnswer": 1,
+    "feedback": "Both diagnostics trace back to `id` being a `&str`. Parsing it into a `u32` removes the root cause, and both messages go away; `as` cannot convert text at all (E0606).",
+    "recall": [
+      {
+        "question": "Why is this rejected, and what is the fix?",
+        "answer": "`as` converts only between compatible primitive types; it is not an unchecked assertion like TypeScript's `as`. Casting a `&str` to a `u32` is E0606. Parse instead, with `let id: u32 = raw.parse()?;` or a `match` on the `Result`.",
+        "code": "let raw = \"42\";\nlet id = raw as u32;"
+      },
+      {
+        "question": "rustc prints `error[E0308]: mismatched types`, a `^^^` span and the label `expected u32, found &str`. What does each part tell you, and where do you find more?",
+        "answer": "`E0308` names the rule that was broken, the span marks the exact expression, and the label compares the type the context requires with the type the expression has. `rustc --explain E0308` prints a longer explanation with examples. Start with the first such error, because later ones are often consequences of it."
+      }
+    ]
+  },
+  "contentDigest": "4cf7ce93416cc01703b37969534b92f108a617656bfc6d4cb2d8953c3ce04063",
+  "illustration": {
+    "path": "media/node-types-are-checked-not-erased.png",
+    "alt": "Side-by-side comparison: the TypeScript version on the left, the Rust version on the right, then 4 rows naming what changes.",
+    "caption": "TypeScript types vs Rust types: the same task in TypeScript and in Rust, with the differences that matter."
+  }
+}

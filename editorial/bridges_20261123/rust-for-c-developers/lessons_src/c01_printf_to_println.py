@@ -85,6 +85,7 @@ LESSON = {
         "correction": "`println!` is a macro that rustc expands and type-checks. A missing argument, an extra argument or a value without the requested trait (for example `{}` on a type without `Display`) stops the build. Garbage output from a mismatched format is not possible in safe Rust.",
         "transferChallenge": "Print a `u64` byte count with `{:>12}` and the same value with `{:e}`. Then try `{:x}` on an `f64` and read which trait rustc says is missing.",
         "connections": [
+            {"direction": "previous", "title": "Reading rustc Diagnostics", "concept": "Compile-time errors instead of run-time crashes"},
             {"direction": "next", "title": "const by Default", "concept": "Immutable bindings, mut and shadowing"},
         ],
     },

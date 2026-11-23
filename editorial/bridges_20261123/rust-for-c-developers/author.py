@@ -18,7 +18,7 @@ OUT = REPO / "courses" / COURSE_ID
 STUB = 'todo!("implement the contract")'
 
 COURSE = {
-    "contentVersion": "1.0.0",
+    "contentVersion": "1.0.1",
     "id": COURSE_ID,
     "language": "en",
     "level": "FOR C DEVELOPERS",
@@ -30,15 +30,19 @@ COURSE = {
     "title": "Rust for C Developers",
 }
 
+# (id, title, subtitle, level). Levels of the 1.0.0 units are unchanged; the
+# theory unit added in 1.0.1 is an entry-level unit placed first.
 UNITS = [
+    ("c-rust-at-a-glance", "Rust at a glance",
+     "What stays the same, what safe Rust rules out, and how to read rustc", 1),
     ("c-syntax", "Familiar syntax, different defaults",
-     "printf, const, integer rules, expressions and loops"),
+     "printf, const, integer rules, expressions and loops", 1),
     ("c-memory", "Memory without malloc and free",
-     "Owners, borrows, slices and lifetimes instead of conventions"),
+     "Owners, borrows, slices and lifetimes instead of conventions", 2),
     ("c-data", "Data, absence and errors",
-     "Methods, tagged unions, NULL, errno and text"),
+     "Methods, tagged unions, NULL, errno and text", 3),
     ("c-systems", "Build, unsafe, FFI and threads",
-     "Cargo, the unsafe boundary and data-race-free threads"),
+     "Cargo, the unsafe boundary and data-race-free threads", 4),
 ]
 
 TERMS = [
@@ -110,8 +114,10 @@ def challenge_check(lid: str, challenge: dict) -> dict:
 def main() -> None:
     modules = lesson_modules()
     kept_illustrations = {}
+    previous_lessons = {}
     for path in (OUT / "lessons").glob("*.json") if (OUT / "lessons").exists() else []:
         previous = json.loads(path.read_text(encoding="utf-8"))
+        previous_lessons[previous["id"]] = previous
         if "illustration" in previous:
             kept_illustrations[previous["id"]] = previous["illustration"]
     for stale in ("lessons", "checks", "projects", "units"):
@@ -120,7 +126,7 @@ def main() -> None:
             for path in sorted(folder.rglob("*"), reverse=True):
                 path.unlink() if path.is_file() else path.rmdir()
     present_units = []
-    for unit_order, (uid, title, subtitle) in enumerate(UNITS):
+    for uid, title, subtitle, level in UNITS:
         unit_lessons = [m for m in modules if m.UNIT == uid]
         if not unit_lessons:
             continue
@@ -134,6 +140,11 @@ def main() -> None:
                       "bridge": module.LESSON["bridge"]}
             if lid in kept_illustrations and (OUT / kept_illustrations[lid]["path"]).exists():
                 lesson["illustration"] = kept_illustrations[lid]
+            previous = previous_lessons.get(lid)
+            if previous and "contentDigest" in previous:
+                # Keep the digest only when nothing in the lesson changed.
+                if {k: v for k, v in previous.items() if k != "contentDigest"} == lesson:
+                    lesson["contentDigest"] = previous["contentDigest"]
             write(OUT / "lessons" / f"{lid}.json", lesson)
             challenge = getattr(module, "CHALLENGE", None)
             if lesson["exerciseKind"] == "runnable":
@@ -147,7 +158,7 @@ def main() -> None:
                                     "kind": "reasoning"}})
             lesson_ids.append(lid)
         write(OUT / "units" / f"{uid}.json",
-              {"id": uid, "lessonIDs": lesson_ids, "level": unit_order + 1,
+              {"id": uid, "lessonIDs": lesson_ids, "level": level,
                "order": len(present_units), "parentID": COURSE_ID,
                "subtitle": subtitle, "title": title})
         present_units.append(uid)
