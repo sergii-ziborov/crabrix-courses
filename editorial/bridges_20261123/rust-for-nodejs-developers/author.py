@@ -21,6 +21,9 @@ ROOT = REPO / "courses" / COURSE_ID
 SOURCE_SHA = "31a1969499c4811f9918e72fa8e6e53416d8fcab"
 
 UNITS = [
+    ("node-rust-at-a-glance", "Rust at a glance",
+     "What changes when code is compiled ahead of time, owned and statically typed",
+     ["node-what-rust-is", "node-no-garbage-collector", "node-types-are-checked-not-erased"]),
     ("node-values", "Values and types",
      "Bindings, numbers, functions and conditions without coercion",
      ["node-console-log-to-println", "node-let-const-to-let-mut", "node-number-to-integer-types",
@@ -37,7 +40,7 @@ UNITS = [
      ["node-try-catch-to-result", "node-npm-to-cargo", "node-promises-to-futures"]),
 ]
 
-MODULES = ["lessons_values", "lessons_data", "lessons_ownership", "lessons_runtime"]
+MODULES = ["lessons_glance", "lessons_values", "lessons_data", "lessons_ownership", "lessons_runtime"]
 
 TERMS = [
     ("node-let-mut", "let mut", "Like a JavaScript let: the binding may change. Plain let acts like const and also freezes the value.", "node-let-const-to-let-mut"),
@@ -61,9 +64,27 @@ TERMS = [
 TODO = 'todo!("implement the contract")'
 
 
+def ordered_like(value, existing):
+    """Keep an existing file's key order (recursively); new keys follow, sorted."""
+    if isinstance(value, dict):
+        old = existing if isinstance(existing, dict) else {}
+        keys = [k for k in old if k in value] + sorted(k for k in value if k not in old)
+        return {k: ordered_like(value[k], old.get(k)) for k in keys}
+    if isinstance(value, list) and isinstance(existing, list):
+        return [ordered_like(v, existing[i] if i < len(existing) else None) for i, v in enumerate(value)]
+    if isinstance(value, list):
+        return [ordered_like(v, None) for v in value]
+    return value
+
+
 def save(path: Path, value) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(value, indent=2, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8")
+    existing = json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+    value = ordered_like(value, existing)
+    if existing is None and isinstance(value, dict):
+        tail = [key for key in ("contentDigest", "illustration") if key in value]
+        value = {**{k: value[k] for k in value if k not in tail}, **{k: value[k] for k in tail}}
+    path.write_text(json.dumps(value, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
 def harness(lesson: dict) -> str:
@@ -147,7 +168,7 @@ def main() -> None:
         for lesson in module.LESSONS:
             lessons[lesson["id"]] = lesson
     save(ROOT / "course.json", {
-        "id": COURSE_ID, "language": "en", "contentVersion": "1.0.0", "order": 9,
+        "id": COURSE_ID, "language": "en", "contentVersion": "1.0.1", "order": 9,
         "level": "FOR NODE.JS DEVELOPERS", "title": "Rust for Node.js Developers",
         "subtitle": "Map JavaScript and TypeScript habits to Rust: objects, null and undefined, array methods, try/catch, npm and Promises",
         "systemImage": "curlybraces.square.fill", "theme": "bridges",

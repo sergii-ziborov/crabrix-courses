@@ -1,0 +1,97 @@
+{
+  "bridge": {
+    "from": "javascript",
+    "fromLabel": "JavaScript (Node.js)",
+    "fromCode": "// node app.js: V8 parses, interprets and JIT-compiles this while it runs.\nfunction total(prices, currency) {\n  const sum = prices.reduce((acc, p) => acc + p, 0);\n  if (currency === \"EUR\") {\n    return sum.toFixd(2) + \" EUR\"; // typo: fails only when this branch runs\n  }\n  return String(sum);\n}\n\nconsole.log(total([3, 4], \"USD\"));\nconsole.log(process.release.name, typeof process.versions.v8);\ntry {\n  total([3, 4], \"EUR\");\n} catch (err) {\n  console.log(err.constructor.name, err.message);\n}",
+    "fromCaption": "Node.js runs the file through V8, so the typo in the `EUR` branch surfaces as a `TypeError` only when that branch runs.",
+    "contrasts": [
+      {
+        "from": "`node app.js` needs Node.js on every machine that runs it.",
+        "rust": "`cargo build` writes a native executable, or a WASM module, that runs without Rust or Node.js installed."
+      },
+      {
+        "from": "A typo in a branch is a `TypeError` only when that branch runs.",
+        "rust": "rustc checks every branch first; the same typo is E0599, and no executable is built."
+      },
+      {
+        "from": "V8 interprets and JIT-compiles while the program runs.",
+        "rust": "Compilation finishes before the program starts, so there is no JIT warm-up."
+      },
+      {
+        "from": "The garbage collector and the event loop come with the runtime.",
+        "rust": "There is no garbage collector and no built-in event loop; async code uses a library such as Tokio."
+      }
+    ],
+    "credits": [
+      "basics/what-is-rust"
+    ]
+  },
+  "concept": "Ahead-of-time compilation to a native executable",
+  "depth": {
+    "misconception": "“Rust is like TypeScript: the types are checked, but the program still runs on a runtime such as Node.js.”",
+    "correction": "rustc compiles the checked program ahead of time to machine code or WebAssembly. The executable contains no interpreter, JIT or garbage collector, and nothing like `node` is needed to run it.",
+    "traceSteps": [
+      {
+        "title": "Build before running",
+        "detail": "`rustc main.rs` or `cargo build` reads the whole program. Nothing runs yet; `total` and `main` are checked completely."
+      },
+      {
+        "title": "Check every branch",
+        "detail": "Both arms of the `if` are type-checked, although the `USD` call never takes the `EUR` arm. A typo in either would stop the build."
+      },
+      {
+        "title": "Compare with evidence",
+        "detail": "Run it: `7`, `7.00 EUR`, then the target, `macos aarch64` on an Apple silicon Mac. Compile the practice code and read E0599 instead."
+      }
+    ],
+    "transferChallenge": "Build the example with `cargo build --release` and find the executable in `target/release/`. Copy it to another machine with the same OS and CPU architecture and no Rust installed, run it, and explain why a Linux server needs a binary built for Linux.",
+    "connections": [
+      {
+        "direction": "next",
+        "title": "Garbage collection vs deterministic drop",
+        "concept": "Deterministic drop at the end of scope"
+      }
+    ]
+  },
+  "exerciseKind": "planned",
+  "id": "node-what-rust-is",
+  "minutes": 9,
+  "order": 0,
+  "parentID": "node-rust-at-a-glance",
+  "title": "Node.js runtime vs compiled Rust",
+  "writing": {
+    "summary": "Rust is compiled ahead of time to a native executable: rustc checks types, ownership and borrowing before anything runs, and there is no garbage collector or built-in event loop.",
+    "rule": "Rust is a compiled, statically typed language without a garbage collector: rustc checks types, ownership and borrowing before the program runs, then produces a native executable.",
+    "explanation": "`node app.js` starts a runtime. V8 parses your JavaScript, interprets it and compiles hot functions to machine code while the program runs, and the Node.js process supplies the event loop, the garbage collector and APIs such as `fs`. Every machine that runs the program needs Node.js too. Rust works ahead of time: `rustc`, usually driven by `cargo build`, reads the whole crate, checks it and writes a native executable for one target, such as macOS on Apple silicon or Linux on x86-64, or a WebAssembly module as in the Crabrix app. The result runs without Rust or Node.js installed.\n\nChecking happens before anything runs. rustc verifies types, ownership and borrowing in every function, including branches your tests never reach, and produces no executable while an error remains. The typo in the JavaScript `EUR` branch is a `TypeError` on the day that branch runs; the same typo in Rust is E0599 at build time. There is no separate `tsc` step to skip and no way to run the program anyway.\n\nTwo things you take for granted are not built in. There is no garbage collector: each value has an owner and is freed at a known point, which the next lesson shows. There is no event loop either: async code needs a runtime library such as Tokio, chosen by the program. In exchange, a Rust executable has no JIT warm-up, and its memory use follows from the code rather than from collector heuristics.\n\nStatic typing in Rust is mostly inferred. You annotate function signatures and struct fields; inside a function most `let` bindings need no annotation, and `let sum: u32 = prices.iter().sum();` needs one only because `sum` can produce several types. The types shape the compiled program: a `u32` occupies four bytes, and adding two of them compiles to an integer addition.",
+    "exampleCode": "// rustc main.rs (or cargo build) checks everything first, then writes an executable.\nfn total(prices: &[u32], currency: &str) -> String {\n    let sum: u32 = prices.iter().sum();\n    if currency == \"EUR\" {\n        format!(\"{sum}.00 EUR\")\n    } else {\n        sum.to_string()\n    }\n}\n\nfn main() {\n    println!(\"{}\", total(&[3, 4], \"USD\"));\n    println!(\"{}\", total(&[3, 4], \"EUR\"));\n    println!(\"{} {}\", std::env::consts::OS, std::env::consts::ARCH);\n}",
+    "exampleCaption": "rustc checked both branches before this ran. The last line names the compile target: `macos aarch64` on an Apple silicon Mac, `wasi wasm32` for the app's WebAssembly target.",
+    "task": "Compile the practice code and read the error before running anything. Fix the typo, build again, and note that the program now runs although nothing ever calls the `EUR` branch.",
+    "success": "You can explain why an error appears in a branch that never runs, and what file `rustc` or `cargo build` produces.",
+    "practiceCode": "fn total(prices: &[u32], currency: &str) -> String {\n    let sum: u32 = prices.iter().sum();\n    if currency == \"EUR\" {\n        return sum.to_strin() + \" EUR\";\n    }\n    sum.to_string()\n}\n\nfn main() {\n    println!(\"{}\", total(&[3, 4], \"USD\"));\n}",
+    "question": "The `EUR` branch of the practice code has a typo, and your test only calls `total(&[3, 4], \"USD\")`. What happens?",
+    "answers": [
+      "rustc refuses to build the program and reports E0599 for that branch, although it would never run",
+      "The program runs and fails only if the `EUR` branch executes, like the `TypeError` in Node.js",
+      "rustc prints a warning, and the executable skips the broken branch"
+    ],
+    "correctAnswer": 0,
+    "feedback": "rustc checks every function and branch before it writes an executable. The typo is a compile error, E0599, whether or not a test reaches it.",
+    "recall": [
+      {
+        "question": "What does `cargo build` leave you with, and what must the machine that runs it have installed?",
+        "answer": "A native executable in `target/debug/`, or `target/release/` with `--release`, built for one target such as Linux on x86-64. The machine needs a compatible operating system and CPU, not Rust, Cargo or Node.js. For a browser or a WASI host you build a WebAssembly module instead."
+      },
+      {
+        "question": "Why is this rejected, even though nothing ever passes `true`?",
+        "answer": "rustc type-checks every branch before it builds anything, whether or not the branch can run: E0308, expected `String`, found integer. There is no executable until the branch returns a `String`, for example `42.to_string()`.",
+        "code": "fn label(verbose: bool) -> String {\n    if verbose {\n        return 42;\n    }\n    String::from(\"quiet\")\n}"
+      }
+    ]
+  },
+  "contentDigest": "a7135581c3d7d774405c5bf93cbb771288ba278cd4dadaf4bd294330cf638965",
+  "illustration": {
+    "path": "media/node-what-rust-is.png",
+    "alt": "Side-by-side comparison: the JavaScript (Node.js) version on the left, the Rust version on the right, then 4 rows naming what changes.",
+    "caption": "Node.js runtime vs compiled Rust: the same task in JavaScript (Node.js) and in Rust, with the differences that matter."
+  }
+}

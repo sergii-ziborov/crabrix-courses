@@ -90,6 +90,7 @@ class BridgeValidatorTests(unittest.TestCase):
             "interview": lambda l: l["bridge"].update({"credits": ["interview/q-ownership"]}),
             "duplicate": lambda l: l["bridge"].update({"credits": ["basics/variables", "basics/variables"]}),
             "one contrast": lambda l: l["bridge"].update({"contrasts": [{"from": "a", "rust": "b"}]}),
+            "five credits": lambda l: l["bridge"].update({"credits": ["basics/variables", "basics/loops", "basics/ranges", "basics/enums", "basics/structs"]}),
             "long contrast": lambda l: l["bridge"]["contrasts"][0].update({"rust": "x" * 161}),
             "odd backticks": lambda l: l["bridge"]["contrasts"][0].update({"from": "`a"}),
             "extra field": lambda l: l["bridge"].update({"note": "x"}),
@@ -121,7 +122,7 @@ class BridgeCourseTests(unittest.TestCase):
                 course = json.loads((COURSES / course_id / "course.json").read_text())
                 self.assertEqual(course["id"], course_id)
                 self.assertEqual(course["theme"], "bridges")
-                self.assertTrue(3 <= len(course["unitIDs"]) <= 4)
+                self.assertTrue(3 <= len(course["unitIDs"]) <= 5)
                 provenance = json.loads((COURSES / course_id / "provenance.json").read_text())
                 self.assertEqual(provenance["editorialRevision"], "bridges_20261123")
                 for unit_id in course["unitIDs"]:

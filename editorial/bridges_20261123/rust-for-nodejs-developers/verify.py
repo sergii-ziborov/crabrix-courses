@@ -117,7 +117,7 @@ def wrap(snippet: str) -> str:
 
 def check_fields(course, units, lessons, checks, terms) -> None:
     unit_ids = course["unitIDs"]
-    if not 3 <= len(unit_ids) <= 4:
+    if not 3 <= len(unit_ids) <= 5:  # 5 since the 1.0.1 theory unit
         fail("unit count")
     seen_credits = {}
     corrects = []
@@ -150,7 +150,7 @@ def check_fields(course, units, lessons, checks, terms) -> None:
             for card in w.get("recall", []):
                 if set(card) - {"question", "answer", "code"} or len(card["answer"]) > 600 \
                         or "core idea" in card["question"].lower() \
-                        or len(card.get("code", "").splitlines()) > 16:
+                        or len(card.get("code", "").splitlines()) > 12:
                     fail(f"{label}: recall card rules")
             if len(d["traceSteps"]) != 3 or not 1 <= len(d["connections"]) <= 2:
                 fail(f"{label}: depth sizes")
@@ -367,6 +367,23 @@ def cargo_semantics(work: Path) -> dict:
     return record
 
 
+def glance_facts(lid: str, work: Path) -> dict:
+    """Claims in the Rust-at-a-glance prose that the generic checks do not cover."""
+    record = {}
+    if lid == "node-what-rust-is":
+        cfg = run([RUSTC["1.100.0"], "--print", "cfg", "--target", "wasm32-wasip1"]).stdout
+        record["wasm32-wasip1"] = [line for line in cfg.splitlines() if line.startswith(("target_os=", "target_arch="))]
+        if 'target_os="wasi"' not in cfg or 'target_arch="wasm32"' not in cfg:
+            fail(f"{lid}: wasm32-wasip1 is not wasi/wasm32: {cfg[:200]}")
+    if lid == "node-types-are-checked-not-erased":
+        for code_name in ("E0308", "E0369", "E0606"):
+            explained = run([RUSTC["1.100.0"], "--explain", code_name])
+            record[f"rustc --explain {code_name}"] = explained.returncode == 0 and bool(explained.stdout.strip())
+            if not record[f"rustc --explain {code_name}"]:
+                fail(f"{lid}: rustc --explain {code_name} failed")
+    return record
+
+
 def main() -> None:
     only = set(sys.argv[1:])
     expectations = load(HERE / "expectations.json")
@@ -398,6 +415,8 @@ def main() -> None:
                 elif card.get("code"):
                     fail(f"{lid}: recall {index + 1} has code but no recorded expectation")
             entry["from"] = run_from(lid, lesson, spec["from"], work / "from")
+            if lid in ("node-what-rust-is", "node-types-are-checked-not-erased"):
+                entry["facts"] = glance_facts(lid, work / "facts")
             if lid == "node-npm-to-cargo":
                 entry["cargo"] = cargo_semantics(work / "cargo")
             if lesson["exerciseKind"] == "runnable":

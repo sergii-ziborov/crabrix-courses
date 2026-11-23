@@ -90,7 +90,8 @@ LESSONS.append(dict(
         ("Compare with evidence", "Run it: `tea x2 = $7.05`, `mint x1 = $0.05`, then `(\"tea\", 705)` from `{:?}` on a tuple. Remove `:02` and the second line becomes `$0.5`."),
     ],
     transfer="Add `#[derive(Debug)] struct Line { item: String, cents: u32 }`, print one value with `{:?}` and then with `{:#?}`. Delete the derive and read which trait rustc says is missing.",
-    connections=[("next", "const and let vs let and let mut", "Immutable bindings, mut and shadowing")],
+    connections=[("previous", "TypeScript types vs Rust types", "Types the compiler enforces, and its diagnostics"),
+                 ("next", "const and let vs let and let mut", "Immutable bindings, mut and shadowing")],
     recall=[
         dict(question="Why does this not compile, and what are two fixes?",
              code=code(r'''

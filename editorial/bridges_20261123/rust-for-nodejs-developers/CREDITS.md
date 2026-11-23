@@ -3,6 +3,21 @@
 Finishing a bridge lesson marks these Academy lessons as known in the app.
 Each row names the target lesson's rule and the bridge lesson rule and check that cover it.
 
+## Node.js runtime vs compiled Rust (`node-what-rust-is`, quick check)
+Bridge rule: Rust is a compiled, statically typed language without a garbage collector: rustc checks types, ownership and borrowing before the program runs, then produces a native executable.
+Check: The `EUR` branch of the practice code has a typo, and your test only calls `total(&[3, 4], "USD")`. What happens?
+- `basics/what-is-rust` — What Rust Is: Rust is a compiled, statically typed language without a garbage collector: rustc checks types, ownership and borrowing before the program runs, then produces a native executable.
+
+## Garbage collection vs deterministic drop (`node-no-garbage-collector`, quick check)
+Bridge rule: At scope end, remaining locals drop in reverse declaration order; struct fields drop in declaration order.
+Check: In the example, which message prints right after `leaving make_buffers`?
+- `ownership/drop-order` — Drop & Scope: At scope end, remaining locals drop in reverse declaration order; struct fields drop in declaration order.
+
+## TypeScript types vs Rust types (`node-types-are-checked-not-erased`, quick check)
+Bridge rule: rustc refuses to build a program with a type error: read each diagnostic's code, span and labels, and repair the first causal error before chasing its downstream messages.
+Check: For the practice code, rustc reports E0369 at `id + 1` and E0308 at `User { id }`. What do you fix first?
+- `basics/compiler-feedback` — Reading rustc: Repair the first causal error before chasing its downstream messages.
+
 ## console.log vs println! (`node-console-log-to-println`, compiled port challenge)
 Bridge rule: Execution starts in `fn main()`; `println!` and `format!` are macros whose placeholders are checked during compilation.
 Check: When does rustc report that `println!("{} costs {} cents", item)` is missing an argument?

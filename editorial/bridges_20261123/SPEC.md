@@ -40,7 +40,7 @@ A bridge lesson is an ordinary CoursePack lesson (same fields as
   compiles/runs (see Verification). Prefer a complete C program with `main`.
 - `contrasts`: 2–4 rows. Each row is one concrete difference; inline code in
   backticks; no marketing language. Both cells at most 160 characters.
-- `credits`: 1–4 `"courseID/lessonID"` strings from `basics`, `ownership`,
+- `credits`: 0–4 `"courseID/lessonID"` strings (0 only for general theory lessons) from `basics`, `ownership`,
   `projects`, `concurrency` or `systems`. Never `interview` or `algorithms`.
   Credit a lesson only if this bridge lesson teaches that lesson's
   `writing.rule` **and** its check (quiz or compiled challenge) tests the
@@ -116,7 +116,7 @@ Write work files under `build/bridges-20261123/<course-id>/` (gitignored).
 `checks/*.json`, `projects/<id>/…`, `terms.json` (8–16 pairs: `term` is the
 Rust term, `description` explains it through the other language's nearest
 equivalent, `topic` is a bridge lesson ID), `provenance.json`
-(`editorialRevision: "bridges_20261123"`). `contentVersion` `1.0.0`. Units: 3–4,
+(`editorialRevision: "bridges_20261123"`). `contentVersion` `1.0.0`. Units: 3–5 (a first general theory unit is allowed),
 each 3–6 lessons. Course pack requires capability `bridge-lessons-v1`.
 
 ## Credit semantics (app)
